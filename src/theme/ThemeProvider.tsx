@@ -12,13 +12,17 @@ type ThemeContextProps = {
 export const ThemeContext = createContext<ThemeContextProps>({
   theme: lightTheme,
   colorScheme: 'light',
-  toggleTheme: () => { },
+  toggleTheme: () => {},
 });
 
-export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({
+  children,
+}) => {
   const systemScheme = Appearance.getColorScheme() ?? 'light';
   const [colorScheme, setColorScheme] = useState<ColorSchemeName>(systemScheme);
-  const [manualOverride, setManualOverride] = useState<ColorSchemeName | null>(null);
+  const [manualOverride, setManualOverride] = useState<ColorSchemeName | null>(
+    null,
+  );
 
   useEffect(() => {
     const subscription = Appearance.addChangeListener(({ colorScheme: scheme }) => {

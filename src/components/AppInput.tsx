@@ -3,7 +3,6 @@ import React, { useState, forwardRef } from 'react';
 import {
   View,
   TextInput,
-  Text,
   TouchableOpacity,
   StyleSheet,
   TextInputProps,
@@ -11,6 +10,7 @@ import {
 } from 'react-native';
 import { Eye, EyeOff } from 'lucide-react-native';
 import { useTheme } from '../theme/useTheme';
+import AppText from './AppText';
 
 interface AppInputProps extends TextInputProps {
   label?: string;
@@ -34,28 +34,26 @@ const AppInput = forwardRef<TextInput, AppInputProps>(
     ref,
   ) => {
     const { theme } = useTheme();
-    const { colors, spacing, radius, typography } = theme;
+    const { colors, spacing, radius, typography, fonts } = theme;
     const [isFocused, setIsFocused] = useState(false);
     const [secureVisible, setSecureVisible] = useState(false);
 
     const borderColor = error
       ? colors.error
       : isFocused
-        ? colors.primary
-        : colors.border;
+        ? colors.inputFocusBorder
+        : colors.inputBorder;
 
     return (
       <View style={[styles.wrapper, containerStyle]}>
+        {/* Label */}
         {label ? (
-          <Text
-            style={[
-              typography.label,
-              { color: colors.textSecondary, marginBottom: spacing.xs },
-            ]}>
+          <AppText variant="label" secondary mb={6}>
             {label}
-          </Text>
+          </AppText>
         ) : null}
 
+        {/* Input row */}
         <View
           style={[
             styles.inputContainer,
@@ -63,52 +61,50 @@ const AppInput = forwardRef<TextInput, AppInputProps>(
               backgroundColor: colors.inputBg,
               borderColor,
               borderRadius: radius.md,
+              paddingVertical: spacing.md,
+              paddingHorizontal: spacing.base,
             },
           ]}>
           <TextInput
             ref={ref}
             style={[
               styles.input,
-              typography.body1,
               {
+                fontFamily: fonts.regular,
+                fontSize: 15,
+                lineHeight: 22,
                 color: colors.textPrimary,
-                paddingVertical: spacing.md,
-                paddingHorizontal: spacing.base,
               },
               style,
             ]}
-            placeholderTextColor={colors.placeholder}
+            placeholderTextColor={colors.inputPlaceholder}
             secureTextEntry={isPassword && !secureVisible}
             onFocus={() => setIsFocused(true)}
             onBlur={() => setIsFocused(false)}
             {...props}
           />
 
-          {/* Password eye toggle */}
+          {/* Right icons */}
           {isPassword ? (
             <TouchableOpacity
               onPress={() => setSecureVisible(v => !v)}
-              style={styles.rightIcon}
               hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
               {secureVisible ? (
-                <Eye size={20} color={colors.textSecondary} />
+                <Eye size={20} color={colors.textTertiary} />
               ) : (
-                <EyeOff size={20} color={colors.textSecondary} />
+                <EyeOff size={20} color={colors.textTertiary} />
               )}
             </TouchableOpacity>
           ) : rightIcon ? (
-            <View style={styles.rightIcon}>{rightIcon}</View>
+            rightIcon
           ) : null}
         </View>
 
+        {/* Error message */}
         {error ? (
-          <Text
-            style={[
-              typography.caption,
-              { color: colors.error, marginTop: spacing.xs },
-            ]}>
+          <AppText variant="caption" error mt={4}>
             {error}
-          </Text>
+          </AppText>
         ) : null}
       </View>
     );
@@ -123,13 +119,11 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     borderWidth: 1.5,
-    overflow: 'hidden',
   },
   input: {
     flex: 1,
-  },
-  rightIcon: {
-    paddingHorizontal: 14,
+    padding: 0,   // remove default TextInput padding
+    margin: 0,
   },
 });
 

@@ -3,14 +3,18 @@ import React from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 
-import SplashScreen from '../screens/SplashScreen';
-import LoginScreen from '../screens/LoginScreen';
-import ForgotPasswordScreen from '../screens/ForgotPasswordScreen';
+import LoginScreen from '../screens/auth_screens/Login/LoginScreen';
+import MainTabNavigation from './MainTabNavigation';
+import SplashScreen from '../screens/auth_screens/Splash/SplashScreen';
+import RegisterScreen from '../screens/auth_screens/Register/RegisterScreen';
+import ForgotPasswordScreen from '../screens/auth_screens/ForgotPassword/ForgotPasswordScreen';
 
 export type RootStackParamList = {
   Splash: undefined;
   Login: undefined;
   ForgotPassword: undefined;
+  Register: undefined;
+  MainTabNavigation: undefined;
 };
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
@@ -23,9 +27,15 @@ const AppNavigation = () => {
         screenOptions={{ headerShown: false, animation: 'fade' }}>
         <Stack.Screen name="Splash" component={SplashScreen} />
         <Stack.Screen name="Login" component={LoginScreen} />
+        <Stack.Screen name="Register" component={RegisterScreen} />
         <Stack.Screen
           name="ForgotPassword"
           component={ForgotPasswordScreen}
+          options={{ animation: 'slide_from_right' }}
+        />
+        <Stack.Screen
+          name="MainTabNavigation"
+          component={MainTabNavigation}
           options={{ animation: 'slide_from_right' }}
         />
       </Stack.Navigator>

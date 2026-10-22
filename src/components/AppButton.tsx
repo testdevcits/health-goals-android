@@ -2,13 +2,13 @@
 import React from 'react';
 import {
   TouchableOpacity,
-  Text,
   ActivityIndicator,
   StyleSheet,
   ViewStyle,
-  TextStyle,
+  View,
 } from 'react-native';
 import { useTheme } from '../theme/useTheme';
+import AppText from './AppText';
 
 type Variant = 'primary' | 'outline' | 'ghost';
 
@@ -19,8 +19,8 @@ interface AppButtonProps {
   loading?: boolean;
   disabled?: boolean;
   style?: ViewStyle;
-  textStyle?: TextStyle;
   leftIcon?: React.ReactNode;
+  rightIcon?: React.ReactNode;
 }
 
 const AppButton: React.FC<AppButtonProps> = ({
@@ -30,14 +30,15 @@ const AppButton: React.FC<AppButtonProps> = ({
   loading = false,
   disabled = false,
   style,
-  textStyle,
   leftIcon,
+  rightIcon,
 }) => {
   const { theme } = useTheme();
-  const { colors, spacing, radius, typography } = theme;
+  const { colors, spacing, radius } = theme;
 
   const isPrimary = variant === 'primary';
   const isOutline = variant === 'outline';
+  const isGhost = variant === 'ghost';
 
   const containerStyle: ViewStyle = {
     borderRadius: radius.full,
@@ -46,20 +47,30 @@ const AppButton: React.FC<AppButtonProps> = ({
     alignItems: 'center',
     justifyContent: 'center',
     flexDirection: 'row',
-    gap: 8,
-    opacity: disabled ? 0.55 : 1,
-    ...(isPrimary && { backgroundColor: colors.primary }),
+    opacity: disabled ? 0.5 : 1,
+    ...(isPrimary && {
+      backgroundColor: colors.primary,
+    }),
     ...(isOutline && {
       backgroundColor: 'transparent',
       borderWidth: 1.5,
       borderColor: colors.border,
     }),
-    ...(variant === 'ghost' && { backgroundColor: 'transparent' }),
+    ...(isGhost && {
+      backgroundColor: 'transparent',
+    }),
   };
 
-  const labelColor = isPrimary
-    ? colors.white
-    : variant === 'outline'
+  // Text color per variant
+  const textColor = isPrimary
+    ? 'textInverse'
+    : isOutline
+      ? 'textPrimary'
+      : 'textLink';
+
+  const spinnerColor = isPrimary
+    ? colors.textInverse
+    : isOutline
       ? colors.textPrimary
       : colors.primary;
 
@@ -70,14 +81,18 @@ const AppButton: React.FC<AppButtonProps> = ({
       activeOpacity={0.8}
       style={[containerStyle, style]}>
       {loading ? (
-        <ActivityIndicator color={labelColor} size="small" />
+        <ActivityIndicator color={spinnerColor} size="small" />
       ) : (
         <>
-          {leftIcon}
-          <Text
-            style={[typography.button, { color: labelColor }, textStyle]}>
+          {leftIcon ? (
+            <View style={{ marginRight: 8 }}>{leftIcon}</View>
+          ) : null}
+          <AppText variant="button" color={textColor as any}>
             {title}
-          </Text>
+          </AppText>
+          {rightIcon ? (
+            <View style={{ marginLeft: 8 }}>{rightIcon}</View>
+          ) : null}
         </>
       )}
     </TouchableOpacity>

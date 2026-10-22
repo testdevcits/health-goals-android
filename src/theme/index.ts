@@ -1,22 +1,18 @@
 // src/theme/index.ts
-import { lightColors, darkColors } from './colors';
-import { typography } from './typography';
+import { lightColors, darkColors, AppColors } from './colors';
+import { typography, TypographyVariant } from './typography';
 import { fonts } from './fonts';
 import { spacing } from './spacing';
 import { radius } from './radius';
 
-export type AppColors = typeof lightColors;
-export type AppTypography = typeof typography;
-export type AppFonts = typeof fonts;
-export type AppSpacing = typeof spacing;
-export type AppRadius = typeof radius;
+export type { AppColors, TypographyVariant };
 
 export type AppTheme = {
   colors: AppColors;
-  typography: AppTypography;
-  fonts: AppFonts;
-  spacing: AppSpacing;
-  radius: AppRadius;
+  typography: typeof typography;
+  fonts: typeof fonts;
+  spacing: typeof spacing;
+  radius: typeof radius;
   isDark: boolean;
 };
 
