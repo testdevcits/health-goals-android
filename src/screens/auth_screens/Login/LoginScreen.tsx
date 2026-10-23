@@ -120,7 +120,7 @@ const LoginScreen: React.FC<Props> = ({ navigation }) => {
 
           {/* Forgot password */}
           <TouchableOpacity
-            // onPress={() => navigation.navigate('ForgotPassword')}
+            onPress={() => navigation.navigate('ForgotPassword')}
             style={styles.forgotRow}
           >
             <AppText variant="label" link>

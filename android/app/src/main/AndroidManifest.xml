@@ -14,6 +14,9 @@
     <uses-permission android:name="android.permission.health.WRITE_WEIGHT"/>
     <uses-permission android:name="android.permission.health.READ_EXERCISE"/>
 
+    <!-- notification permission -->
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+
     <!-- Package visibility for Health Connect -->
     <queries>
         <package android:name="com.google.android.apps.healthdata" />

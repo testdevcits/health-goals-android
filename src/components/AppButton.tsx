@@ -82,7 +82,7 @@ const AppButton: React.FC<AppButtonProps> = ({
       style={[containerStyle, style]}
     >
       {loading ? (
-        <ActivityIndicator color={spinnerColor} size="small" />
+        <ActivityIndicator color={spinnerColor} size={30} />
       ) : (
         <>
           {leftIcon ? <View style={{ marginRight: 8 }}>{leftIcon}</View> : null}

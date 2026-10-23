@@ -262,7 +262,7 @@
 
 //                 {recommendations.map((item, index) => (
 //                     <Pressable
-//                         key={item.title}
+//                         key={item?.title}
 //                         onPress={() => openProgram(programs[index === 0 ? 0 : 3])}
 //                         style={[
 //                             styles.recommendationCard,
@@ -276,18 +276,18 @@
 //                         <View style={styles.recommendationContent}>
 //                             <View style={styles.recommendationHeading}>
 //                                 <AppText variant="subtitle2" bold>
-//                                     {item.emoji} {item.title}
+//                                     {item?.emoji} {item?.title}
 //                                 </AppText>
 
 //                                 <View style={styles.tag}>
 //                                     <AppText variant="caption" style={{ color: colors.primaryDark }} bold>
-//                                         {item.tag}
+//                                         {item?.tag}
 //                                     </AppText>
 //                                 </View>
 //                             </View>
 
 //                             <AppText variant="caption" secondary>
-//                                 {item.subtitle}
+//                                 {item?.subtitle}
 //                             </AppText>
 
 //                             <View style={styles.recommendationFooter}>

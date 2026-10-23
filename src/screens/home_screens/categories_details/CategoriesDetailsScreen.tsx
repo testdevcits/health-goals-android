@@ -49,7 +49,7 @@ type Props = {
   activeTab?: string;
 };
 
-const RunningDetailsScreen: React.FC<Props> = ({
+const CategoriesDetailsScreen: React.FC<Props> = ({
   onBack,
   onNotificationPress,
   onProfilePress,
@@ -230,15 +230,15 @@ const RunningDetailsScreen: React.FC<Props> = ({
         >
           <View style={styles.chart}>
             {weeklyData.map(item => (
-              <View key={item.day} style={styles.barColumn}>
+              <View key={item?.day} style={styles.barColumn}>
                 <View style={styles.barTrack}>
                   <View
                     style={[
                       styles.bar,
                       {
-                        height: `${item.value}%`,
+                        height: `${item?.value}%`,
                         backgroundColor:
-                          item.value <= 5 ? '#F6BFC1' : '#F16F73',
+                          item?.value <= 5 ? '#F6BFC1' : '#F16F73',
                       },
                     ]}
                   />
@@ -248,7 +248,7 @@ const RunningDetailsScreen: React.FC<Props> = ({
                   color="textSecondary"
                   style={styles.dayLabel}
                 >
-                  {item.day}
+                  {item?.day}
                 </AppText>
               </View>
             ))}
@@ -309,4 +309,4 @@ const RunningDetailsScreen: React.FC<Props> = ({
   );
 };
 
-export default RunningDetailsScreen;
+export default CategoriesDetailsScreen;

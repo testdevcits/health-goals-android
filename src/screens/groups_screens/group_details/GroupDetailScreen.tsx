@@ -433,8 +433,8 @@ const GroupDetailScreen: React.FC<GroupDetailScreenProps> = ({
       <View style={styles.chartCard}>
         <View style={styles.chartBars}>
           {weeklySteps.map(item => (
-            <View key={item.day} style={styles.chartColumn}>
-              <View style={[styles.chartBar, { height: `${item.value}%` }]} />
+            <View key={item?.day} style={styles.chartColumn}>
+              <View style={[styles.chartBar, { height: `${item?.value}%` }]} />
 
               <AppText
                 variant="caption"
@@ -442,7 +442,7 @@ const GroupDetailScreen: React.FC<GroupDetailScreenProps> = ({
                 center
                 style={styles.chartDay}
               >
-                {item.day}
+                {item?.day}
               </AppText>
             </View>
           ))}

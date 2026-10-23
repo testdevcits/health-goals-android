@@ -186,7 +186,7 @@ const WorkoutCategoriesScreen: React.FC<Props> = ({
   const renderCategory = ({ item }: { item: WorkoutCategory }) => (
     <Pressable
       accessibilityRole="button"
-      accessibilityLabel={`${item.title}, ${item.subtitle}`}
+      accessibilityLabel={`${item?.title}, ${item?.subtitle}`}
       onPress={() => onCategoryPress?.(item)}
       style={({ pressed }) => [
         styles.categoryCard,
@@ -196,8 +196,8 @@ const WorkoutCategoriesScreen: React.FC<Props> = ({
         },
       ]}
     >
-      <View style={[styles.emojiBox, { backgroundColor: item.tint }]}>
-        <AppText style={styles.emoji}>{item.emoji}</AppText>
+      <View style={[styles.emojiBox, { backgroundColor: item?.tint }]}>
+        <AppText style={styles.emoji}>{item?.emoji}</AppText>
       </View>
 
       <View style={styles.categoryText}>
@@ -207,7 +207,7 @@ const WorkoutCategoriesScreen: React.FC<Props> = ({
           numberOfLines={2}
           style={styles.categoryTitle}
         >
-          {item.title}
+          {item?.title}
         </AppText>
 
         <AppText
@@ -216,7 +216,7 @@ const WorkoutCategoriesScreen: React.FC<Props> = ({
           numberOfLines={2}
           style={styles.categorySubtitle}
         >
-          {item.subtitle}
+          {item?.subtitle}
         </AppText>
       </View>
     </Pressable>
@@ -291,7 +291,7 @@ const WorkoutCategoriesScreen: React.FC<Props> = ({
       <FlatList
         data={categories}
         renderItem={renderCategory}
-        keyExtractor={item => item.id}
+        keyExtractor={item => item?.id}
         numColumns={2}
         showsVerticalScrollIndicator={false}
         contentContainerStyle={styles.listContent}

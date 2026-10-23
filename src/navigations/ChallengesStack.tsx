@@ -1,8 +1,6 @@
 // src/navigations/ChallengesStack.tsx
 import React from 'react';
-import { NavigationContainer } from '@react-navigation/native';
-import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import HomeScreen from '../screens/home_screens/Home/HomeScreen';
+ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import ChallengesScreen from '../screens/challenges_screens/Challenges/ChallengesScreen';
 
 export type ChallengesStackParamList = {

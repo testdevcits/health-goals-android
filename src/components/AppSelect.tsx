@@ -126,13 +126,13 @@ const AppSelect: React.FC<AppSelectProps> = ({
 
             <FlatList
               data={options}
-              keyExtractor={item => item.value}
+              keyExtractor={item => item?.value}
               renderItem={({ item }) => {
-                const isSelected = item.value === value;
+                const isSelected = item?.value === value;
                 return (
                   <TouchableOpacity
                     onPress={() => {
-                      onSelect(item.value);
+                      onSelect(item?.value);
                       setVisible(false);
                     }}
                     style={[
@@ -150,7 +150,7 @@ const AppSelect: React.FC<AppSelectProps> = ({
                       variant="body1"
                       color={isSelected ? 'primary' : 'textPrimary'}
                     >
-                      {item.label}
+                      {item?.label}
                     </AppText>
                     {isSelected ? (
                       <Check size={18} color={colors.primary} />

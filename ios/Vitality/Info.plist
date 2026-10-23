@@ -54,6 +54,8 @@
 	</array>
 	<key>UIViewControllerBasedStatusBarAppearance</key>
 	<false/>
+	<key>NSUserNotificationUsageDescription</key>
+    <string>We use notifications to keep you updated about important activities.</string>
 	<key>UIAppFonts</key>
 	<array>
 		<string>Inter_18pt-SemiBold.ttf</string>

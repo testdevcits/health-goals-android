@@ -48,7 +48,7 @@ const HelpSupportScreen: React.FC<{ navigation: ProfileScreenNavigation }> = ({
   const filteredFaqs = useMemo(
     () =>
       faqs.filter(item =>
-        item.question.toLowerCase().includes(query.toLowerCase()),
+        item?.question.toLowerCase().includes(query.toLowerCase()),
       ),
     [query],
   );
@@ -125,7 +125,7 @@ const HelpSupportScreen: React.FC<{ navigation: ProfileScreenNavigation }> = ({
           const expanded = expandedFaq === index;
           return (
             <Pressable
-              key={item.question}
+              key={item?.question}
               onPress={() => setExpandedFaq(expanded ? null : index)}
               style={[
                 styles.faqCard,
@@ -134,7 +134,7 @@ const HelpSupportScreen: React.FC<{ navigation: ProfileScreenNavigation }> = ({
             >
               <View style={styles.faqQuestion}>
                 <AppText variant="subtitle2" bold style={styles.faqText}>
-                  {item.question}
+                  {item?.question}
                 </AppText>
                 <ChevronDown
                   size={16}
@@ -144,7 +144,7 @@ const HelpSupportScreen: React.FC<{ navigation: ProfileScreenNavigation }> = ({
               </View>
               {expanded ? (
                 <AppText variant="caption" secondary style={styles.faqAnswer}>
-                  {item.answer}
+                  {item?.answer}
                 </AppText>
               ) : null}
             </Pressable>

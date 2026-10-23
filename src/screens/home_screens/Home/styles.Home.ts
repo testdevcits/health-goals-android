@@ -1,5 +1,5 @@
 // src/screens/Home/styles.Home.ts
-import { StyleSheet, Dimensions } from 'react-native';
+import { StyleSheet } from 'react-native';
 import { AppTheme } from '../../../theme';
 
 export const createHomeStyles = (theme: AppTheme) => {
@@ -42,6 +42,12 @@ export const createHomeStyles = (theme: AppTheme) => {
       alignItems: 'center',
       justifyContent: 'center',
     },
+
+    notificationBadge: {
+      borderRadius: 8,
+      fontSize: 14,
+      color: theme.colors.textInverse,
+    },
     avatar: {
       width: 40,
       height: 40,
@@ -67,11 +73,24 @@ export const createHomeStyles = (theme: AppTheme) => {
       flex: 1,
     },
     notifEnableBtn: {
+      borderColor: colors.white,
+    },
+    notifEnableBtnText: {
+      backgroundColor: colors.white,
+      color: colors.primary,
+      fontSize: 14,
+      fontWeight: 'bold',
       paddingHorizontal: spacing.md,
       paddingVertical: spacing.xs + 2,
       borderRadius: radius.full,
       borderWidth: 1.5,
       borderColor: colors.white,
+    },
+    notificationEmoji: {
+      fontSize: 20,
+    },
+    notificationDescription: {
+      opacity: 0.8,
     },
 
     // ── Energy Card ───────────────────────────────
@@ -102,6 +121,14 @@ export const createHomeStyles = (theme: AppTheme) => {
       backgroundColor: 'rgba(255,255,255,0.12)',
       flexShrink: 0,
     },
+    energyLabel: {
+      opacity: 0.75,
+      letterSpacing: 1,
+    },
+    energyDescription: {
+      opacity: 0.8,
+      lineHeight: 18,
+    },
     energyRight: {
       flex: 1,
     },
@@ -115,6 +142,9 @@ export const createHomeStyles = (theme: AppTheme) => {
       borderRadius: radius.full,
       backgroundColor: 'rgba(255,255,255,0.18)',
       gap: 4,
+    },
+    streakEmoji: {
+      fontSize: 14,
     },
 
     // ── Section headers ───────────────────────────
@@ -150,6 +180,9 @@ export const createHomeStyles = (theme: AppTheme) => {
       alignItems: 'center',
       justifyContent: 'center',
     },
+    summaryEmoji: {
+      fontSize: 24,
+    },
     summaryText: {
       flex: 1,
     },
@@ -179,6 +212,9 @@ export const createHomeStyles = (theme: AppTheme) => {
       alignItems: 'center',
       justifyContent: 'center',
       marginBottom: spacing.sm,
+    },
+    workoutEmoji: {
+      fontSize: 24,
     },
     workoutAccentBar: {
       position: 'absolute',
@@ -241,6 +277,9 @@ export const createHomeStyles = (theme: AppTheme) => {
       width: 16,
       borderRadius: radius.sm,
     },
+    barMuted: {
+      opacity: 0.65,
+    },
     // Stats row
     statsRow: {
       flexDirection: 'row',
@@ -257,8 +296,6 @@ export const createHomeStyles = (theme: AppTheme) => {
       width: 1,
       backgroundColor: colors.divider,
     },
-
-    // ── Quick Actions ──────────────────────────────
     quickActionsRow: {
       flexDirection: 'row',
       marginHorizontal: spacing.xl,
@@ -284,6 +321,9 @@ export const createHomeStyles = (theme: AppTheme) => {
       borderRadius: radius.md,
       alignItems: 'center',
       justifyContent: 'center',
+    },
+    quickActionEmoji: {
+      fontSize: 24,
     },
   });
 };

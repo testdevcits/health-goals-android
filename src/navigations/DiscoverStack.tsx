@@ -1,8 +1,6 @@
 // src/navigations/DiscoverStack.tsx
 import React from 'react';
-import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import HomeScreen from '../screens/home_screens/Home/HomeScreen';
 import Discover from '../screens/discover_screens/discover/Discover';
 
 export type DiscoverStack = {

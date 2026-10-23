@@ -1,7 +1,6 @@
 import React from 'react';
 import { StyleSheet } from 'react-native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import { NavigationContainer } from '@react-navigation/native';
 import { Home, User, Settings, ShoppingBag, Users } from 'lucide-react-native';
 import HomeStack from './HomeStack';
 import ChallengesStack from './ChallengesStack';
