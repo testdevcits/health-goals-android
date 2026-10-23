@@ -10,11 +10,10 @@ import {
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { X } from 'lucide-react-native';
-import { AppButton, AppText } from '../../../components';
+import { AppButton, AppHeader, AppText } from '../../../components';
 import { useTheme } from '../../../theme/useTheme';
 import { createTrendStyles } from './styles.DailyActivityTrends';
 import TrendChart from './components/TrendChart';
-import TrendHeader from './components/TrendHeader';
 import TrendInsight from './components/TrendInsight';
 import TrendStats from './components/TrendStats';
 import TrendTabs from './components/TrendTabs';
@@ -59,20 +58,20 @@ const DailyActivityTrends: React.FC<{
         barStyle={theme.isDark ? 'light-content' : 'dark-content'}
         backgroundColor={theme.colors.surface}
       />
-      <TrendHeader
-        metric={activeMetric}
-        onBack={navigation.goBack}
+
+      <AppHeader
+        title={activeMetric === 'Heart' ? 'Heart Rate' : activeMetric}
+        subtitle={'Your last 7 days'}
+        onBackPress={() => navigation.goBack()}
       />
       <ScrollView
         showsVerticalScrollIndicator={false}
         contentContainerStyle={[
           styles.content,
           { paddingBottom: insets.bottom + 24 },
-        ]}>
-        <TrendTabs
-          activeMetric={activeMetric}
-          onSelect={setActiveMetric}
-        />
+        ]}
+      >
+        <TrendTabs activeMetric={activeMetric} onSelect={setActiveMetric} />
         <TrendChart metric={activeMetric} data={data} />
         <TrendStats metric={activeMetric} stats={data.stats} />
         <TrendInsight text={data.insight} />
@@ -87,10 +86,12 @@ const DailyActivityTrends: React.FC<{
         transparent
         animationType="slide"
         statusBarTranslucent
-        onRequestClose={() => setGoalModalVisible(false)}>
+        onRequestClose={() => setGoalModalVisible(false)}
+      >
         <Pressable
           style={styles.backdrop}
-          onPress={() => setGoalModalVisible(false)}>
+          onPress={() => setGoalModalVisible(false)}
+        >
           <Pressable
             style={[
               styles.goalSheet,
@@ -99,7 +100,8 @@ const DailyActivityTrends: React.FC<{
                 paddingBottom: Math.max(insets.bottom, 24),
               },
             ]}
-            onPress={() => {}}>
+            onPress={() => {}}
+          >
             <View style={styles.sheetHeader}>
               <AppText variant="subtitle1" bold>
                 Adjust {activeMetric} Goal
@@ -111,7 +113,8 @@ const DailyActivityTrends: React.FC<{
                   { backgroundColor: theme.colors.backgroundSecondary },
                 ]}
                 accessibilityRole="button"
-                accessibilityLabel="Close goal editor">
+                accessibilityLabel="Close goal editor"
+              >
                 <X size={18} color={theme.colors.textSecondary} />
               </Pressable>
             </View>
@@ -125,7 +128,8 @@ const DailyActivityTrends: React.FC<{
                   backgroundColor: theme.colors.inputBg,
                   borderColor: theme.colors.inputBorder,
                 },
-              ]}>
+              ]}
+            >
               <TextInput
                 value={goalDraft}
                 onChangeText={setGoalDraft}

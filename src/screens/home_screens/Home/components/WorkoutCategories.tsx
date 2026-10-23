@@ -11,20 +11,23 @@ const WorkoutCategories: React.FC<{ onViewAllPress: () => void }> = ({
 }) => {
   const { theme } = useTheme();
   const styles = createHomeStyles(theme);
-  const navigation = useNavigation();
+  const navigation: any = useNavigation();
 
   const renderWorkoutCard = useCallback(
     ({ item }: { item: (typeof WORKOUT_CATEGORIES)[number] }) => (
       <TouchableOpacity
         activeOpacity={0.8}
-        style={styles.workoutCard}
+        style={[
+          styles.workoutCard,
+          {   borderBottomColor: item?.accent },
+        ]}
         accessibilityRole="button"
         accessibilityLabel={`${item?.name}: ${item?.subtitle}`}
-        // onPress={() =>
-        //   navigation.navigate('CategoriesDetailsScreen', {
-        //     workoutId: item?.id,
-        //   })
-        // }
+        onPress={() =>
+          navigation.navigate('CategoriesDetailsScreen', {
+            workoutId: item?.id,
+          })
+        }
       >
         <View style={[styles.workoutIconBox, { backgroundColor: item?.bg }]}>
           <Text style={styles.workoutEmoji}>{item?.emoji}</Text>
@@ -35,9 +38,9 @@ const WorkoutCategories: React.FC<{ onViewAllPress: () => void }> = ({
         <AppText variant="caption" secondary>
           {item?.subtitle}
         </AppText>
-        <View
+        {/* <View
           style={[styles.workoutAccentBar, { backgroundColor: item?.accent }]}
-        />
+        /> */}
       </TouchableOpacity>
     ),
     [styles],

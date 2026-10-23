@@ -53,9 +53,7 @@ export const createDailyActivityStyles = (theme: AppTheme) => {
     chartSection: {
       marginBottom: spacing.lg,
     },
-    chartTitle: {
-      marginBottom: spacing.xs,
-    },
+     
     chartSubtitle: {
       marginBottom: spacing.md,
     },
@@ -104,11 +102,6 @@ export const createDailyActivityStyles = (theme: AppTheme) => {
       flex: 1,
       gap: spacing.xxs,
     },
-    backHome: {
-      minHeight: 48,
-      alignItems: 'center',
-      justifyContent: 'center',
-      marginTop: spacing.sm,
-    },
+    
   });
 };

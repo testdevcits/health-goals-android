@@ -1,26 +1,9 @@
 import React from 'react';
-import {
-  ScrollView,
-  StatusBar,
-  StyleSheet,
-  View,
-  Pressable,
-  Dimensions,
-} from 'react-native';
-import {
-  ArrowLeft,
-  Bell,
-  Home,
-  Trophy,
-  Users,
-  Compass,
-  UserRound,
-} from 'lucide-react-native';
-import { AppText } from '../../../components';
+import { ScrollView, StatusBar, View, Pressable } from 'react-native';
+import { ArrowLeft, Bell } from 'lucide-react-native';
+import { AppHeader, AppText } from '../../../components';
 import { useTheme } from '../../../theme/useTheme';
 import styles from './styles.CategoriesDetails';
-
-const SCREEN_WIDTH = Dimensions.get('window').width;
 
 const weeklyData = [
   { day: 'Mon', value: 42 },
@@ -32,29 +15,9 @@ const weeklyData = [
   { day: 'Sun', value: 4 },
 ];
 
-const tabs = [
-  { id: 'home', label: 'Home', Icon: Home },
-  { id: 'challenges', label: 'Challenges', Icon: Trophy },
-  { id: 'groups', label: 'Groups', Icon: Users },
-  { id: 'discover', label: 'Discover', Icon: Compass },
-  { id: 'profile', label: 'Profile', Icon: UserRound },
-];
+type Props = {};
 
-type Props = {
-  onBack?: () => void;
-  onNotificationPress?: () => void;
-  onProfilePress?: () => void;
-  onTabPress?: (tab: string) => void;
-  activeTab?: string;
-};
-
-const CategoriesDetailsScreen: React.FC<Props> = ({
-  onBack,
-  onNotificationPress,
-  onProfilePress,
-  onTabPress,
-  activeTab = 'home',
-}) => {
+const CategoriesDetailsScreen: React.FC<Props> = ({}) => {
   const { theme } = useTheme();
   const { colors } = theme;
 
@@ -68,58 +31,7 @@ const CategoriesDetailsScreen: React.FC<Props> = ({
       />
 
       {/* Header */}
-      <View
-        style={[
-          styles.header,
-          {
-            backgroundColor: colors.background,
-            borderBottomColor: colors.divider,
-          },
-        ]}
-      >
-        <Pressable
-          onPress={onBack}
-          accessibilityRole="button"
-          accessibilityLabel="Go back"
-          style={[
-            styles.headerButton,
-            { backgroundColor: colors.backgroundSecondary },
-          ]}
-        >
-          <ArrowLeft size={20} color={colors.textPrimary} />
-        </Pressable>
-
-        <View style={styles.headerTitle}>
-          <AppText variant="h3">Running</AppText>
-          <AppText variant="caption" color="textSecondary">
-            Cardio & Endurance
-          </AppText>
-        </View>
-
-        <Pressable
-          onPress={onNotificationPress}
-          accessibilityRole="button"
-          accessibilityLabel="Notifications"
-          style={[
-            styles.headerButton,
-            { backgroundColor: colors.backgroundSecondary },
-          ]}
-        >
-          <Bell size={20} color={colors.textPrimary} />
-          <View style={styles.notificationDot} />
-        </Pressable>
-
-        <Pressable
-          onPress={onProfilePress}
-          accessibilityRole="button"
-          accessibilityLabel="Open profile"
-          style={styles.avatar}
-        >
-          <AppText variant="subtitle2" style={styles.avatarText}>
-            AJ
-          </AppText>
-        </Pressable>
-      </View>
+      <AppHeader title="Running" subtitle="Cardio & Endurance" />
 
       <ScrollView
         showsVerticalScrollIndicator={false}
@@ -254,56 +166,6 @@ const CategoriesDetailsScreen: React.FC<Props> = ({
           </View>
         </View>
       </ScrollView>
-
-      {/* Bottom navigation */}
-      <View
-        style={[
-          styles.bottomBar,
-          {
-            backgroundColor: colors.surface,
-            borderTopColor: colors.divider,
-          },
-        ]}
-      >
-        {tabs.map(({ id, label, Icon }) => {
-          const selected = activeTab === id;
-
-          return (
-            <Pressable
-              key={id}
-              onPress={() => onTabPress?.(id)}
-              accessibilityRole="button"
-              accessibilityLabel={label}
-              accessibilityState={{ selected }}
-              style={styles.tabItem}
-            >
-              <Icon
-                size={21}
-                strokeWidth={selected ? 2.5 : 1.8}
-                color={selected ? colors.primary : colors.textTertiary}
-              />
-              <AppText
-                variant="caption"
-                medium={selected}
-                style={{
-                  color: selected ? colors.primary : colors.textSecondary,
-                  marginTop: 2,
-                }}
-              >
-                {label}
-              </AppText>
-              {selected && (
-                <View
-                  style={[
-                    styles.activeIndicator,
-                    { backgroundColor: colors.primary },
-                  ]}
-                />
-              )}
-            </Pressable>
-          );
-        })}
-      </View>
     </View>
   );
 };

@@ -9,43 +9,7 @@ export const createTrendStyles = (theme: AppTheme) => {
       flex: 1,
       backgroundColor: colors.backgroundSecondary,
     },
-    header: {
-      paddingHorizontal: spacing.base,
-      paddingBottom: spacing.md,
-      backgroundColor: colors.surface,
-      borderBottomColor: colors.border,
-      borderBottomWidth: StyleSheet.hairlineWidth,
-    },
-    statusRow: {
-      height: 24,
-      flexDirection: 'row',
-      alignItems: 'center',
-      justifyContent: 'space-between',
-      paddingHorizontal: spacing.xs,
-    },
-    headerMain: {
-      minHeight: 48,
-      flexDirection: 'row',
-      alignItems: 'center',
-      gap: spacing.sm,
-    },
-    headerButton: {
-      width: 40,
-      height: 40,
-      borderRadius: radius.full,
-      alignItems: 'center',
-      justifyContent: 'center',
-    },
-    headerCopy: {
-      flex: 1,
-    },
-    avatar: {
-      width: 40,
-      height: 40,
-      borderRadius: radius.full,
-      alignItems: 'center',
-      justifyContent: 'center',
-    },
+    
     content: {
       paddingHorizontal: spacing.base,
       paddingTop: spacing.md,

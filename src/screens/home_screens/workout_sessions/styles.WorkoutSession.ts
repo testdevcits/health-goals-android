@@ -6,47 +6,7 @@ const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
   },
-  header: {
-    minHeight: 66,
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: spacing.base,
-    paddingVertical: spacing.sm,
-    gap: spacing.sm,
-    borderBottomWidth: StyleSheet.hairlineWidth,
-  },
-  headerButton: {
-    width: 38,
-    height: 38,
-    borderRadius: radius.full,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  headerTitle: {
-    flex: 1,
-    minWidth: 0,
-    gap: 1,
-  },
-  notificationDot: {
-    position: 'absolute',
-    top: 7,
-    right: 8,
-    width: 7,
-    height: 7,
-    borderRadius: radius.full,
-    backgroundColor: '#F59E0B',
-  },
-  avatar: {
-    width: 38,
-    height: 38,
-    borderRadius: radius.full,
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: '#08BDA7',
-  },
-  avatarText: {
-    color: '#FFFFFF',
-  },
+ 
   scrollContent: {
     padding: spacing.base,
     paddingBottom: spacing.md,
@@ -184,7 +144,7 @@ const styles = StyleSheet.create({
     gap: spacing.xs,
   },
   startButton: {
-    height: 48,
+    
     borderRadius: radius.md,
     alignItems: 'center',
     justifyContent: 'center',
@@ -199,24 +159,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     marginTop: spacing.xs,
   },
-  bottomBar: {
-    flexDirection: 'row',
-    paddingTop: spacing.sm,
-    paddingBottom: spacing.xs,
-    paddingHorizontal: spacing.xs,
-    borderTopWidth: StyleSheet.hairlineWidth,
-  },
-  tabItem: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    minHeight: 48,
-  },
-  activeIndicator: {
-    width: 22,
-    height: 3,
-    borderRadius: radius.full,
-    marginTop: 2,
-  },
+  
 });
 export default styles;

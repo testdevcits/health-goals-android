@@ -1,6 +1,6 @@
-import React from 'react';
+import React, { memo } from 'react';
 import { View } from 'react-native';
-import { AppText } from '../../../../components';
+import { AppText, SectionHeader } from '../../../../components';
 import { useTheme } from '../../../../theme/useTheme';
 import { createDailyActivityStyles } from '../styles.DailyActivities';
 
@@ -18,9 +18,11 @@ const ActivityChart: React.FC<{
 
   return (
     <View style={styles.chartSection}>
-      <AppText variant="h3" style={styles.chartTitle}>
-        {title}
-      </AppText>
+      <SectionHeader
+        sectionTitle={title}
+        customStyles={{ marginHorizontal: 0 }}
+      />
+
       <AppText variant="caption" secondary style={styles.chartSubtitle}>
         Most active period: {activePeriod}
       </AppText>
@@ -52,4 +54,4 @@ const ActivityChart: React.FC<{
   );
 };
 
-export default ActivityChart;
+export default memo(ActivityChart);

@@ -147,7 +147,6 @@ export const createHomeStyles = (theme: AppTheme) => {
       fontSize: 14,
     },
 
-     
     // ── Today's Summary card ───────────────────────
     summaryCard: {
       flexDirection: 'row',
@@ -195,6 +194,7 @@ export const createHomeStyles = (theme: AppTheme) => {
       shadowOpacity: 0.05,
       shadowRadius: 6,
       shadowOffset: { width: 0, height: 2 },
+      borderBottomWidth: 4,
     },
     workoutIconBox: {
       width: 44,
@@ -210,8 +210,8 @@ export const createHomeStyles = (theme: AppTheme) => {
     workoutAccentBar: {
       position: 'absolute',
       bottom: 0,
-      left: 0,
-      right: 0,
+      left: 5,
+      right: 5,
       height: 3,
       borderBottomLeftRadius: radius.lg,
       borderBottomRightRadius: radius.lg,
@@ -258,6 +258,7 @@ export const createHomeStyles = (theme: AppTheme) => {
       justifyContent: 'space-between',
       height: 110,
       marginBottom: spacing.md,
+      marginTop: spacing.sm,
     },
     barWrapper: {
       flex: 1,

@@ -16,16 +16,15 @@ const HomeScreen: React.FC<{
   navigation: {
     navigate: (screen: 'DailyActivities' | 'DailyActivityTrends') => void;
   };
-}> = ({ navigation }) => {
+}> = ({ navigation }: any) => {
   const { theme } = useTheme();
-  const insets = useSafeAreaInsets();
   const styles = createHomeStyles(theme);
   const [notificationPromptVisible, setNotificationPromptVisible] =
     useState(true);
   const [onboardingVisible, setOnboardingVisible] = useState(true);
 
   return (
-    <View style={[styles.container, { paddingTop: insets.top }]}>
+    <View style={[styles.container, {}]}>
       <HomeHeader />
       <ScrollView
         contentContainerStyle={styles.scroll}
@@ -41,11 +40,10 @@ const HomeScreen: React.FC<{
           onViewDetails={() => navigation.navigate('DailyActivities')}
         />
         <WorkoutCategories
-          onViewAllPress={() => Alert.alert('View All button pressed')}
+          onViewAllPress={() => navigation.navigate('Categories')}
         />
         <ActivityTrends
-          onPressDetails={() => Alert.alert('View All button pressed')}
-          // onPressDetails={() => navigation.navigate('DailyActivityTrends')}
+          onPressDetails={() => navigation.navigate('DailyActivityTrends')}
         />
         <QuickActions navigation={navigation} />
       </ScrollView>

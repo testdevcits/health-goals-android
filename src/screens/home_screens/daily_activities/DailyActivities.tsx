@@ -9,6 +9,7 @@ import ActivityMetrics from './components/ActivityMetrics';
 import ActivityRings from './components/ActivityRings';
 import DailyTotals from './components/DailyTotals';
 import { DailyActivityNavigation } from './types';
+import ActivityDetail from './components/ActivityDetail';
 
 const DailyActivities: React.FC<{ navigation: DailyActivityNavigation }> = ({
   navigation,
@@ -18,17 +19,15 @@ const DailyActivities: React.FC<{ navigation: DailyActivityNavigation }> = ({
   const styles = createDailyActivityStyles(theme);
 
   return (
-    <View style={[styles.screen, { paddingTop: insets.top }]}>
+    <View style={[styles.screen, {}]}>
       <StatusBar
         barStyle={theme.isDark ? 'light-content' : 'dark-content'}
         backgroundColor={theme.colors.surface}
       />
-      {/* <ActivityHeader navigation={navigation} /> */}
       <AppHeader
         title="Daily Activity"
         subtitle="Today, October 23"
         onBackPress={() => navigation.goBack()}
-        
       />
       <ScrollView
         showsVerticalScrollIndicator={false}
@@ -37,9 +36,43 @@ const DailyActivities: React.FC<{ navigation: DailyActivityNavigation }> = ({
           { paddingBottom: insets.bottom + 28 },
         ]}
       >
-        <ActivityRings />
-        <ActivityMetrics />
-        <DailyTotals />
+        <ActivityRings
+          rings={[
+            { radius: 66, progress: 0.68, color: '#D5E84E' },
+            { radius: 52, progress: 0.52, color: '#42C9D9' },
+            { radius: 38, progress: 0.34, color: '#B23CC2' },
+          ]}
+        />
+        <ActivityMetrics
+          metrics={[
+            {
+              title: 'Steps',
+              value: '2,038',
+              goal: '/ 6,000',
+              color: '#B9C92D',
+            },
+            {
+              title: 'Active time',
+              value: '21',
+              unit: 'mins',
+              goal: '/ 90',
+              color: '#42C9D9',
+            },
+            {
+              title: 'Activity cals',
+              value: '70',
+              unit: 'kcal',
+              goal: '/ 500',
+              color: '#B23CC2',
+            },
+          ]}
+        />
+        <DailyTotals
+          totals={[
+            { label: 'Total burnt calories', value: '1,273 kcal' },
+            { label: 'Distance while active', value: '1.58 km' },
+          ]}
+        />
         <ActivityChart
           title="Steps"
           activePeriod="6:00 pm - Now"
@@ -72,48 +105,7 @@ const DailyActivities: React.FC<{ navigation: DailyActivityNavigation }> = ({
           rightLabel="Raised HR activity time"
           rightValue="0m"
         />
-        <Pressable
-          onPress={navigation.goBack}
-          style={styles.backHome}
-          accessibilityRole="button"
-        >
-          <AppText variant="subtitle2" bold>
-            Back to Home
-          </AppText>
-        </Pressable>
       </ScrollView>
-    </View>
-  );
-};
-
-const ActivityDetail: React.FC<{
-  label: string;
-  leftLabel: string;
-  leftValue: string;
-  rightLabel: string;
-  rightValue: string;
-}> = ({ label, leftLabel, leftValue, rightLabel, rightValue }) => {
-  const { theme } = useTheme();
-  const styles = createDailyActivityStyles(theme);
-  return (
-    <View style={styles.detailCard}>
-      <AppText variant="subtitle2" bold style={styles.detailTitle}>
-        {label}
-      </AppText>
-      <View style={styles.detailValues}>
-        <View style={styles.detailMetric}>
-          <AppText variant="caption" secondary>
-            {leftLabel}
-          </AppText>
-          <AppText variant="h3">{leftValue}</AppText>
-        </View>
-        <View style={styles.detailMetric}>
-          <AppText variant="caption" secondary>
-            {rightLabel}
-          </AppText>
-          <AppText variant="h3">{rightValue}</AppText>
-        </View>
-      </View>
     </View>
   );
 };

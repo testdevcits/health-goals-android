@@ -1,4 +1,4 @@
-import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { StyleSheet, Text, TouchableOpacity, View, ViewStyle } from 'react-native';
 import React, { memo } from 'react';
 import AppText from './AppText';
 import { spacing } from '../theme/spacing';
@@ -7,13 +7,15 @@ const SectionHeader = ({
   onRightPress,
   rightText,
   sectionTitle,
+  customStyles
 }: {
   sectionTitle: string;
   onRightPress?: () => void;
   rightText?: string;
+  customStyles?: ViewStyle;
 }) => {
   return (
-    <View style={styles.sectionHeader}>
+    <View style={[styles.sectionHeader,  customStyles]}>
       <AppText variant="h3">{sectionTitle}</AppText>
       <TouchableOpacity onPress={onRightPress} accessibilityRole="button">
         <AppText variant="label" link>

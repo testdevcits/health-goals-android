@@ -5,57 +5,12 @@ const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
   },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: spacing.base,
-    paddingVertical: spacing.md,
-    gap: spacing.sm,
-    borderBottomWidth: StyleSheet.hairlineWidth,
-  },
-  headerButton: {
-    width: 40,
-    height: 40,
-    borderRadius: radius.full,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  headerTitleContainer: {
-    flex: 1,
-    minWidth: 0,
-    gap: 1,
-  },
-  notificationButton: {
-    width: 38,
-    height: 38,
-    borderRadius: radius.full,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  notificationDot: {
-    position: 'absolute',
-    top: 7,
-    right: 8,
-    width: 8,
-    height: 8,
-    borderRadius: radius.full,
-    backgroundColor: '#F59E0B',
-  },
-  avatar: {
-    width: 38,
-    height: 38,
-    borderRadius: radius.full,
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: '#0BBDA6',
-  },
-  avatarText: {
-    color: '#FFFFFF',
-  },
+  
   listContent: {
     paddingHorizontal: spacing.base,
     paddingTop: spacing.md,
     paddingBottom: spacing.xl,
+     
   },
   columnWrapper: {
     justifyContent: 'space-between',
@@ -105,26 +60,7 @@ const styles = StyleSheet.create({
     fontSize: 11,
     lineHeight: 14,
   },
-  bottomBar: {
-    flexDirection: 'row',
-    paddingTop: spacing.sm,
-    paddingBottom: spacing.xs,
-    paddingHorizontal: spacing.xs,
-    borderTopWidth: StyleSheet.hairlineWidth,
-  },
-  tabItem: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    minHeight: 48,
-    gap: 1,
-  },
-  activeIndicator: {
-    width: 22,
-    height: 3,
-    borderRadius: radius.full,
-    marginTop: 2,
-  },
+  
 });
 
 export default styles;

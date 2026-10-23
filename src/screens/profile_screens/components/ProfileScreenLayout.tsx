@@ -45,12 +45,7 @@ export const ProfileScreen: React.FC<{
           },
         ]}
       >
-        <View style={styles.statusRow}>
-          <AppText variant="caption" bold>
-            9:41
-          </AppText>
-          <AppText variant="caption">📶 📡 🔋</AppText>
-        </View>
+         
         <View style={styles.headerMain}>
           <Pressable
             onPress={navigation.goBack}
@@ -262,13 +257,7 @@ const styles = StyleSheet.create({
     paddingBottom: 12,
     borderBottomWidth: StyleSheet.hairlineWidth,
   },
-  statusRow: {
-    height: 24,
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingHorizontal: 4,
-  },
+  
   headerMain: {
     minHeight: 48,
     flexDirection: 'row',

@@ -9,7 +9,7 @@ import {
   Compass,
   UserRound,
 } from 'lucide-react-native';
-import { AppText } from '../../../components';
+import { AppButton, AppHeader, AppText } from '../../../components';
 import styles from './styles.WorkoutSession';
 import { useTheme } from '../../../theme/useTheme';
 
@@ -31,14 +31,6 @@ const activities: Activity[] = [
   { id: 'stretch', name: 'Stretch', emoji: '🤸', color: '#13B8A6' },
   { id: 'hiking', name: 'Hiking', emoji: '🥾', color: '#8B7355' },
   { id: 'machines', name: 'Weight machines', emoji: '🏋🏻', color: '#64748B' },
-];
-
-const tabs = [
-  { id: 'home', label: 'Home', Icon: Home },
-  { id: 'challenges', label: 'Challenges', Icon: Trophy },
-  { id: 'groups', label: 'Groups', Icon: Users },
-  { id: 'discover', label: 'Discover', Icon: Compass },
-  { id: 'profile', label: 'Profile', Icon: UserRound },
 ];
 
 type Props = {
@@ -75,10 +67,9 @@ const formatTime = (totalSeconds: number) => {
 
 const WorkoutSessionScreen: React.FC<Props> = ({
   onBack,
-  onNotificationPress,
-  onProfilePress,
+
   onFinish,
-  onTabPress,
+
   activeTab = 'home',
 }) => {
   const { theme } = useTheme();
@@ -282,58 +273,12 @@ const WorkoutSessionScreen: React.FC<Props> = ({
       />
 
       {/* Header */}
-      <View
-        style={[
-          styles.header,
-          {
-            backgroundColor: colors.background,
-            borderBottomColor: colors.divider,
-          },
-        ]}
-      >
-        <Pressable
-          onPress={handleBack}
-          accessibilityRole="button"
-          accessibilityLabel="Go back"
-          style={[
-            styles.headerButton,
-            { backgroundColor: colors.backgroundSecondary },
-          ]}
-        >
-          <ArrowLeft size={20} color={colors.textPrimary} />
-        </Pressable>
 
-        <View style={styles.headerTitle}>
-          <AppText variant="h3">Workout</AppText>
-          <AppText variant="caption" color="textSecondary">
-            Track your session
-          </AppText>
-        </View>
-
-        <Pressable
-          onPress={onNotificationPress}
-          accessibilityRole="button"
-          accessibilityLabel="Notifications"
-          style={[
-            styles.headerButton,
-            { backgroundColor: colors.backgroundSecondary },
-          ]}
-        >
-          <Bell size={20} color={colors.textPrimary} />
-          <View style={styles.notificationDot} />
-        </Pressable>
-
-        <Pressable
-          onPress={onProfilePress}
-          accessibilityRole="button"
-          accessibilityLabel="Open profile"
-          style={styles.avatar}
-        >
-          <AppText variant="subtitle2" style={styles.avatarText}>
-            AJ
-          </AppText>
-        </Pressable>
-      </View>
+      <AppHeader
+        title="Workout"
+        subtitle="Track your session"
+        onBackPress={handleBack}
+      />
 
       <ScrollView
         showsVerticalScrollIndicator={false}
@@ -431,18 +376,15 @@ const WorkoutSessionScreen: React.FC<Props> = ({
         </View>
 
         {/* Workout controls */}
-        <Pressable
+
+        <AppButton
+          title={isRunning ? 'Pause' : hasStarted ? 'Resume' : 'Start'}
           onPress={handleStartPause}
-          accessibilityRole="button"
           style={[
             styles.startButton,
             { backgroundColor: selectedActivity.color },
           ]}
-        >
-          <AppText variant="button" style={styles.startButtonText}>
-            {isRunning ? 'Pause' : hasStarted ? 'Resume' : 'Start'}
-          </AppText>
-        </Pressable>
+        />
 
         <Pressable
           onPress={handleFinish}
@@ -454,56 +396,6 @@ const WorkoutSessionScreen: React.FC<Props> = ({
           </AppText>
         </Pressable>
       </ScrollView>
-
-      {/* Bottom navigation */}
-      <View
-        style={[
-          styles.bottomBar,
-          {
-            backgroundColor: colors.surface,
-            borderTopColor: colors.divider,
-          },
-        ]}
-      >
-        {tabs.map(({ id, label, Icon }) => {
-          const selected = activeTab === id;
-
-          return (
-            <Pressable
-              key={id}
-              onPress={() => onTabPress?.(id)}
-              accessibilityRole="button"
-              accessibilityLabel={label}
-              accessibilityState={{ selected }}
-              style={styles.tabItem}
-            >
-              <Icon
-                size={21}
-                strokeWidth={selected ? 2.5 : 1.8}
-                color={selected ? colors.primary : colors.textTertiary}
-              />
-              <AppText
-                variant="caption"
-                medium={selected}
-                style={{
-                  color: selected ? colors.primary : colors.textSecondary,
-                  marginTop: 2,
-                }}
-              >
-                {label}
-              </AppText>
-              {selected && (
-                <View
-                  style={[
-                    styles.activeIndicator,
-                    { backgroundColor: colors.primary },
-                  ]}
-                />
-              )}
-            </Pressable>
-          );
-        })}
-      </View>
     </View>
   );
 };

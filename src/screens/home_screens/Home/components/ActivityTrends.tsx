@@ -52,7 +52,6 @@ const ActivityTrends: React.FC<{ onPressDetails: () => void }> = ({
 
   return (
     <>
-       
       <SectionHeader
         sectionTitle="Daily Activity Trends"
         rightText="Details"

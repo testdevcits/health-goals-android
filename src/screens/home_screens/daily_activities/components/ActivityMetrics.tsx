@@ -1,16 +1,10 @@
-import React from 'react';
+import React, { memo } from 'react';
 import { View } from 'react-native';
 import { AppText } from '../../../../components';
 import { useTheme } from '../../../../theme/useTheme';
 import { createDailyActivityStyles } from '../styles.DailyActivities';
 
-const metrics = [
-  { title: 'Steps', value: '2,038', goal: '/ 6,000', color: '#B9C92D' },
-  { title: 'Active time', value: '21', unit: 'mins', goal: '/ 90', color: '#42C9D9' },
-  { title: 'Activity cals', value: '70', unit: 'kcal', goal: '/ 500', color: '#B23CC2' },
-];
-
-const ActivityMetrics: React.FC = () => {
+const ActivityMetrics: React.FC<{ metrics: any[] }> = ({ metrics }) => {
   const { theme } = useTheme();
   const styles = createDailyActivityStyles(theme);
 
@@ -25,7 +19,8 @@ const ActivityMetrics: React.FC = () => {
               backgroundColor: theme.colors.surface,
               borderColor: theme.colors.border,
             },
-          ]}>
+          ]}
+        >
           <AppText variant="caption" style={{ color: metric.color }}>
             {metric.title}
           </AppText>
@@ -33,7 +28,8 @@ const ActivityMetrics: React.FC = () => {
             {metric.value}
             {metric.unit ? (
               <AppText variant="caption" secondary>
-                {' '}{metric.unit}
+                {' '}
+                {metric.unit}
               </AppText>
             ) : null}
           </AppText>
@@ -46,4 +42,4 @@ const ActivityMetrics: React.FC = () => {
   );
 };
 
-export default ActivityMetrics;
+export default memo(ActivityMetrics);

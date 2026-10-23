@@ -1,26 +1,28 @@
-import React from 'react';
+import React, { memo } from 'react';
 import { View } from 'react-native';
 import { AppText } from '../../../../components';
 import { createDailyActivityStyles } from '../styles.DailyActivities';
 import { useTheme } from '../../../../theme/useTheme';
 
-const totals = [
-  { label: 'Total burnt calories', value: '1,273 kcal' },
-  { label: 'Distance while active', value: '1.58 km' },
-];
+interface DailyTotalsProps {
+  totals: {
+    label: string;
+    value: string;
+  }[];
+}
 
-const DailyTotals: React.FC = () => {
+const DailyTotals: React.FC<DailyTotalsProps> = ({ totals }) => {
   const styles = createDailyActivityStyles(useTheme().theme);
 
   return (
     <View style={styles.totals}>
       {totals.map(total => (
-        <View key={total.label} style={styles.totalRow}>
+        <View key={total?.label} style={styles.totalRow}>
           <AppText variant="subtitle2" bold>
-            {total.label}
+            {total?.label}
           </AppText>
           <AppText variant="subtitle2" bold>
-            {total.value}
+            {total?.value}
           </AppText>
         </View>
       ))}
@@ -28,4 +30,4 @@ const DailyTotals: React.FC = () => {
   );
 };
 
-export default DailyTotals;
+export default memo(DailyTotals);

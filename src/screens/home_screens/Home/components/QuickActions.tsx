@@ -10,7 +10,6 @@ const QuickActions: React.FC<{ navigation: any }> = ({ navigation }) => {
 
   return (
     <>
-       
       <SectionHeader sectionTitle="Quick Actions" />
       <View style={styles.quickActionsRow}>
         {QUICK_ACTIONS.map(action => (
@@ -20,13 +19,13 @@ const QuickActions: React.FC<{ navigation: any }> = ({ navigation }) => {
             style={styles.quickActionCard}
             accessibilityRole="button"
             accessibilityLabel={action.label}
-            // onPress={() => {
-            //   if (action.screenName) {
-            //     navigation.navigate(action.screenName);
-            //   } else {
-            //     console.log(`Action pressed: ${action.label}`);
-            //   }
-            // }}
+            onPress={() => {
+              if (action.screenName) {
+                navigation.navigate(action.screenName);
+              } else {
+                console.log(`Action pressed: ${action.label}`);
+              }
+            }}
           >
             <View
               style={[

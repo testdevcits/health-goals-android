@@ -12,7 +12,7 @@ export type RootStackParamList = {
   Home: undefined;
   DailyActivities: undefined;
   DailyActivityTrends: undefined;
-  Category: undefined;
+  Categories: undefined;
   CategoriesDetailsScreen: undefined;
   WorkoutSession: undefined;
 };
@@ -28,15 +28,12 @@ const HomeStack = () => {
         name="DailyActivityTrends"
         component={DailyActivityTrends}
       />
-      <Stack.Screen name="Category" component={WorkoutCategoriesScreen} />
+      <Stack.Screen name="Categories" component={WorkoutCategoriesScreen} />
       <Stack.Screen
         name="CategoriesDetailsScreen"
         component={CategoriesDetailsScreen}
-      />    
-      <Stack.Screen
-        name="WorkoutSession"
-        component={WorkoutSessionScreen}
       />
+      <Stack.Screen name="WorkoutSession" component={WorkoutSessionScreen} />
     </Stack.Navigator>
   );
 };

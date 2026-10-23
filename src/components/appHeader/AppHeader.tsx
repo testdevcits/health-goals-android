@@ -5,6 +5,7 @@ import { Bell, ChevronLeft } from 'lucide-react-native';
 import AppText from '../AppText';
 import { useTheme } from '../../theme/useTheme';
 import { styles as createStyles } from './AppHeader.styles';
+import { useNavigation } from '@react-navigation/native';
 
 interface AppHeaderProps {
   title: string;
@@ -29,12 +30,14 @@ const AppHeader: React.FC<AppHeaderProps> = ({
   const { colors } = theme;
   const componentStyles = createStyles(theme);
 
+  const navigation: any = useNavigation();
+
   return (
     <View style={componentStyles.header}>
       <View style={componentStyles.headerMain}>
         {isBack && (
           <Pressable
-            onPress={onBackPress}
+            onPress={onBackPress? onBackPress : () => navigation.goBack()}
             style={[
               componentStyles.backButton,
               { backgroundColor: colors.backgroundSecondary },
@@ -60,7 +63,11 @@ const AppHeader: React.FC<AppHeaderProps> = ({
 
         {showNotifications && (
           <Pressable
-            onPress={onNotificationPress}
+            onPress={
+              onNotificationPress
+                ? onNotificationPress
+                : () => navigation.navigate('Notifications')
+            }
             style={[
               componentStyles.headerIcon,
               { backgroundColor: colors.backgroundSecondary },
@@ -74,13 +81,14 @@ const AppHeader: React.FC<AppHeaderProps> = ({
           </Pressable>
         )}
 
-        <View
+        <Pressable
+          onPress={() => navigation.navigate('Profile')}
           style={[componentStyles.avatar, { backgroundColor: colors.info }]}
         >
           <AppText variant="subtitle2" color="white" bold>
             {avatarText}
           </AppText>
-        </View>
+        </Pressable>
       </View>
     </View>
   );
