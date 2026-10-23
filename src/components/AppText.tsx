@@ -93,7 +93,8 @@ const AppText: React.FC<AppTextProps> = ({
         spacingOverride,
         style,
       ]}
-      {...rest}>
+      {...rest}
+    >
       {children}
     </Text>
   );

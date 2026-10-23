@@ -1,4 +1,3 @@
-
 // import React, { useState } from 'react';
 // import {
 //   View,
@@ -638,21 +637,15 @@
 //   );
 // };
 
-
-
 // export default GroupsScreen;
 
 import React from 'react';
 import { StyleSheet, View } from 'react-native';
 
 const GroupsScreen = () => {
-  return (
-    <View>
+  return <View></View>;
+};
 
-    </View>
-  );
-}
-
-const styles = StyleSheet.create({})
+const styles = StyleSheet.create({});
 
 export default GroupsScreen;

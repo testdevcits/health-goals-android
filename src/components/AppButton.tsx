@@ -3,8 +3,8 @@ import React from 'react';
 import {
   TouchableOpacity,
   ActivityIndicator,
-  StyleSheet,
   ViewStyle,
+  StyleProp,
   View,
 } from 'react-native';
 import { useTheme } from '../theme/useTheme';
@@ -18,7 +18,7 @@ interface AppButtonProps {
   variant?: Variant;
   loading?: boolean;
   disabled?: boolean;
-  style?: ViewStyle;
+  style?: StyleProp<ViewStyle>;
   leftIcon?: React.ReactNode;
   rightIcon?: React.ReactNode;
 }
@@ -65,28 +65,27 @@ const AppButton: React.FC<AppButtonProps> = ({
   const textColor = isPrimary
     ? 'textInverse'
     : isOutline
-      ? 'textPrimary'
-      : 'textLink';
+    ? 'textPrimary'
+    : 'textLink';
 
   const spinnerColor = isPrimary
     ? colors.textInverse
     : isOutline
-      ? colors.textPrimary
-      : colors.primary;
+    ? colors.textPrimary
+    : colors.primary;
 
   return (
     <TouchableOpacity
       onPress={onPress}
       disabled={disabled || loading}
       activeOpacity={0.8}
-      style={[containerStyle, style]}>
+      style={[containerStyle, style]}
+    >
       {loading ? (
         <ActivityIndicator color={spinnerColor} size="small" />
       ) : (
         <>
-          {leftIcon ? (
-            <View style={{ marginRight: 8 }}>{leftIcon}</View>
-          ) : null}
+          {leftIcon ? <View style={{ marginRight: 8 }}>{leftIcon}</View> : null}
           <AppText variant="button" color={textColor as any}>
             {title}
           </AppText>

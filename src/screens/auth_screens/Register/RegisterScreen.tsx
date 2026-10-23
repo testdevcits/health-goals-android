@@ -101,18 +101,19 @@ const RegisterScreen: React.FC<Props> = ({ navigation }) => {
     await new Promise(r => setTimeout(r, 1600));
     setLoading(false);
     // TODO: call API then navigate to Main
-    navigation.replace('Main');
+    navigation.replace('MainTabNavigation');
   };
 
   return (
     <KeyboardAvoidingView
       style={styles.keyboardView}
-      behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
+      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+    >
       <ScrollView
         contentContainerStyle={[styles.scroll, styles.scrollContent]}
         keyboardShouldPersistTaps="handled"
-        showsVerticalScrollIndicator={false}>
-
+        showsVerticalScrollIndicator={false}
+      >
         {/* ── Logo ── */}
         <View style={styles.header}>
           <View style={styles.iconBox}>
@@ -128,7 +129,6 @@ const RegisterScreen: React.FC<Props> = ({ navigation }) => {
 
         {/* ── Form ── */}
         <View style={styles.formSection}>
-
           {/* Full Name */}
           <AppInput
             label="Full Name"
@@ -222,15 +222,16 @@ const RegisterScreen: React.FC<Props> = ({ navigation }) => {
                 <AppText variant="body2" secondary>
                   I agree to the{' '}
                 </AppText>
-                <TouchableOpacity onPress={() => { }}>
+                <TouchableOpacity onPress={() => {}}>
                   <AppText variant="body2" link>
                     Terms of Service
                   </AppText>
                 </TouchableOpacity>
                 <AppText variant="body2" secondary>
-                  {' '}and{' '}
+                  {' '}
+                  and{' '}
                 </AppText>
-                <TouchableOpacity onPress={() => { }}>
+                <TouchableOpacity onPress={() => {}}>
                   <AppText variant="body2" link>
                     Privacy Policy
                   </AppText>

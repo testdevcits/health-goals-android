@@ -46,12 +46,13 @@ const ForgotPasswordScreen: React.FC<Props> = ({ navigation }) => {
   return (
     <KeyboardAvoidingView
       style={styles.keyboardView}
-      behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
+      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+    >
       <ScrollView
         contentContainerStyle={[styles.scroll, styles.scrollContent]}
         keyboardShouldPersistTaps="handled"
-        showsVerticalScrollIndicator={false}>
-
+        showsVerticalScrollIndicator={false}
+      >
         {/* ── Header ── */}
         <View style={styles.header}>
           <View style={styles.iconBox}>
@@ -60,11 +61,7 @@ const ForgotPasswordScreen: React.FC<Props> = ({ navigation }) => {
           <AppText variant="h2" center mb={8}>
             Reset Password
           </AppText>
-          <AppText
-            variant="body2"
-            secondary
-            center
-            style={styles.subtitleText}>
+          <AppText variant="body2" secondary center style={styles.subtitleText}>
             Enter the email linked to your account and we'll send you a secure
             reset link.
           </AppText>
@@ -116,7 +113,8 @@ const ForgotPasswordScreen: React.FC<Props> = ({ navigation }) => {
           {/* Back to sign in */}
           <TouchableOpacity
             onPress={() => navigation.goBack()}
-            style={styles.backRow}>
+            style={styles.backRow}
+          >
             <AppText variant="body2" link>
               ← Back to sign in
             </AppText>

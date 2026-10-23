@@ -8,7 +8,6 @@ import AppText from '../../../components/AppText';
 import { createSplashStyles } from './styles.Splash';
 import * as Animatable from 'react-native-animatable';
 
-
 type Props = NativeStackScreenProps<RootStackParamList, 'Splash'>;
 
 const SplashScreen: React.FC<Props> = ({ navigation }) => {
@@ -61,9 +60,17 @@ const SplashScreen: React.FC<Props> = ({ navigation }) => {
         style={[
           styles.logoContainer,
           { transform: [{ scale: logoScale }], opacity: logoOpacity },
-        ]}>
+        ]}
+      >
         <View style={styles.iconBox}>
-          <Animatable.Text animation="pulse" easing="ease-out" iterationCount="infinite" style={styles.iconEmoji}>💚</Animatable.Text>
+          <Animatable.Text
+            animation="pulse"
+            easing="ease-out"
+            iterationCount="infinite"
+            style={styles.iconEmoji}
+          >
+            💚
+          </Animatable.Text>
         </View>
       </Animated.View>
 
@@ -77,7 +84,8 @@ const SplashScreen: React.FC<Props> = ({ navigation }) => {
           color="white"
           center
           mt={6}
-          style={{ opacity: 0.75 }}>
+          style={{ opacity: 0.75 }}
+        >
           Your health, your crew, your momentum
         </AppText>
       </Animated.View>
@@ -85,7 +93,10 @@ const SplashScreen: React.FC<Props> = ({ navigation }) => {
       {/* Animated Dots */}
       <Animated.View style={[styles.dots, { opacity: dotsOpacity }]}>
         {[0, 1, 2].map(i => (
-          <Animatable.View animation="pulse" easing="ease-out" iterationCount="infinite"
+          <Animatable.View
+            animation="pulse"
+            easing="ease-out"
+            iterationCount="infinite"
             key={i}
             style={[
               styles.dot,

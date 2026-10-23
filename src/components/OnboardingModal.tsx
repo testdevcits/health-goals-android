@@ -79,7 +79,8 @@ const OnboardingModal: React.FC<OnboardingModalProps> = ({
       transparent
       animationType="fade"
       statusBarTranslucent
-      onRequestClose={onDismiss}>
+      onRequestClose={onDismiss}
+    >
       <View style={styles.backdrop}>
         <View
           style={[
@@ -90,9 +91,11 @@ const OnboardingModal: React.FC<OnboardingModalProps> = ({
               marginHorizontal: spacing.xl,
               padding: spacing.xl,
             },
-          ]}>
+          ]}
+        >
           <Animated.View
-            style={{ opacity: fadeAnim, alignItems: 'center', width: '100%' }}>
+            style={{ opacity: fadeAnim, alignItems: 'center', width: '100%' }}
+          >
             {/* Emoji */}
             <AppText style={styles.emoji}>{current.emoji}</AppText>
 
@@ -112,7 +115,8 @@ const OnboardingModal: React.FC<OnboardingModalProps> = ({
               secondary
               center
               mb={28}
-              style={{ paddingHorizontal: spacing.sm }}>
+              style={{ paddingHorizontal: spacing.sm }}
+            >
               {current.desc}
             </AppText>
           </Animated.View>

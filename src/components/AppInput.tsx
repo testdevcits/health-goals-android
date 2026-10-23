@@ -41,8 +41,8 @@ const AppInput = forwardRef<TextInput, AppInputProps>(
     const borderColor = error
       ? colors.error
       : isFocused
-        ? colors.inputFocusBorder
-        : colors.inputBorder;
+      ? colors.inputFocusBorder
+      : colors.inputBorder;
 
     return (
       <View style={[styles.wrapper, containerStyle]}>
@@ -64,7 +64,8 @@ const AppInput = forwardRef<TextInput, AppInputProps>(
               paddingVertical: spacing.md,
               paddingHorizontal: spacing.base,
             },
-          ]}>
+          ]}
+        >
           <TextInput
             ref={ref}
             style={[
@@ -88,7 +89,8 @@ const AppInput = forwardRef<TextInput, AppInputProps>(
           {isPassword ? (
             <TouchableOpacity
               onPress={() => setSecureVisible(v => !v)}
-              hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
+              hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+            >
               {secureVisible ? (
                 <Eye size={20} color={colors.textTertiary} />
               ) : (
@@ -122,7 +124,7 @@ const styles = StyleSheet.create({
   },
   input: {
     flex: 1,
-    padding: 0,   // remove default TextInput padding
+    padding: 0, // remove default TextInput padding
     margin: 0,
   },
 });

@@ -2,8 +2,6 @@
 import { StyleSheet, Dimensions } from 'react-native';
 import { AppTheme } from '../../../theme';
 
-
-
 export const createHomeStyles = (theme: AppTheme) => {
   const { spacing, radius, colors } = theme;
 
@@ -289,4 +287,3 @@ export const createHomeStyles = (theme: AppTheme) => {
     },
   });
 };
-

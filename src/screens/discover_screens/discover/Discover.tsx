@@ -1,4 +1,3 @@
-
 // import React, { useState } from 'react';
 // import {
 //     View,
@@ -418,22 +417,15 @@
 //     );
 // };
 
-
-
 // export default DiscoverScreen;
-
 
 import React from 'react';
 import { StyleSheet, View } from 'react-native';
 
 const Discover = () => {
-    return (
-        <View>
+  return <View></View>;
+};
 
-        </View>
-    );
-}
-
-const styles = StyleSheet.create({})
+const styles = StyleSheet.create({});
 
 export default Discover;

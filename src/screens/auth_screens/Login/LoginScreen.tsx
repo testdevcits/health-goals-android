@@ -63,12 +63,13 @@ const LoginScreen: React.FC<Props> = ({ navigation }) => {
   return (
     <KeyboardAvoidingView
       style={styles.keyboardView}
-      behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
+      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+    >
       <ScrollView
         contentContainerStyle={[styles.scroll, styles.scrollContent]}
         keyboardShouldPersistTaps="handled"
-        showsVerticalScrollIndicator={false}>
-
+        showsVerticalScrollIndicator={false}
+      >
         {/* ── Logo & Title ── */}
         <View style={styles.header}>
           <View style={styles.iconBox}>
@@ -120,7 +121,8 @@ const LoginScreen: React.FC<Props> = ({ navigation }) => {
           {/* Forgot password */}
           <TouchableOpacity
             // onPress={() => navigation.navigate('ForgotPassword')}
-            style={styles.forgotRow}>
+            style={styles.forgotRow}
+          >
             <AppText variant="label" link>
               Forgot password?
             </AppText>
@@ -146,14 +148,14 @@ const LoginScreen: React.FC<Props> = ({ navigation }) => {
           {/* Social */}
           <AppButton
             title="Continue with Apple"
-            onPress={() => { }}
+            onPress={() => {}}
             variant="outline"
             leftIcon={<Text style={{ fontSize: 18 }}>🍎</Text>}
             style={styles.socialButton}
           />
           <AppButton
             title="Continue with Google"
-            onPress={() => { }}
+            onPress={() => {}}
             variant="outline"
             leftIcon={<Text style={{ fontSize: 18 }}>🔵</Text>}
           />

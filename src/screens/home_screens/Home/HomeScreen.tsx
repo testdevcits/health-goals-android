@@ -382,15 +382,11 @@ import { StyleSheet, Text, View } from 'react-native';
 const HomeScreen = () => {
   return (
     <View style={{ paddingHorizontal: 16 }}>
-      <Text>
-        Home screen
-      </Text>
-
+      <Text>Home screen</Text>
     </View>
   );
-}
+};
 
-const styles = StyleSheet.create({})
+const styles = StyleSheet.create({});
 
 export default HomeScreen;
-

@@ -3,16 +3,22 @@ import React, { createContext, useMemo, useState, useEffect } from 'react';
 import { Appearance, ColorSchemeName } from 'react-native';
 import { AppTheme, lightTheme, darkTheme } from './index';
 
+export type ThemeMode = 'light' | 'dark' | 'system';
+
 type ThemeContextProps = {
   theme: AppTheme;
   colorScheme: ColorSchemeName;
+  themeMode: ThemeMode;
   toggleTheme: () => void;
+  setThemeMode: (mode: ThemeMode) => void;
 };
 
 export const ThemeContext = createContext<ThemeContextProps>({
   theme: lightTheme,
   colorScheme: 'light',
+  themeMode: 'system',
   toggleTheme: () => {},
+  setThemeMode: () => {},
 });
 
 export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({
@@ -20,23 +26,28 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({
 }) => {
   const systemScheme = Appearance.getColorScheme() ?? 'light';
   const [colorScheme, setColorScheme] = useState<ColorSchemeName>(systemScheme);
-  const [manualOverride, setManualOverride] = useState<ColorSchemeName | null>(
-    null,
-  );
+  const [themeMode, setThemeModeState] = useState<ThemeMode>('system');
 
   useEffect(() => {
-    const subscription = Appearance.addChangeListener(({ colorScheme: scheme }) => {
-      if (!manualOverride) {
-        setColorScheme(scheme ?? 'light');
-      }
-    });
+    const subscription = Appearance.addChangeListener(
+      ({ colorScheme: scheme }) => {
+        if (themeMode === 'system') {
+          setColorScheme(scheme ?? 'light');
+        }
+      },
+    );
     return () => subscription.remove();
-  }, [manualOverride]);
+  }, [themeMode]);
+
+  const setThemeMode = (mode: ThemeMode) => {
+    setThemeModeState(mode);
+    setColorScheme(
+      mode === 'system' ? Appearance.getColorScheme() ?? 'light' : mode,
+    );
+  };
 
   const toggleTheme = () => {
-    const next = colorScheme === 'light' ? 'dark' : 'light';
-    setManualOverride(next);
-    setColorScheme(next);
+    setThemeMode(colorScheme === 'light' ? 'dark' : 'light');
   };
 
   const theme = useMemo(
@@ -45,7 +56,9 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({
   );
 
   return (
-    <ThemeContext.Provider value={{ theme, colorScheme, toggleTheme }}>
+    <ThemeContext.Provider
+      value={{ theme, colorScheme, themeMode, toggleTheme, setThemeMode }}
+    >
       {children}
     </ThemeContext.Provider>
   );

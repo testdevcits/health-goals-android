@@ -45,8 +45,8 @@ const AppSelect: React.FC<AppSelectProps> = ({
   const borderColor = error
     ? colors.error
     : visible
-      ? colors.inputFocusBorder
-      : colors.inputBorder;
+    ? colors.inputFocusBorder
+    : colors.inputBorder;
 
   return (
     <View style={[styles.wrapper, containerStyle]}>
@@ -69,11 +69,13 @@ const AppSelect: React.FC<AppSelectProps> = ({
             paddingHorizontal: spacing.base,
             paddingVertical: spacing.md,
           },
-        ]}>
+        ]}
+      >
         <AppText
           variant="body1"
           color={selectedLabel ? 'textPrimary' : 'inputPlaceholder'}
-          style={{ flex: 1 }}>
+          style={{ flex: 1 }}
+        >
           {selectedLabel ?? placeholder}
         </AppText>
         <ChevronDown size={18} color={colors.textSecondary} />
@@ -91,10 +93,9 @@ const AppSelect: React.FC<AppSelectProps> = ({
         transparent
         animationType="slide"
         statusBarTranslucent
-        onRequestClose={() => setVisible(false)}>
-        <Pressable
-          style={styles.backdrop}
-          onPress={() => setVisible(false)}>
+        onRequestClose={() => setVisible(false)}
+      >
+        <Pressable style={styles.backdrop} onPress={() => setVisible(false)}>
           <Pressable
             style={[
               styles.sheet,
@@ -105,11 +106,10 @@ const AppSelect: React.FC<AppSelectProps> = ({
                 paddingBottom: spacing.xxl,
               },
             ]}
-            onPress={() => {}}>
+            onPress={() => {}}
+          >
             {/* Handle */}
-            <View
-              style={[styles.handle, { backgroundColor: colors.border }]}
-            />
+            <View style={[styles.handle, { backgroundColor: colors.border }]} />
 
             {label ? (
               <AppText
@@ -118,7 +118,8 @@ const AppSelect: React.FC<AppSelectProps> = ({
                 style={{
                   paddingHorizontal: spacing.xl,
                   paddingBottom: spacing.md,
-                }}>
+                }}
+              >
                 {label}
               </AppText>
             ) : null}
@@ -143,10 +144,12 @@ const AppSelect: React.FC<AppSelectProps> = ({
                           ? colors.primaryLight
                           : 'transparent',
                       },
-                    ]}>
+                    ]}
+                  >
                     <AppText
                       variant="body1"
-                      color={isSelected ? 'primary' : 'textPrimary'}>
+                      color={isSelected ? 'primary' : 'textPrimary'}
+                    >
                       {item.label}
                     </AppText>
                     {isSelected ? (

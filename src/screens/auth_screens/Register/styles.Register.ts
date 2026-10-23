@@ -1,6 +1,6 @@
 // src/screens/Register/styles.Register.ts
 import { StyleSheet } from 'react-native';
-import { AppTheme } from '../../theme';
+import { AppTheme } from '../../../theme';
 
 export const createRegisterStyles = (theme: AppTheme) => {
   const { spacing, radius, colors } = theme;

@@ -1,11 +1,6 @@
 // src/components/AppCheckbox.tsx
 import React from 'react';
-import {
-  TouchableOpacity,
-  View,
-  StyleSheet,
-  ViewStyle,
-} from 'react-native';
+import { TouchableOpacity, View, StyleSheet, ViewStyle } from 'react-native';
 import { Check } from 'lucide-react-native';
 import { useTheme } from '../theme/useTheme';
 import AppText from './AppText';
@@ -33,7 +28,8 @@ const AppCheckbox: React.FC<AppCheckboxProps> = ({
       <TouchableOpacity
         onPress={() => onChange(!checked)}
         activeOpacity={0.7}
-        style={styles.row}>
+        style={styles.row}
+      >
         {/* Box */}
         <View
           style={[
@@ -43,12 +39,13 @@ const AppCheckbox: React.FC<AppCheckboxProps> = ({
               borderColor: error
                 ? colors.error
                 : checked
-                  ? colors.primary
-                  : colors.border,
+                ? colors.primary
+                : colors.border,
               backgroundColor: checked ? colors.primary : 'transparent',
               borderWidth: 2,
             },
-          ]}>
+          ]}
+        >
           {checked ? (
             <Check size={12} color={colors.white} strokeWidth={3} />
           ) : null}
