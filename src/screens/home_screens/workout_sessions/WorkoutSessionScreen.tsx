@@ -1,17 +1,10 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Alert, Pressable, ScrollView, StatusBar, View } from 'react-native';
-import {
-  ArrowLeft,
-  Bell,
-  Home,
-  Trophy,
-  Users,
-  Compass,
-  UserRound,
-} from 'lucide-react-native';
 import { AppButton, AppHeader, AppText } from '../../../components';
 import styles from './styles.WorkoutSession';
 import { useTheme } from '../../../theme/useTheme';
+import type { NativeStackScreenProps } from '@react-navigation/native-stack';
+import type { HomeStackParamList } from '../../../navigations/HomeStack';
 
 type Activity = {
   id: string;
@@ -33,19 +26,7 @@ const activities: Activity[] = [
   { id: 'machines', name: 'Weight machines', emoji: '🏋🏻', color: '#64748B' },
 ];
 
-type Props = {
-  onBack?: () => void;
-  onNotificationPress?: () => void;
-  onProfilePress?: () => void;
-  onFinish?: (session: {
-    activity: Activity;
-    durationSeconds: number;
-    distanceKm: number;
-    calories: number;
-  }) => void;
-  onTabPress?: (tab: string) => void;
-  activeTab?: string;
-};
+type Props = NativeStackScreenProps<HomeStackParamList, 'WorkoutSession'>;
 
 const formatTime = (totalSeconds: number) => {
   const hours = Math.floor(totalSeconds / 3600);
@@ -65,13 +46,7 @@ const formatTime = (totalSeconds: number) => {
   )}`;
 };
 
-const WorkoutSessionScreen: React.FC<Props> = ({
-  onBack,
-
-  onFinish,
-
-  activeTab = 'home',
-}) => {
+const WorkoutSessionScreen: React.FC<Props> = ({ navigation }) => {
   const { theme } = useTheme();
   const { colors } = theme;
 
@@ -187,16 +162,10 @@ const WorkoutSessionScreen: React.FC<Props> = ({
             setIsRunning(false);
             startedAtRef.current = null;
 
-            onFinish?.({
-              activity: selectedActivity,
-              durationSeconds: elapsedSeconds,
-              distanceKm,
-              calories,
-            });
-
             setHasStarted(false);
             setElapsedSeconds(0);
             elapsedBeforePauseRef.current = 0;
+            navigation.goBack();
           },
         },
       ],
@@ -219,7 +188,7 @@ const WorkoutSessionScreen: React.FC<Props> = ({
               setElapsedSeconds(0);
               elapsedBeforePauseRef.current = 0;
               setHasStarted(false);
-              onBack?.();
+              navigation.goBack();
             },
           },
         ],
@@ -227,7 +196,7 @@ const WorkoutSessionScreen: React.FC<Props> = ({
       return;
     }
 
-    onBack?.();
+    navigation.goBack();
   };
 
   const MetricCard = ({

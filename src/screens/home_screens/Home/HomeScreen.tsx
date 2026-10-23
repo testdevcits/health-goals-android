@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
-import { Alert, ScrollView, View } from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { ScrollView, View } from 'react-native';
+import type { NativeStackScreenProps } from '@react-navigation/native-stack';
+import type { HomeStackParamList } from '../../../navigations/HomeStack';
 import { OnboardingModal } from '../../../components';
 import { useTheme } from '../../../theme/useTheme';
 import ActivityTrends from './components/ActivityTrends';
@@ -12,11 +13,9 @@ import WorkoutCategories from './components/WorkoutCategories';
 import { createHomeStyles } from './styles.Home';
 import QuickActions from './components/QuickActions';
 
-const HomeScreen: React.FC<{
-  navigation: {
-    navigate: (screen: 'DailyActivities' | 'DailyActivityTrends') => void;
-  };
-}> = ({ navigation }: any) => {
+type Props = NativeStackScreenProps<HomeStackParamList, 'Home'>;
+
+const HomeScreen: React.FC<Props> = ({ navigation }) => {
   const { theme } = useTheme();
   const styles = createHomeStyles(theme);
   const [notificationPromptVisible, setNotificationPromptVisible] =
@@ -42,10 +41,18 @@ const HomeScreen: React.FC<{
         <WorkoutCategories
           onViewAllPress={() => navigation.navigate('Categories')}
         />
-        <ActivityTrends
+        {/* <ActivityTrends
           onPressDetails={() => navigation.navigate('DailyActivityTrends')}
-        />
-        <QuickActions navigation={navigation} />
+        /> */}
+        {/* <QuickActions
+          onActionPress={action => {
+            if (action === 'WorkoutSession') {
+              navigation.navigate('WorkoutSession');
+            } else {
+              navigation.getParent()?.navigate('Challenges');
+            }
+          }}
+        /> */}
       </ScrollView>
       <OnboardingModal
         visible={onboardingVisible}

@@ -6,7 +6,7 @@ const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
   },
- 
+
   scrollContent: {
     padding: spacing.base,
     paddingBottom: spacing.xl,
@@ -130,7 +130,6 @@ const styles = StyleSheet.create({
     marginTop: 5,
     marginBottom: 1,
   },
-  
 });
 
 export default styles;

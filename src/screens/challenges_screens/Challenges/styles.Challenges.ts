@@ -1,57 +1,15 @@
 import { StyleSheet } from 'react-native';
+import type { AppTheme } from '../../../theme';
 
-const createStyles = (colors: any, spacing: any, radius: any) =>
+const createStyles = ({ colors, spacing, radius }: AppTheme) =>
   StyleSheet.create({
     container: {
       flex: 1,
       backgroundColor: colors.backgroundSecondary,
     },
-
-    header: {
-      minHeight: 76,
-      backgroundColor: colors.surface,
-      paddingHorizontal: spacing.base,
-      paddingVertical: spacing.sm,
-      flexDirection: 'row',
-      alignItems: 'center',
-      justifyContent: 'space-between',
-      borderBottomWidth: StyleSheet.hairlineWidth,
-      borderBottomColor: colors.border,
-    },
-
-    headerText: {
-      flex: 1,
-      paddingRight: spacing.sm,
-    },
-
-    headerActions: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      gap: spacing.sm,
-    },
-
-    notificationButton: {
-      width: 38,
-      height: 38,
-      borderRadius: radius.full,
-      backgroundColor: colors.backgroundSecondary,
-      alignItems: 'center',
-      justifyContent: 'center',
-    },
-
-    profileAvatar: {
-      width: 38,
-      height: 38,
-      borderRadius: radius.full,
-      backgroundColor: colors.primary,
-      alignItems: 'center',
-      justifyContent: 'center',
-    },
-
     scrollContent: {
       flexGrow: 1,
     },
-
     tabs: {
       flexDirection: 'row',
       marginHorizontal: spacing.base,
@@ -61,7 +19,6 @@ const createStyles = (colors: any, spacing: any, radius: any) =>
       borderRadius: radius.lg,
       backgroundColor: colors.surfaceElevated,
     },
-
     tab: {
       flex: 1,
       minHeight: 38,
@@ -70,7 +27,6 @@ const createStyles = (colors: any, spacing: any, radius: any) =>
       justifyContent: 'center',
       paddingHorizontal: spacing.xs,
     },
-
     activeTab: {
       backgroundColor: colors.surface,
       elevation: 2,
@@ -79,12 +35,10 @@ const createStyles = (colors: any, spacing: any, radius: any) =>
       shadowRadius: 4,
       shadowOffset: { width: 0, height: 2 },
     },
-
     content: {
       paddingHorizontal: spacing.base,
       paddingTop: spacing.xs,
     },
-
     podium: {
       flexDirection: 'row',
       alignItems: 'flex-end',
@@ -92,17 +46,14 @@ const createStyles = (colors: any, spacing: any, radius: any) =>
       marginBottom: spacing.base,
       paddingTop: spacing.md,
     },
-
     podiumPerson: {
       flex: 1,
       alignItems: 'center',
       justifyContent: 'flex-end',
     },
-
     firstPlacePerson: {
       paddingHorizontal: spacing.xs,
     },
-
     podiumAvatar: {
       borderRadius: radius.full,
       alignItems: 'center',
@@ -112,7 +63,14 @@ const createStyles = (colors: any, spacing: any, radius: any) =>
       marginBottom: spacing.xs,
       elevation: 3,
     },
-
+    firstPlaceAvatar: {
+      width: 62,
+      height: 62,
+    },
+    otherPlaceAvatar: {
+      width: 48,
+      height: 48,
+    },
     podiumBase: {
       width: '100%',
       borderTopLeftRadius: radius.md,
@@ -121,7 +79,15 @@ const createStyles = (colors: any, spacing: any, radius: any) =>
       justifyContent: 'center',
       marginTop: spacing.xs,
     },
-
+    firstPlaceBase: {
+      height: 64,
+    },
+    secondPlaceBase: {
+      height: 48,
+    },
+    thirdPlaceBase: {
+      height: 38,
+    },
     leaderboardCard: {
       backgroundColor: colors.surface,
       borderRadius: radius.lg,
@@ -132,7 +98,6 @@ const createStyles = (colors: any, spacing: any, radius: any) =>
       shadowRadius: 8,
       shadowOffset: { width: 0, height: 3 },
     },
-
     leaderboardRow: {
       minHeight: 60,
       flexDirection: 'row',
@@ -143,15 +108,12 @@ const createStyles = (colors: any, spacing: any, radius: any) =>
       borderBottomColor: colors.border,
       gap: spacing.sm,
     },
-
     currentUserRow: {
       backgroundColor: colors.primaryLight,
     },
-
     lastLeaderboardRow: {
       borderBottomWidth: 0,
     },
-
     rankCircle: {
       width: 25,
       height: 25,
@@ -160,7 +122,6 @@ const createStyles = (colors: any, spacing: any, radius: any) =>
       alignItems: 'center',
       justifyContent: 'center',
     },
-
     smallAvatar: {
       width: 34,
       height: 34,
@@ -168,17 +129,14 @@ const createStyles = (colors: any, spacing: any, radius: any) =>
       alignItems: 'center',
       justifyContent: 'center',
     },
-
     leaderboardDetails: {
       flex: 1,
       minWidth: 0,
     },
-
     stepsColumn: {
       alignItems: 'flex-end',
       minWidth: 58,
     },
-
     challengeCard: {
       backgroundColor: colors.surface,
       borderRadius: radius.lg,
@@ -192,31 +150,26 @@ const createStyles = (colors: any, spacing: any, radius: any) =>
       shadowRadius: 5,
       shadowOffset: { width: 0, height: 2 },
     },
-
     challengeHeading: {
       flexDirection: 'row',
       alignItems: 'center',
       justifyContent: 'space-between',
       gap: spacing.xs,
     },
-
     challengeTitleRow: {
       flex: 1,
       flexDirection: 'row',
       alignItems: 'center',
       gap: spacing.sm,
     },
-
     challengeTitle: {
       flexShrink: 1,
     },
-
     statusPill: {
       borderRadius: radius.full,
       paddingHorizontal: spacing.sm,
       paddingVertical: spacing.xxs,
     },
-
     progressTrack: {
       height: 7,
       backgroundColor: colors.surfaceElevated,
@@ -224,18 +177,15 @@ const createStyles = (colors: any, spacing: any, radius: any) =>
       overflow: 'hidden',
       marginTop: spacing.xs,
     },
-
     progressFill: {
       height: '100%',
       borderRadius: radius.full,
     },
-
     progressFooter: {
       flexDirection: 'row',
       alignItems: 'center',
       justifyContent: 'space-between',
     },
-
     browseButton: {
       minHeight: 46,
       borderRadius: radius.lg,
@@ -249,13 +199,11 @@ const createStyles = (colors: any, spacing: any, radius: any) =>
       gap: spacing.xs,
       marginTop: spacing.xs,
     },
-
     badgesGrid: {
       flexDirection: 'row',
       flexWrap: 'wrap',
       gap: spacing.sm,
     },
-
     badgeCard: {
       minHeight: 118,
       backgroundColor: colors.surface,
@@ -270,7 +218,6 @@ const createStyles = (colors: any, spacing: any, radius: any) =>
       shadowRadius: 5,
       shadowOffset: { width: 0, height: 2 },
     },
-
     badgeIcon: {
       width: 48,
       height: 48,
@@ -280,18 +227,20 @@ const createStyles = (colors: any, spacing: any, radius: any) =>
       justifyContent: 'center',
       marginBottom: spacing.sm,
     },
-
+    badgeEmoji: {
+      fontSize: 27,
+    },
     lockedBadge: {
       opacity: 0.55,
     },
-
     lockedBadgeIcon: {
       backgroundColor: colors.surfaceElevated,
     },
-
     badgeTitle: {
       marginBottom: spacing.xxs,
     },
   });
+
+export type ChallengesStyles = ReturnType<typeof createStyles>;
 
 export default createStyles;

@@ -266,8 +266,8 @@ export const createHomeStyles = (theme: AppTheme) => {
       gap: 6,
     },
     bar: {
-      width: 16,
-      borderRadius: radius.sm,
+      width: 20,
+      borderRadius: radius.full,
     },
     barMuted: {
       opacity: 0.65,

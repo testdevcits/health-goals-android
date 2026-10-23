@@ -5,12 +5,11 @@ const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
   },
-  
+
   listContent: {
     paddingHorizontal: spacing.base,
     paddingTop: spacing.md,
     paddingBottom: spacing.xl,
-     
   },
   columnWrapper: {
     justifyContent: 'space-between',
@@ -60,7 +59,6 @@ const styles = StyleSheet.create({
     fontSize: 11,
     lineHeight: 14,
   },
-  
 });
 
 export default styles;

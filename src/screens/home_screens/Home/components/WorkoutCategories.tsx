@@ -5,26 +5,27 @@ import { useTheme } from '../../../../theme/useTheme';
 import { WORKOUT_CATEGORIES } from '../const';
 import { createHomeStyles } from '../styles.Home';
 import { useNavigation } from '@react-navigation/native';
+import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import type { HomeStackParamList } from '../../../../navigations/HomeStack';
 
 const WorkoutCategories: React.FC<{ onViewAllPress: () => void }> = ({
   onViewAllPress,
 }) => {
   const { theme } = useTheme();
   const styles = createHomeStyles(theme);
-  const navigation: any = useNavigation();
+  const navigation =
+    useNavigation<NativeStackNavigationProp<HomeStackParamList>>();
 
   const renderWorkoutCard = useCallback(
     ({ item }: { item: (typeof WORKOUT_CATEGORIES)[number] }) => (
       <TouchableOpacity
         activeOpacity={0.8}
-        style={[
-          styles.workoutCard,
-          {   borderBottomColor: item?.accent },
-        ]}
+        style={[styles.workoutCard, { borderBottomColor: item?.accent }]}
         accessibilityRole="button"
         accessibilityLabel={`${item?.name}: ${item?.subtitle}`}
         onPress={() =>
           navigation.navigate('CategoriesDetailsScreen', {
+            source: 'home',
             workoutId: item?.id,
           })
         }
@@ -43,7 +44,7 @@ const WorkoutCategories: React.FC<{ onViewAllPress: () => void }> = ({
         /> */}
       </TouchableOpacity>
     ),
-    [styles],
+    [navigation, styles],
   );
 
   return (

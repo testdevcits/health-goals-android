@@ -101,7 +101,7 @@ export const QUICK_ACTIONS = [
     accent: '#D97706',
     screenName: 'Challenges',
   },
-];
+] as const;
 
 // ── Helpers ────────────────────────────────────────────────────────────────
 export const getGreeting = (): string => {

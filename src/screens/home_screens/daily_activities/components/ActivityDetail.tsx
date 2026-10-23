@@ -1,9 +1,8 @@
-import { StyleSheet, Text, View } from 'react-native'
-import React, { memo } from 'react'
+import { StyleSheet, Text, View } from 'react-native';
+import React, { memo } from 'react';
 import { AppText } from '../../../../components';
 import { createDailyActivityStyles } from '../styles.DailyActivities';
 import { useTheme } from '../../../../theme/useTheme';
-
 
 const ActivityDetail: React.FC<{
   label: string;
@@ -37,5 +36,4 @@ const ActivityDetail: React.FC<{
   );
 };
 
-export default memo(ActivityDetail)
- 
+export default memo(ActivityDetail);

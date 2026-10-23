@@ -18,7 +18,7 @@ import {
 } from 'lucide-react-native';
 
 import { useTheme } from '../../../theme/useTheme';
-import { AppText } from '../../../components';
+import { AppHeader, AppText } from '../../../components';
 import { createCardStyles, createStyles } from './styles.AllChallenges';
 
 type ChallengeCategory = 'All' | 'Steps' | 'Mind' | 'Strength';
@@ -121,43 +121,14 @@ const AllChallengesScreen: React.FC<AllChallengesScreenProps> = ({
   const styles = createStyles(colors, spacing, radius, width);
 
   return (
-    <View style={[styles.container, { paddingTop: insets.top }]}>
+    <View style={[styles.container]}>
       {/* Screen header */}
-      <View style={styles.header}>
-        <Pressable
-          onPress={() => navigation.goBack()}
-          accessibilityRole="button"
-          accessibilityLabel="Go back"
-          hitSlop={8}
-          style={styles.backButton}
-        >
-          <ArrowLeft size={21} color={colors.textPrimary} strokeWidth={2} />
-        </Pressable>
 
-        <View style={styles.headerText}>
-          <AppText variant="h3">All Challenges</AppText>
-
-          <AppText variant="caption" secondary>
-            Browse and join new challenges
-          </AppText>
-        </View>
-
-        <View style={styles.headerActions}>
-          <Pressable
-            accessibilityRole="button"
-            accessibilityLabel="Notifications"
-            style={styles.notificationButton}
-          >
-            <Bell size={20} color={colors.textPrimary} />
-          </Pressable>
-
-          <View style={styles.profileAvatar}>
-            <AppText variant="subtitle2" color="white" bold>
-              AJ
-            </AppText>
-          </View>
-        </View>
-      </View>
+      <AppHeader
+        title="All Challenges"
+        subtitle={'Browse and join new challenges'}
+        onBackPress={() => navigation.goBack()}
+      />
 
       {/* Category filter and challenge list */}
       <ScrollView

@@ -11,7 +11,6 @@ import { useTheme } from './src/theme/useTheme';
 import AppNavigation from './src/navigations/AppNavigation';
 import BootSplash from 'react-native-bootsplash';
 
-
 function ThemedRoot() {
   const { colorScheme } = useTheme();
   return (
@@ -21,7 +20,12 @@ function ThemedRoot() {
         translucent
         backgroundColor="transparent"
       />
-      <SafeAreaProvider style={{ flex: 1,  backgroundColor: colorScheme === 'dark' ? '#000000' : '#FFFFFF' }}>
+      <SafeAreaProvider
+        style={{
+          flex: 1,
+          backgroundColor: colorScheme === 'dark' ? '#000000' : '#FFFFFF',
+        }}
+      >
         <SafeAreaView style={{ flex: 1 }}>
           <AppNavigation />
         </SafeAreaView>

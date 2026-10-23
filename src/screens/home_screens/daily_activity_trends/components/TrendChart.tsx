@@ -25,7 +25,8 @@ const TrendChart: React.FC<{
           style={[
             styles.weekBadge,
             { backgroundColor: theme.colors.primaryLight },
-          ]}>
+          ]}
+        >
           <AppText variant="caption" primary bold>
             This week
           </AppText>
@@ -52,7 +53,8 @@ const TrendChart: React.FC<{
             key={day}
             variant="caption"
             color="textSecondary"
-            style={styles.dayLabel}>
+            style={styles.dayLabel}
+          >
             {day}
           </AppText>
         ))}

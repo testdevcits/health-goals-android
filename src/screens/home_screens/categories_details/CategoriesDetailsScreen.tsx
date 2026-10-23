@@ -1,9 +1,11 @@
 import React from 'react';
-import { ScrollView, StatusBar, View, Pressable } from 'react-native';
-import { ArrowLeft, Bell } from 'lucide-react-native';
+import { ScrollView, StatusBar, View } from 'react-native';
 import { AppHeader, AppText } from '../../../components';
 import { useTheme } from '../../../theme/useTheme';
 import styles from './styles.CategoriesDetails';
+import type { NativeStackScreenProps } from '@react-navigation/native-stack';
+import type { HomeStackParamList } from '../../../navigations/HomeStack';
+import { WORKOUT_CATEGORIES } from '../Home/const';
 
 const weeklyData = [
   { day: 'Mon', value: 42 },
@@ -15,11 +17,35 @@ const weeklyData = [
   { day: 'Sun', value: 4 },
 ];
 
-type Props = {};
+type Props = NativeStackScreenProps<
+  HomeStackParamList,
+  'CategoriesDetailsScreen'
+>;
 
-const CategoriesDetailsScreen: React.FC<Props> = ({}) => {
+const CategoriesDetailsScreen: React.FC<Props> = ({ navigation, route }) => {
   const { theme } = useTheme();
   const { colors } = theme;
+  const workoutId =
+    route.params.source === 'home' ? route.params.workoutId : undefined;
+  const homeCategory = WORKOUT_CATEGORIES.find(item => item?.id === workoutId);
+  const selectedCategory =
+    route.params.source === 'categories'
+      ? {
+          title: route.params.category.title,
+          subtitle: route.params.category.subtitle,
+          emoji: route.params.category.emoji,
+        }
+      : homeCategory
+      ? {
+          title: homeCategory.name,
+          subtitle: homeCategory.subtitle,
+          emoji: homeCategory.emoji,
+        }
+      : {
+          title: 'Workout',
+          subtitle: 'Activity details',
+          emoji: '🏃',
+        };
 
   return (
     <View
@@ -31,7 +57,11 @@ const CategoriesDetailsScreen: React.FC<Props> = ({}) => {
       />
 
       {/* Header */}
-      <AppHeader title="Running" subtitle="Cardio & Endurance" />
+      <AppHeader
+        title={selectedCategory.title}
+        subtitle={selectedCategory.subtitle}
+        onBackPress={navigation.goBack}
+      />
 
       <ScrollView
         showsVerticalScrollIndicator={false}
@@ -40,12 +70,12 @@ const CategoriesDetailsScreen: React.FC<Props> = ({}) => {
         {/* Running hero card */}
         <View style={styles.heroCard}>
           <View style={styles.heroCircle} />
-          <AppText style={styles.runnerEmoji}>🏃</AppText>
+          <AppText style={styles.runnerEmoji}>{selectedCategory.emoji}</AppText>
           <AppText variant="h2" style={styles.heroTitle}>
-            Running
+            {selectedCategory.title}
           </AppText>
           <AppText variant="body2" style={styles.heroSubtitle}>
-            Cardio & Endurance
+            {selectedCategory.subtitle}
           </AppText>
         </View>
 

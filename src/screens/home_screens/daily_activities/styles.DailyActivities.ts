@@ -9,7 +9,7 @@ export const createDailyActivityStyles = (theme: AppTheme) => {
       flex: 1,
       backgroundColor: colors.backgroundSecondary,
     },
-     
+
     scrollContent: {
       paddingHorizontal: spacing.base,
       paddingBottom: spacing.xl,
@@ -53,7 +53,7 @@ export const createDailyActivityStyles = (theme: AppTheme) => {
     chartSection: {
       marginBottom: spacing.lg,
     },
-     
+
     chartSubtitle: {
       marginBottom: spacing.md,
     },
@@ -102,6 +102,5 @@ export const createDailyActivityStyles = (theme: AppTheme) => {
       flex: 1,
       gap: spacing.xxs,
     },
-    
   });
 };

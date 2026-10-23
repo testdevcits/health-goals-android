@@ -1,5 +1,4 @@
-
- export type WorkoutCategory = {
+export type WorkoutCategory = {
   id: string;
   title: string;
   subtitle: string;

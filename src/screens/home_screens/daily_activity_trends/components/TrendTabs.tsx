@@ -14,10 +14,8 @@ const TrendTabs: React.FC<{
 
   return (
     <View
-      style={[
-        styles.tabs,
-        { backgroundColor: theme.colors.surfaceElevated },
-      ]}>
+      style={[styles.tabs, { backgroundColor: theme.colors.surfaceElevated }]}
+    >
       {TREND_METRICS.map(metric => {
         const selected = metric === activeMetric;
         return (
@@ -32,11 +30,13 @@ const TrendTabs: React.FC<{
               ],
             ]}
             accessibilityRole="tab"
-            accessibilityState={{ selected }}>
+            accessibilityState={{ selected }}
+          >
             <AppText
               variant="label"
               bold={selected}
-              color={selected ? 'textPrimary' : 'textTertiary'}>
+              color={selected ? 'textPrimary' : 'textTertiary'}
+            >
               {metric}
             </AppText>
           </Pressable>

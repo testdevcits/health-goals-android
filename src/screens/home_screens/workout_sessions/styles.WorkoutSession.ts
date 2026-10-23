@@ -6,7 +6,7 @@ const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
   },
- 
+
   scrollContent: {
     padding: spacing.base,
     paddingBottom: spacing.md,
@@ -144,7 +144,6 @@ const styles = StyleSheet.create({
     gap: spacing.xs,
   },
   startButton: {
-    
     borderRadius: radius.md,
     alignItems: 'center',
     justifyContent: 'center',
@@ -159,6 +158,5 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     marginTop: spacing.xs,
   },
-  
 });
 export default styles;

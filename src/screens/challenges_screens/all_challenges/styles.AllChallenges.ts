@@ -12,57 +12,6 @@ export const createStyles = (
       backgroundColor: colors.backgroundSecondary,
     },
 
-    header: {
-      minHeight: 76,
-      flexDirection: 'row',
-      alignItems: 'center',
-      backgroundColor: colors.surface,
-      paddingHorizontal: spacing.base,
-      paddingVertical: spacing.sm,
-      borderBottomWidth: StyleSheet.hairlineWidth,
-      borderBottomColor: colors.border,
-    },
-
-    backButton: {
-      width: 38,
-      height: 38,
-      borderRadius: radius.full,
-      backgroundColor: colors.backgroundSecondary,
-      alignItems: 'center',
-      justifyContent: 'center',
-      marginRight: spacing.sm,
-    },
-
-    headerText: {
-      flex: 1,
-      minWidth: 0,
-    },
-
-    headerActions: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      gap: spacing.sm,
-      marginLeft: spacing.xs,
-    },
-
-    notificationButton: {
-      width: 38,
-      height: 38,
-      borderRadius: radius.full,
-      backgroundColor: colors.backgroundSecondary,
-      alignItems: 'center',
-      justifyContent: 'center',
-    },
-
-    profileAvatar: {
-      width: 38,
-      height: 38,
-      borderRadius: radius.full,
-      backgroundColor: colors.primary,
-      alignItems: 'center',
-      justifyContent: 'center',
-    },
-
     scrollContent: {
       paddingBottom: spacing.xl,
     },

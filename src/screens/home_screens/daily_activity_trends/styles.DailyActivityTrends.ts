@@ -9,7 +9,7 @@ export const createTrendStyles = (theme: AppTheme) => {
       flex: 1,
       backgroundColor: colors.backgroundSecondary,
     },
-    
+
     content: {
       paddingHorizontal: spacing.base,
       paddingTop: spacing.md,

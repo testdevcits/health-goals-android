@@ -37,7 +37,7 @@ const AppHeader: React.FC<AppHeaderProps> = ({
       <View style={componentStyles.headerMain}>
         {isBack && (
           <Pressable
-            onPress={onBackPress? onBackPress : () => navigation.goBack()}
+            onPress={onBackPress ? onBackPress : () => navigation.goBack()}
             style={[
               componentStyles.backButton,
               { backgroundColor: colors.backgroundSecondary },
@@ -52,7 +52,9 @@ const AppHeader: React.FC<AppHeaderProps> = ({
         )}
 
         <View style={componentStyles.headerCopy}>
-          <AppText variant="h3">{title}</AppText>
+          <AppText numberOfLines={1} variant="h3">
+            {title}
+          </AppText>
 
           {!!subtitle && (
             <AppText variant="caption" secondary>

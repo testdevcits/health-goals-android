@@ -5,7 +5,11 @@ import { useTheme } from '../../../../theme/useTheme';
 import { QUICK_ACTIONS } from '../const';
 import { createHomeStyles } from '../styles.Home';
 
-const QuickActions: React.FC<{ navigation: any }> = ({ navigation }) => {
+type QuickActionRoute = 'WorkoutSession' | 'Challenges';
+
+const QuickActions: React.FC<{
+  onActionPress: (route: QuickActionRoute) => void;
+}> = ({ onActionPress }) => {
   const styles = createHomeStyles(useTheme().theme);
 
   return (
@@ -19,13 +23,7 @@ const QuickActions: React.FC<{ navigation: any }> = ({ navigation }) => {
             style={styles.quickActionCard}
             accessibilityRole="button"
             accessibilityLabel={action.label}
-            onPress={() => {
-              if (action.screenName) {
-                navigation.navigate(action.screenName);
-              } else {
-                console.log(`Action pressed: ${action.label}`);
-              }
-            }}
+            onPress={() => onActionPress(action.screenName)}
           >
             <View
               style={[

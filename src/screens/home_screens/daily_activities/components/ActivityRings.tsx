@@ -4,8 +4,6 @@ import { View } from 'react-native';
 import { useTheme } from '../../../../theme/useTheme';
 import { createDailyActivityStyles } from '../styles.DailyActivities';
 
- 
-
 const ActivityRings: React.FC<{ rings: any[] }> = ({ rings }) => {
   const styles = createDailyActivityStyles(useTheme().theme);
   const center = 110;

@@ -20,14 +20,13 @@ const TrendStats: React.FC<{
   return (
     <View
       style={styles.statsGrid}
-      accessibilityLabel={`${metric} weekly summary`}>
+      accessibilityLabel={`${metric} weekly summary`}
+    >
       {stats.map(stat => (
         <View
           key={stat.label}
-          style={[
-            styles.statCard,
-            { backgroundColor: theme.colors.surface },
-          ]}>
+          style={[styles.statCard, { backgroundColor: theme.colors.surface }]}
+        >
           <AppText variant="h2" bold>
             {stat.value}
           </AppText>

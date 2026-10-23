@@ -10,10 +10,8 @@ const TrendInsight: React.FC<{ text: string }> = ({ text }) => {
 
   return (
     <View
-      style={[
-        styles.insightCard,
-        { backgroundColor: theme.colors.surface },
-      ]}>
+      style={[styles.insightCard, { backgroundColor: theme.colors.surface }]}
+    >
       <AppText variant="subtitle2" bold style={styles.insightHeading}>
         💡 Insight
       </AppText>

@@ -4,7 +4,6 @@ import { AppText, SectionHeader } from '../../../../components';
 import { useTheme } from '../../../../theme/useTheme';
 import { DAYS, TREND_DATA, TREND_TABS, TrendTab } from '../const';
 import { createHomeStyles } from '../styles.Home';
-import { Section } from 'lucide-react-native';
 
 const BAR_MAX_HEIGHT = 100;
 
