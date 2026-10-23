@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
 import { TouchableOpacity, View } from 'react-native';
-import { AppText } from '../../../../components';
+import { AppText, SectionHeader } from '../../../../components';
 import { useTheme } from '../../../../theme/useTheme';
 import { DAYS, TREND_DATA, TREND_TABS, TrendTab } from '../const';
 import { createHomeStyles } from '../styles.Home';
+import { Section } from 'lucide-react-native';
 
 const BAR_MAX_HEIGHT = 100;
 
@@ -41,7 +42,9 @@ const BarChart: React.FC<{ data: number[]; color: string }> = ({
   );
 };
 
-const ActivityTrends: React.FC<{ onPressDetails: () => void }> = ({ onPressDetails }) => {
+const ActivityTrends: React.FC<{ onPressDetails: () => void }> = ({
+  onPressDetails,
+}) => {
   const { theme } = useTheme();
   const styles = createHomeStyles(theme);
   const [activeTab, setActiveTab] = useState<TrendTab>('Steps');
@@ -49,14 +52,12 @@ const ActivityTrends: React.FC<{ onPressDetails: () => void }> = ({ onPressDetai
 
   return (
     <>
-      <View style={styles.sectionHeader}>
-        <AppText variant="h3">Daily Activity Trends</AppText>
-        <TouchableOpacity onPress={onPressDetails} accessibilityRole="button">
-          <AppText variant="label" link>
-            Details
-          </AppText>
-        </TouchableOpacity>
-      </View>
+       
+      <SectionHeader
+        sectionTitle="Daily Activity Trends"
+        rightText="Details"
+        onRightPress={onPressDetails}
+      />
       <View style={styles.trendsCard}>
         <View style={styles.tabRow}>
           {TREND_TABS.map(tab => (

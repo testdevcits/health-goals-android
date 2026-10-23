@@ -6,6 +6,7 @@ import DailyActivities from '../screens/home_screens/daily_activities/DailyActiv
 import DailyActivityTrends from '../screens/home_screens/daily_activity_trends/DailyActivityTrends';
 import WorkoutCategoriesScreen from '../screens/home_screens/categories/WorkoutCategoriesScreen';
 import CategoriesDetailsScreen from '../screens/home_screens/categories_details/CategoriesDetailsScreen';
+import WorkoutSessionScreen from '../screens/home_screens/workout_sessions/WorkoutSessionScreen';
 
 export type RootStackParamList = {
   Home: undefined;
@@ -13,6 +14,7 @@ export type RootStackParamList = {
   DailyActivityTrends: undefined;
   Category: undefined;
   CategoriesDetailsScreen: undefined;
+  WorkoutSession: undefined;
 };
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
@@ -30,6 +32,10 @@ const HomeStack = () => {
       <Stack.Screen
         name="CategoriesDetailsScreen"
         component={CategoriesDetailsScreen}
+      />    
+      <Stack.Screen
+        name="WorkoutSession"
+        component={WorkoutSessionScreen}
       />
     </Stack.Navigator>
   );

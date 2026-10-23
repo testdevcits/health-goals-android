@@ -1,5 +1,5 @@
 // src/components/AppInput.tsx
-import React, { useState, forwardRef } from 'react';
+import React, { useState, forwardRef, memo } from 'react';
 import {
   View,
   TextInput,
@@ -130,4 +130,4 @@ const styles = StyleSheet.create({
 });
 
 AppInput.displayName = 'AppInput';
-export default AppInput;
+export default memo(AppInput);

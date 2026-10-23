@@ -1,5 +1,5 @@
 // src/components/OnboardingModal.tsx
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, memo } from 'react';
 import {
   Modal,
   View,
@@ -183,4 +183,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default OnboardingModal;
+export default memo(OnboardingModal);

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { memo } from 'react';
 import { Pressable, StyleSheet, Switch, View } from 'react-native';
 import { ChevronRight } from 'lucide-react-native';
 import { useTheme } from '../theme/useTheme';
@@ -138,4 +138,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default AppSettingsRow;
+export default memo(AppSettingsRow);

@@ -1,6 +1,6 @@
 import React, { useCallback } from 'react';
 import { FlatList, Text, TouchableOpacity, View } from 'react-native';
-import { AppText } from '../../../../components';
+import { AppText, SectionHeader } from '../../../../components';
 import { useTheme } from '../../../../theme/useTheme';
 import { WORKOUT_CATEGORIES } from '../const';
 import { createHomeStyles } from '../styles.Home';
@@ -45,14 +45,11 @@ const WorkoutCategories: React.FC<{ onViewAllPress: () => void }> = ({
 
   return (
     <>
-      <View style={styles.sectionHeader}>
-        <AppText variant="h3">Workout Categories</AppText>
-        <TouchableOpacity onPress={onViewAllPress} accessibilityRole="button">
-          <AppText variant="label" link>
-            View all
-          </AppText>
-        </TouchableOpacity>
-      </View>
+      <SectionHeader
+        sectionTitle="Workout Categories"
+        rightText="View all"
+        onRightPress={onViewAllPress}
+      />
       <FlatList
         data={WORKOUT_CATEGORIES}
         renderItem={renderWorkoutCard}

@@ -1,5 +1,5 @@
 // src/components/AppCheckbox.tsx
-import React from 'react';
+import React, { memo } from 'react';
 import { TouchableOpacity, View, StyleSheet, ViewStyle } from 'react-native';
 import { Check } from 'lucide-react-native';
 import { useTheme } from '../theme/useTheme';
@@ -91,4 +91,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default AppCheckbox;
+export default memo(AppCheckbox);

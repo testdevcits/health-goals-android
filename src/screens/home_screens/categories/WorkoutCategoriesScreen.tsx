@@ -1,13 +1,5 @@
 import React from 'react';
-import {
-  FlatList,
-  Pressable,
-  SafeAreaView,
-  ScrollView,
-  StatusBar,
-  StyleSheet,
-  View,
-} from 'react-native';
+import { FlatList, Pressable, StatusBar, StyleSheet, View } from 'react-native';
 import {
   ArrowLeft,
   Bell,
@@ -223,7 +215,7 @@ const WorkoutCategoriesScreen: React.FC<Props> = ({
   );
 
   return (
-    <SafeAreaView
+    <View
       style={[styles.safeArea, { backgroundColor: colors.backgroundSecondary }]}
     >
       <StatusBar
@@ -352,7 +344,7 @@ const WorkoutCategoriesScreen: React.FC<Props> = ({
           );
         })}
       </View>
-    </SafeAreaView>
+    </View>
   );
 };
 

@@ -1,5 +1,5 @@
 // src/components/AppText.tsx
-import React from 'react';
+import React, { memo } from 'react';
 import { Text, TextProps, StyleSheet, TextStyle } from 'react-native';
 import { useTheme } from '../theme/useTheme';
 import { TypographyVariant } from '../theme/index';
@@ -100,4 +100,4 @@ const AppText: React.FC<AppTextProps> = ({
   );
 };
 
-export default AppText;
+export default memo(AppText);

@@ -1,13 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import {
-  Alert,
-  Pressable,
-  SafeAreaView,
-  ScrollView,
-  StatusBar,
-  StyleSheet,
-  View,
-} from 'react-native';
+import { Alert, Pressable, ScrollView, StatusBar, View } from 'react-native';
 import {
   ArrowLeft,
   Bell,
@@ -281,7 +273,7 @@ const WorkoutSessionScreen: React.FC<Props> = ({
   );
 
   return (
-    <SafeAreaView
+    <View
       style={[styles.safeArea, { backgroundColor: colors.backgroundSecondary }]}
     >
       <StatusBar
@@ -512,7 +504,7 @@ const WorkoutSessionScreen: React.FC<Props> = ({
           );
         })}
       </View>
-    </SafeAreaView>
+    </View>
   );
 };
 

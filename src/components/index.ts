@@ -6,4 +6,6 @@ export { default as AppCheckbox } from './AppCheckbox';
 export { default as AppSelect } from './AppSelect';
 export { default as AppSettingsRow } from './AppSettingsRow';
 export { default as OnboardingModal } from './OnboardingModal';
+export { default as SectionHeader } from './SectionHeader';
+
 export type { SelectOption } from './AppSelect';

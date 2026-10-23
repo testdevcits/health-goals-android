@@ -91,6 +91,7 @@ export const QUICK_ACTIONS = [
     label: 'Start Workout',
     bg: '#FFF3E0',
     accent: '#F59E0B',
+    screenName: 'WorkoutSession',
   },
   {
     id: '2',
@@ -98,6 +99,7 @@ export const QUICK_ACTIONS = [
     label: 'Join Challenge',
     bg: '#FFF9E0',
     accent: '#D97706',
+    screenName: 'Challenges',
   },
 ];
 

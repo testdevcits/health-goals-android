@@ -147,16 +147,7 @@ export const createHomeStyles = (theme: AppTheme) => {
       fontSize: 14,
     },
 
-    // ── Section headers ───────────────────────────
-    sectionHeader: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      justifyContent: 'space-between',
-      marginHorizontal: spacing.xl,
-      marginTop: spacing.lg,
-      marginBottom: spacing.md,
-    },
-
+     
     // ── Today's Summary card ───────────────────────
     summaryCard: {
       flexDirection: 'row',

@@ -1,18 +1,17 @@
 import React from 'react';
 import { Text, TouchableOpacity, View } from 'react-native';
-import { AppText } from '../../../../components';
+import { AppText, SectionHeader } from '../../../../components';
 import { useTheme } from '../../../../theme/useTheme';
 import { QUICK_ACTIONS } from '../const';
 import { createHomeStyles } from '../styles.Home';
 
-const QuickActions: React.FC = () => {
+const QuickActions: React.FC<{ navigation: any }> = ({ navigation }) => {
   const styles = createHomeStyles(useTheme().theme);
 
   return (
     <>
-      <View style={styles.sectionHeader}>
-        <AppText variant="h3">Quick Actions</AppText>
-      </View>
+       
+      <SectionHeader sectionTitle="Quick Actions" />
       <View style={styles.quickActionsRow}>
         {QUICK_ACTIONS.map(action => (
           <TouchableOpacity
@@ -21,6 +20,13 @@ const QuickActions: React.FC = () => {
             style={styles.quickActionCard}
             accessibilityRole="button"
             accessibilityLabel={action.label}
+            // onPress={() => {
+            //   if (action.screenName) {
+            //     navigation.navigate(action.screenName);
+            //   } else {
+            //     console.log(`Action pressed: ${action.label}`);
+            //   }
+            // }}
           >
             <View
               style={[

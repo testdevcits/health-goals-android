@@ -1,7 +1,7 @@
 import React from 'react';
 import { Text, TouchableOpacity, View } from 'react-native';
 import { ChevronRight } from 'lucide-react-native';
-import { AppText } from '../../../../components';
+import { AppText, SectionHeader } from '../../../../components';
 import { useTheme } from '../../../../theme/useTheme';
 import { createHomeStyles } from '../styles.Home';
 
@@ -13,16 +13,11 @@ const DailySummary: React.FC<{ onViewDetails: () => void }> = ({
 
   return (
     <>
-      <View style={styles.sectionHeader}>
-        <AppText variant="h3">Today's Summary</AppText>
-        <TouchableOpacity
-          onPress={onViewDetails}
-          accessibilityRole="button">
-          <AppText variant="label" link>
-            View Details
-          </AppText>
-        </TouchableOpacity>
-      </View>
+      <SectionHeader
+        sectionTitle="Today's Summary"
+        rightText="View Details"
+        onRightPress={onViewDetails}
+      />
       <TouchableOpacity
         onPress={onViewDetails}
         activeOpacity={0.85}

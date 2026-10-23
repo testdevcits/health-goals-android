@@ -1,5 +1,5 @@
 // src/components/AppButton.tsx
-import React from 'react';
+import React, { memo } from 'react';
 import {
   TouchableOpacity,
   ActivityIndicator,
@@ -98,4 +98,4 @@ const AppButton: React.FC<AppButtonProps> = ({
   );
 };
 
-export default AppButton;
+export default memo(AppButton);

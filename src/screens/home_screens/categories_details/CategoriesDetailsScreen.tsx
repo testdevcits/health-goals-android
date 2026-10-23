@@ -1,6 +1,5 @@
 import React from 'react';
 import {
-  SafeAreaView,
   ScrollView,
   StatusBar,
   StyleSheet,
@@ -60,7 +59,7 @@ const CategoriesDetailsScreen: React.FC<Props> = ({
   const { colors } = theme;
 
   return (
-    <SafeAreaView
+    <View
       style={[styles.safeArea, { backgroundColor: colors.backgroundSecondary }]}
     >
       <StatusBar
@@ -305,7 +304,7 @@ const CategoriesDetailsScreen: React.FC<Props> = ({
           );
         })}
       </View>
-    </SafeAreaView>
+    </View>
   );
 };
 

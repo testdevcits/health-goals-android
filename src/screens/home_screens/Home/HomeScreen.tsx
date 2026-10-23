@@ -9,6 +9,7 @@ import HomeHeader from './components/HomeHeader';
 import NotificationBanner from './components/NotificationBanner';
 import WorkoutCategories from './components/WorkoutCategories';
 import { createHomeStyles } from './styles.Home';
+import QuickActions from './components/QuickActions';
 
 const HomeScreen: React.FC<{
   navigation: {
@@ -42,10 +43,9 @@ const HomeScreen: React.FC<{
         />
         <ActivityTrends
           onPressDetails={() => Alert.alert('View All button pressed')}
-
           // onPressDetails={() => navigation.navigate('DailyActivityTrends')}
         />
-        {/*  <QuickActions /> */}
+        <QuickActions navigation={navigation} />
       </ScrollView>
     </View>
   );

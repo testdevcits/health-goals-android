@@ -1,5 +1,5 @@
 // src/components/AppSelect.tsx
-import React, { useState } from 'react';
+import React, { memo, useState } from 'react';
 import {
   View,
   Modal,
@@ -199,4 +199,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default AppSelect;
+export default memo(AppSelect);
