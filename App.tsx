@@ -2,13 +2,15 @@
  * Vitality App
  * Root entry point – wires ThemeProvider + Navigation
  */
-import React from 'react';
+import React, { useEffect } from 'react';
 import { StatusBar } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { ThemeProvider } from './src/theme/ThemeProvider';
 import { useTheme } from './src/theme/useTheme';
 import AppNavigation from './src/navigations/AppNavigation';
+import BootSplash from 'react-native-bootsplash';
+
 
 function ThemedRoot() {
   const { colorScheme } = useTheme();
@@ -25,6 +27,13 @@ function ThemedRoot() {
 }
 
 function App() {
+  useEffect(() => {
+    const init = async () => {
+      await BootSplash.hide({ fade: true });
+    };
+
+    init();
+  }, []);
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
       <SafeAreaProvider>

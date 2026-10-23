@@ -7,5 +7,5 @@ export { default as AppSelect } from './AppSelect';
 export { default as AppSettingsRow } from './AppSettingsRow';
 export { default as OnboardingModal } from './OnboardingModal';
 export { default as SectionHeader } from './SectionHeader';
-
+export { default as AppHeader } from './appHeader/AppHeader';
 export type { SelectOption } from './AppSelect';

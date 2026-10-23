@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Alert, ScrollView, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { OnboardingModal } from '../../../components';
 import { useTheme } from '../../../theme/useTheme';
 import ActivityTrends from './components/ActivityTrends';
 import DailySummary from './components/DailySummary';
@@ -21,6 +22,7 @@ const HomeScreen: React.FC<{
   const styles = createHomeStyles(theme);
   const [notificationPromptVisible, setNotificationPromptVisible] =
     useState(true);
+  const [onboardingVisible, setOnboardingVisible] = useState(true);
 
   return (
     <View style={[styles.container, { paddingTop: insets.top }]}>
@@ -47,6 +49,10 @@ const HomeScreen: React.FC<{
         />
         <QuickActions navigation={navigation} />
       </ScrollView>
+      <OnboardingModal
+        visible={onboardingVisible}
+        onDismiss={() => setOnboardingVisible(false)}
+      />
     </View>
   );
 };

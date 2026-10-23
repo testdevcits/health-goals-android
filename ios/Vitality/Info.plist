@@ -34,9 +34,9 @@
 		<true/>
 	</dict>
 	<key>NSLocationWhenInUseUsageDescription</key>
-	<string/>
+	<string></string>
 	<key>UILaunchStoryboardName</key>
-	<string>LaunchScreen</string>
+	<string>BootSplash</string>
 	<key>UIRequiredDeviceCapabilities</key>
 	<array>
 		<string>arm64</string>
@@ -55,7 +55,7 @@
 	<key>UIViewControllerBasedStatusBarAppearance</key>
 	<false/>
 	<key>NSUserNotificationUsageDescription</key>
-    <string>We use notifications to keep you updated about important activities.</string>
+	<string>We use notifications to keep you updated about important activities.</string>
 	<key>UIAppFonts</key>
 	<array>
 		<string>Inter_18pt-SemiBold.ttf</string>

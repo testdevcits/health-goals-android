@@ -1,11 +1,10 @@
 import React from 'react';
 import { Pressable, ScrollView, StatusBar, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { AppText } from '../../../components';
+import { AppHeader, AppText } from '../../../components';
 import { useTheme } from '../../../theme/useTheme';
 import { createDailyActivityStyles } from './styles.DailyActivities';
 import ActivityChart from './components/ActivityChart';
-import ActivityHeader from './components/ActivityHeader';
 import ActivityMetrics from './components/ActivityMetrics';
 import ActivityRings from './components/ActivityRings';
 import DailyTotals from './components/DailyTotals';
@@ -24,13 +23,20 @@ const DailyActivities: React.FC<{ navigation: DailyActivityNavigation }> = ({
         barStyle={theme.isDark ? 'light-content' : 'dark-content'}
         backgroundColor={theme.colors.surface}
       />
-      <ActivityHeader navigation={navigation} />
+      {/* <ActivityHeader navigation={navigation} /> */}
+      <AppHeader
+        title="Daily Activity"
+        subtitle="Today, October 23"
+        onBackPress={() => navigation.goBack()}
+        
+      />
       <ScrollView
         showsVerticalScrollIndicator={false}
         contentContainerStyle={[
           styles.scrollContent,
           { paddingBottom: insets.bottom + 28 },
-        ]}>
+        ]}
+      >
         <ActivityRings />
         <ActivityMetrics />
         <DailyTotals />
@@ -69,7 +75,8 @@ const DailyActivities: React.FC<{ navigation: DailyActivityNavigation }> = ({
         <Pressable
           onPress={navigation.goBack}
           style={styles.backHome}
-          accessibilityRole="button">
+          accessibilityRole="button"
+        >
           <AppText variant="subtitle2" bold>
             Back to Home
           </AppText>
@@ -95,11 +102,15 @@ const ActivityDetail: React.FC<{
       </AppText>
       <View style={styles.detailValues}>
         <View style={styles.detailMetric}>
-          <AppText variant="caption" secondary>{leftLabel}</AppText>
+          <AppText variant="caption" secondary>
+            {leftLabel}
+          </AppText>
           <AppText variant="h3">{leftValue}</AppText>
         </View>
         <View style={styles.detailMetric}>
-          <AppText variant="caption" secondary>{rightLabel}</AppText>
+          <AppText variant="caption" secondary>
+            {rightLabel}
+          </AppText>
           <AppText variant="h3">{rightValue}</AppText>
         </View>
       </View>
