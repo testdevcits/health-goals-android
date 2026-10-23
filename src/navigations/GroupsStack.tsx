@@ -1,10 +1,12 @@
 // src/navigations/GroupsStack.tsx
 import React from 'react';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import GroupsScreen from '../screens/groups_screens/Groups/GroupsScreen';
+import GroupsScreen from '../screens/groups_screens/groups/GroupsScreen';
+import GroupDetailScreen from '../screens/groups_screens/group_details/GroupDetailScreen';
 
 export type RootStackParamList = {
   Groups: undefined;
+  GroupDetails: undefined;
 };
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
@@ -13,6 +15,8 @@ const GroupsStack = () => {
   return (
     <Stack.Navigator screenOptions={{ headerShown: false, animation: 'fade' }}>
       <Stack.Screen name="Groups" component={GroupsScreen} />
+      <Stack.Screen name="GroupDetails" component={GroupDetailScreen} />
+
     </Stack.Navigator>
   );
 };
