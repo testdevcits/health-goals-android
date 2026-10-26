@@ -13,85 +13,89 @@ interface Props {
   styles: any;
 }
 
-export const GroupChat: React.FC<Props> = memo(({
-  messages,
-  messageDraft,
-  onChangeDraft,
-  onSend,
-  colors,
-  styles,
-}) => (
-  <View style={styles.chatContainer}>
-    <ScrollView
-      style={styles.chatMessages}
-      contentContainerStyle={styles.chatMessagesContent}
-      showsVerticalScrollIndicator={false}
-      keyboardShouldPersistTaps="handled"
-    >
-      {messages.map(message => (
-        <View
-          key={message.id}
-          style={[styles.messageRow, message.mine && styles.myMessageRow]}
-        >
-          {!message.mine && (
-            <View style={[styles.chatAvatar, { backgroundColor: message.color }]}>
-              <AppText variant="caption" color="white" bold>
-                {message.initials}
-              </AppText>
-            </View>
-          )}
-
+export const GroupChat: React.FC<Props> = memo(
+  ({ messages, messageDraft, onChangeDraft, onSend, colors, styles }) => (
+    <View style={styles.chatContainer}>
+      <ScrollView
+        style={styles.chatMessages}
+        contentContainerStyle={styles.chatMessagesContent}
+        showsVerticalScrollIndicator={false}
+        keyboardShouldPersistTaps="handled"
+      >
+        {messages.map(message => (
           <View
-            style={[
-              styles.messageBubble,
-              message.mine ? styles.myMessageBubble : styles.otherMessageBubble,
-            ]}
+            key={message.id}
+            style={[styles.messageRow, message.mine && styles.myMessageRow]}
           >
             {!message.mine && (
-              <AppText variant="caption" primary bold style={styles.messageAuthor}>
-                {message.name}
-              </AppText>
+              <View
+                style={[styles.chatAvatar, { backgroundColor: message.color }]}
+              >
+                <AppText variant="caption" color="white" bold>
+                  {message.initials}
+                </AppText>
+              </View>
             )}
 
-            <AppText
-              variant="body2"
-              style={{ color: message.mine ? 'white' : colors.textPrimary }}
-            >
-              {message.message}
-            </AppText>
-
-            <AppText
-              variant="caption"
+            <View
               style={[
-                { color: message.mine ? 'white' : colors.textTertiary },
-                styles.messageTime,
+                styles.messageBubble,
+                message.mine
+                  ? styles.myMessageBubble
+                  : styles.otherMessageBubble,
               ]}
             >
-              {message.time}
-            </AppText>
-          </View>
-        </View>
-      ))}
-    </ScrollView>
+              {!message.mine && (
+                <AppText
+                  variant="caption"
+                  primary
+                  bold
+                  style={styles.messageAuthor}
+                >
+                  {message.name}
+                </AppText>
+              )}
 
-    <View style={styles.chatComposer}>
-      <TextInput
-        value={messageDraft}
-        onChangeText={onChangeDraft}
-        placeholder="Message the group..."
-        placeholderTextColor={colors.inputPlaceholder}
-        style={styles.chatInput}
-        multiline
-        maxLength={1000}
-      />
-      <Pressable
-        accessibilityRole="button"
-        accessibilityLabel="Send message"
-        onPress={onSend}
-        style={styles.sendButton}
-      >
-        <Send size={18} color="white" />
-      </Pressable>
+              <AppText
+                variant="body2"
+                style={{ color: message.mine ? 'white' : colors.textPrimary }}
+              >
+                {message.message}
+              </AppText>
+
+              <AppText
+                variant="caption"
+                style={[
+                  { color: message.mine ? 'white' : colors.textTertiary },
+                  styles.messageTime,
+                ]}
+              >
+                {message.time}
+              </AppText>
+            </View>
+          </View>
+        ))}
+      </ScrollView>
+
+      <View style={styles.chatComposer}>
+        <TextInput
+          value={messageDraft}
+          onChangeText={onChangeDraft}
+          placeholder="Message the group..."
+          placeholderTextColor={colors.inputPlaceholder}
+          style={styles.chatInput}
+          multiline
+          maxLength={1000}
+        />
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel="Send message"
+          onPress={onSend}
+          style={styles.sendButton}
+        >
+          <Send size={18} color="white" />
+        </Pressable>
+      </View>
     </View>
-  </View>
-));
+  ),
+);

@@ -41,10 +41,10 @@ const HomeScreen: React.FC<Props> = ({ navigation }) => {
         <WorkoutCategories
           onViewAllPress={() => navigation.navigate('Categories')}
         />
-        {/* <ActivityTrends
+        <ActivityTrends
           onPressDetails={() => navigation.navigate('DailyActivityTrends')}
-        /> */}
-        {/* <QuickActions
+        />
+        <QuickActions
           onActionPress={action => {
             if (action === 'WorkoutSession') {
               navigation.navigate('WorkoutSession');
@@ -52,7 +52,7 @@ const HomeScreen: React.FC<Props> = ({ navigation }) => {
               navigation.getParent()?.navigate('Challenges');
             }
           }}
-        /> */}
+        />
       </ScrollView>
       <OnboardingModal
         visible={onboardingVisible}

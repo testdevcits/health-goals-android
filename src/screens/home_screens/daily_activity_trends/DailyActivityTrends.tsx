@@ -53,7 +53,7 @@ const DailyActivityTrends: React.FC<{
   };
 
   return (
-    <View style={[styles.screen, { paddingTop: insets.top }]}>
+    <View style={[styles.screen]}>
       <StatusBar
         barStyle={theme.isDark ? 'light-content' : 'dark-content'}
         backgroundColor={theme.colors.surface}

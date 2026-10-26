@@ -1,21 +1,8 @@
 import React, { useState } from 'react';
-import {
-  View,
-  ScrollView,
-  Pressable,
-  StyleSheet,
-  useWindowDimensions,
-} from 'react-native';
+import { View, ScrollView, Pressable, useWindowDimensions } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import {
-  ArrowLeft,
-  Bell,
-  Footprints,
-  Droplets,
-  Sunrise,
-  Dumbbell,
-} from 'lucide-react-native';
+import { Footprints, Droplets, Sunrise, Dumbbell } from 'lucide-react-native';
 
 import { useTheme } from '../../../theme/useTheme';
 import { AppHeader, AppText } from '../../../components';
@@ -118,7 +105,7 @@ const AllChallengesScreen: React.FC<AllChallengesScreenProps> = ({
       selectedCategory === 'All' || challenge.category === selectedCategory,
   );
 
-  const styles = createStyles(colors, spacing, radius, width);
+  const styles = createStyles(colors, spacing, radius);
 
   return (
     <View style={[styles.container]}>

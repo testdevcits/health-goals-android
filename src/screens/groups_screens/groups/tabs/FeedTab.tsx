@@ -1,4 +1,4 @@
-import { Alert, Pressable, StyleSheet, Text, View } from 'react-native';
+import { Alert, Pressable, StyleSheet, View } from 'react-native';
 import React from 'react';
 import { Heart, MessageCircle, Share2 } from 'lucide-react-native';
 import { AppText } from '../../../../components';

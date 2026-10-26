@@ -1,11 +1,6 @@
 import { StyleSheet } from 'react-native';
 
-export const createStyles = (
-  colors: any,
-  spacing: any,
-  radius: any,
-  screenWidth: number,
-) =>
+export const createStyles = (colors: any, spacing: any, radius: any) =>
   StyleSheet.create({
     container: {
       flex: 1,

@@ -12,44 +12,44 @@ interface Props {
   styles: any;
 }
 
-export const GroupHeader: React.FC<Props> = memo(({
-  groupName,
-  groupDescription,
-  memberCount,
-  colors,
-  styles,
-}) => {
-  const navigation = useNavigation();
+export const GroupHeader: React.FC<Props> = memo(
+  ({ groupName, groupDescription, memberCount, colors, styles }) => {
+    const navigation = useNavigation();
 
-  return (
-    <View style={styles.header}>
-      <Pressable
-        accessibilityRole="button"
-        accessibilityLabel="Go back"
-        onPress={() => navigation.goBack()}
-        style={styles.backButton}
-      >
-        <ArrowLeft size={20} color={colors.textPrimary} />
-      </Pressable>
+    return (
+      <View style={styles.header}>
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel="Go back"
+          onPress={() => navigation.goBack()}
+          style={styles.backButton}
+        >
+          <ArrowLeft size={20} color={colors.textPrimary} />
+        </Pressable>
 
-      <View style={styles.headerText}>
-        <AppText variant="h3" numberOfLines={1}>{groupName}</AppText>
-        <AppText variant="caption" secondary numberOfLines={1}>
-          {groupDescription} · {memberCount} members
-        </AppText>
+        <View style={styles.headerText}>
+          <AppText variant="h3" numberOfLines={1}>
+            {groupName}
+          </AppText>
+          <AppText variant="caption" secondary numberOfLines={1}>
+            {groupDescription} · {memberCount} members
+          </AppText>
+        </View>
+
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel="Notifications"
+          style={styles.headerIconButton}
+        >
+          <Bell size={19} color={colors.textPrimary} />
+        </Pressable>
+
+        <View style={styles.profileAvatar}>
+          <AppText variant="subtitle2" color="white" bold>
+            AJ
+          </AppText>
+        </View>
       </View>
-
-      <Pressable
-        accessibilityRole="button"
-        accessibilityLabel="Notifications"
-        style={styles.headerIconButton}
-      >
-        <Bell size={19} color={colors.textPrimary} />
-      </Pressable>
-
-      <View style={styles.profileAvatar}>
-        <AppText variant="subtitle2" color="white" bold>AJ</AppText>
-      </View>
-    </View>
-  );
-});
+    );
+  },
+);

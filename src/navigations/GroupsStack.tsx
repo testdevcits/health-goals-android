@@ -16,7 +16,6 @@ const GroupsStack = () => {
     <Stack.Navigator screenOptions={{ headerShown: false, animation: 'fade' }}>
       <Stack.Screen name="Groups" component={GroupsScreen} />
       <Stack.Screen name="GroupDetails" component={GroupDetailScreen} />
-
     </Stack.Navigator>
   );
 };

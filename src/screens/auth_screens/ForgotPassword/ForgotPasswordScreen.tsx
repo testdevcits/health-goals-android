@@ -38,7 +38,7 @@ const ForgotPasswordScreen: React.FC<Props> = ({ navigation }) => {
     if (err) return;
 
     setLoading(true);
-    await new Promise(r => setTimeout(r, 1400));
+    await new Promise((r:any )=> setTimeout(r, 1400));
     setLoading(false);
     setSent(true);
   };

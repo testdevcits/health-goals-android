@@ -74,7 +74,8 @@ const GroupDetailScreen: React.FC<GroupDetailScreenProps> = ({
   }, [messageDraft]);
 
   // ─── Challenges ─────────────────────────────────────────────────────────────
-  const [challenges, setChallenges] = useState<GroupChallenge[]>(INITIAL_CHALLENGES);
+  const [challenges, setChallenges] =
+    useState<GroupChallenge[]>(INITIAL_CHALLENGES);
   const [createChallengeVisible, setCreateChallengeVisible] = useState(false);
   const [challengeName, setChallengeName] = useState('');
   const [challengeGoal, setChallengeGoal] = useState('');
@@ -97,7 +98,10 @@ const GroupDetailScreen: React.FC<GroupDetailScreenProps> = ({
 
   const handleCreateChallenge = useCallback(() => {
     if (!challengeName.trim() || !challengeGoal.trim()) {
-      Alert.alert('Missing details', 'Enter a challenge name and goal to continue.');
+      Alert.alert(
+        'Missing details',
+        'Enter a challenge name and goal to continue.',
+      );
       return;
     }
 

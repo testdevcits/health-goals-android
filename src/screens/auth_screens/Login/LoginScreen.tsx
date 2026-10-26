@@ -54,7 +54,7 @@ const LoginScreen: React.FC<Props> = ({ navigation }) => {
   const handleSignIn = async () => {
     if (!validate()) return;
     setLoading(true);
-    await new Promise(r => setTimeout(r, 1400));
+    await new Promise((r:any )=> setTimeout(r, 1400));
     setLoading(false);
     navigation.navigate('MainTabNavigation');
     // TODO: navigate to Home

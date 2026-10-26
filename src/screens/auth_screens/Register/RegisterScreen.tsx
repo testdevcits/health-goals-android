@@ -57,7 +57,7 @@ const validators = {
 
 const RegisterScreen: React.FC<Props> = ({ navigation }) => {
   const { theme } = useTheme();
-  const { colors, spacing } = theme;
+
   const styles = createRegisterStyles(theme);
 
   // Form state
@@ -98,7 +98,7 @@ const RegisterScreen: React.FC<Props> = ({ navigation }) => {
   const handleCreate = async () => {
     if (!validate()) return;
     setLoading(true);
-    await new Promise(r => setTimeout(r, 1600));
+    await new Promise((r:any )=> setTimeout(r, 1600));
     setLoading(false);
     // TODO: call API then navigate to Main
     navigation.replace('MainTabNavigation');

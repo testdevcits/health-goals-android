@@ -38,6 +38,11 @@ const EditProfileScreen: React.FC<{ navigation: ProfileScreenNavigation }> = ({
             value={height}
             onChangeText={setHeight}
             keyboardType="numeric"
+            error={
+              parseInt(height) < 50 || parseInt(height) > 300
+                ? 'Height must be between 50 and 300 cm'
+                : undefined
+            }
           />
           <AppInput
             containerStyle={styles.column}
@@ -45,6 +50,11 @@ const EditProfileScreen: React.FC<{ navigation: ProfileScreenNavigation }> = ({
             value={weight}
             onChangeText={setWeight}
             keyboardType="numeric"
+            error={
+              parseInt(weight) < 20 || parseInt(weight) > 500
+                ? 'Weight must be between 20 and 500 kg'
+                : undefined
+            }
           />
         </View>
         <AppInput
@@ -52,6 +62,11 @@ const EditProfileScreen: React.FC<{ navigation: ProfileScreenNavigation }> = ({
           value={birthDate}
           onChangeText={setBirthDate}
           placeholder="DD/MM/YYYY"
+          error={
+            birthDate && !/^\d{2}\/\d{2}\/\d{4}$/.test(birthDate)
+              ? 'Please enter a valid date (DD/MM/YYYY)'
+              : undefined
+          }
         />
         <View style={styles.field}>
           <AppText variant="label" secondary mb={6}>

@@ -15,14 +15,6 @@ const styles = StyleSheet.create({
     borderBottomColor: '#E7ECF1',
   },
 
-  statusRow: {
-    height: 24,
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingHorizontal: spacing.xs,
-  },
-
   headerMain: {
     minHeight: 48,
     flexDirection: 'row',

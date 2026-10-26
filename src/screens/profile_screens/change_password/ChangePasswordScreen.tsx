@@ -12,26 +12,29 @@ const ChangePasswordScreen: React.FC<{
   const [current, setCurrent] = useState('');
   const [password, setPassword] = useState('');
   const [confirm, setConfirm] = useState('');
+  const [submitted, setSubmitted] = useState(false);
 
   const submit = () => {
+    setSubmitted(true);
+
+    if (!current.trim() || !password || !confirm) {
+      return;
+    }
+
     if (password.length < 8) {
-      Alert.alert(
-        'Password too short',
-        'Choose a password with at least 8 characters.',
-      );
       return;
     }
+
     if (password !== confirm) {
-      Alert.alert(
-        'Passwords do not match',
-        'Re-enter your new password and try again.',
-      );
       return;
     }
+
     Alert.alert('Password updated', 'Your password has been changed.');
+
     setCurrent('');
     setPassword('');
     setConfirm('');
+    setSubmitted(false);
   };
 
   return (
@@ -47,7 +50,13 @@ const ChangePasswordScreen: React.FC<{
           onChangeText={setCurrent}
           isPassword
           autoCapitalize="none"
+          error={
+            (submitted || current.length > 0) && !current.trim()
+              ? 'Current password is required'
+              : undefined
+          }
         />
+
         <AppInput
           label="New Password"
           value={password}
@@ -55,7 +64,13 @@ const ChangePasswordScreen: React.FC<{
           isPassword
           placeholder="At least 8 characters"
           autoCapitalize="none"
+          error={
+            (submitted || password.length > 0) && password.length < 8
+              ? 'New password must be at least 8 characters'
+              : undefined
+          }
         />
+
         <AppInput
           label="Confirm New Password"
           value={confirm}
@@ -63,12 +78,19 @@ const ChangePasswordScreen: React.FC<{
           isPassword
           placeholder="Re-enter new password"
           autoCapitalize="none"
+          error={
+            (submitted || confirm.length > 0) && confirm !== password
+              ? 'Passwords do not match'
+              : undefined
+          }
         />
+
         <AppButton
           title="Update Password"
           onPress={submit}
           style={styles.updateButton}
         />
+
         <AppText variant="caption" secondary center style={styles.hint}>
           Use 8+ characters with a mix of letters, numbers & symbols
         </AppText>
@@ -78,9 +100,16 @@ const ChangePasswordScreen: React.FC<{
 };
 
 const styles = StyleSheet.create({
-  form: { paddingTop: 16 },
-  updateButton: { width: '100%', borderRadius: 14 },
-  hint: { marginTop: 8 },
+  form: {
+    paddingTop: 16,
+  },
+  updateButton: {
+    width: '100%',
+    borderRadius: 14,
+  },
+  hint: {
+    marginTop: 8,
+  },
 });
 
 export default ChangePasswordScreen;

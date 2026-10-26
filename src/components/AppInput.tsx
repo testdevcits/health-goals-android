@@ -34,7 +34,7 @@ const AppInput = forwardRef<TextInput, AppInputProps>(
     ref,
   ) => {
     const { theme } = useTheme();
-    const { colors, spacing, radius, typography, fonts } = theme;
+    const { colors, spacing, radius, fonts } = theme;
     const [isFocused, setIsFocused] = useState(false);
     const [secureVisible, setSecureVisible] = useState(false);
 

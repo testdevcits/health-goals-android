@@ -5,16 +5,15 @@ import {
   Platform,
   Pressable,
   StyleSheet,
-  Switch,
   TextInput,
   View,
 } from 'react-native';
 import { X, LockKeyhole } from 'lucide-react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { AppText } from '../../../../components';
+import { AppText, CustomSwitch } from '../../../../components';
 import { useTheme } from '../../../../theme/useTheme';
- 
+
 // const groupIcons = ['🚶', '🏃', '🚴', '💪', '🧘', '🏆', '🌳', '❤️'];
 
 const groupIcons = ['🏃', '🚶', '🧘', '💪', '🚴', '🏋️', '🥗', '🏊'];
@@ -140,15 +139,7 @@ const CreateGroupModal: React.FC<CreateGroupModalProps> = ({
                 </AppText>
               </View>
 
-              <Switch
-                value={isPrivate}
-                onValueChange={setIsPrivate}
-                trackColor={{
-                  false: colors.border,
-                  true: colors.primary,
-                }}
-                thumbColor={colors.white}
-              />
+              <CustomSwitch value={isPrivate} onValueChange={setIsPrivate} />
             </View>
 
             <Pressable

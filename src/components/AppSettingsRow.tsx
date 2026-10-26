@@ -1,8 +1,9 @@
 import React, { memo } from 'react';
-import { Pressable, StyleSheet, Switch, View } from 'react-native';
+import { Pressable, StyleSheet, View } from 'react-native';
 import { ChevronRight } from 'lucide-react-native';
 import { useTheme } from '../theme/useTheme';
 import AppText from './AppText';
+import CustomSwitch from './CustomSwitch';
 
 interface AppSettingsRowProps {
   icon: string;
@@ -56,15 +57,15 @@ const AppSettingsRow: React.FC<AppSettingsRowProps> = ({
       </View>
 
       {hasSwitch ? (
-        <Switch
+        <CustomSwitch
           value={switchValue}
           onValueChange={onSwitchChange}
-          trackColor={{
-            false: colors.border,
-            true: colors.primary,
-          }}
-          thumbColor={colors.white}
-          accessibilityLabel={title}
+          // trackColor={{
+          //   false: colors.border,
+          //   true: colors.primary,
+          // }}
+          // thumbColor={colors.white}
+          // accessibilityLabel={title}
         />
       ) : value !== undefined ? (
         <View style={styles.valueContainer}>

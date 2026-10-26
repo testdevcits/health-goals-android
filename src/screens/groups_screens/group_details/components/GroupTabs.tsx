@@ -10,28 +10,32 @@ interface Props {
   styles: any;
 }
 
-export const GroupTabs: React.FC<Props> = memo(({ activeTab, onTabChange, colors, styles }) => (
-  <View style={styles.tabs}>
-    {DETAIL_TABS.map(tab => {
-      const selected = activeTab === tab;
-      return (
-        <Pressable
-          key={tab}
-          accessibilityRole="tab"
-          accessibilityState={{ selected }}
-          onPress={() => onTabChange(tab)}
-          style={[styles.tab, selected && styles.activeTab]}
-        >
-          <AppText
-            variant="label"
-            center
-            style={{ color: selected ? colors.textPrimary : colors.textSecondary }}
-            medium={selected}
+export const GroupTabs: React.FC<Props> = memo(
+  ({ activeTab, onTabChange, colors, styles }) => (
+    <View style={styles.tabs}>
+      {DETAIL_TABS.map(tab => {
+        const selected = activeTab === tab;
+        return (
+          <Pressable
+            key={tab}
+            accessibilityRole="tab"
+            accessibilityState={{ selected }}
+            onPress={() => onTabChange(tab)}
+            style={[styles.tab, selected && styles.activeTab]}
           >
-            {tab}
-          </AppText>
-        </Pressable>
-      );
-    })}
-  </View>
-));
+            <AppText
+              variant="label"
+              center
+              style={{
+                color: selected ? colors.textPrimary : colors.textSecondary,
+              }}
+              medium={selected}
+            >
+              {tab}
+            </AppText>
+          </Pressable>
+        );
+      })}
+    </View>
+  ),
+);

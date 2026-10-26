@@ -9,4 +9,8 @@ export { default as OnboardingModal } from './OnboardingModal';
 export { default as PermissionModal } from './PermissionModal';
 export { default as SectionHeader } from './SectionHeader';
 export { default as AppHeader } from './appHeader/AppHeader';
+export { default as CustomSwitch } from './CustomSwitch';
+
 export type { SelectOption } from './AppSelect';
+
+export { default as NotificationCard } from './cards/NotificationCard';

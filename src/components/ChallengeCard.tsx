@@ -1,4 +1,4 @@
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { Pressable, View } from 'react-native';
 import React, { memo } from 'react';
 import { Droplets, Dumbbell, Footprints, Sunrise } from 'lucide-react-native';
 import { createCardStyles } from '../screens/challenges_screens/all_challenges/styles.AllChallenges';

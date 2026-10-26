@@ -48,7 +48,7 @@ const WorkoutCategories: React.FC<{ onViewAllPress: () => void }> = ({
   );
 
   return (
-    <>
+    <View>
       <SectionHeader
         sectionTitle="Workout Categories"
         rightText="View all"
@@ -62,7 +62,7 @@ const WorkoutCategories: React.FC<{ onViewAllPress: () => void }> = ({
         showsHorizontalScrollIndicator={false}
         contentContainerStyle={styles.workoutList}
       />
-    </>
+    </View>
   );
 };
 

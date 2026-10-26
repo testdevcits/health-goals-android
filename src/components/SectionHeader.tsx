@@ -1,10 +1,4 @@
-import {
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View,
-  ViewStyle,
-} from 'react-native';
+import { StyleSheet, TouchableOpacity, View, ViewStyle } from 'react-native';
 import React, { memo } from 'react';
 import AppText from './AppText';
 import { spacing } from '../theme/spacing';
