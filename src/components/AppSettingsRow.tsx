@@ -58,7 +58,7 @@ const AppSettingsRow: React.FC<AppSettingsRowProps> = ({
 
       {hasSwitch ? (
         <CustomSwitch
-          value={switchValue}
+          value={switchValue ?? false}
           onValueChange={onSwitchChange}
           // trackColor={{
           //   false: colors.border,

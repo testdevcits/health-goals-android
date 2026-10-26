@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { memo } from 'react';
 import { Text, TouchableOpacity, View } from 'react-native';
 import { AppText, SectionHeader } from '../../../../components';
 import { useTheme } from '../../../../theme/useTheme';
@@ -43,4 +43,4 @@ const QuickActions: React.FC<{
   );
 };
 
-export default QuickActions;
+export default memo(QuickActions);

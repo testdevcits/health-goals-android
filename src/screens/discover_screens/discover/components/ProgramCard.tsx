@@ -1,4 +1,4 @@
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { Pressable, StyleSheet, View } from 'react-native';
 import React, { memo } from 'react';
 import { AppText } from '../../../../components';
 import { useTheme } from '../../../../theme/useTheme';

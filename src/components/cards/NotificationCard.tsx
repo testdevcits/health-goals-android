@@ -13,17 +13,19 @@ const NotificationCard = ({
   item: NotificationItem;
   setNotifications: React.Dispatch<React.SetStateAction<NotificationItem[]>>;
 }) => {
-  const { theme, colorScheme } = useTheme();
+  const { theme } = useTheme();
 
   const { colors } = theme;
 
   const markAsRead = useCallback((id: string) => {
     setNotifications(previous =>
-      previous.map(item =>
-        item?.id === id ? { ...item, unread: false } : item,
+      previous.map(notification =>
+        notification?.id === id
+          ? { ...notification, unread: false }
+          : notification,
       ),
     );
-  }, []);
+  }, [setNotifications]);
   return (
     <TouchableOpacity
       activeOpacity={0.75}

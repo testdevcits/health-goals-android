@@ -18,6 +18,24 @@ type MainTabParamList = {
 
 const Tab = createBottomTabNavigator<MainTabParamList>();
 
+type TabIconProps = { color: string; size: number };
+
+const HomeTabIcon = ({ color, size }: TabIconProps) => (
+  <Home color={color} size={size} />
+);
+const ChallengesTabIcon = ({ color, size }: TabIconProps) => (
+  <ShoppingBag color={color} size={size} />
+);
+const GroupsTabIcon = ({ color, size }: TabIconProps) => (
+  <Users color={color} size={size} />
+);
+const DiscoverTabIcon = ({ color, size }: TabIconProps) => (
+  <Settings color={color} size={size} />
+);
+const ProfileTabIcon = ({ color, size }: TabIconProps) => (
+  <User color={color} size={size} />
+);
+
 const MainTabNavigation = () => {
   return (
     <Tab.Navigator
@@ -35,7 +53,7 @@ const MainTabNavigation = () => {
         name="Home"
         component={HomeStack}
         options={{
-          tabBarIcon: ({ color, size }) => <Home color={color} size={size} />,
+          tabBarIcon: HomeTabIcon,
         }}
       />
 
@@ -43,9 +61,7 @@ const MainTabNavigation = () => {
         name="Challenges"
         component={ChallengesStack}
         options={{
-          tabBarIcon: ({ color, size }) => (
-            <ShoppingBag color={color} size={size} />
-          ),
+          tabBarIcon: ChallengesTabIcon,
         }}
       />
 
@@ -53,7 +69,7 @@ const MainTabNavigation = () => {
         name="Groups"
         component={GroupsStack}
         options={{
-          tabBarIcon: ({ color, size }) => <Users color={color} size={size} />,
+          tabBarIcon: GroupsTabIcon,
         }}
       />
 
@@ -61,16 +77,14 @@ const MainTabNavigation = () => {
         name="Discover"
         component={DiscoverStack}
         options={{
-          tabBarIcon: ({ color, size }) => (
-            <Settings color={color} size={size} />
-          ),
+          tabBarIcon: DiscoverTabIcon,
         }}
       />
       <Tab.Screen
         name="Profile"
         component={ProfileStack}
         options={{
-          tabBarIcon: ({ color, size }) => <User color={color} size={size} />,
+          tabBarIcon: ProfileTabIcon,
         }}
       />
     </Tab.Navigator>

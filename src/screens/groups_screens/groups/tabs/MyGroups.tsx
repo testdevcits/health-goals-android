@@ -1,9 +1,13 @@
-import { Alert, Pressable, StyleSheet, Text, View } from 'react-native';
-import React from 'react';
+import { Pressable, StyleSheet, View } from 'react-native';
+import React, { memo } from 'react';
 import { AppText } from '../../../../components';
 import { ChevronRight } from 'lucide-react-native';
-
 import { useTheme } from '../../../../theme/useTheme';
+import { useNavigation } from '@react-navigation/native';
+import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import type { RootStackParamList } from '../../../../navigations/GroupsStack';
+
+type GroupsNavigationProp = NativeStackNavigationProp<RootStackParamList>;
 
 const MyGroups = ({
   groups,
@@ -24,17 +28,15 @@ const MyGroups = ({
   const { theme } = useTheme();
   const { colors, spacing, radius } = theme;
   const styles = createStyles(colors, spacing, radius);
+  const navigation = useNavigation<GroupsNavigationProp>();
   return (
     <View style={styles.groupList}>
-      {groups.map(group => (
+      {groups?.map(group => (
         <Pressable
-          key={group.id}
+          key={group?.id}
           accessibilityRole="button"
           onPress={() =>
-            Alert.alert(
-              group.name,
-              `${group.members} members · ${group.description}`,
-            )
+            navigation.navigate('GroupDetails')
           }
           style={styles.groupCard}
         >
@@ -43,33 +45,33 @@ const MyGroups = ({
               styles.groupIcon,
               {
                 backgroundColor:
-                  group.emoji === '🏃'
+                  group?.emoji === '🏃'
                     ? '#DDF8F3'
-                    : group.emoji === '💼'
+                    : group?.emoji === '💼'
                     ? '#EFEBFF'
                     : '#FFF1E3',
               },
             ]}
           >
-            <AppText style={styles.groupEmoji}>{group.emoji}</AppText>
+            <AppText style={styles.groupEmoji}>{group?.emoji}</AppText>
           </View>
 
           <View style={styles.groupInfo}>
             <AppText variant="subtitle2" numberOfLines={1}>
-              {group.name}
+              {group?.name}
             </AppText>
 
             <AppText variant="caption" secondary numberOfLines={2}>
-              {group.description} · {group.members} members
-              {group.rank ? ` · ${group.rank}` : ''}
+              {group?.description} · {group?.members} members
+              {group?.rank ? ` · ${group?.rank}` : ''}
             </AppText>
 
             <View style={styles.memberAvatars}>
-              {group.avatars
+              {group?.avatars
                 .slice(0, 4)
                 .map(({ initial }: { initial: string }, i: number) => (
                   <View
-                    key={`${group.id}-${i}`}
+                    key={`${group?.id}-${i}`}
                     style={[
                       styles.memberAvatar,
                       {
@@ -84,10 +86,10 @@ const MyGroups = ({
                   </View>
                 ))}
 
-              {group.members > 4 && (
+              {group?.members > 4 && (
                 <View style={styles.moreMembers}>
                   <AppText style={styles.moreMembersText} color="white" bold>
-                    +{group.members - 4}
+                    +{group?.members - 4}
                   </AppText>
                 </View>
               )}
@@ -112,7 +114,7 @@ const MyGroups = ({
   );
 };
 
-export default MyGroups;
+export default memo(MyGroups);
 
 const createStyles = (colors: any, spacing: any, radius: any) =>
   StyleSheet.create({
@@ -174,7 +176,7 @@ const createStyles = (colors: any, spacing: any, radius: any) =>
     memberAvatarText: {
       fontSize: 9,
       lineHeight: 10,
-      color: 'white',
+      color: '#fff',
       includeFontPadding: false,
       textAlignVertical: 'center',
     },

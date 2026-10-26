@@ -160,7 +160,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   card: {
-    width: '100%',
+    width: '90%',
     alignItems: 'center',
     elevation: 10,
     shadowColor: '#000',
@@ -169,8 +169,9 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 10 },
   },
   emoji: {
-    fontSize: 56,
+    fontSize: 30,
     marginBottom: 16,
+    lineHeight: 35,
   },
   dots: {
     flexDirection: 'row',

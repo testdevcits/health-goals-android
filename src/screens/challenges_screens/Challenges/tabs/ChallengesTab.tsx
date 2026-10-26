@@ -87,7 +87,7 @@ const ChallengesTab: React.FC<ChallengesTabProps> = ({
       <Pressable
         accessibilityRole="button"
         accessibilityLabel="Browse all challenges"
-        // onPress={onBrowseAll}
+        onPress={onBrowseAll}
         style={styles.browseButton}
       >
         <AppText variant="buttonSm" primary>

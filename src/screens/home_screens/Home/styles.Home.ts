@@ -148,34 +148,34 @@ export const createHomeStyles = (theme: AppTheme) => {
     },
 
     // ── Today's Summary card ───────────────────────
-    summaryCard: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      marginHorizontal: spacing.xl,
-      borderRadius: radius.lg,
-      padding: spacing.base,
-      backgroundColor: colors.surface,
-      gap: spacing.md,
-      elevation: 1,
-      shadowColor: '#000',
-      shadowOpacity: 0.05,
-      shadowRadius: 6,
-      shadowOffset: { width: 0, height: 2 },
-    },
-    summaryIconBox: {
-      width: 44,
-      height: 44,
-      borderRadius: radius.md,
-      backgroundColor: '#FFE8E8',
-      alignItems: 'center',
-      justifyContent: 'center',
-    },
-    summaryEmoji: {
-      fontSize: 24,
-    },
-    summaryText: {
-      flex: 1,
-    },
+    // summaryCard: {
+    //   flexDirection: 'row',
+    //   alignItems: 'center',
+    //   marginHorizontal: spacing.xl,
+    //   borderRadius: radius.lg,
+    //   padding: spacing.base,
+    //   backgroundColor: colors.surface,
+    //   gap: spacing.md,
+    //   elevation: 1,
+    //   shadowColor: '#000',
+    //   shadowOpacity: 0.05,
+    //   shadowRadius: 6,
+    //   shadowOffset: { width: 0, height: 2 },
+    // },
+    // summaryIconBox: {
+    //   width: 44,
+    //   height: 44,
+    //   borderRadius: radius.md,
+    //   backgroundColor: '#FFE8E8',
+    //   alignItems: 'center',
+    //   justifyContent: 'center',
+    // },
+    // summaryEmoji: {
+    //   fontSize: 24,
+    // },
+    // summaryText: {
+    //   flex: 1,
+    // },
 
     // ── Workout Categories ─────────────────────────
     workoutList: {
@@ -317,5 +317,6 @@ export const createHomeStyles = (theme: AppTheme) => {
     quickActionEmoji: {
       fontSize: 24,
     },
+    
   });
 };

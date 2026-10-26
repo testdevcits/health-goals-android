@@ -1,6 +1,6 @@
 // src/screens/Splash/SplashScreen.tsx
 import React, { useEffect, useRef } from 'react';
-import { View, Animated, Text } from 'react-native';
+import { View, Animated } from 'react-native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../../../navigations/AppNavigation';
 import { useTheme } from '../../../theme/useTheme';

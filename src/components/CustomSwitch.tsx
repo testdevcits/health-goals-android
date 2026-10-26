@@ -4,7 +4,7 @@ import { Animated, Pressable, StyleSheet, ViewStyle } from 'react-native';
 import { useTheme } from '../theme/useTheme';
 
 interface CustomSwitchProps {
-  value: boolean;
+  value: boolean ;
   onValueChange: (value: boolean) => void;
   disabled?: boolean;
   style?: ViewStyle;

@@ -14,6 +14,8 @@ import styles from './styles.notification';
 import { INITIAL_NOTIFICATIONS } from './const';
 import { useNavigation } from '@react-navigation/native';
 
+const NotificationSeparator = () => <View style={styles.separator} />;
+
 const Notifications = () => {
   const { theme } = useTheme();
   const navigation = useNavigation();
@@ -72,13 +74,13 @@ const Notifications = () => {
         {/* Notifications List */}
         <FlatList
           data={notifications}
-          renderItem={({ item, index }) => (
+          renderItem={({ item }) => (
             <NotificationCard item={item} setNotifications={setNotifications} />
           )}
           keyExtractor={item => item?.id}
           showsVerticalScrollIndicator={false}
           contentContainerStyle={styles.listContent}
-          ItemSeparatorComponent={() => <View style={styles.separator} />}
+          ItemSeparatorComponent={NotificationSeparator}
           ListEmptyComponent={
             <View style={styles.emptyContainer}>
               <AppText variant="display" center>

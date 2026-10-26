@@ -5,8 +5,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTheme } from '../../../theme/useTheme';
 import createStyles from './styles.GroupDetails';
 
-import { GroupHeader } from './components/GroupHeader';
-import { GroupBanner } from './components/GroupBanner';
+ import { GroupBanner } from './components/GroupBanner';
 import { GroupTabs } from './components/GroupTabs';
 import { GroupOverview } from './components/GroupOverview';
 import { GroupLeaderboard } from './components/GroupLeaderboard';
@@ -23,6 +22,8 @@ import {
   DURATION_OPTIONS,
   REWARD_OPTIONS,
 } from './constants';
+import { AppHeader } from '../../../components';
+import { useNavigation } from '@react-navigation/native';
 
 // ─── Screen props ─────────────────────────────────────────────────────────────
 
@@ -42,6 +43,7 @@ const GroupDetailScreen: React.FC<GroupDetailScreenProps> = ({
   const { theme } = useTheme();
   const { colors, spacing, radius } = theme;
   const insets = useSafeAreaInsets();
+  const navigation = useNavigation();
 
   const styles = useMemo(
     () => createStyles(colors, spacing, radius),
@@ -126,13 +128,12 @@ const GroupDetailScreen: React.FC<GroupDetailScreenProps> = ({
 
   // ─── Render ─────────────────────────────────────────────────────────────────
   return (
-    <View style={[styles.container, { paddingTop: insets.top }]}>
-      <GroupHeader
-        groupName={groupName}
-        groupDescription={groupDescription}
-        memberCount={memberCount}
-        colors={colors}
-        styles={styles}
+    <View style={[styles.container,  ]}>
+     
+      <AppHeader
+        title={groupName}
+        subtitle={groupDescription}
+        onBackPress={() => navigation.goBack()}
       />
 
       <ScrollView
@@ -145,8 +146,6 @@ const GroupDetailScreen: React.FC<GroupDetailScreenProps> = ({
           groupDescription={groupDescription}
           memberCount={memberCount}
           members={INITIAL_MEMBERS}
-          colors={colors}
-          styles={styles}
         />
 
         <GroupTabs

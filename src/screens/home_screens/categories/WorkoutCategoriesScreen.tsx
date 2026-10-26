@@ -9,6 +9,8 @@ import type { HomeStackParamList } from '../../../navigations/HomeStack';
 
 type Props = NativeStackScreenProps<HomeStackParamList, 'Categories'>;
 
+const RowSeparator = () => <View style={styles.rowSeparator} />;
+
 const WorkoutCategoriesScreen: React.FC<Props> = ({ navigation }) => {
   const { theme } = useTheme();
   const { colors } = theme;
@@ -84,7 +86,7 @@ const WorkoutCategoriesScreen: React.FC<Props> = ({ navigation }) => {
         showsVerticalScrollIndicator={false}
         contentContainerStyle={styles.listContent}
         columnWrapperStyle={styles.columnWrapper}
-        ItemSeparatorComponent={() => <View style={styles.rowSeparator} />}
+        ItemSeparatorComponent={RowSeparator}
         removeClippedSubviews
         initialNumToRender={10}
         windowSize={7}

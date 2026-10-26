@@ -1,8 +1,7 @@
 import React, { useState } from 'react';
-import { View, ScrollView, Pressable, useWindowDimensions } from 'react-native';
+import { View, ScrollView, Pressable } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Footprints, Droplets, Sunrise, Dumbbell } from 'lucide-react-native';
+import { Dumbbell } from 'lucide-react-native';
 
 import { useTheme } from '../../../theme/useTheme';
 import { AppHeader, AppText } from '../../../components';
@@ -93,9 +92,7 @@ const AllChallengesScreen: React.FC<AllChallengesScreenProps> = ({
   const { theme } = useTheme();
   const { colors, spacing, radius } = theme;
 
-  const insets = useSafeAreaInsets();
   const navigation = useNavigation();
-  const { width } = useWindowDimensions();
 
   const [selectedCategory, setSelectedCategory] =
     useState<ChallengeCategory>('All');
@@ -203,14 +200,6 @@ const ChallengeCard: React.FC<ChallengeCardProps> = ({
   radius,
 }) => {
   const styles = createCardStyles(colors, spacing, radius);
-  const Icon =
-    challenge.category === 'Steps'
-      ? Footprints
-      : challenge.category === 'Strength'
-      ? Dumbbell
-      : challenge.category === 'Mind'
-      ? Sunrise
-      : Droplets;
 
   return (
     <View style={[styles.card, { borderLeftColor: challenge.color }]}>

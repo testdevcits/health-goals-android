@@ -1,5 +1,5 @@
 import { Alert, Pressable, StyleSheet, View } from 'react-native';
-import React from 'react';
+import React, { memo } from 'react';
 import { Heart, MessageCircle, Share2 } from 'lucide-react-native';
 import { AppText } from '../../../../components';
 
@@ -112,7 +112,7 @@ const FeedTab = ({
   );
 };
 
-export default FeedTab;
+export default memo(FeedTab);
 
 const createStyles = (colors: any, spacing: any, radius: any) =>
   StyleSheet.create({

@@ -1,10 +1,28 @@
-import React, { useEffect, useRef, useState } from 'react';
-import { Alert, Pressable, ScrollView, StatusBar, View } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import {
+  Alert,
+  AppState,
+  Pressable,
+  ScrollView,
+  StatusBar,
+  View,
+} from 'react-native';
 import { AppButton, AppHeader, AppText } from '../../../components';
 import styles from './styles.WorkoutSession';
 import { useTheme } from '../../../theme/useTheme';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { HomeStackParamList } from '../../../navigations/HomeStack';
+import HeartbeatAnimation from './components/HeartbeatAnimation';
+import {
+  clearWorkoutSession,
+  getElapsedMilliseconds,
+  getWorkoutSession,
+  pauseWorkoutSession,
+  resumeWorkoutSession,
+  startWorkoutSession,
+  subscribeToWorkoutSession,
+  type WorkoutSession,
+} from './workoutSessionStore';
 
 type Activity = {
   id: string;
@@ -27,6 +45,38 @@ const activities: Activity[] = [
 ];
 
 type Props = NativeStackScreenProps<HomeStackParamList, 'WorkoutSession'>;
+
+interface MetricCardProps {
+  emoji: string;
+  value: string;
+  unit?: string;
+  label: string;
+  tint: string;
+  backgroundColor: string;
+}
+
+const MetricCard = React.memo(
+  ({ emoji, value, unit, label, tint, backgroundColor }: MetricCardProps) => (
+    <View style={[styles.metricCard, { backgroundColor }]}>
+      <View style={[styles.metricIcon, { backgroundColor: tint }]}>
+        <AppText style={styles.metricEmoji}>{emoji}</AppText>
+      </View>
+
+      <View style={styles.metricValueRow}>
+        <AppText variant="h3">{value}</AppText>
+        {unit ? (
+          <AppText variant="caption" color="textSecondary">
+            {unit}
+          </AppText>
+        ) : null}
+      </View>
+
+      <AppText variant="caption" color="textSecondary">
+        {label}
+      </AppText>
+    </View>
+  ),
+);
 
 const formatTime = (totalSeconds: number) => {
   const hours = Math.floor(totalSeconds / 3600);
@@ -51,69 +101,137 @@ const WorkoutSessionScreen: React.FC<Props> = ({ navigation }) => {
   const { colors } = theme;
 
   const [selectedActivity, setSelectedActivity] = useState(activities[0]);
+  const [workoutSession, setWorkoutSession] = useState<WorkoutSession | null>(
+    null,
+  );
   const [elapsedSeconds, setElapsedSeconds] = useState(0);
-  const [isRunning, setIsRunning] = useState(false);
-  const [hasStarted, setHasStarted] = useState(false);
-
-  const startedAtRef = useRef<number | null>(null);
-  const elapsedBeforePauseRef = useRef(0);
+  const isRunning =
+    workoutSession !== null && workoutSession.startedAtMilliseconds !== null;
+  const hasStarted = workoutSession !== null;
+  const currentActivity =
+    activities.find(activity => activity.id === workoutSession?.activityId) ??
+    selectedActivity;
 
   useEffect(() => {
-    if (!isRunning) {
+    let mounted = true;
+    const unsubscribe = subscribeToWorkoutSession(() => {
+      getWorkoutSession()
+        .then(session => {
+          if (mounted) {
+            setWorkoutSession(session);
+          }
+        })
+        .catch(error => {
+          Alert.alert(
+            'Workout session unavailable',
+            error instanceof Error ? error.message : String(error),
+          );
+        });
+    });
+
+    getWorkoutSession()
+      .then(session => {
+        if (mounted) {
+          setWorkoutSession(session);
+        }
+      })
+      .catch(error => {
+        Alert.alert(
+          'Workout session unavailable',
+          error instanceof Error ? error.message : String(error),
+        );
+      });
+
+    return () => {
+      mounted = false;
+      unsubscribe();
+    };
+  }, []);
+
+  useEffect(() => {
+    const updateElapsedTime = () => {
+      setElapsedSeconds(
+        workoutSession
+          ? Math.floor(getElapsedMilliseconds(workoutSession) / 1000)
+          : 0,
+      );
+    };
+
+    updateElapsedTime();
+
+    if (!isRunning || !workoutSession) {
       return;
     }
 
-    const interval = setInterval(() => {
-      if (startedAtRef.current !== null) {
-        setElapsedSeconds(
-          elapsedBeforePauseRef.current +
-            Math.floor((Date.now() - startedAtRef.current) / 1000),
-        );
+    const interval = setInterval(updateElapsedTime, 1000);
+    const appStateSubscription = AppState.addEventListener('change', state => {
+      if (state === 'active') {
+        updateElapsedTime();
       }
-    }, 1000);
+    });
 
-    return () => clearInterval(interval);
-  }, [isRunning]);
+    return () => {
+      clearInterval(interval);
+      appStateSubscription.remove();
+    };
+  }, [isRunning, workoutSession]);
 
   // Basic estimates for running/walking/cycling.
   // Replace with GPS or activity-specific calculations when implemented.
   const speedKmh =
-    selectedActivity.id === 'running'
+    currentActivity.id === 'running'
       ? 9.6
-      : selectedActivity.id === 'walking'
+      : currentActivity.id === 'walking'
       ? 5
-      : selectedActivity.id === 'cycling'
+      : currentActivity.id === 'cycling'
       ? 18
       : 0;
 
   const distanceKm = Number(((speedKmh * elapsedSeconds) / 3600).toFixed(2));
 
   const caloriesPerMinute =
-    selectedActivity.id === 'running'
+    currentActivity.id === 'running'
       ? 10
-      : selectedActivity.id === 'walking'
+      : currentActivity.id === 'walking'
       ? 4
-      : selectedActivity.id === 'cycling'
+      : currentActivity.id === 'cycling'
       ? 8
-      : selectedActivity.id === 'strength'
+      : currentActivity.id === 'strength'
       ? 5
-      : selectedActivity.id === 'hiit'
+      : currentActivity.id === 'hiit'
       ? 12
       : 3;
 
   const calories = Math.floor((elapsedSeconds / 60) * caloriesPerMinute);
 
-  const handleStartPause = () => {
-    if (isRunning) {
-      elapsedBeforePauseRef.current = elapsedSeconds;
-      startedAtRef.current = null;
-      setIsRunning(false);
-      return;
-    }
+  // const handleStartPause = () => {
+  //   if (isRunning) {
+  //     elapsedBeforePauseRef.current = elapsedSeconds;
+  //     startedAtRef.current = null;
+  //     setIsRunning(false);
+  //     return;
+  //   }
 
-    startedAtRef.current = Date.now();
-    setHasStarted(true);
-    setIsRunning(true);
+  //   startedAtRef.current = Date.now();
+  //   setHasStarted(true);
+  //   setIsRunning(true);
+  // };
+
+  const handleStartPause = async () => {
+    try {
+      if (isRunning) {
+        await pauseWorkoutSession();
+      } else if (hasStarted) {
+        await resumeWorkoutSession();
+      } else {
+        await startWorkoutSession(selectedActivity.id);
+      }
+    } catch (error) {
+      Alert.alert(
+        'Could not update workout',
+        error instanceof Error ? error.message : String(error),
+      );
+    }
   };
 
   const handleSelectActivity = (activity: Activity) => {
@@ -125,13 +243,16 @@ const WorkoutSessionScreen: React.FC<Props> = ({ navigation }) => {
           { text: 'Cancel', style: 'cancel' },
           {
             text: 'Reset and change',
-            onPress: () => {
-              setSelectedActivity(activity);
-              setElapsedSeconds(0);
-              elapsedBeforePauseRef.current = 0;
-              startedAtRef.current = null;
-              setIsRunning(false);
-              setHasStarted(false);
+            onPress: async () => {
+              try {
+                await clearWorkoutSession();
+                setSelectedActivity(activity);
+              } catch (error) {
+                Alert.alert(
+                  'Could not reset workout',
+                  error instanceof Error ? error.message : String(error),
+                );
+              }
             },
           },
         ],
@@ -143,7 +264,10 @@ const WorkoutSessionScreen: React.FC<Props> = ({ navigation }) => {
   };
 
   const handleFinish = () => {
-    if (!hasStarted || elapsedSeconds === 0) {
+    if (
+      !workoutSession ||
+      Math.floor(getElapsedMilliseconds(workoutSession) / 1000) === 0
+    ) {
       Alert.alert(
         'No workout to save',
         'Start your activity and exercise for some time before saving.',
@@ -153,19 +277,21 @@ const WorkoutSessionScreen: React.FC<Props> = ({ navigation }) => {
 
     Alert.alert(
       'Finish workout?',
-      `Save your ${selectedActivity.name.toLowerCase()} session?`,
+      `Save your ${currentActivity.name.toLowerCase()} session?`,
       [
         { text: 'Continue workout', style: 'cancel' },
         {
           text: 'Finish & Save',
-          onPress: () => {
-            setIsRunning(false);
-            startedAtRef.current = null;
-
-            setHasStarted(false);
-            setElapsedSeconds(0);
-            elapsedBeforePauseRef.current = 0;
-            navigation.goBack();
+          onPress: async () => {
+            try {
+              await clearWorkoutSession();
+              navigation.goBack();
+            } catch (error) {
+              Alert.alert(
+                'Could not finish workout',
+                error instanceof Error ? error.message : String(error),
+              );
+            }
           },
         },
       ],
@@ -173,22 +299,29 @@ const WorkoutSessionScreen: React.FC<Props> = ({ navigation }) => {
   };
 
   const handleBack = () => {
-    if (hasStarted && elapsedSeconds > 0) {
+    if (hasStarted) {
       Alert.alert(
         'Workout in progress',
-        'Leaving this screen may interrupt your workout. What would you like to do?',
+        'Your workout will keep running if you leave this screen.',
         [
           { text: 'Stay', style: 'cancel' },
           {
+            text: 'Keep running',
+            onPress: () => navigation.goBack(),
+          },
+          {
             text: 'Discard workout',
             style: 'destructive',
-            onPress: () => {
-              setIsRunning(false);
-              startedAtRef.current = null;
-              setElapsedSeconds(0);
-              elapsedBeforePauseRef.current = 0;
-              setHasStarted(false);
-              navigation.goBack();
+            onPress: async () => {
+              try {
+                await clearWorkoutSession();
+                navigation.goBack();
+              } catch (error) {
+                Alert.alert(
+                  'Could not discard workout',
+                  error instanceof Error ? error.message : String(error),
+                );
+              }
             },
           },
         ],
@@ -198,39 +331,6 @@ const WorkoutSessionScreen: React.FC<Props> = ({ navigation }) => {
 
     navigation.goBack();
   };
-
-  const MetricCard = ({
-    emoji,
-    value,
-    unit,
-    label,
-    tint,
-  }: {
-    emoji: string;
-    value: string;
-    unit?: string;
-    label: string;
-    tint: string;
-  }) => (
-    <View style={[styles.metricCard, { backgroundColor: colors.surface }]}>
-      <View style={[styles.metricIcon, { backgroundColor: tint }]}>
-        <AppText style={styles.metricEmoji}>{emoji}</AppText>
-      </View>
-
-      <View style={styles.metricValueRow}>
-        <AppText variant="h3">{value}</AppText>
-        {unit ? (
-          <AppText variant="caption" color="textSecondary">
-            {unit}
-          </AppText>
-        ) : null}
-      </View>
-
-      <AppText variant="caption" color="textSecondary">
-        {label}
-      </AppText>
-    </View>
-  );
 
   return (
     <View
@@ -260,7 +360,7 @@ const WorkoutSessionScreen: React.FC<Props> = ({ navigation }) => {
           contentContainerStyle={styles.activitySelector}
         >
           {activities.map(activity => {
-            const selected = selectedActivity.id === activity.id;
+            const selected = currentActivity.id === activity.id;
 
             return (
               <Pressable
@@ -290,22 +390,18 @@ const WorkoutSessionScreen: React.FC<Props> = ({ navigation }) => {
         <View
           style={[
             styles.workoutHero,
-            { backgroundColor: selectedActivity.color },
+            { backgroundColor: currentActivity.color },
           ]}
         >
-          <AppText style={styles.heroEmoji}>{selectedActivity.emoji}</AppText>
+          <AppText style={styles.heroEmoji}>{currentActivity.emoji}</AppText>
 
           <AppText variant="h3" style={styles.heroActivityName}>
-            {selectedActivity.name.toUpperCase()}
+            {currentActivity.name.toUpperCase()}
           </AppText>
 
           {/* Heartbeat-style decorative line */}
-          <View style={styles.heartbeat}>
-            <View style={styles.heartbeatLine} />
-            <View style={styles.heartbeatPeakOne} />
-            <View style={styles.heartbeatPeakTwo} />
-            <View style={styles.heartbeatLineEnd} />
-          </View>
+
+          <HeartbeatAnimation isRunning={isRunning} color={colors.white} />
 
           <AppText style={styles.timer}>{formatTime(elapsedSeconds)}</AppText>
 
@@ -326,6 +422,7 @@ const WorkoutSessionScreen: React.FC<Props> = ({ navigation }) => {
             unit="km"
             label="Distance"
             tint="#DDF7F1"
+            backgroundColor={colors.surface}
           />
           <MetricCard
             emoji="🔥"
@@ -333,6 +430,7 @@ const WorkoutSessionScreen: React.FC<Props> = ({ navigation }) => {
             unit="kcal"
             label="Calories"
             tint="#FFF0DE"
+            backgroundColor={colors.surface}
           />
           <MetricCard
             emoji="❤️"
@@ -340,8 +438,15 @@ const WorkoutSessionScreen: React.FC<Props> = ({ navigation }) => {
             unit="bpm"
             label="Heart rate"
             tint="#FFE8E8"
+            backgroundColor={colors.surface}
           />
-          <MetricCard emoji="⚡" value="--" label="Avg pace" tint="#E9EAFE" />
+          <MetricCard
+            emoji="⚡"
+            value="--"
+            label="Avg pace"
+            tint="#E9EAFE"
+            backgroundColor={colors.surface}
+          />
         </View>
 
         {/* Workout controls */}
@@ -351,7 +456,7 @@ const WorkoutSessionScreen: React.FC<Props> = ({ navigation }) => {
           onPress={handleStartPause}
           style={[
             styles.startButton,
-            { backgroundColor: selectedActivity.color },
+            { backgroundColor: currentActivity.color },
           ]}
         />
 

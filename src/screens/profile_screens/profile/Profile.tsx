@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import {
   View,
   StyleSheet,
@@ -13,12 +13,19 @@ import { useTheme } from '../../../theme/useTheme';
 import { AppText } from '../../../components';
 import { spacing } from '../../../theme/spacing';
 import styles from './styles.Profile';
-import { menuItems } from './conts';
+import { getProfileMenuItems } from './conts';
+import { useNavigation } from '@react-navigation/native';
+import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import type { RootStackParamList } from '../../../navigations/ProfileStack';
+
+type ProfileNavigationProp = NativeStackNavigationProp<RootStackParamList>;
 
 const ProfileScreen: React.FC = () => {
   const { theme } = useTheme();
   const { colors } = theme;
   const insets = useSafeAreaInsets();
+  const navigation = useNavigation<ProfileNavigationProp>();
+  const menuItems = useMemo(() => getProfileMenuItems(colors), [colors]);
 
   const profile = {
     name: 'Alex Johnson',
@@ -34,11 +41,11 @@ const ProfileScreen: React.FC = () => {
   const handleMenuPress = (id: string) => {
     switch (id) {
       case 'settings':
-        // navigation.navigate('Settings');
+        navigation.navigate('Settings');
         break;
 
       case 'devices':
-        // navigation.navigate('ConnectedDevices');
+        navigation.navigate('ConnectedDevices');
         break;
 
       case 'rewards':
@@ -59,36 +66,6 @@ const ProfileScreen: React.FC = () => {
     }
   };
 
-  const Header = () => (
-    <View style={[styles.header, { backgroundColor: colors.surface }]}>
-      <View style={styles.headerMain}>
-        <View style={styles.headerTitle}>
-          <AppText variant="h3">Profile</AppText>
-          <AppText variant="caption" secondary>
-            Your account, rewards, and settings
-          </AppText>
-        </View>
-
-        <Pressable
-          style={[
-            styles.headerIcon,
-            { backgroundColor: colors.backgroundSecondary },
-          ]}
-          accessibilityRole="button"
-          accessibilityLabel="Notifications"
-        >
-          <Bell size={19} color={colors.warning} />
-        </Pressable>
-
-        <View style={styles.smallAvatar}>
-          <AppText variant="subtitle2" color="white" bold>
-            {profile.initials}
-          </AppText>
-        </View>
-      </View>
-    </View>
-  );
-
   return (
     <View
       style={[
@@ -98,7 +75,33 @@ const ProfileScreen: React.FC = () => {
     >
       <StatusBar barStyle="dark-content" backgroundColor={colors.surface} />
 
-      <Header />
+      <View style={[styles.header, { backgroundColor: colors.surface }]}>
+        <View style={styles.headerMain}>
+          <View style={styles.headerTitle}>
+            <AppText variant="h3">Profile</AppText>
+            <AppText variant="caption" secondary>
+              Your account, rewards, and settings
+            </AppText>
+          </View>
+
+          <Pressable
+            style={[
+              styles.headerIcon,
+              { backgroundColor: colors.backgroundSecondary },
+            ]}
+            accessibilityRole="button"
+            accessibilityLabel="Notifications"
+          >
+            <Bell size={19} color={colors.warning} />
+          </Pressable>
+
+          <View style={styles.smallAvatar}>
+            <AppText variant="subtitle2" color="white" bold>
+              {profile.initials}
+            </AppText>
+          </View>
+        </View>
+      </View>
 
       <ScrollView
         showsVerticalScrollIndicator={false}
@@ -182,7 +185,7 @@ const ProfileScreen: React.FC = () => {
                   { backgroundColor: colors.primaryLight },
                 ]}
               >
-                <AppText variant="body1">{item?.emoji}</AppText>
+                {item.icon}
               </View>
 
               <AppText variant="subtitle2" bold style={styles.menuTitle}>

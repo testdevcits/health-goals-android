@@ -1,6 +1,6 @@
 // src/components/AppText.tsx
 import React, { memo } from 'react';
-import { Text, TextProps, StyleSheet, TextStyle } from 'react-native';
+import { Text, TextProps, TextStyle } from 'react-native';
 import { useTheme } from '../theme/useTheme';
 import { TypographyVariant } from '../theme/index';
 import { AppColors } from '../theme/colors';

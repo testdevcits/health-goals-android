@@ -1,17 +1,16 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
   KeyboardAvoidingView,
   Modal,
   Platform,
   Pressable,
   StyleSheet,
-  TextInput,
   View,
 } from 'react-native';
 import { X, LockKeyhole } from 'lucide-react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { AppText, CustomSwitch } from '../../../../components';
+import { AppInput, AppText, CustomSwitch } from '../../../../components';
 import { useTheme } from '../../../../theme/useTheme';
 
 // const groupIcons = ['🚶', '🏃', '🚴', '💪', '🧘', '🏆', '🌳', '❤️'];
@@ -44,8 +43,45 @@ const CreateGroupModal: React.FC<CreateGroupModalProps> = ({
   const { theme } = useTheme();
   const { colors, spacing, radius } = theme;
   const insets = useSafeAreaInsets();
+  const [groupNameError, setGroupNameError] = useState('');
 
   const styles = createStyles(colors, spacing, radius);
+
+  const validateGroupName = (name: string): boolean => {
+    const trimmedName = name.trim();
+
+    if (!trimmedName) {
+      setGroupNameError('Group name is required');
+      return false;
+    }
+
+    if (trimmedName.length < 3) {
+      setGroupNameError('Group name must be at least 3 characters');
+      return false;
+    }
+
+    if (trimmedName.length > 50) {
+      setGroupNameError('Group name cannot exceed 50 characters');
+      return false;
+    }
+
+    if (!/^[a-zA-Z0-9 ]+$/.test(trimmedName)) {
+      setGroupNameError('Only letters, numbers, and spaces are allowed');
+      return false;
+    }
+
+    setGroupNameError('');
+    return true;
+  };
+
+  const handleCreateGroupPress = () => {
+    if (!validateGroupName(groupName)) {
+      return;
+    }
+
+    setGroupName(groupName.trim());
+    handleCreateGroup();
+  };
 
   return (
     <Modal
@@ -91,14 +127,21 @@ const CreateGroupModal: React.FC<CreateGroupModalProps> = ({
               Group Name
             </AppText>
 
-            <TextInput
+            <AppInput
               value={groupName}
-              onChangeText={setGroupName}
+              onChangeText={(text: string) => {
+                setGroupName(text);
+
+                if (groupNameError) {
+                  validateGroupName(text);
+                }
+              }}
               placeholder="e.g. Lunchtime Walkers"
               placeholderTextColor={colors.inputPlaceholder}
-              style={styles.nameInput}
+             
               maxLength={50}
               returnKeyType="done"
+              error={groupNameError}
             />
 
             <AppText variant="label" secondary style={styles.fieldLabel}>
@@ -144,7 +187,7 @@ const CreateGroupModal: React.FC<CreateGroupModalProps> = ({
 
             <Pressable
               accessibilityRole="button"
-              onPress={handleCreateGroup}
+              onPress={handleCreateGroupPress}
               style={styles.submitButton}
             >
               <AppText variant="button" color="white">
@@ -210,18 +253,7 @@ const createStyles = (colors: any, spacing: any, radius: any) =>
       marginBottom: spacing.xs,
     },
 
-    nameInput: {
-      height: 44,
-      borderRadius: radius.md,
-      backgroundColor: colors.inputBg,
-      borderWidth: 1,
-      borderColor: colors.inputBorder,
-      paddingHorizontal: spacing.md,
-      color: colors.textPrimary,
-      fontFamily: 'Inter-Regular',
-      fontSize: 14,
-      marginBottom: spacing.md,
-    },
+    
 
     iconGrid: {
       flexDirection: 'row',

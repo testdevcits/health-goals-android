@@ -21,7 +21,7 @@ const AppCheckbox: React.FC<AppCheckboxProps> = ({
   containerStyle,
 }) => {
   const { theme } = useTheme();
-  const { colors, radius, spacing } = theme;
+  const { colors, radius } = theme;
 
   return (
     <View style={containerStyle}>

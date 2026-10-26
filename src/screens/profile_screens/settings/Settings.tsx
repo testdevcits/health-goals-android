@@ -1,12 +1,27 @@
-import React, { useState } from 'react';
-import { Modal, Pressable, ScrollView, View } from 'react-native';
+import React, { useCallback, useState } from 'react';
+import {
+  Alert,
+  Linking,
+  Modal,
+  Pressable,
+  ScrollView,
+  View,
+} from 'react-native';
+import { useFocusEffect } from '@react-navigation/native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Check, X } from 'lucide-react-native';
+import BackgroundGeolocation from 'react-native-background-geolocation';
 import { AppHeader, AppSettingsRow, AppText } from '../../../components';
 import type { AppColors } from '../../../theme/colors';
 import { useTheme } from '../../../theme/useTheme';
 import type { ThemeMode } from '../../../theme/ThemeProvider';
+import {
+  getNotificationPermission,
+  openNotificationSettings,
+  requestNotificationPermission,
+} from '../../../utils/AppPermissions';
 import styles from './styles.Setting';
+import LogoutModal from './components/LogoutModal';
 
 type SettingsGroup = 'units' | 'language' | 'appearance';
 type SettingsNavigation = {
@@ -34,12 +49,210 @@ const Settings = ({ navigation }: { navigation: SettingsNavigation }) => {
   const { colors, spacing, radius } = theme;
   const insets = useSafeAreaInsets();
   const [pushNotifications, setPushNotifications] = useState(false);
+  const [notificationsLoading, setNotificationsLoading] = useState(true);
   const [emailDigests, setEmailDigests] = useState(true);
   const [challengeAlerts, setChallengeAlerts] = useState(false);
-  const [locationTracking, setLocationTracking] = useState(true);
+  const [locationTracking, setLocationTracking] = useState(false);
+  const [locationLoading, setLocationLoading] = useState(true);
   const [units, setUnits] = useState('Metric');
   const [language, setLanguage] = useState('हिन्दी');
   const [activeGroup, setActiveGroup] = useState<SettingsGroup | null>(null);
+  const [modalVisible, setModalVisible] = React.useState(false);
+  const handleSignOut = () => {
+    // TODO: sign‑out logic
+    setModalVisible(false);
+  };
+
+  const refreshDeviceSettings = useCallback(async () => {
+    try {
+      const [notificationsGranted, locationState] = await Promise.all([
+        getNotificationPermission(),
+        BackgroundGeolocation.ready({
+          geolocation: {
+            desiredAccuracy: BackgroundGeolocation.DesiredAccuracy.High,
+            distanceFilter: 25,
+            locationAuthorizationRequest: 'Always',
+          },
+          app: {
+            stopOnTerminate: false,
+            startOnBoot: true,
+            enableHeadless: true,
+            notification: {
+              title: 'Vitality location tracking',
+              text: 'Background location tracking is active.',
+              sticky: true,
+              channelName: 'Location tracking',
+              channelId: 'location-tracking',
+            },
+          },
+        }),
+      ]);
+      setPushNotifications(notificationsGranted);
+      setLocationTracking(locationState.enabled);
+    } catch (error) {
+      console.error('Unable to load device settings:', error);
+      Alert.alert(
+        'Settings unavailable',
+        'Vitality could not read notification or location settings. Please try again.',
+      );
+    } finally {
+      setNotificationsLoading(false);
+      setLocationLoading(false);
+    }
+  }, []);
+
+  useFocusEffect(
+    useCallback(() => {
+      refreshDeviceSettings();
+    }, [refreshDeviceSettings]),
+  );
+
+  const handlePushNotificationsChange = async (enabled: boolean) => {
+    if (notificationsLoading) return;
+
+    if (enabled) {
+      setNotificationsLoading(true);
+      try {
+        const granted = await requestNotificationPermission();
+        setPushNotifications(granted);
+        if (!granted) {
+          Alert.alert(
+            'Notifications not allowed',
+            'Allow notifications for Vitality in your device settings to turn this on.',
+            [
+              { text: 'Cancel', style: 'cancel' },
+              {
+                text: 'Open Settings',
+                onPress: () => {
+                  openNotificationSettings().catch(error => {
+                    console.error('Unable to open notification settings:', error);
+                    Alert.alert(
+                      'Could not open settings',
+                      'Open Vitality’s notification settings from your device settings.',
+                    );
+                  });
+                },
+              },
+            ],
+          );
+        }
+      } catch (error) {
+        console.error('Unable to request notification permission:', error);
+        Alert.alert(
+          'Notification permission failed',
+          'Vitality could not request notification permission. Try again in device settings.',
+        );
+      } finally {
+        setNotificationsLoading(false);
+      }
+      return;
+    }
+
+    Alert.alert(
+      'Turn off notifications?',
+      'Notification permission is managed by your device. Open Vitality’s notification settings to turn it off.',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Open Settings',
+          onPress: () => {
+            openNotificationSettings().catch(error => {
+              console.error('Unable to open notification settings:', error);
+              Alert.alert(
+                'Could not open settings',
+                'Turn off Vitality notifications from your device settings.',
+              );
+            });
+          },
+        },
+      ],
+    );
+  };
+
+  const startLocationTracking = async () => {
+    setLocationLoading(true);
+    try {
+      const authorization =
+        await BackgroundGeolocation.requestPermission(
+          BackgroundGeolocation.Permission.Location,
+        );
+      const hasBackgroundAuthorization =
+        authorization === BackgroundGeolocation.AuthorizationStatus.Always;
+
+      if (!hasBackgroundAuthorization) {
+        Alert.alert(
+          'Background location required',
+          'Continuous tracking needs “Allow all the time” location access. Update Vitality’s location permission in device settings, then enable tracking again.',
+          [
+            { text: 'Cancel', style: 'cancel' },
+            {
+              text: 'Open Settings',
+              onPress: () => {
+                Linking.openSettings().catch(error => {
+                  console.error('Unable to open location settings:', error);
+                  Alert.alert(
+                    'Could not open settings',
+                    'Update Vitality’s location permission in your device settings.',
+                  );
+                });
+              },
+            },
+          ],
+        );
+        return;
+      }
+
+      const state = await BackgroundGeolocation.start();
+      setLocationTracking(state.enabled);
+    } catch (error) {
+      console.error('Unable to start background location tracking:', error);
+      Alert.alert(
+        'Location tracking could not start',
+        'Check that location services are on and Vitality has background location permission, then try again.',
+      );
+    } finally {
+      setLocationLoading(false);
+    }
+  };
+
+  const stopLocationTracking = async () => {
+    setLocationLoading(true);
+    try {
+      const state = await BackgroundGeolocation.stop();
+      setLocationTracking(state.enabled);
+    } catch (error) {
+      console.error('Unable to stop background location tracking:', error);
+      Alert.alert(
+        'Location tracking could not stop',
+        'Vitality could not stop background location tracking. Please try again.',
+      );
+    } finally {
+      setLocationLoading(false);
+    }
+  };
+
+  const handleLocationTrackingChange = (enabled: boolean) => {
+    if (locationLoading) return;
+
+    if (!enabled) {
+      stopLocationTracking();
+      return;
+    }
+
+    Alert.alert(
+      'Enable continuous location tracking?',
+      'Vitality will record your location in the background, including when the app is closed, until you turn this off. Location data currently stays on this device.',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Continue',
+          onPress: () => {
+            startLocationTracking();
+          },
+        },
+      ],
+    );
+  };
 
   const selectedValues: Record<SettingsGroup, string> = {
     units,
@@ -48,8 +261,8 @@ const Settings = ({ navigation }: { navigation: SettingsNavigation }) => {
       themeMode === 'system'
         ? 'System'
         : themeMode === 'dark'
-        ? 'Dark'
-        : 'Light',
+          ? 'Dark'
+          : 'Light',
   };
 
   const selectValue = (group: SettingsGroup, value: string) => {
@@ -94,9 +307,13 @@ const Settings = ({ navigation }: { navigation: SettingsNavigation }) => {
           <AppSettingsRow
             icon="🔔"
             title="Push Notifications"
-            description="Workouts, reminders, and nudges"
+            description={
+              notificationsLoading
+                ? 'Checking device permission…'
+                : 'Allow Vitality notifications on this device'
+            }
             switchValue={pushNotifications}
-            onSwitchChange={setPushNotifications}
+            onSwitchChange={handlePushNotificationsChange}
           />
           <AppSettingsRow
             icon="📧"
@@ -137,9 +354,13 @@ const Settings = ({ navigation }: { navigation: SettingsNavigation }) => {
           <AppSettingsRow
             icon="📍"
             title="Location Tracking"
-            description="For route and outdoor workouts"
+            description={
+              locationLoading
+                ? 'Checking location tracking…'
+                : 'Continuously record location in the background'
+            }
             switchValue={locationTracking}
-            onSwitchChange={setLocationTracking}
+            onSwitchChange={handleLocationTrackingChange}
             showDivider={false}
           />
         </SettingsSection>
@@ -156,6 +377,14 @@ const Settings = ({ navigation }: { navigation: SettingsNavigation }) => {
             title="Change Password"
             value=""
             onPress={() => navigation.navigate('ChangePassword')}
+            showDivider={false}
+          />
+
+          <AppSettingsRow
+            icon="🚪"
+            title="Sign Out"
+            value=""
+            onPress={() => setModalVisible(true)}
             showDivider={false}
           />
         </SettingsSection>
@@ -179,7 +408,7 @@ const Settings = ({ navigation }: { navigation: SettingsNavigation }) => {
                 paddingBottom: Math.max(insets.bottom, spacing.xl),
               },
             ]}
-            onPress={() => {}}
+            onPress={() => { }}
           >
             <View style={[styles.handle, { backgroundColor: colors.border }]} />
             <View style={styles.sheetHeader}>
@@ -202,33 +431,39 @@ const Settings = ({ navigation }: { navigation: SettingsNavigation }) => {
             </View>
             {activeGroup
               ? groupOptions[activeGroup].map((option, index) => {
-                  const selected = selectedValues[activeGroup] === option;
-                  return (
-                    <Pressable
-                      key={option}
-                      onPress={() => selectValue(activeGroup, option)}
-                      style={[
-                        styles.option,
-                        { borderBottomColor: colors.border },
-                        index === groupOptions[activeGroup].length - 1 &&
-                          styles.lastOption,
-                      ]}
-                      accessibilityRole="button"
-                      accessibilityState={{ selected }}
-                    >
-                      <AppText variant="body2" bold={selected}>
-                        {option}
-                      </AppText>
-                      {selected ? (
-                        <Check size={18} color={colors.primary} />
-                      ) : null}
-                    </Pressable>
-                  );
-                })
+                const selected = selectedValues[activeGroup] === option;
+                return (
+                  <Pressable
+                    key={option}
+                    onPress={() => selectValue(activeGroup, option)}
+                    style={[
+                      styles.option,
+                      { borderBottomColor: colors.border },
+                      index === groupOptions[activeGroup].length - 1 &&
+                      styles.lastOption,
+                    ]}
+                    accessibilityRole="button"
+                    accessibilityState={{ selected }}
+                  >
+                    <AppText variant="body2" bold={selected}>
+                      {option}
+                    </AppText>
+                    {selected ? (
+                      <Check size={18} color={colors.primary} />
+                    ) : null}
+                  </Pressable>
+                );
+              })
               : null}
           </Pressable>
         </Pressable>
       </Modal>
+
+      <LogoutModal
+        visible={modalVisible}
+        onClose={() => setModalVisible(false)}
+        onSignOut={handleSignOut}
+      />
     </View>
   );
 };

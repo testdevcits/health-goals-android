@@ -6,7 +6,7 @@ import {
   ChartNoAxesColumn,
   CircleHelp,
 } from 'lucide-react-native';
-import { useTheme } from '../../../theme/useTheme';
+import type { AppColors } from '../../../theme/colors';
 
 type ProfileMenuItem = {
   id: string;
@@ -15,10 +15,7 @@ type ProfileMenuItem = {
   icon: React.ReactNode;
 };
 
-const { theme } = useTheme();
-const { colors } = theme;
-
-export const menuItems: ProfileMenuItem[] = [
+export const getProfileMenuItems = (colors: AppColors): ProfileMenuItem[] => [
   {
     id: 'settings',
     title: 'Settings',

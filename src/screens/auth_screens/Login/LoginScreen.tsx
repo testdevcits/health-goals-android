@@ -34,7 +34,6 @@ const validatePassword = (v: string): string => {
 
 const LoginScreen: React.FC<Props> = ({ navigation }) => {
   const { theme } = useTheme();
-  const { colors, spacing } = theme;
   const styles = createLoginStyles(theme);
 
   const [email, setEmail] = useState('alex.johnson@company.com');

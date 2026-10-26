@@ -1,6 +1,5 @@
 import { Pressable, View } from 'react-native';
 import React, { memo } from 'react';
-import { Droplets, Dumbbell, Footprints, Sunrise } from 'lucide-react-native';
 import { createCardStyles } from '../screens/challenges_screens/all_challenges/styles.AllChallenges';
 import AppText from './AppText';
 
@@ -34,14 +33,6 @@ const ChallengeCard: React.FC<ChallengeCardProps> = ({
   radius,
 }) => {
   const styles = createCardStyles(colors, spacing, radius);
-  const Icon =
-    challenge.category === 'Steps'
-      ? Footprints
-      : challenge.category === 'Strength'
-      ? Dumbbell
-      : challenge.category === 'Mind'
-      ? Sunrise
-      : Droplets;
 
   return (
     <View style={[styles.card, { borderLeftColor: challenge.color }]}>
