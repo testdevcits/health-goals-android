@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
-import { Alert, Pressable, StyleSheet, View } from 'react-native';
+import { Alert, Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import {
+  AppHeader,
   AppText,
   ProfileCard,
   ProfileListRow,
-  ProfileScreen,
+  
 } from '../../../components';
 import { useTheme } from '../../../theme/useTheme';
 import {
@@ -49,6 +50,7 @@ const RewardsScreen: React.FC<{ navigation: ProfileScreenNavigation }> = ({
   navigation,
 }) => {
   const { theme } = useTheme();
+  const { colors } = theme;
   const [points, setPoints] = useState(2840);
 
   const redeem = (title: string, cost: number) => {
@@ -66,71 +68,76 @@ const RewardsScreen: React.FC<{ navigation: ProfileScreenNavigation }> = ({
   };
 
   return (
-    <ProfileScreen
-      navigation={navigation}
-      title="Rewards & Redemption"
-      subtitle="Redeem your hard-earned points"
-    >
-      <View
-        style={[styles.pointsCard, { backgroundColor: theme.colors.primary }]}
+    <View style={{ flex: 1, backgroundColor: colors.backgroundSecondary }}>
+      <AppHeader
+        title="Rewards & Redemption"
+        subtitle="Redeem your hard-earned points"
+        onBackPress={() => navigation.goBack()}
+      />
+      <ScrollView
+        contentContainerStyle={{ flexGrow: 1, paddingBottom: 100, padding: 16 }}
       >
-        <AppText variant="caption" color="white" bold>
-          Available Points
-        </AppText>
-        <AppText variant="display" color="white" style={styles.pointsValue}>
-          {points.toLocaleString()}
-        </AppText>
-        <AppText variant="caption" color="white">
-          Earn points by hitting goals and winning challenges
-        </AppText>
-      </View>
-      <ProfileSectionLabel>Available Rewards</ProfileSectionLabel>
-      <View style={styles.rewardList}>
-        {rewards.map(reward => (
-          <ProfileCard key={reward.title}>
-            <View style={styles.rewardRow}>
-              <View
-                style={[
-                  styles.rewardIcon,
-                  { backgroundColor: theme.colors.primaryLight },
-                ]}
-              >
-                <AppText variant="h3">{reward.icon}</AppText>
+        <View
+          style={[styles.pointsCard, { backgroundColor: theme.colors.primary }]}
+        >
+          <AppText variant="caption" color="white" bold>
+            Available Points
+          </AppText>
+          <AppText variant="display" color="white" style={styles.pointsValue}>
+            {points.toLocaleString()}
+          </AppText>
+          <AppText variant="caption" color="white">
+            Earn points by hitting goals and winning challenges
+          </AppText>
+        </View>
+        <ProfileSectionLabel>Available Rewards</ProfileSectionLabel>
+        <View style={styles.rewardList}>
+          {rewards.map(reward => (
+            <ProfileCard key={reward.title}>
+              <View style={styles.rewardRow}>
+                <View
+                  style={[
+                    styles.rewardIcon,
+                    { backgroundColor: theme.colors.primaryLight },
+                  ]}
+                >
+                  <AppText variant="h3">{reward.icon}</AppText>
+                </View>
+                <View style={styles.rewardCopy}>
+                  <AppText variant="subtitle2" bold>
+                    {reward.title}
+                  </AppText>
+                  <AppText variant="caption" secondary>
+                    {reward.detail}
+                  </AppText>
+                </View>
+                <Pressable
+                  onPress={() => redeem(reward.title, reward.cost)}
+                  style={styles.redeemAction}
+                >
+                  <AppText variant="subtitle2" color="warning" bold>
+                    {reward.cost.toLocaleString()} pts
+                  </AppText>
+                  <AppText variant="caption" primary bold>
+                    Redeem
+                  </AppText>
+                </Pressable>
               </View>
-              <View style={styles.rewardCopy}>
-                <AppText variant="subtitle2" bold>
-                  {reward.title}
-                </AppText>
-                <AppText variant="caption" secondary>
-                  {reward.detail}
-                </AppText>
-              </View>
-              <Pressable
-                onPress={() => redeem(reward.title, reward.cost)}
-                style={styles.redeemAction}
-              >
-                <AppText variant="subtitle2" color="warning" bold>
-                  {reward.cost.toLocaleString()} pts
-                </AppText>
-                <AppText variant="caption" primary bold>
-                  Redeem
-                </AppText>
-              </Pressable>
-            </View>
-          </ProfileCard>
-        ))}
-      </View>
-      <ProfileSectionLabel>Recent Redemptions</ProfileSectionLabel>
-      <ProfileCard>
-        <ProfileListRow
-          icon="☕"
-          title="$5 Coffee eGift"
-          detail="Redeemed Jun 2, 2026"
-          action="−500"
-          last
-        />
-      </ProfileCard>
-    </ProfileScreen>
+            </ProfileCard>
+          ))}
+        </View>
+        <ProfileSectionLabel>Recent Redemptions</ProfileSectionLabel>
+        <ProfileCard>
+          <ProfileListRow
+            icon="☕"
+            title="$5 Coffee eGift"
+            detail="Redeemed Jun 2, 2026"
+            action="−500"
+            last
+          />
+        </ProfileCard>
+      </ScrollView>
+    </View>
   );
 };
 

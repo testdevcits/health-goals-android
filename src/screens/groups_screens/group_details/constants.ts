@@ -46,7 +46,7 @@ export const INITIAL_MEMBERS: Member[] = [
     initials: 'S',
     steps: 52400,
     streak: 14,
-    color: '#FF6868',
+    color: '#FF8278',
   },
   {
     id: '2',
@@ -54,7 +54,7 @@ export const INITIAL_MEMBERS: Member[] = [
     initials: 'M',
     steps: 48300,
     streak: 9,
-    color: '#4D91EB',
+    color: '#579CF4',
   },
   {
     id: '3',
@@ -62,7 +62,7 @@ export const INITIAL_MEMBERS: Member[] = [
     initials: 'A',
     steps: 41200,
     streak: 12,
-    color: '#00BFA5',
+    color: '#00C6A2',
   },
   {
     id: '4',
@@ -78,7 +78,7 @@ export const INITIAL_MEMBERS: Member[] = [
     initials: 'J',
     steps: 32100,
     streak: 5,
-    color: '#7563F5',
+    color: '#8175F5',
   },
   {
     id: '6',
@@ -86,7 +86,7 @@ export const INITIAL_MEMBERS: Member[] = [
     initials: 'L',
     steps: 29600,
     streak: 3,
-    color: '#00BFA5',
+    color: '#00C6A2',
   },
 ];
 
@@ -97,7 +97,7 @@ export const INITIAL_MESSAGES: GroupMessage[] = [
     initials: 'S',
     message: 'Morning run done! 6.2K before 7 AM ☀️',
     time: '6:42 AM',
-    color: '#FF6868',
+    color: '#FF8278',
   },
   {
     id: '2',
@@ -105,7 +105,7 @@ export const INITIAL_MESSAGES: GroupMessage[] = [
     initials: 'M',
     message: "Nice! I'm doing a 5K at lunch, anyone joining?",
     time: '7:15 AM',
-    color: '#4D91EB',
+    color: '#579CF4',
   },
   {
     id: '3',
@@ -121,7 +121,7 @@ export const INITIAL_MESSAGES: GroupMessage[] = [
     initials: 'A',
     message: "I'll be there 💪",
     time: '7:30 AM',
-    color: '#00BFA5',
+    color: '#00C6A2',
     mine: true,
   },
 ];
@@ -157,12 +157,12 @@ export const REWARD_OPTIONS = ['100 pts', '200 pts', '500 pts', '1000 pts'];
 export const formatSteps = (steps: number) => steps.toLocaleString('en-US');
 
 export const AVATAR_PALETTE = [
-  '#FF6868',
-  '#4D91EB',
-  '#00BFA5',
+  '#FF8278',
+  '#579CF4',
+  '#00C6A2',
   '#FF9B38',
-  '#7563F5',
-  '#E91E8C',
-  '#009688',
-  '#FF5722',
+  '#8175F5',
+  '#FF7AA2',
+  '#00B8A9',
+  '#FF6B57',
 ];

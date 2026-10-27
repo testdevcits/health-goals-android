@@ -41,6 +41,10 @@ export const lightColors = {
   info: '#3B82F6',
   infoLight: '#EFF6FF',
 
+  // ── Brand accents ─────────────────────────────────────────
+  coral: '#FF8278',
+  coralLight: '#FFE9E5',
+
   // ── Misc ──────────────────────────────────────────────────
   white: '#FFFFFF',
   black: '#000000',
@@ -92,6 +96,10 @@ export const darkColors = {
   warningLight: '#2D1F0A',
   info: '#60A5FA',
   infoLight: '#0A1A2D',
+
+  // ── Brand accents ─────────────────────────────────────────
+  coral: '#FF8278',
+  coralLight: '#FFE9E5',
 
   // ── Misc ──────────────────────────────────────────────────
   white: '#FFFFFF',

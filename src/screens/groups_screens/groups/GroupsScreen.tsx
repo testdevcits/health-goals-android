@@ -10,7 +10,7 @@ import { initialGroups, initialPosts, Group, FeedPost } from './data';
 
 type GroupTab = 'My Groups' | 'Feed';
 
-const avatarColors = ['#FF8278', '#579CF4', '#00BFA5', '#FF9B38', '#8175F5'];
+const avatarColors = ['#FF8278', '#579CF4', '#00C6A2', '#FF9B38', '#8175F5'];
 
 const GroupsScreen: React.FC = () => {
   const { theme } = useTheme();

@@ -56,7 +56,7 @@ export const CHALLENGES: Challenge[] = [
     progress: 71,
     progressLabel: '2 days left',
     status: '5/7 days',
-    color: '#7461FF',
+    color: '#8175F5',
     icon: Sunrise,
   },
   {
@@ -136,14 +136,14 @@ export const LEADERBOARD: LeaderboardPerson[] = [
     name: 'Priya',
     steps: '7,100',
     initials: 'P',
-    color: '#FFB52E',
+    color: '#FF9B38',
   },
   {
     rank: 4,
     name: 'You (Alex)',
     steps: '7,842',
     initials: 'A',
-    color: '#00BFA5',
+    color: '#00C6A2',
     streak: '12-day streak',
   },
   {
@@ -159,7 +159,7 @@ export const LEADERBOARD: LeaderboardPerson[] = [
     name: 'Lena',
     steps: '5,920',
     initials: 'L',
-    color: '#25CDA9',
+    color: '#00C6A2',
     streak: '2-day streak',
   },
 ];

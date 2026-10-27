@@ -41,15 +41,15 @@ const ProfileScreen: React.FC = () => {
   const handleMenuPress = (id: string) => {
     switch (id) {
       case 'settings':
-        // navigation.navigate('Settings');
+        navigation.navigate('Settings');
         break;
 
       case 'devices':
-        // navigation.navigate('ConnectedDevices');
+        navigation.navigate('ConnectedDevices');
         break;
 
       case 'rewards':
-        // navigation.navigate('Rewards');
+        navigation.navigate('Rewards');
         break;
 
       case 'privacy':
@@ -202,18 +202,3 @@ const ProfileScreen: React.FC = () => {
 };
 
 export default ProfileScreen;
-
-// import { StyleSheet, Text, View } from 'react-native';
-// import React from 'react';
-
-// const Profile = () => {
-//   return (
-//     <View>
-//       <Text>Profile</Text>
-//     </View>
-//   );
-// };
-
-// export default Profile;
-
-// const styles = StyleSheet.create({});

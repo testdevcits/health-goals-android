@@ -8,7 +8,7 @@ import {
   View,
 } from 'react-native';
 import { AppButton, AppHeader, AppText } from '../../../components';
-import styles from './styles.WorkoutSession';
+import { createWorkoutSessionStyles } from './styles.WorkoutSession';
 import { useTheme } from '../../../theme/useTheme';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { HomeStackParamList } from '../../../navigations/HomeStack';
@@ -31,17 +31,24 @@ type Activity = {
   color: string;
 };
 
+const generateActivityColor = (seed: number) => {
+  const hue = (seed * 47 + Math.floor(Math.random() * 60)) % 360;
+  const saturation = 72;
+  const lightness = 58;
+  return `hsl(${hue} ${saturation}% ${lightness}%)`;
+};
+
 const activities: Activity[] = [
-  { id: 'running', name: 'Running', emoji: '🏃', color: '#FF666B' },
-  { id: 'walking', name: 'Walking', emoji: '🚶', color: '#14B8A6' },
-  { id: 'cycling', name: 'Cycling', emoji: '🚴', color: '#4389E8' },
-  { id: 'strength', name: 'Strength', emoji: '🏋️', color: '#8B73ED' },
-  { id: 'yoga', name: 'Yoga', emoji: '🧘', color: '#F5A84D' },
-  { id: 'hiit', name: 'HIIT', emoji: '🔥', color: '#FF7043' },
-  { id: 'swimming', name: 'Swimming', emoji: '🏊', color: '#38A5E8' },
-  { id: 'stretch', name: 'Stretch', emoji: '🤸', color: '#13B8A6' },
-  { id: 'hiking', name: 'Hiking', emoji: '🥾', color: '#8B7355' },
-  { id: 'machines', name: 'Weight machines', emoji: '🏋🏻', color: '#64748B' },
+  { id: 'running', name: 'Running', emoji: '🏃', color: generateActivityColor(1) },
+  { id: 'walking', name: 'Walking', emoji: '🚶', color: generateActivityColor(2) },
+  { id: 'cycling', name: 'Cycling', emoji: '🚴', color: generateActivityColor(3) },
+  { id: 'strength', name: 'Strength', emoji: '🏋️', color: generateActivityColor(4) },
+  { id: 'yoga', name: 'Yoga', emoji: '🧘', color: generateActivityColor(5) },
+  { id: 'hiit', name: 'HIIT', emoji: '🔥', color: generateActivityColor(6) },
+  { id: 'swimming', name: 'Swimming', emoji: '🏊', color: generateActivityColor(7) },
+  { id: 'stretch', name: 'Stretch', emoji: '🤸', color: generateActivityColor(8) },
+  { id: 'hiking', name: 'Hiking', emoji: '🥾', color: generateActivityColor(9) },
+  { id: 'machines', name: 'Weight machines', emoji: '🏋🏻', color: generateActivityColor(10) },
 ];
 
 type Props = NativeStackScreenProps<HomeStackParamList, 'WorkoutSession'>;
@@ -53,10 +60,11 @@ interface MetricCardProps {
   label: string;
   tint: string;
   backgroundColor: string;
+  styles: ReturnType<typeof createWorkoutSessionStyles>;
 }
 
 const MetricCard = React.memo(
-  ({ emoji, value, unit, label, tint, backgroundColor }: MetricCardProps) => (
+  ({ emoji, value, unit, label, tint, backgroundColor, styles }: MetricCardProps) => (
     <View style={[styles.metricCard, { backgroundColor }]}>
       <View style={[styles.metricIcon, { backgroundColor: tint }]}>
         <AppText style={styles.metricEmoji}>{emoji}</AppText>
@@ -99,6 +107,7 @@ const formatTime = (totalSeconds: number) => {
 const WorkoutSessionScreen: React.FC<Props> = ({ navigation }) => {
   const { theme } = useTheme();
   const { colors } = theme;
+  const styles = createWorkoutSessionStyles(colors);
 
   const [selectedActivity, setSelectedActivity] = useState(activities[0]);
   const [workoutSession, setWorkoutSession] = useState<WorkoutSession | null>(
@@ -421,31 +430,35 @@ const WorkoutSessionScreen: React.FC<Props> = ({ navigation }) => {
             value={distanceKm.toFixed(2)}
             unit="km"
             label="Distance"
-            tint="#DDF7F1"
+            tint={colors.primaryLight}
             backgroundColor={colors.surface}
+            styles={styles}
           />
           <MetricCard
             emoji="🔥"
             value={String(calories)}
             unit="kcal"
             label="Calories"
-            tint="#FFF0DE"
+            tint={colors.warningLight}
             backgroundColor={colors.surface}
+            styles={styles}
           />
           <MetricCard
             emoji="❤️"
             value="--"
             unit="bpm"
             label="Heart rate"
-            tint="#FFE8E8"
+            tint={colors.errorLight}
             backgroundColor={colors.surface}
+            styles={styles}
           />
           <MetricCard
             emoji="⚡"
             value="--"
             label="Avg pace"
-            tint="#E9EAFE"
+            tint={colors.infoLight}
             backgroundColor={colors.surface}
+            styles={styles}
           />
         </View>
 

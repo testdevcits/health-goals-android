@@ -2,11 +2,14 @@ import React, { useState } from 'react';
 import { Alert, StyleSheet, View } from 'react-native';
 import {
   AppButton,
+  AppHeader,
   AppInput,
   AppText,
   ProfileScreen,
 } from '../../../components';
 import { ProfileScreenNavigation } from '../components/ProfileScreenLayout';
+import { useTheme } from '../../../theme/useTheme';
+ 
 
 const ChangePasswordScreen: React.FC<{
   navigation: ProfileScreenNavigation;
@@ -15,7 +18,8 @@ const ChangePasswordScreen: React.FC<{
   const [password, setPassword] = useState('');
   const [confirm, setConfirm] = useState('');
   const [submitted, setSubmitted] = useState(false);
-
+const { theme } = useTheme();
+const { colors } = theme;
   const submit = () => {
     setSubmitted(true);
 
@@ -40,11 +44,12 @@ const ChangePasswordScreen: React.FC<{
   };
 
   return (
-    <ProfileScreen
-      navigation={navigation}
-      title="Change Password"
-      subtitle="Keep your account secure"
-    >
+    <View style={{ flex: 1,backgroundColor: colors.backgroundSecondary, }}>
+      <AppHeader
+        title="Change Password"
+        subtitle="Keep your account secure"
+        onBackPress={() => navigation.goBack()}
+      />
       <View style={styles.form}>
         <AppInput
           label="Current Password"
@@ -97,13 +102,15 @@ const ChangePasswordScreen: React.FC<{
           Use 8+ characters with a mix of letters, numbers & symbols
         </AppText>
       </View>
-    </ProfileScreen>
+    </View>
   );
 };
 
 const styles = StyleSheet.create({
   form: {
     paddingTop: 16,
+    padding: 16,
+     
   },
   updateButton: {
     width: '100%',

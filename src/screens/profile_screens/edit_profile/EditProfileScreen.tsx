@@ -1,7 +1,15 @@
 import React, { useState } from 'react';
-import { Alert, Image, Pressable, StyleSheet, View } from 'react-native';
+import {
+  Alert,
+  Image,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  View,
+} from 'react-native';
 import {
   AppButton,
+  AppHeader,
   AppInput,
   AppSelect,
   AppText,
@@ -11,6 +19,7 @@ import { ProfileScreenNavigation } from '../components/ProfileScreenLayout';
 import { radius } from '../../../theme/radius';
 import { Camera } from 'lucide-react-native';
 import ImagePicker from 'react-native-image-crop-picker';
+import { useTheme } from '../../../theme/useTheme';
 
 const EditProfileScreen: React.FC<{ navigation: ProfileScreenNavigation }> = ({
   navigation,
@@ -22,7 +31,8 @@ const EditProfileScreen: React.FC<{ navigation: ProfileScreenNavigation }> = ({
   const [birthDate, setBirthDate] = useState('18/04/1992');
   const [goal, setGoal] = useState('Stay active');
   const [profileImage, setProfileImage] = useState('');
-
+  const { theme } = useTheme();
+  const { colors } = theme;
   const handleChooseImage = async () => {
     try {
       const image = await ImagePicker.openPicker({
@@ -50,110 +60,113 @@ const EditProfileScreen: React.FC<{ navigation: ProfileScreenNavigation }> = ({
   };
 
   return (
-    <ProfileScreen
-      navigation={navigation}
-      title="Edit Profile"
-      subtitle="Update your personal details"
-    >
-      <View style={styles.form}>
-        <View style={styles.profileImageContainer}>
-          <Image
-            source={
-              profileImage
-                ? { uri: profileImage }
-                : {
-                    uri: 'https://imgv3.fotor.com/images/slider-image/after-image-generated-by-ai-profile-pictuire-maker-for-mobile.jpg',
-                  }
-            }
-            style={[styles.profileImage, { borderRadius: radius.full }]}
-            resizeMode="cover"
-          />
+    <View style={{ flex: 1, backgroundColor: colors.backgroundSecondary }}>
+      <AppHeader
+        title="Edit Profile"
+        subtitle="Update your personal details"
+        onBackPress={() => navigation.goBack()}
+      />
+      <ScrollView contentContainerStyle={{ flexGrow: 1,paddingBottom:100 }}>
+        <View style={styles.form}>
+          <View style={styles.profileImageContainer}>
+            <Image
+              source={
+                profileImage
+                  ? { uri: profileImage }
+                  : {
+                      uri: 'https://imgv3.fotor.com/images/slider-image/after-image-generated-by-ai-profile-pictuire-maker-for-mobile.jpg',
+                    }
+              }
+              style={[styles.profileImage, { borderRadius: radius.full }]}
+              resizeMode="cover"
+            />
 
-          <Pressable
-            onPress={handleChooseImage}
-            style={styles.cameraButton}
-            hitSlop={8}
-          >
-            <Camera size={16} color="#334155" strokeWidth={2} />
-          </Pressable>
-        </View>
-        <AppInput label="Full Name" value={name} onChangeText={setName} />
-        <AppInput
-          label="Email"
-          value={email}
-          onChangeText={setEmail}
-          keyboardType="email-address"
-          autoCapitalize="none"
-        />
-        <View style={styles.twoColumns}>
+            <Pressable
+              onPress={handleChooseImage}
+              style={styles.cameraButton}
+              hitSlop={8}
+            >
+              <Camera size={16} color="#334155" strokeWidth={2} />
+            </Pressable>
+          </View>
+          <AppInput label="Full Name" value={name} onChangeText={setName} />
           <AppInput
-            containerStyle={styles.column}
-            label="Height (cm)"
-            value={height}
-            onChangeText={setHeight}
-            keyboardType="numeric"
+            label="Email"
+            value={email}
+            onChangeText={setEmail}
+            keyboardType="email-address"
+            autoCapitalize="none"
+          />
+          <View style={styles.twoColumns}>
+            <AppInput
+              containerStyle={styles.column}
+              label="Height (cm)"
+              value={height}
+              onChangeText={setHeight}
+              keyboardType="numeric"
+              error={
+                parseInt(height) < 50 || parseInt(height) > 300
+                  ? 'Height must be between 50 and 300 cm'
+                  : undefined
+              }
+            />
+            <AppInput
+              containerStyle={styles.column}
+              label="Weight (kg)"
+              value={weight}
+              onChangeText={setWeight}
+              keyboardType="numeric"
+              error={
+                parseInt(weight) < 20 || parseInt(weight) > 500
+                  ? 'Weight must be between 20 and 500 kg'
+                  : undefined
+              }
+            />
+          </View>
+          <AppInput
+            label="Date of Birth"
+            value={birthDate}
+            onChangeText={setBirthDate}
+            placeholder="DD/MM/YYYY"
             error={
-              parseInt(height) < 50 || parseInt(height) > 300
-                ? 'Height must be between 50 and 300 cm'
+              birthDate && !/^\d{2}\/\d{2}\/\d{4}$/.test(birthDate)
+                ? 'Please enter a valid date (DD/MM/YYYY)'
                 : undefined
             }
           />
-          <AppInput
-            containerStyle={styles.column}
-            label="Weight (kg)"
-            value={weight}
-            onChangeText={setWeight}
-            keyboardType="numeric"
-            error={
-              parseInt(weight) < 20 || parseInt(weight) > 500
-                ? 'Weight must be between 20 and 500 kg'
-                : undefined
+          <View style={styles.field}>
+            <AppText variant="label" secondary mb={6}>
+              Primary Goal
+            </AppText>
+            <AppSelect
+              value={goal}
+              onSelect={setGoal}
+              options={[
+                { label: 'Stay active', value: 'Stay active' },
+                { label: 'Lose weight', value: 'Lose weight' },
+                { label: 'Build strength', value: 'Build strength' },
+                { label: 'Improve fitness', value: 'Improve fitness' },
+              ]}
+            />
+          </View>
+          <AppButton
+            title="Save Changes"
+            onPress={() =>
+              Alert.alert(
+                'Profile updated',
+                'Your personal details have been saved.',
+              )
             }
+            style={styles.saveButton}
           />
         </View>
-        <AppInput
-          label="Date of Birth"
-          value={birthDate}
-          onChangeText={setBirthDate}
-          placeholder="DD/MM/YYYY"
-          error={
-            birthDate && !/^\d{2}\/\d{2}\/\d{4}$/.test(birthDate)
-              ? 'Please enter a valid date (DD/MM/YYYY)'
-              : undefined
-          }
-        />
-        <View style={styles.field}>
-          <AppText variant="label" secondary mb={6}>
-            Primary Goal
-          </AppText>
-          <AppSelect
-            value={goal}
-            onSelect={setGoal}
-            options={[
-              { label: 'Stay active', value: 'Stay active' },
-              { label: 'Lose weight', value: 'Lose weight' },
-              { label: 'Build strength', value: 'Build strength' },
-              { label: 'Improve fitness', value: 'Improve fitness' },
-            ]}
-          />
-        </View>
-        <AppButton
-          title="Save Changes"
-          onPress={() =>
-            Alert.alert(
-              'Profile updated',
-              'Your personal details have been saved.',
-            )
-          }
-          style={styles.saveButton}
-        />
-      </View>
-    </ProfileScreen>
+      </ScrollView>
+    </View>
   );
 };
 
 const styles = StyleSheet.create({
-  form: { paddingTop: 16 },
+  form: { padding: 16 },
   profileImageContainer: {
     width: 80,
     height: 80,

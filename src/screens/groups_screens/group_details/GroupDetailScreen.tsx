@@ -68,7 +68,7 @@ const GroupDetailScreen: React.FC<GroupDetailScreenProps> = ({
       initials: 'A',
       message: text,
       time: 'Now',
-      color: '#00BFA5',
+      color: colors.primary,
       mine: true,
     };
 
@@ -115,7 +115,7 @@ const GroupDetailScreen: React.FC<GroupDetailScreenProps> = ({
       status: 'New',
       progress: 0,
       progressLabel: 'Not started',
-      color: '#00C6A2',
+      color: colors.primary,
     };
 
     setChallenges(prev => [...prev, newChallenge]);
@@ -125,7 +125,7 @@ const GroupDetailScreen: React.FC<GroupDetailScreenProps> = ({
     setDuration(DURATION_OPTIONS[0]);
     setReward(REWARD_OPTIONS[1]);
     setActiveTab('Overview');
-  }, [challengeName, challengeGoal, duration, reward]);
+  }, [challengeName, challengeGoal, duration, reward, colors.primary]);
 
   // ─── Render ─────────────────────────────────────────────────────────────────
   return (
