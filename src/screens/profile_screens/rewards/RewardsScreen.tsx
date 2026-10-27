@@ -1,11 +1,13 @@
 import React, { useState } from 'react';
 import { Alert, Pressable, StyleSheet, View } from 'react-native';
-import { AppText } from '../../../components';
-import { useTheme } from '../../../theme/useTheme';
 import {
+  AppText,
   ProfileCard,
   ProfileListRow,
   ProfileScreen,
+} from '../../../components';
+import { useTheme } from '../../../theme/useTheme';
+import {
   ProfileScreenNavigation,
   ProfileSectionLabel,
 } from '../components/ProfileScreenLayout';

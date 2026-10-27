@@ -85,9 +85,10 @@ import { Heart, Play, Footprints } from 'lucide-react-native';
 import { AppText, SectionHeader } from '../../../../components';
 import { useTheme } from '../../../../theme/useTheme';
 
-const DailySummary: React.FC<{ onViewDetails: () => void }> = ({
-  onViewDetails,
-}) => {
+const DailySummary: React.FC<{
+  onViewDetails: () => void;
+  navigation: any;
+}> = ({ onViewDetails, navigation }) => {
   const { theme } = useTheme();
   const { spacing, radius, colors } = theme;
 
@@ -182,7 +183,12 @@ const DailySummary: React.FC<{ onViewDetails: () => void }> = ({
         </TouchableOpacity>
 
         {/* Running Activity */}
-        <View style={styles.summaryCard}>
+        <TouchableOpacity
+          activeOpacity={0.85}
+          accessibilityRole="button"
+          onPress={() => navigation.navigate('WorkoutSession')}
+          style={styles.summaryCard}
+        >
           <View style={styles.runningHeader}>
             <AppText variant="subtitle2" secondary>
               Paused
@@ -213,7 +219,7 @@ const DailySummary: React.FC<{ onViewDetails: () => void }> = ({
           >
             <Play size={14} color="#FFFFFF" fill="#FFFFFF" />
           </TouchableOpacity>
-        </View>
+        </TouchableOpacity>
       </View>
     </View>
   );

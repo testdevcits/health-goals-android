@@ -1,10 +1,16 @@
 import React, { useState } from 'react';
-import { Alert, StyleSheet, View } from 'react-native';
-import { AppButton, AppInput, AppSelect, AppText } from '../../../components';
+import { Alert, Image, Pressable, StyleSheet, View } from 'react-native';
 import {
+  AppButton,
+  AppInput,
+  AppSelect,
+  AppText,
   ProfileScreen,
-  ProfileScreenNavigation,
-} from '../components/ProfileScreenLayout';
+} from '../../../components';
+import { ProfileScreenNavigation } from '../components/ProfileScreenLayout';
+import { radius } from '../../../theme/radius';
+import { Camera } from 'lucide-react-native';
+import ImagePicker from 'react-native-image-crop-picker';
 
 const EditProfileScreen: React.FC<{ navigation: ProfileScreenNavigation }> = ({
   navigation,
@@ -15,6 +21,33 @@ const EditProfileScreen: React.FC<{ navigation: ProfileScreenNavigation }> = ({
   const [weight, setWeight] = useState('74');
   const [birthDate, setBirthDate] = useState('18/04/1992');
   const [goal, setGoal] = useState('Stay active');
+  const [profileImage, setProfileImage] = useState('');
+
+  const handleChooseImage = async () => {
+    try {
+      const image = await ImagePicker.openPicker({
+        mediaType: 'photo',
+        cropping: true,
+        cropperToolbarTitle: 'Crop Profile Photo',
+        width: 500,
+        height: 500,
+        compressImageQuality: 0.8,
+        includeExif: false,
+        freeStyleCropEnabled: false,
+      });
+
+      setProfileImage(image.path);
+    } catch (error: any) {
+      if (error?.code === 'E_PICKER_CANCELLED') {
+        return;
+      }
+
+      Alert.alert(
+        'Image Picker',
+        error?.message || 'Unable to select profile image.',
+      );
+    }
+  };
 
   return (
     <ProfileScreen
@@ -23,6 +56,27 @@ const EditProfileScreen: React.FC<{ navigation: ProfileScreenNavigation }> = ({
       subtitle="Update your personal details"
     >
       <View style={styles.form}>
+        <View style={styles.profileImageContainer}>
+          <Image
+            source={
+              profileImage
+                ? { uri: profileImage }
+                : {
+                    uri: 'https://imgv3.fotor.com/images/slider-image/after-image-generated-by-ai-profile-pictuire-maker-for-mobile.jpg',
+                  }
+            }
+            style={[styles.profileImage, { borderRadius: radius.full }]}
+            resizeMode="cover"
+          />
+
+          <Pressable
+            onPress={handleChooseImage}
+            style={styles.cameraButton}
+            hitSlop={8}
+          >
+            <Camera size={16} color="#334155" strokeWidth={2} />
+          </Pressable>
+        </View>
         <AppInput label="Full Name" value={name} onChangeText={setName} />
         <AppInput
           label="Email"
@@ -100,6 +154,33 @@ const EditProfileScreen: React.FC<{ navigation: ProfileScreenNavigation }> = ({
 
 const styles = StyleSheet.create({
   form: { paddingTop: 16 },
+  profileImageContainer: {
+    width: 80,
+    height: 80,
+    alignSelf: 'center',
+    position: 'relative',
+  },
+
+  profileImage: {
+    width: 80,
+    height: 80,
+    backgroundColor: '#DDDDDD',
+  },
+
+  cameraButton: {
+    position: 'absolute',
+    right: -2,
+    bottom: -2,
+    width: 30,
+    height: 30,
+    borderRadius: 15,
+    backgroundColor: '#FFFFFF',
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+    elevation: 3,
+  },
   twoColumns: { flexDirection: 'row', gap: 12 },
   column: { flex: 1 },
   field: { marginBottom: 16 },

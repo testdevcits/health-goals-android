@@ -1,13 +1,14 @@
 import React, { useState } from 'react';
 import { Alert, Pressable, StyleSheet, View } from 'react-native';
-import { AppButton, AppText } from '../../../components';
-import { useTheme } from '../../../theme/useTheme';
 import {
+  AppButton,
+  AppText,
   ProfileCard,
   ProfileMetric,
   ProfileScreen,
-  ProfileScreenNavigation,
-} from '../components/ProfileScreenLayout';
+} from '../../../components';
+import { useTheme } from '../../../theme/useTheme';
+import { ProfileScreenNavigation } from '../components/ProfileScreenLayout';
 
 const monthlyReports = [
   {

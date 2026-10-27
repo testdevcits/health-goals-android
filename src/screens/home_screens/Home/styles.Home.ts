@@ -317,6 +317,5 @@ export const createHomeStyles = (theme: AppTheme) => {
     quickActionEmoji: {
       fontSize: 24,
     },
-    
   });
 };

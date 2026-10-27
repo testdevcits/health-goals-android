@@ -53,7 +53,7 @@ const LoginScreen: React.FC<Props> = ({ navigation }) => {
   const handleSignIn = async () => {
     if (!validate()) return;
     setLoading(true);
-    await new Promise((r:any )=> setTimeout(r, 1400));
+    await new Promise((r: any) => setTimeout(r, 1400));
     setLoading(false);
     navigation.navigate('MainTabNavigation');
     // TODO: navigate to Home
@@ -165,7 +165,9 @@ const LoginScreen: React.FC<Props> = ({ navigation }) => {
               New here?{'  '}
             </AppText>
             <TouchableOpacity
-            // onPress={() => { navigation.navigate('Register') }}
+              onPress={() => {
+                navigation.navigate('Register');
+              }}
             >
               <AppText variant="body2" link bold>
                 Create an account

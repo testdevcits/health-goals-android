@@ -5,7 +5,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTheme } from '../../../theme/useTheme';
 import createStyles from './styles.GroupDetails';
 
- import { GroupBanner } from './components/GroupBanner';
+import { GroupBanner } from './components/GroupBanner';
 import { GroupTabs } from './components/GroupTabs';
 import { GroupOverview } from './components/GroupOverview';
 import { GroupLeaderboard } from './components/GroupLeaderboard';
@@ -24,6 +24,7 @@ import {
 } from './constants';
 import { AppHeader } from '../../../components';
 import { useNavigation } from '@react-navigation/native';
+import ChallengesTab from './components/ChallengesTab';
 
 // ─── Screen props ─────────────────────────────────────────────────────────────
 
@@ -128,8 +129,7 @@ const GroupDetailScreen: React.FC<GroupDetailScreenProps> = ({
 
   // ─── Render ─────────────────────────────────────────────────────────────────
   return (
-    <View style={[styles.container,  ]}>
-     
+    <View style={[styles.container]}>
       <AppHeader
         title={groupName}
         subtitle={groupDescription}
@@ -174,13 +174,21 @@ const GroupDetailScreen: React.FC<GroupDetailScreenProps> = ({
           />
         )}
 
-        {activeTab === 'Chat' && (
+        {/* {activeTab === 'Chat' && (
           <GroupChat
             messages={messages}
             messageDraft={messageDraft}
             onChangeDraft={setMessageDraft}
             onSend={handleSendMessage}
             colors={colors}
+            styles={styles}
+          />
+        )} */}
+
+        {activeTab === 'Challenges' && (
+          <ChallengesTab
+            onNewChallenge={() => setCreateChallengeVisible(true)}
+            challenges={challenges}
             styles={styles}
           />
         )}

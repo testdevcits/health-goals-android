@@ -1,12 +1,14 @@
 import React, { useMemo, useState } from 'react';
 import { Alert, Pressable, StyleSheet, TextInput, View } from 'react-native';
 import { ChevronDown, Search } from 'lucide-react-native';
-import { AppText } from '../../../components';
-import { useTheme } from '../../../theme/useTheme';
 import {
+  AppText,
   ProfileCard,
   ProfileListRow,
   ProfileScreen,
+} from '../../../components';
+import { useTheme } from '../../../theme/useTheme';
+import {
   ProfileScreenNavigation,
   ProfileSectionLabel,
 } from '../components/ProfileScreenLayout';

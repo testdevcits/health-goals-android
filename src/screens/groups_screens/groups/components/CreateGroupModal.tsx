@@ -138,7 +138,6 @@ const CreateGroupModal: React.FC<CreateGroupModalProps> = ({
               }}
               placeholder="e.g. Lunchtime Walkers"
               placeholderTextColor={colors.inputPlaceholder}
-             
               maxLength={50}
               returnKeyType="done"
               error={groupNameError}
@@ -252,8 +251,6 @@ const createStyles = (colors: any, spacing: any, radius: any) =>
     fieldLabel: {
       marginBottom: spacing.xs,
     },
-
-    
 
     iconGrid: {
       flexDirection: 'row',

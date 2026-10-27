@@ -1,10 +1,12 @@
 import React, { useState } from 'react';
 import { Alert, StyleSheet, View } from 'react-native';
-import { AppButton, AppInput, AppText } from '../../../components';
 import {
+  AppButton,
+  AppInput,
+  AppText,
   ProfileScreen,
-  ProfileScreenNavigation,
-} from '../components/ProfileScreenLayout';
+} from '../../../components';
+import { ProfileScreenNavigation } from '../components/ProfileScreenLayout';
 
 const ChangePasswordScreen: React.FC<{
   navigation: ProfileScreenNavigation;

@@ -1,6 +1,6 @@
 // ─── Types ──────────────────────────────────────────────────────────────────
 
-export type DetailTab = 'Overview' | 'Leaderboard' | 'Chat';
+export type DetailTab = 'Overview' | 'Leaderboard' | 'Challenges';
 
 export interface Member {
   id: string;
@@ -33,7 +33,11 @@ export interface GroupChallenge {
 
 // ─── Mock Data ───────────────────────────────────────────────────────────────
 
-export const DETAIL_TABS: DetailTab[] = ['Overview', 'Leaderboard', 'Chat'];
+export const DETAIL_TABS: DetailTab[] = [
+  'Overview',
+  'Leaderboard',
+  'Challenges',
+];
 
 export const INITIAL_MEMBERS: Member[] = [
   {

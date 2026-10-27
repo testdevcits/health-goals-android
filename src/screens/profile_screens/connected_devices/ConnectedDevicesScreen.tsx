@@ -23,14 +23,14 @@ import {
 } from 'react-native-health-connect';
 import type { Permission } from 'react-native-health-connect';
 
-import { AppText } from '../../../components';
-import { useTheme } from '../../../theme/useTheme';
 import {
+  AppText,
   ProfileCard,
   ProfileListRow,
   ProfileScreen,
-  ProfileScreenNavigation,
-} from '../components/ProfileScreenLayout';
+} from '../../../components';
+import { useTheme } from '../../../theme/useTheme';
+import { ProfileScreenNavigation } from '../components/ProfileScreenLayout';
 
 const HEALTH_PERMISSIONS: Permission[] = [
   { accessType: 'read', recordType: 'Steps' },

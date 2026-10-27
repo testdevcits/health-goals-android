@@ -41,11 +41,11 @@ const ProfileScreen: React.FC = () => {
   const handleMenuPress = (id: string) => {
     switch (id) {
       case 'settings':
-        navigation.navigate('Settings');
+        // navigation.navigate('Settings');
         break;
 
       case 'devices':
-        navigation.navigate('ConnectedDevices');
+        // navigation.navigate('ConnectedDevices');
         break;
 
       case 'rewards':
@@ -53,15 +53,15 @@ const ProfileScreen: React.FC = () => {
         break;
 
       case 'privacy':
-        // navigation.navigate('Privacy');
+        navigation.navigate('Privacy');
         break;
 
       case 'reports':
-        // navigation.navigate('HealthReports');
+        navigation.navigate('HealthReports');
         break;
 
       case 'support':
-        // navigation.navigate('HelpSupport');
+        navigation.navigate('HelpSupport');
         break;
     }
   };

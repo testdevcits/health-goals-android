@@ -1,12 +1,19 @@
 import React from 'react';
 import { StyleSheet } from 'react-native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import { Home, User, Settings, ShoppingBag, Users } from 'lucide-react-native';
+import {
+  Trophy,
+  House,
+  UsersRound,
+  Compass,
+  UserRound,
+} from 'lucide-react-native';
 import HomeStack from './HomeStack';
 import ChallengesStack from './ChallengesStack';
 import GroupsStack from './GroupsStack';
 import DiscoverStack from './DiscoverStack';
 import ProfileStack from './ProfileStack';
+import { fonts } from '../theme/fonts';
 
 type MainTabParamList = {
   Home: undefined;
@@ -21,19 +28,19 @@ const Tab = createBottomTabNavigator<MainTabParamList>();
 type TabIconProps = { color: string; size: number };
 
 const HomeTabIcon = ({ color, size }: TabIconProps) => (
-  <Home color={color} size={size} />
+  <House color={color} size={size} />
 );
 const ChallengesTabIcon = ({ color, size }: TabIconProps) => (
-  <ShoppingBag color={color} size={size} />
+  <Trophy color={color} size={size} />
 );
 const GroupsTabIcon = ({ color, size }: TabIconProps) => (
-  <Users color={color} size={size} />
+  <UsersRound color={color} size={size} />
 );
 const DiscoverTabIcon = ({ color, size }: TabIconProps) => (
-  <Settings color={color} size={size} />
+  <Compass color={color} size={size} />
 );
 const ProfileTabIcon = ({ color, size }: TabIconProps) => (
-  <User color={color} size={size} />
+  <UserRound color={color} size={size} />
 );
 
 const MainTabNavigation = () => {
@@ -42,7 +49,7 @@ const MainTabNavigation = () => {
       initialRouteName="Home"
       screenOptions={{
         headerShown: false,
-        tabBarActiveTintColor: '#2563EB',
+        tabBarActiveTintColor: '#00C6A2',
         tabBarInactiveTintColor: '#94A3B8',
         tabBarStyle: styles.tabBar,
         tabBarLabelStyle: styles.tabBarLabel,
@@ -102,8 +109,8 @@ const styles = StyleSheet.create({
     elevation: 8,
   },
   tabBarLabel: {
-    fontSize: 11,
-    fontWeight: '500',
+    fontSize: 10,
+    fontFamily: fonts.semiBold,
   },
 });
 

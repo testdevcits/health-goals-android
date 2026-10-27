@@ -37,6 +37,7 @@ const HomeScreen: React.FC<Props> = ({ navigation }) => {
         <EnergyCard energy={85} streak_period={12} />
         <DailySummary
           onViewDetails={() => navigation.navigate('DailyActivities')}
+          navigation={navigation}
         />
         <WorkoutCategories
           onViewAllPress={() => navigation.navigate('Categories')}

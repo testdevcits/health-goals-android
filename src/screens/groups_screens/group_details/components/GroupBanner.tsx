@@ -72,7 +72,7 @@ const styles = StyleSheet.create({
     minHeight: 132,
     overflow: 'hidden',
     position: 'relative',
-    marginBottom:15
+    marginBottom: 15,
   },
   iconContainer: {
     width: 70,

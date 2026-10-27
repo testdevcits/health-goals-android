@@ -1,13 +1,15 @@
 import React, { useState } from 'react';
 import { Alert, StyleSheet } from 'react-native';
 import {
+  ProfileScreenNavigation,
+  ProfileSectionLabel,
+} from '../components/ProfileScreenLayout';
+import {
   ProfileCard,
   ProfileListRow,
   ProfileScreen,
-  ProfileScreenNavigation,
-  ProfileSectionLabel,
   ProfileToggleRow,
-} from '../components/ProfileScreenLayout';
+} from '../../../components';
 
 const PrivacyScreen: React.FC<{ navigation: ProfileScreenNavigation }> = ({
   navigation,

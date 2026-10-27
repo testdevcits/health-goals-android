@@ -60,7 +60,7 @@ const createStyles = (colors: any, spacing: any, radius: any) =>
 
     groupBanner: {
       minHeight: 120,
-      backgroundColor: '#00BFA5',
+      backgroundColor: colors.primary,
       borderRadius: radius.xl,
       padding: spacing.md,
       flexDirection: 'row',
@@ -69,7 +69,7 @@ const createStyles = (colors: any, spacing: any, radius: any) =>
       marginBottom: spacing.md,
       overflow: 'hidden',
       elevation: 5,
-      shadowColor: '#009E82',
+      shadowColor: colors.primaryDark,
       shadowOpacity: 0.2,
       shadowRadius: 8,
       shadowOffset: { width: 0, height: 4 },
@@ -116,7 +116,7 @@ const createStyles = (colors: any, spacing: any, radius: any) =>
       borderRadius: radius.full,
       borderWidth: 1.5,
       borderColor: colors.surface,
-      backgroundColor: '#009E82',
+      backgroundColor: colors.primaryDark,
       alignItems: 'center',
       justifyContent: 'center',
       marginLeft: 2,
@@ -151,7 +151,7 @@ const createStyles = (colors: any, spacing: any, radius: any) =>
     activeTab: {
       backgroundColor: colors.surface,
       elevation: 2,
-      shadowColor: '#000',
+      shadowColor: colors.black,
       shadowOpacity: 0.06,
       shadowRadius: 4,
       shadowOffset: { width: 0, height: 2 },
@@ -167,7 +167,7 @@ const createStyles = (colors: any, spacing: any, radius: any) =>
       gap: spacing.md,
       marginBottom: spacing.lg,
       elevation: 2,
-      shadowColor: '#000',
+      shadowColor: colors.black,
       shadowOpacity: 0.04,
       shadowRadius: 6,
       shadowOffset: { width: 0, height: 3 },
@@ -228,7 +228,7 @@ const createStyles = (colors: any, spacing: any, radius: any) =>
       paddingTop: spacing.md,
       paddingBottom: spacing.sm,
       elevation: 2,
-      shadowColor: '#000',
+      shadowColor: colors.black,
       shadowOpacity: 0.04,
       shadowRadius: 6,
       shadowOffset: { width: 0, height: 3 },
@@ -255,7 +255,7 @@ const createStyles = (colors: any, spacing: any, radius: any) =>
       width: '65%',
       minHeight: 8,
       borderRadius: radius.full,
-      backgroundColor: '#13BFA5',
+      backgroundColor: colors.primary,
     },
 
     chartDay: {
@@ -268,7 +268,7 @@ const createStyles = (colors: any, spacing: any, radius: any) =>
       borderRadius: radius.lg,
       overflow: 'hidden',
       elevation: 2,
-      shadowColor: '#000',
+      shadowColor: colors.black,
       shadowOpacity: 0.04,
       shadowRadius: 6,
       shadowOffset: { width: 0, height: 3 },
@@ -299,11 +299,11 @@ const createStyles = (colors: any, spacing: any, radius: any) =>
     },
 
     firstRankBadge: {
-      backgroundColor: '#FFF3CF',
+      backgroundColor: colors.warningLight,
     },
 
     thirdRankBadge: {
-      backgroundColor: '#FCE6D6',
+      backgroundColor: colors.infoLight,
     },
 
     memberAvatar: {
@@ -335,7 +335,7 @@ const createStyles = (colors: any, spacing: any, radius: any) =>
       padding: spacing.md,
       marginBottom: spacing.md,
       elevation: 2,
-      shadowColor: '#000',
+      shadowColor: colors.black,
       shadowOpacity: 0.04,
       shadowRadius: 6,
       shadowOffset: { width: 0, height: 3 },
@@ -451,7 +451,7 @@ const createStyles = (colors: any, spacing: any, radius: any) =>
       backgroundColor: colors.surface,
       borderBottomLeftRadius: radius.xs,
       elevation: 1,
-      shadowColor: '#000',
+      shadowColor: colors.black,
       shadowOpacity: 0.035,
       shadowRadius: 4,
       shadowOffset: { width: 0, height: 2 },
@@ -480,7 +480,7 @@ const createStyles = (colors: any, spacing: any, radius: any) =>
       backgroundColor: colors.surface,
       borderRadius: radius.full,
       elevation: 2,
-      shadowColor: '#000',
+      shadowColor: colors.black,
       shadowOpacity: 0.05,
       shadowRadius: 6,
       shadowOffset: { width: 0, height: 3 },
@@ -506,7 +506,7 @@ const createStyles = (colors: any, spacing: any, radius: any) =>
 
     modalOverlay: {
       flex: 1,
-      backgroundColor: 'rgba(0,0,0,0.48)',
+      backgroundColor: colors.overlay,
       justifyContent: 'flex-end',
     },
 

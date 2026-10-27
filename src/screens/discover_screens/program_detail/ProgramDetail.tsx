@@ -28,6 +28,7 @@ const ProgramDetail = ({
       <AppHeader
         title={program.title}
         subtitle={`${program.duration}-day starter`}
+        onBackPress={() => setSelectedProgram(null)}
       />
 
       <ScrollView

@@ -125,7 +125,10 @@ const Settings = ({ navigation }: { navigation: SettingsNavigation }) => {
                 text: 'Open Settings',
                 onPress: () => {
                   openNotificationSettings().catch(error => {
-                    console.error('Unable to open notification settings:', error);
+                    console.error(
+                      'Unable to open notification settings:',
+                      error,
+                    );
                     Alert.alert(
                       'Could not open settings',
                       'Open Vitality’s notification settings from your device settings.',
@@ -172,10 +175,9 @@ const Settings = ({ navigation }: { navigation: SettingsNavigation }) => {
   const startLocationTracking = async () => {
     setLocationLoading(true);
     try {
-      const authorization =
-        await BackgroundGeolocation.requestPermission(
-          BackgroundGeolocation.Permission.Location,
-        );
+      const authorization = await BackgroundGeolocation.requestPermission(
+        BackgroundGeolocation.Permission.Location,
+      );
       const hasBackgroundAuthorization =
         authorization === BackgroundGeolocation.AuthorizationStatus.Always;
 
@@ -261,8 +263,8 @@ const Settings = ({ navigation }: { navigation: SettingsNavigation }) => {
       themeMode === 'system'
         ? 'System'
         : themeMode === 'dark'
-          ? 'Dark'
-          : 'Light',
+        ? 'Dark'
+        : 'Light',
   };
 
   const selectValue = (group: SettingsGroup, value: string) => {
@@ -408,7 +410,7 @@ const Settings = ({ navigation }: { navigation: SettingsNavigation }) => {
                 paddingBottom: Math.max(insets.bottom, spacing.xl),
               },
             ]}
-            onPress={() => { }}
+            onPress={() => {}}
           >
             <View style={[styles.handle, { backgroundColor: colors.border }]} />
             <View style={styles.sheetHeader}>
@@ -431,29 +433,29 @@ const Settings = ({ navigation }: { navigation: SettingsNavigation }) => {
             </View>
             {activeGroup
               ? groupOptions[activeGroup].map((option, index) => {
-                const selected = selectedValues[activeGroup] === option;
-                return (
-                  <Pressable
-                    key={option}
-                    onPress={() => selectValue(activeGroup, option)}
-                    style={[
-                      styles.option,
-                      { borderBottomColor: colors.border },
-                      index === groupOptions[activeGroup].length - 1 &&
-                      styles.lastOption,
-                    ]}
-                    accessibilityRole="button"
-                    accessibilityState={{ selected }}
-                  >
-                    <AppText variant="body2" bold={selected}>
-                      {option}
-                    </AppText>
-                    {selected ? (
-                      <Check size={18} color={colors.primary} />
-                    ) : null}
-                  </Pressable>
-                );
-              })
+                  const selected = selectedValues[activeGroup] === option;
+                  return (
+                    <Pressable
+                      key={option}
+                      onPress={() => selectValue(activeGroup, option)}
+                      style={[
+                        styles.option,
+                        { borderBottomColor: colors.border },
+                        index === groupOptions[activeGroup].length - 1 &&
+                          styles.lastOption,
+                      ]}
+                      accessibilityRole="button"
+                      accessibilityState={{ selected }}
+                    >
+                      <AppText variant="body2" bold={selected}>
+                        {option}
+                      </AppText>
+                      {selected ? (
+                        <Check size={18} color={colors.primary} />
+                      ) : null}
+                    </Pressable>
+                  );
+                })
               : null}
           </Pressable>
         </Pressable>

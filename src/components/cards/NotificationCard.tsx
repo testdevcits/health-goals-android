@@ -17,15 +17,18 @@ const NotificationCard = ({
 
   const { colors } = theme;
 
-  const markAsRead = useCallback((id: string) => {
-    setNotifications(previous =>
-      previous.map(notification =>
-        notification?.id === id
-          ? { ...notification, unread: false }
-          : notification,
-      ),
-    );
-  }, [setNotifications]);
+  const markAsRead = useCallback(
+    (id: string) => {
+      setNotifications(previous =>
+        previous.map(notification =>
+          notification?.id === id
+            ? { ...notification, unread: false }
+            : notification,
+        ),
+      );
+    },
+    [setNotifications],
+  );
   return (
     <TouchableOpacity
       activeOpacity={0.75}

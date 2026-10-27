@@ -1,4 +1,3 @@
-
 export interface Group {
   id: string;
   name: string;
@@ -22,8 +21,6 @@ export interface FeedPost {
   kudos: number;
   comments: number;
 }
-
-
 
 export const initialGroups: Group[] = [
   {

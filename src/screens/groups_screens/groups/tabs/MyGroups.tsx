@@ -35,9 +35,7 @@ const MyGroups = ({
         <Pressable
           key={group?.id}
           accessibilityRole="button"
-          onPress={() =>
-            navigation.navigate('GroupDetails')
-          }
+          onPress={() => navigation.navigate('GroupDetails')}
           style={styles.groupCard}
         >
           <View
