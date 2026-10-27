@@ -1,15 +1,15 @@
 import React from 'react';
 import { ScrollView, StatusBar, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { AppHeader } from '../../../components';
+import { AppHeader, AppText } from '../../../components';
 import { useTheme } from '../../../theme/useTheme';
 import { createDailyActivityStyles } from './styles.DailyActivities';
 import ActivityChart from './components/ActivityChart';
 import ActivityMetrics from './components/ActivityMetrics';
 import ActivityRings from './components/ActivityRings';
 import DailyTotals from './components/DailyTotals';
-import { DailyActivityNavigation } from './types';
-import ActivityDetail from './components/ActivityDetail';
+import type { DailyActivityNavigation } from './types';
+import { useTodayHealthData } from '../../../hooks/useTodayHealthData';
 
 const DailyActivities: React.FC<{ navigation: DailyActivityNavigation }> = ({
   navigation,
@@ -17,6 +17,42 @@ const DailyActivities: React.FC<{ navigation: DailyActivityNavigation }> = ({
   const { theme } = useTheme();
   const insets = useSafeAreaInsets();
   const styles = createDailyActivityStyles(theme);
+  const { data, error, loading } = useTodayHealthData(true);
+  console.log('==datadata==========', data);
+  const steps = data?.steps ?? 0;
+  const exerciseMinutes = data?.exerciseMinutes ?? 0;
+  const calories = data?.calories ?? 0;
+  const hourlySteps = data?.hourlySteps ?? [];
+  const hourlyExerciseMinutes = data?.hourlyExerciseMinutes ?? [];
+  const hourlyCalories = data?.hourlyCalories ?? [];
+  const formatMostActiveHour = (values: number[]) => {
+    const activeHour = values.indexOf(Math.max(...values, 0));
+    if (activeHour < 0 || values[activeHour] === 0) {
+      return 'No activity recorded yet';
+    }
+
+    const formatHour = (hour: number) => {
+      const date = new Date();
+      date.setHours(hour, 0, 0, 0);
+      return date.toLocaleTimeString([], {
+        hour: 'numeric',
+        minute: '2-digit',
+      });
+    };
+
+    return `${formatHour(activeHour)} - ${formatHour((activeHour + 1) % 24)}`;
+  };
+  const connectionMessage = loading
+    ? 'Loading today’s health data…'
+    : error
+    ? error
+    : data?.status === 'permission-required'
+    ? 'Connect Health Connect in Profile > Connected Devices to sync your activity.'
+    : data?.status === 'unavailable'
+    ? 'Health Connect is unavailable. Install or update it to sync activity.'
+    : data?.status === 'unsupported'
+    ? 'Health Connect activity sync is available on Android.'
+    : null;
 
   return (
     <View style={[styles.screen, {}]}>
@@ -26,7 +62,11 @@ const DailyActivities: React.FC<{ navigation: DailyActivityNavigation }> = ({
       />
       <AppHeader
         title="Daily Activity"
-        subtitle="Today, October 23"
+        subtitle={new Date().toLocaleDateString(undefined, {
+          weekday: 'long',
+          month: 'long',
+          day: 'numeric',
+        })}
         onBackPress={() => navigation.goBack()}
       />
       <ScrollView
@@ -36,74 +76,91 @@ const DailyActivities: React.FC<{ navigation: DailyActivityNavigation }> = ({
           { paddingBottom: insets.bottom + 28 },
         ]}
       >
+        {connectionMessage ? (
+          <AppText
+            variant="caption"
+            color={error ? 'textError' : 'textSecondary'}
+            style={{ marginTop: theme.spacing.md }}
+          >
+            {connectionMessage}
+          </AppText>
+        ) : null}
         <ActivityRings
           rings={[
-            { radius: 66, progress: 0.68, color: '#D5E84E' },
-            { radius: 52, progress: 0.52, color: '#42C9D9' },
-            { radius: 38, progress: 0.34, color: '#B23CC2' },
+            {
+              radius: 66,
+              progress: Math.min(steps / 6000, 1),
+              color: theme.colors.primary,
+            },
+            {
+              radius: 52,
+              progress: Math.min(exerciseMinutes / 90, 1),
+              color: theme.colors.coral,
+            },
+            {
+              radius: 38,
+              progress: Math.min(calories / 500, 1),
+              color: theme.colors.warning,
+            },
           ]}
         />
         <ActivityMetrics
           metrics={[
             {
               title: 'Steps',
-              value: '2,038',
+              value: data?.steps?.toLocaleString('en-US') ?? '—',
               goal: '/ 6,000',
-              color: '#B9C92D',
+              color: theme.colors.primary,
             },
             {
-              title: 'Active time',
-              value: '21',
+              title: 'Exercise time',
+              value: data?.exerciseMinutes
+                ? String(Math.round(data.exerciseMinutes))
+                : data?.exerciseMinutes === 0
+                ? '0'
+                : '—',
               unit: 'mins',
               goal: '/ 90',
-              color: '#42C9D9',
+              color: theme.colors.coral,
             },
             {
-              title: 'Activity cals',
-              value: '70',
+              title: 'Calories',
+              value: data?.calories?.toLocaleString('en-US') ?? '—',
               unit: 'kcal',
               goal: '/ 500',
-              color: '#B23CC2',
+              color: theme.colors.warning,
             },
           ]}
         />
         <DailyTotals
           totals={[
-            { label: 'Total burnt calories', value: '1,273 kcal' },
-            { label: 'Distance while active', value: '1.58 km' },
+            {
+              label: 'Distance',
+              value:
+                data?.distanceMeters === null ||
+                data?.distanceMeters === undefined
+                  ? '—'
+                  : `${(data.distanceMeters / 1000).toFixed(2)} km`,
+            },
           ]}
         />
         <ActivityChart
           title="Steps"
-          activePeriod="6:00 pm - Now"
-          color="#D5E84E"
-          values={[1, 0, 0, 0, 0, 0, 0.4, 0, 0, 2, 4, 0, 5, 0, 0, 11]}
+          activePeriod={formatMostActiveHour(hourlySteps)}
+          color={theme.colors.primary}
+          values={hourlySteps}
         />
         <ActivityChart
-          title="Active time"
-          activePeriod="6:00 pm - Now"
-          color="#42C9D9"
-          values={[0, 0, 0, 0, 0, 0, 0, 0, 0, 3, 5, 0, 7, 0, 0, 13]}
+          title="Exercise time"
+          activePeriod={formatMostActiveHour(hourlyExerciseMinutes)}
+          color={theme.colors.coral}
+          values={hourlyExerciseMinutes}
         />
         <ActivityChart
-          title="Activity calories"
-          activePeriod="6:00 pm - Now"
-          color="#B23CC2"
-          values={[0, 0, 0, 0, 0, 0, 0, 0, 0, 3, 5, 0, 8, 0, 0, 13]}
-        />
-        <ActivityDetail
-          label="Motion"
-          leftLabel="Floors"
-          leftValue="0"
-          rightLabel="Active hours"
-          rightValue="7"
-        />
-        <ActivityDetail
-          label="Time"
-          leftLabel="Exercise time"
-          leftValue="21m"
-          rightLabel="Raised HR activity time"
-          rightValue="0m"
+          title="Calories"
+          activePeriod={formatMostActiveHour(hourlyCalories)}
+          color={theme.colors.warning}
+          values={hourlyCalories}
         />
       </ScrollView>
     </View>

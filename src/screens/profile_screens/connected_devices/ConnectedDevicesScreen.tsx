@@ -23,6 +23,7 @@ import {
   SdkAvailabilityStatus,
 } from 'react-native-health-connect';
 import type { Permission } from 'react-native-health-connect';
+import { HEALTH_PERMISSIONS } from '../../../services/healthConnect';
 
 import {
   AppHeader,
@@ -33,16 +34,6 @@ import {
 } from '../../../components';
 import { useTheme } from '../../../theme/useTheme';
 import { ProfileScreenNavigation } from '../components/ProfileScreenLayout';
-
-const HEALTH_PERMISSIONS: Permission[] = [
-  { accessType: 'read', recordType: 'Steps' },
-  { accessType: 'read', recordType: 'Distance' },
-  { accessType: 'read', recordType: 'TotalCaloriesBurned' },
-  { accessType: 'read', recordType: 'HeartRate' },
-  { accessType: 'read', recordType: 'SleepSession' },
-  { accessType: 'read', recordType: 'ExerciseSession' },
-  { accessType: 'read', recordType: 'Weight' },
-];
 
 const matchingHealthPermissions = (
   permissions: Awaited<ReturnType<typeof requestPermission>>,
@@ -400,7 +391,9 @@ const ConnectedDevicesScreen: React.FC<{
         subtitle="Scan and connect to nearby devices"
         onBackPress={() => navigation.goBack()}
       />
-      <ScrollView contentContainerStyle={{ flexGrow: 1, paddingBottom: 100 ,padding:16}}>
+      <ScrollView
+        contentContainerStyle={{ flexGrow: 1, paddingBottom: 100, padding: 16 }}
+      >
         <View style={{ flex: 1 }}>
           <AppText
             variant="label"

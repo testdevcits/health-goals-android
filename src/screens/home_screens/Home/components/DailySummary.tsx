@@ -97,6 +97,7 @@ import {
   type WorkoutSession,
 } from '../../workout_sessions/workoutSessionStore';
 import { getWorkoutActivity } from '../../workout_sessions/workoutActivities';
+import { useTodayHealthData } from '../../../../hooks/useTodayHealthData';
 
 const DailySummary: React.FC<{
   onViewDetails: () => void;
@@ -104,6 +105,11 @@ const DailySummary: React.FC<{
 }> = ({ onViewDetails, navigation }) => {
   const { theme } = useTheme();
   const { spacing, radius, colors } = theme;
+  const healthDataState = useTodayHealthData();
+  const healthData = healthDataState.data;
+
+  console.log('=======healthData========', healthData);
+
   const [workoutSession, setWorkoutSession] =
     React.useState<WorkoutSession | null>(null);
   const [now, setNow] = React.useState(Date.now());
@@ -200,7 +206,7 @@ const DailySummary: React.FC<{
   const elapsedSeconds = workoutSession
     ? Math.floor(getElapsedMilliseconds(workoutSession, now) / 1000)
     : 0;
-  const calories = activity
+  const workoutCalories = activity
     ? Math.floor((elapsedSeconds / 60) * activity.caloriesPerMinute)
     : 0;
   const distanceKm = activity
@@ -228,7 +234,11 @@ const DailySummary: React.FC<{
           onPress={onViewDetails}
           activeOpacity={0.85}
           accessibilityRole="button"
-          accessibilityLabel="Daily activity, 2038 steps, 21 active minutes"
+          accessibilityLabel={`Daily activity, ${
+            healthData?.steps?.toLocaleString('en-US') ?? 'unavailable'
+          } steps, ${
+            healthData?.exerciseMinutes ?? 'unavailable'
+          } active minutes`}
         >
           <AppText variant="subtitle2" bold>
             Daily Activity
@@ -236,7 +246,9 @@ const DailySummary: React.FC<{
 
           <View style={styles.metricRow}>
             <AppText variant="body2" bold>
-              2,038
+              {healthDataState.loading
+                ? '…'
+                : healthData?.steps?.toLocaleString('en-US') ?? '—'}
             </AppText>
             <AppText variant="caption" secondary>
               {' '}
@@ -245,7 +257,16 @@ const DailySummary: React.FC<{
           </View>
 
           <AppText variant="caption" secondary>
-            21 active mins
+            {healthDataState.loading
+              ? 'Loading health data…'
+              : healthData?.status === 'permission-required'
+              ? 'Connect Health Connect in Profile'
+              : healthDataState.error
+              ? healthDataState.error
+              : healthData?.exerciseMinutes === null ||
+                healthData?.exerciseMinutes === undefined
+              ? 'Exercise data unavailable'
+              : `${Math.round(healthData?.exerciseMinutes ?? 0)} active mins`}
           </AppText>
 
           <View style={styles.bottomIcon}>
@@ -259,7 +280,7 @@ const DailySummary: React.FC<{
           accessibilityRole="button"
           onPress={() => navigation.navigate('WorkoutSession')}
           style={styles.summaryCard}
-          accessibilityLabel={`${workoutStatus}: ${calories} kcal, ${distanceKm} kilometers${
+          accessibilityLabel={`${workoutStatus}: ${workoutCalories} kcal, ${distanceKm} kilometers${
             activity ? `, ${activity.name}` : ''
           }`}
         >
@@ -276,7 +297,7 @@ const DailySummary: React.FC<{
 
           <View style={styles.metricRow}>
             <AppText variant="body2" bold>
-              {calories}
+              {workoutCalories}
             </AppText>
             <AppText variant="caption" secondary>
               {' '}

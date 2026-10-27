@@ -5,7 +5,6 @@ import {
   AppText,
   ProfileCard,
   ProfileListRow,
-  
 } from '../../../components';
 import { useTheme } from '../../../theme/useTheme';
 import {

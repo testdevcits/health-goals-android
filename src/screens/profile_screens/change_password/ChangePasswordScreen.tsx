@@ -9,7 +9,6 @@ import {
 } from '../../../components';
 import { ProfileScreenNavigation } from '../components/ProfileScreenLayout';
 import { useTheme } from '../../../theme/useTheme';
- 
 
 const ChangePasswordScreen: React.FC<{
   navigation: ProfileScreenNavigation;
@@ -18,8 +17,8 @@ const ChangePasswordScreen: React.FC<{
   const [password, setPassword] = useState('');
   const [confirm, setConfirm] = useState('');
   const [submitted, setSubmitted] = useState(false);
-const { theme } = useTheme();
-const { colors } = theme;
+  const { theme } = useTheme();
+  const { colors } = theme;
   const submit = () => {
     setSubmitted(true);
 
@@ -44,7 +43,7 @@ const { colors } = theme;
   };
 
   return (
-    <View style={{ flex: 1,backgroundColor: colors.backgroundSecondary, }}>
+    <View style={{ flex: 1, backgroundColor: colors.backgroundSecondary }}>
       <AppHeader
         title="Change Password"
         subtitle="Keep your account secure"
@@ -110,7 +109,6 @@ const styles = StyleSheet.create({
   form: {
     paddingTop: 16,
     padding: 16,
-     
   },
   updateButton: {
     width: '100%',

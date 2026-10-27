@@ -17,8 +17,15 @@ export const GroupBanner: React.FC<Props> = memo(
     const { colors } = theme;
 
     return (
-      <View style={[styles.bannerContainer, { backgroundColor: colors.primary }]}>
-        <View style={[styles.iconContainer, { backgroundColor: 'rgba(255,255,255,0.17)' }]}>
+      <View
+        style={[styles.bannerContainer, { backgroundColor: colors.primary }]}
+      >
+        <View
+          style={[
+            styles.iconContainer,
+            { backgroundColor: 'rgba(255,255,255,0.17)' },
+          ]}
+        >
           <AppText style={styles.groupIcon}>🏃</AppText>
         </View>
 
@@ -27,7 +34,10 @@ export const GroupBanner: React.FC<Props> = memo(
             {groupName}
           </AppText>
 
-          <AppText variant="subtitle2" style={[styles.description, { color: colors.white }]}>
+          <AppText
+            variant="subtitle2"
+            style={[styles.description, { color: colors.white }]}
+          >
             {groupDescription} · {memberCount} members
           </AppText>
 
@@ -52,8 +62,20 @@ export const GroupBanner: React.FC<Props> = memo(
             ))}
 
             {memberCount > 4 && (
-              <View style={[styles.bannerMoreMembers, { backgroundColor: colors.primaryDark, borderColor: colors.white }]}>
-                <AppText style={styles.bannerMoreMembersText} color="white" bold>
+              <View
+                style={[
+                  styles.bannerMoreMembers,
+                  {
+                    backgroundColor: colors.primaryDark,
+                    borderColor: colors.white,
+                  },
+                ]}
+              >
+                <AppText
+                  style={styles.bannerMoreMembersText}
+                  color="white"
+                  bold
+                >
                   +{memberCount - 4}
                 </AppText>
               </View>
@@ -61,8 +83,15 @@ export const GroupBanner: React.FC<Props> = memo(
           </View>
         </View>
 
-        <View style={[styles.settingsButton, { backgroundColor: 'rgba(255,255,255,0.2)' }]}>
-          <AppText style={[styles.settingsIcon, { color: colors.white }]}>⚙</AppText>
+        <View
+          style={[
+            styles.settingsButton,
+            { backgroundColor: 'rgba(255,255,255,0.2)' },
+          ]}
+        >
+          <AppText style={[styles.settingsIcon, { color: colors.white }]}>
+            ⚙
+          </AppText>
         </View>
       </View>
     );

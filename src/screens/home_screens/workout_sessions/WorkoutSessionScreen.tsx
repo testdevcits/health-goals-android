@@ -52,7 +52,15 @@ interface MetricCardProps {
 }
 
 const MetricCard = React.memo(
-  ({ emoji, value, unit, label, tint, backgroundColor, styles }: MetricCardProps) => (
+  ({
+    emoji,
+    value,
+    unit,
+    label,
+    tint,
+    backgroundColor,
+    styles,
+  }: MetricCardProps) => (
     <View style={[styles.metricCard, { backgroundColor }]}>
       <View style={[styles.metricIcon, { backgroundColor: tint }]}>
         <AppText style={styles.metricEmoji}>{emoji}</AppText>

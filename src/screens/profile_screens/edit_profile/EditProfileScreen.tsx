@@ -20,6 +20,7 @@ import { radius } from '../../../theme/radius';
 import { Camera } from 'lucide-react-native';
 import ImagePicker from 'react-native-image-crop-picker';
 import { useTheme } from '../../../theme/useTheme';
+import styles from './styles.EditProfile';
 
 const EditProfileScreen: React.FC<{ navigation: ProfileScreenNavigation }> = ({
   navigation,
@@ -66,7 +67,7 @@ const EditProfileScreen: React.FC<{ navigation: ProfileScreenNavigation }> = ({
         subtitle="Update your personal details"
         onBackPress={() => navigation.goBack()}
       />
-      <ScrollView contentContainerStyle={{ flexGrow: 1,paddingBottom:100 }}>
+      <ScrollView contentContainerStyle={{ flexGrow: 1, paddingBottom: 100 }}>
         <View style={styles.form}>
           <View style={styles.profileImageContainer}>
             <Image
@@ -164,40 +165,5 @@ const EditProfileScreen: React.FC<{ navigation: ProfileScreenNavigation }> = ({
     </View>
   );
 };
-
-const styles = StyleSheet.create({
-  form: { padding: 16 },
-  profileImageContainer: {
-    width: 80,
-    height: 80,
-    alignSelf: 'center',
-    position: 'relative',
-  },
-
-  profileImage: {
-    width: 80,
-    height: 80,
-    backgroundColor: '#DDDDDD',
-  },
-
-  cameraButton: {
-    position: 'absolute',
-    right: -2,
-    bottom: -2,
-    width: 30,
-    height: 30,
-    borderRadius: 15,
-    backgroundColor: '#FFFFFF',
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderWidth: 1,
-    borderColor: '#E2E8F0',
-    elevation: 3,
-  },
-  twoColumns: { flexDirection: 'row', gap: 12 },
-  column: { flex: 1 },
-  field: { marginBottom: 16 },
-  saveButton: { width: '100%', borderRadius: 14, marginTop: 2 },
-});
 
 export default EditProfileScreen;
