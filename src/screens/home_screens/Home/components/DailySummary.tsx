@@ -79,11 +79,24 @@
 // });
 
 import React from 'react';
-import { StyleSheet, TouchableOpacity, View } from 'react-native';
-import { Heart, Play, Footprints } from 'lucide-react-native';
+import {
+  ActivityIndicator,
+  Alert,
+  StyleSheet,
+  TouchableOpacity,
+  View,
+} from 'react-native';
+import { Heart, Play, Footprints, Pause } from 'lucide-react-native';
 
 import { AppText, SectionHeader } from '../../../../components';
 import { useTheme } from '../../../../theme/useTheme';
+import {
+  getElapsedMilliseconds,
+  getWorkoutSession,
+  subscribeToWorkoutSession,
+  type WorkoutSession,
+} from '../../workout_sessions/workoutSessionStore';
+import { getWorkoutActivity } from '../../workout_sessions/workoutActivities';
 
 const DailySummary: React.FC<{
   onViewDetails: () => void;
@@ -91,6 +104,44 @@ const DailySummary: React.FC<{
 }> = ({ onViewDetails, navigation }) => {
   const { theme } = useTheme();
   const { spacing, radius, colors } = theme;
+  const [workoutSession, setWorkoutSession] =
+    React.useState<WorkoutSession | null>(null);
+  const [now, setNow] = React.useState(Date.now());
+
+  React.useEffect(() => {
+    let mounted = true;
+    const refreshSession = () => {
+      getWorkoutSession()
+        .then(session => {
+          if (mounted) {
+            setWorkoutSession(session);
+          }
+        })
+        .catch(error => {
+          Alert.alert(
+            'Workout session unavailable',
+            error instanceof Error ? error.message : String(error),
+          );
+        });
+    };
+
+    const unsubscribe = subscribeToWorkoutSession(refreshSession);
+    refreshSession();
+
+    return () => {
+      mounted = false;
+      unsubscribe();
+    };
+  }, []);
+
+  React.useEffect(() => {
+    if (!workoutSession || workoutSession.startedAtMilliseconds === null) {
+      return;
+    }
+
+    const interval = setInterval(() => setNow(Date.now()), 1000);
+    return () => clearInterval(interval);
+  }, [workoutSession]);
 
   const styles = StyleSheet.create({
     summaryContainer: {
@@ -108,7 +159,7 @@ const DailySummary: React.FC<{
       borderRadius: radius.lg,
       backgroundColor: colors.surface,
       elevation: 2,
-      shadowColor: '#000',
+      shadowColor: colors.black,
       shadowOpacity: 0.06,
       shadowRadius: 8,
       shadowOffset: { width: 0, height: 3 },
@@ -135,11 +186,31 @@ const DailySummary: React.FC<{
       width: 24,
       height: 24,
       borderRadius: 17,
-      backgroundColor: '#FF6268',
+      backgroundColor: colors.coral,
       alignItems: 'center',
       justifyContent: 'center',
     },
   });
+
+  const activity = workoutSession
+    ? getWorkoutActivity(workoutSession.activityId)
+    : null;
+  const isRunning =
+    workoutSession !== null && workoutSession.startedAtMilliseconds !== null;
+  const elapsedSeconds = workoutSession
+    ? Math.floor(getElapsedMilliseconds(workoutSession, now) / 1000)
+    : 0;
+  const calories = activity
+    ? Math.floor((elapsedSeconds / 60) * activity.caloriesPerMinute)
+    : 0;
+  const distanceKm = activity
+    ? ((activity.speedKmh * elapsedSeconds) / 3600).toFixed(2)
+    : '0.00';
+  const workoutStatus = !workoutSession
+    ? 'Start workout'
+    : isRunning
+    ? 'In progress'
+    : 'Paused';
 
   return (
     <View style={styles.summaryContainer}>
@@ -178,7 +249,7 @@ const DailySummary: React.FC<{
           </AppText>
 
           <View style={styles.bottomIcon}>
-            <Heart size={20} color="#FF454F" fill="#FF454F" />
+            <Heart size={20} color={colors.coral} fill={colors.coral} />
           </View>
         </TouchableOpacity>
 
@@ -188,17 +259,24 @@ const DailySummary: React.FC<{
           accessibilityRole="button"
           onPress={() => navigation.navigate('WorkoutSession')}
           style={styles.summaryCard}
+          accessibilityLabel={`${workoutStatus}: ${calories} kcal, ${distanceKm} kilometers${
+            activity ? `, ${activity.name}` : ''
+          }`}
         >
           <View style={styles.runningHeader}>
             <AppText variant="subtitle2" secondary>
-              Paused
+              {workoutStatus}
             </AppText>
-            <Footprints size={16} color="#F59E0B" />
+            {workoutStatus === 'In progress' ? (
+              <ActivityIndicator size={'small'} />
+            ) : (
+              <Footprints size={16} color={colors.warning} />
+            )}
           </View>
 
           <View style={styles.metricRow}>
             <AppText variant="body2" bold>
-              0
+              {calories}
             </AppText>
             <AppText variant="caption" secondary>
               {' '}
@@ -207,18 +285,18 @@ const DailySummary: React.FC<{
           </View>
 
           <AppText variant="caption" secondary>
-            0.00 km · Running
+            {activity
+              ? `${distanceKm} km · ${activity.name}`
+              : 'Tap to start a workout'}
           </AppText>
 
-          <TouchableOpacity
-            style={styles.playButton}
-            onPress={onViewDetails}
-            activeOpacity={0.8}
-            accessibilityRole="button"
-            accessibilityLabel="View running details"
-          >
-            <Play size={14} color="#FFFFFF" fill="#FFFFFF" />
-          </TouchableOpacity>
+          <View style={styles.playButton} accessible={false}>
+            {workoutStatus === 'In progress' ? (
+              <Pause size={14} color={colors.white} fill={colors.white} />
+            ) : (
+              <Play size={14} color={colors.white} fill={colors.white} />
+            )}
+          </View>
         </TouchableOpacity>
       </View>
     </View>

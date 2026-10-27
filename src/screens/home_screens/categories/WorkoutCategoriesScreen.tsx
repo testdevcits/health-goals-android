@@ -6,6 +6,7 @@ import styles from './styles.Categories';
 import { categories, WorkoutCategory } from './consts';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { HomeStackParamList } from '../../../navigations/HomeStack';
+import { resolveWorkoutActivityId } from '../workout_sessions/workoutActivities';
 
 type Props = NativeStackScreenProps<HomeStackParamList, 'Categories'>;
 
@@ -21,9 +22,8 @@ const WorkoutCategoriesScreen: React.FC<Props> = ({ navigation }) => {
         accessibilityRole="button"
         accessibilityLabel={`${item?.title}, ${item?.subtitle}`}
         onPress={() =>
-          navigation.navigate('CategoriesDetailsScreen', {
-            source: 'categories',
-            category: item,
+          navigation.navigate('WorkoutSession', {
+            activityId: resolveWorkoutActivityId(item.id),
           })
         }
         style={({ pressed }) => [

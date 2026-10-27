@@ -17,7 +17,7 @@ export type HomeStackParamList = {
   CategoriesDetailsScreen:
     | { source: 'categories'; category: WorkoutCategory }
     | { source: 'home'; workoutId: string };
-  WorkoutSession: undefined;
+  WorkoutSession: { activityId?: string } | undefined;
 };
 
 const Stack = createNativeStackNavigator<HomeStackParamList>();

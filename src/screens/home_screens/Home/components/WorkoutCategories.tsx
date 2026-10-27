@@ -7,6 +7,7 @@ import { createHomeStyles } from '../styles.Home';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import type { HomeStackParamList } from '../../../../navigations/HomeStack';
+import { resolveWorkoutActivityId } from '../../workout_sessions/workoutActivities';
 
 const WorkoutCategories: React.FC<{ onViewAllPress: () => void }> = ({
   onViewAllPress,
@@ -24,9 +25,8 @@ const WorkoutCategories: React.FC<{ onViewAllPress: () => void }> = ({
         accessibilityRole="button"
         accessibilityLabel={`${item?.name}: ${item?.subtitle}`}
         onPress={() =>
-          navigation.navigate('CategoriesDetailsScreen', {
-            source: 'home',
-            workoutId: item?.id,
+          navigation.navigate('WorkoutSession', {
+            activityId: resolveWorkoutActivityId(item.name),
           })
         }
       >

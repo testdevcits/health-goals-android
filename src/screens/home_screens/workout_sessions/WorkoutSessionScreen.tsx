@@ -23,13 +23,9 @@ import {
   subscribeToWorkoutSession,
   type WorkoutSession,
 } from './workoutSessionStore';
+import { WORKOUT_ACTIVITIES } from './workoutActivities';
 
-type Activity = {
-  id: string;
-  name: string;
-  emoji: string;
-  color: string;
-};
+type Activity = (typeof WORKOUT_ACTIVITIES)[number] & { color: string };
 
 const generateActivityColor = (seed: number) => {
   const hue = (seed * 47 + Math.floor(Math.random() * 60)) % 360;
@@ -38,18 +34,10 @@ const generateActivityColor = (seed: number) => {
   return `hsl(${hue} ${saturation}% ${lightness}%)`;
 };
 
-const activities: Activity[] = [
-  { id: 'running', name: 'Running', emoji: '🏃', color: generateActivityColor(1) },
-  { id: 'walking', name: 'Walking', emoji: '🚶', color: generateActivityColor(2) },
-  { id: 'cycling', name: 'Cycling', emoji: '🚴', color: generateActivityColor(3) },
-  { id: 'strength', name: 'Strength', emoji: '🏋️', color: generateActivityColor(4) },
-  { id: 'yoga', name: 'Yoga', emoji: '🧘', color: generateActivityColor(5) },
-  { id: 'hiit', name: 'HIIT', emoji: '🔥', color: generateActivityColor(6) },
-  { id: 'swimming', name: 'Swimming', emoji: '🏊', color: generateActivityColor(7) },
-  { id: 'stretch', name: 'Stretch', emoji: '🤸', color: generateActivityColor(8) },
-  { id: 'hiking', name: 'Hiking', emoji: '🥾', color: generateActivityColor(9) },
-  { id: 'machines', name: 'Weight machines', emoji: '🏋🏻', color: generateActivityColor(10) },
-];
+const activities: Activity[] = WORKOUT_ACTIVITIES.map((activity, index) => ({
+  ...activity,
+  color: generateActivityColor(index + 1),
+}));
 
 type Props = NativeStackScreenProps<HomeStackParamList, 'WorkoutSession'>;
 
@@ -104,12 +92,15 @@ const formatTime = (totalSeconds: number) => {
   )}`;
 };
 
-const WorkoutSessionScreen: React.FC<Props> = ({ navigation }) => {
+const WorkoutSessionScreen: React.FC<Props> = ({ navigation, route }) => {
   const { theme } = useTheme();
   const { colors } = theme;
   const styles = createWorkoutSessionStyles(colors);
 
-  const [selectedActivity, setSelectedActivity] = useState(activities[0]);
+  const requestedActivity =
+    activities.find(activity => activity.id === route.params?.activityId) ??
+    activities[0];
+  const [selectedActivity, setSelectedActivity] = useState(requestedActivity);
   const [workoutSession, setWorkoutSession] = useState<WorkoutSession | null>(
     null,
   );
@@ -120,6 +111,14 @@ const WorkoutSessionScreen: React.FC<Props> = ({ navigation }) => {
   const currentActivity =
     activities.find(activity => activity.id === workoutSession?.activityId) ??
     selectedActivity;
+
+  useEffect(() => {
+    const activityId = route.params?.activityId;
+    const activity = activities.find(item => item.id === activityId);
+    if (activity && !workoutSession) {
+      setSelectedActivity(activity);
+    }
+  }, [route.params?.activityId, workoutSession]);
 
   useEffect(() => {
     let mounted = true;
@@ -187,31 +186,12 @@ const WorkoutSessionScreen: React.FC<Props> = ({ navigation }) => {
 
   // Basic estimates for running/walking/cycling.
   // Replace with GPS or activity-specific calculations when implemented.
-  const speedKmh =
-    currentActivity.id === 'running'
-      ? 9.6
-      : currentActivity.id === 'walking'
-      ? 5
-      : currentActivity.id === 'cycling'
-      ? 18
-      : 0;
-
-  const distanceKm = Number(((speedKmh * elapsedSeconds) / 3600).toFixed(2));
-
-  const caloriesPerMinute =
-    currentActivity.id === 'running'
-      ? 10
-      : currentActivity.id === 'walking'
-      ? 4
-      : currentActivity.id === 'cycling'
-      ? 8
-      : currentActivity.id === 'strength'
-      ? 5
-      : currentActivity.id === 'hiit'
-      ? 12
-      : 3;
-
-  const calories = Math.floor((elapsedSeconds / 60) * caloriesPerMinute);
+  const distanceKm = Number(
+    ((currentActivity.speedKmh * elapsedSeconds) / 3600).toFixed(2),
+  );
+  const calories = Math.floor(
+    (elapsedSeconds / 60) * currentActivity.caloriesPerMinute,
+  );
 
   // const handleStartPause = () => {
   //   if (isRunning) {
