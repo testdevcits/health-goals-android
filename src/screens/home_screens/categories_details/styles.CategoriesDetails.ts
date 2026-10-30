@@ -1,8 +1,9 @@
 import { StyleSheet } from 'react-native';
 import { spacing } from '../../../theme/spacing';
 import { radius } from '../../../theme/radius';
+import type { AppTheme } from '../../../theme';
 
-const styles = StyleSheet.create({
+const createStyles = ({ colors }: AppTheme) => StyleSheet.create({
   safeArea: {
     flex: 1,
   },
@@ -13,7 +14,7 @@ const styles = StyleSheet.create({
   },
   heroCard: {
     height: 157,
-    backgroundColor: '#F15F63',
+    backgroundColor: colors.coral,
     borderRadius: radius.xl,
     padding: spacing.base,
     justifyContent: 'flex-end',
@@ -25,7 +26,7 @@ const styles = StyleSheet.create({
     width: 160,
     height: 160,
     borderRadius: radius.full,
-    backgroundColor: 'rgba(255,255,255,0.12)',
+    backgroundColor: colors.whiteOverlay18,
     right: -30,
     top: -50,
   },
@@ -35,12 +36,12 @@ const styles = StyleSheet.create({
     marginBottom: spacing.xs,
   },
   heroTitle: {
-    color: '#FFFFFF',
+    color: colors.white,
     fontSize: 22,
     lineHeight: 28,
   },
   heroSubtitle: {
-    color: '#FFFFFF',
+    color: colors.white,
     marginTop: 2,
   },
   infoCard: {
@@ -65,7 +66,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     paddingVertical: spacing.sm,
     borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: '#E9EDF2',
+    borderBottomColor: colors.border,
     gap: spacing.sm,
   },
   lastRateRow: {
@@ -103,7 +104,7 @@ const styles = StyleSheet.create({
     alignItems: 'stretch',
     justifyContent: 'space-between',
     borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: '#E5EAF0',
+    borderBottomColor: colors.border,
   },
   barColumn: {
     flex: 1,
@@ -132,4 +133,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default styles;
+export default createStyles;

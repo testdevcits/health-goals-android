@@ -1,6 +1,7 @@
 import { StyleSheet } from 'react-native';
+import type { AppColors } from '../../../theme/colors';
 
-const styles = StyleSheet.create({
+const createStyles = (colors: AppColors) => StyleSheet.create({
   form: { padding: 16 },
   profileImageContainer: {
     width: 80,
@@ -12,7 +13,7 @@ const styles = StyleSheet.create({
   profileImage: {
     width: 80,
     height: 80,
-    backgroundColor: '#DDDDDD',
+    backgroundColor: colors.surfaceElevated,
   },
 
   cameraButton: {
@@ -22,11 +23,11 @@ const styles = StyleSheet.create({
     width: 30,
     height: 30,
     borderRadius: 15,
-    backgroundColor: '#FFFFFF',
+    backgroundColor: colors.surface,
     alignItems: 'center',
     justifyContent: 'center',
     borderWidth: 1,
-    borderColor: '#E2E8F0',
+    borderColor: colors.border,
     elevation: 3,
   },
   twoColumns: { flexDirection: 'row', gap: 12 },
@@ -35,4 +36,4 @@ const styles = StyleSheet.create({
   saveButton: { width: '100%', borderRadius: 14, marginTop: 2 },
 });
 
-export default styles;
+export default createStyles;

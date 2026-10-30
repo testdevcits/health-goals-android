@@ -4,7 +4,6 @@ import {
   Image,
   Pressable,
   ScrollView,
-  StyleSheet,
   View,
 } from 'react-native';
 import {
@@ -13,14 +12,13 @@ import {
   AppInput,
   AppSelect,
   AppText,
-  ProfileScreen,
 } from '../../../components';
 import { ProfileScreenNavigation } from '../components/ProfileScreenLayout';
 import { radius } from '../../../theme/radius';
 import { Camera } from 'lucide-react-native';
 import ImagePicker from 'react-native-image-crop-picker';
 import { useTheme } from '../../../theme/useTheme';
-import styles from './styles.EditProfile';
+import createStyles from './styles.EditProfile';
 
 const EditProfileScreen: React.FC<{ navigation: ProfileScreenNavigation }> = ({
   navigation,
@@ -34,6 +32,7 @@ const EditProfileScreen: React.FC<{ navigation: ProfileScreenNavigation }> = ({
   const [profileImage, setProfileImage] = useState('');
   const { theme } = useTheme();
   const { colors } = theme;
+  const styles = createStyles(colors);
   const handleChooseImage = async () => {
     try {
       const image = await ImagePicker.openPicker({
@@ -87,7 +86,7 @@ const EditProfileScreen: React.FC<{ navigation: ProfileScreenNavigation }> = ({
               style={styles.cameraButton}
               hitSlop={8}
             >
-              <Camera size={16} color="#334155" strokeWidth={2} />
+              <Camera size={16} color={colors.textPrimary} strokeWidth={2} />
             </Pressable>
           </View>
           <AppInput label="Full Name" value={name} onChangeText={setName} />

@@ -30,6 +30,7 @@ const WorkoutCategoriesScreen: React.FC<Props> = ({ navigation }) => {
           styles.categoryCard,
           {
             backgroundColor: colors.surface,
+            shadowColor: colors.black,
             opacity: pressed ? 0.8 : 1,
           },
         ]}
@@ -57,7 +58,7 @@ const WorkoutCategoriesScreen: React.FC<Props> = ({ navigation }) => {
         </View>
       </Pressable>
     ),
-    [colors.surface, navigation],
+    [colors.black, colors.surface, navigation],
   );
 
   return (

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Alert, Pressable, ScrollView, StyleSheet, View } from 'react-native';
+import { Alert, Pressable, ScrollView,   View } from 'react-native';
 import {
   AppButton,
   AppHeader,
@@ -9,7 +9,7 @@ import {
 } from '../../../components';
 import { useTheme } from '../../../theme/useTheme';
 import { ProfileScreenNavigation } from '../components/ProfileScreenLayout';
-import styles from './styles.HealthReport';
+import createStyles from './styles.HealthReport';
 
 const monthlyReports = [
   {
@@ -37,6 +37,7 @@ const HealthReportsScreen: React.FC<{
 }> = ({ navigation }) => {
   const { theme } = useTheme();
   const { colors } = theme;
+  const styles = createStyles(colors);
   const [activeTab, setActiveTab] = useState('Steps');
   const shareReport = (title: string) =>
     Alert.alert('Share report', `${title} is ready to share.`);

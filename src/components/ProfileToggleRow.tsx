@@ -51,7 +51,13 @@ const ProfileToggleRow: React.FC<{
           { backgroundColor: value ? colors.primary : colors.border },
         ]}
       >
-        <View style={[styles.switchThumb, value && styles.switchThumbOn]} />
+        <View
+          style={[
+            styles.switchThumb,
+            { backgroundColor: colors.white },
+            value && styles.switchThumbOn,
+          ]}
+        />
       </Pressable>
     </View>
   );
@@ -85,7 +91,6 @@ const styles = StyleSheet.create({
     width: 22,
     height: 22,
     borderRadius: 11,
-    backgroundColor: '#FFFFFF',
   },
   switchThumbOn: { alignSelf: 'flex-end' },
 });

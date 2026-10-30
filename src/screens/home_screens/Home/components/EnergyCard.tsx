@@ -12,6 +12,8 @@ const RADIUS = (CIRCLE_SIZE - STROKE_WIDTH) / 2;
 const CIRCUMFERENCE = 2 * Math.PI * RADIUS;
 
 const EnergyCircle: React.FC<{ energy: number }> = ({ energy }) => {
+  const { theme } = useTheme();
+  const { colors } = theme;
   const progress = Math.max(0, Math.min(100, energy));
   const strokeDashoffset = CIRCUMFERENCE * (1 - progress / 100);
 
@@ -35,7 +37,8 @@ const EnergyCircle: React.FC<{ energy: number }> = ({ energy }) => {
           cx={CIRCLE_SIZE / 2}
           cy={CIRCLE_SIZE / 2}
           r={RADIUS}
-          stroke="rgba(255,255,255,0.25)"
+          stroke={colors.white}
+          opacity={0.25}
           strokeWidth={STROKE_WIDTH}
           fill="none"
         />
@@ -45,7 +48,7 @@ const EnergyCircle: React.FC<{ energy: number }> = ({ energy }) => {
           cx={CIRCLE_SIZE / 2}
           cy={CIRCLE_SIZE / 2}
           r={RADIUS}
-          stroke="#FFFFFF"
+          stroke={colors.white}
           strokeWidth={STROKE_WIDTH}
           strokeLinecap="round"
           fill="none"
@@ -72,6 +75,7 @@ const EnergyCard: React.FC<{ energy: number; streak_period: number }> = ({
   streak_period,
 }) => {
   const { theme } = useTheme();
+  const { colors } = theme;
   const styles = createHomeStyles(theme);
 
   return (
@@ -87,7 +91,8 @@ const EnergyCard: React.FC<{ energy: number; streak_period: number }> = ({
             width: 190,
             height: 190,
             borderRadius: 95,
-            backgroundColor: 'rgba(255,255,255,0.10)',
+            backgroundColor: colors.white,
+            opacity: 0.1,
             right: -95,
             top: -65,
           }}

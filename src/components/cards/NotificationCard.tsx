@@ -51,7 +51,7 @@ const NotificationCard = ({
         style={[
           styles.iconContainer,
           {
-            backgroundColor: item?.bgColor,
+            backgroundColor: colors[item.bgColor],
             borderRadius: radius.md,
           },
         ]}

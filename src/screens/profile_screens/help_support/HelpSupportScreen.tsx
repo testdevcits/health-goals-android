@@ -3,7 +3,6 @@ import {
   Alert,
   Pressable,
   ScrollView,
-  StyleSheet,
   TextInput,
   View,
 } from 'react-native';
@@ -19,7 +18,7 @@ import {
   ProfileScreenNavigation,
   ProfileSectionLabel,
 } from '../components/ProfileScreenLayout';
-import styles from './styles.HelpSupport';
+import createStyles from './styles.HelpSupport';
 
 const faqs = [
   {
@@ -63,6 +62,7 @@ const HelpSupportScreen: React.FC<{ navigation: ProfileScreenNavigation }> = ({
     [query],
   );
   const { colors } = theme;
+  const styles = createStyles(colors);
   return (
     <View style={{ flex: 1, backgroundColor: colors.backgroundSecondary }}>
       <AppHeader

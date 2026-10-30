@@ -1,6 +1,7 @@
 import { StyleSheet } from 'react-native';
+import type { AppColors } from '../../../theme/colors';
 
-const styles = StyleSheet.create({
+const createStyles = (colors: AppColors) => StyleSheet.create({
   container: {
     flex: 1,
   },
@@ -22,14 +23,14 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     overflow: 'hidden',
     elevation: 2,
-    shadowColor: '#000000',
+    shadowColor: colors.black,
     shadowOpacity: 0.04,
     shadowRadius: 8,
     shadowOffset: { width: 0, height: 3 },
   },
   backdrop: {
     flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.48)',
+    backgroundColor: colors.overlay,
     justifyContent: 'flex-end',
   },
   sheet: {
@@ -67,6 +68,24 @@ const styles = StyleSheet.create({
   lastOption: {
     borderBottomWidth: 0,
   },
+  cancelButton: {
+  flex: 1,
+  minHeight: 48,
+  alignItems: 'center',
+  justifyContent: 'center',
+  borderRadius: 12,
+  borderWidth: 1,
+  borderColor: colors.border,
+},
+
+continueButton: {
+  flex: 1,
+  minHeight: 48,
+  alignItems: 'center',
+  justifyContent: 'center',
+  borderRadius: 12,
+  backgroundColor: colors.info,
+},
 });
 
-export default styles;
+export default createStyles;

@@ -34,7 +34,7 @@ export const createStyles = (colors: any, spacing: any, radius: any) =>
     selectedCategoryTab: {
       backgroundColor: colors.surface,
       elevation: 2,
-      shadowColor: '#000',
+      shadowColor: colors.black,
       shadowOpacity: 0.06,
       shadowRadius: 4,
       shadowOffset: { width: 0, height: 2 },
@@ -62,7 +62,7 @@ export const createCardStyles = (colors: any, spacing: any, radius: any) =>
       padding: spacing.md,
       marginBottom: spacing.md,
       elevation: 2,
-      shadowColor: '#000',
+      shadowColor: colors.black,
       shadowOpacity: 0.045,
       shadowRadius: 7,
       shadowOffset: { width: 0, height: 3 },

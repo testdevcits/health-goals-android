@@ -34,7 +34,7 @@ const ProgramCard = ({
         {program.subtitle}
       </AppText>
 
-      <View style={styles.programButton}>
+      <View style={[styles.programButton, { backgroundColor: colors.surface }]}>
         <AppText variant="buttonSm" style={{ color: colors.textPrimary }}>
           {program.button}
         </AppText>
@@ -64,6 +64,5 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.md,
     paddingVertical: spacing.sm,
     borderRadius: radius.full,
-    backgroundColor: '#FFFFFF',
   },
 });

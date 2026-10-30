@@ -11,7 +11,12 @@ import { useFocusEffect } from '@react-navigation/native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Check, X } from 'lucide-react-native';
 import BackgroundGeolocation from 'react-native-background-geolocation';
-import { AppHeader, AppSettingsRow, AppText } from '../../../components';
+import {
+  AppHeader,
+  AppSettingsRow,
+  AppText,
+  ConfirmationModal,
+} from '../../../components';
 import type { AppColors } from '../../../theme/colors';
 import { useTheme } from '../../../theme/useTheme';
 import type { ThemeMode } from '../../../theme/ThemeProvider';
@@ -20,7 +25,7 @@ import {
   openNotificationSettings,
   requestNotificationPermission,
 } from '../../../utils/AppPermissions';
-import styles from './styles.Setting';
+import createStyles from './styles.Setting';
 import LogoutModal from './components/LogoutModal';
 
 type SettingsGroup = 'units' | 'language' | 'appearance';
@@ -47,6 +52,7 @@ const groupOptions: Record<SettingsGroup, string[]> = {
 const Settings = ({ navigation }: { navigation: SettingsNavigation }) => {
   const { theme, themeMode, setThemeMode } = useTheme();
   const { colors, spacing, radius } = theme;
+  const styles = createStyles(colors);
   const insets = useSafeAreaInsets();
   const [pushNotifications, setPushNotifications] = useState(false);
   const [notificationsLoading, setNotificationsLoading] = useState(true);
@@ -256,6 +262,14 @@ const Settings = ({ navigation }: { navigation: SettingsNavigation }) => {
     );
   };
 
+  const [showLocationConfirmation, setShowLocationConfirmation] =
+    React.useState(false);
+
+  const handleStartLocationTracking = () => {
+    setShowLocationConfirmation(false);
+    startLocationTracking();
+  };
+
   const selectedValues: Record<SettingsGroup, string> = {
     units,
     language,
@@ -305,7 +319,7 @@ const Settings = ({ navigation }: { navigation: SettingsNavigation }) => {
           { paddingBottom: insets.bottom + spacing.lg },
         ]}
       >
-        <SettingsSection title="Notifications" colors={colors}>
+        <SettingsSection title="Notifications" colors={colors} styles={styles}>
           <AppSettingsRow
             icon="🔔"
             title="Push Notifications"
@@ -334,7 +348,7 @@ const Settings = ({ navigation }: { navigation: SettingsNavigation }) => {
           />
         </SettingsSection>
 
-        <SettingsSection title="Preferences" colors={colors}>
+        <SettingsSection title="Preferences" colors={colors} styles={styles}>
           <AppSettingsRow
             icon="📏"
             title="Units"
@@ -362,12 +376,13 @@ const Settings = ({ navigation }: { navigation: SettingsNavigation }) => {
                 : 'Continuously record location in the background'
             }
             switchValue={locationTracking}
-            onSwitchChange={handleLocationTrackingChange}
+            // onSwitchChange={handleLocationTrackingChange}
+            onSwitchChange={() => setShowLocationConfirmation(true)}
             showDivider={false}
           />
         </SettingsSection>
 
-        <SettingsSection title="Account" colors={colors}>
+        <SettingsSection title="Account" colors={colors} styles={styles}>
           <AppSettingsRow
             icon="✏️"
             title="Edit Profile"
@@ -466,6 +481,34 @@ const Settings = ({ navigation }: { navigation: SettingsNavigation }) => {
         onClose={() => setModalVisible(false)}
         onSignOut={handleSignOut}
       />
+
+      <ConfirmationModal
+        visible={showLocationConfirmation}
+        onClose={() => setShowLocationConfirmation(false)}
+        title="Enable continuous location tracking?"
+        message="Vitality will record your location in the background, including when the app is closed, until you turn this off. Location data currently stays on this device."
+        position="center"
+        closeOnBackdropPress={false}
+        showCloseButton
+      >
+        <View style={{ flexDirection: 'row', gap: 12 }}>
+          <Pressable
+            onPress={() => setShowLocationConfirmation(false)}
+            style={styles.cancelButton}
+            accessibilityRole="button"
+          >
+            <AppText>Cancel</AppText>
+          </Pressable>
+
+          <Pressable
+            onPress={handleStartLocationTracking}
+            style={styles.continueButton}
+            accessibilityRole="button"
+          >
+            <AppText style={{ color: colors.white }}>Continue</AppText>
+          </Pressable>
+        </View>
+      </ConfirmationModal>
     </View>
   );
 };
@@ -473,20 +516,24 @@ const Settings = ({ navigation }: { navigation: SettingsNavigation }) => {
 const SettingsSection = ({
   title,
   colors,
+  styles,
   children,
 }: {
   title: string;
   colors: AppColors;
+  styles: ReturnType<typeof createStyles>;
   children: React.ReactNode;
-}) => (
-  <View style={styles.section}>
-    <AppText variant="label" color="textTertiary" style={styles.sectionTitle}>
-      {title.toUpperCase()}
-    </AppText>
-    <View style={[styles.card, { backgroundColor: colors.surface }]}>
-      {children}
+}) => {
+  return (
+    <View style={styles.section}>
+      <AppText variant="label" color="textTertiary" style={styles.sectionTitle}>
+        {title?.toUpperCase()}
+      </AppText>
+      <View style={[styles.card, { backgroundColor: colors.surface }]}>
+        {children}
+      </View>
     </View>
-  </View>
-);
+  );
+};
 
 export default Settings;

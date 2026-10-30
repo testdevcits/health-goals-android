@@ -1,6 +1,7 @@
 import { StyleSheet } from 'react-native';
+import type { AppColors } from '../../../theme/colors';
 
-const styles = StyleSheet.create({
+const createStyles = (colors: AppColors) => StyleSheet.create({
   searchBox: {
     minHeight: 46,
     borderRadius: 12,
@@ -18,7 +19,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 14,
     paddingVertical: 13,
     elevation: 1,
-    shadowColor: '#000000',
+    shadowColor: colors.black,
     shadowOpacity: 0.035,
     shadowRadius: 5,
     shadowOffset: { width: 0, height: 2 },
@@ -31,4 +32,4 @@ const styles = StyleSheet.create({
   responseTime: { marginTop: 16, marginBottom: 4 },
 });
 
-export default styles;
+export default createStyles;

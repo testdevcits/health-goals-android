@@ -62,14 +62,14 @@ const FeedTab = ({
               >
                 <Heart
                   size={15}
-                  color={liked ? '#F87171' : colors.textSecondary}
-                  fill={liked ? '#F87171' : 'transparent'}
+                  color={liked ? colors.error : colors.textSecondary}
+                  fill={liked ? colors.error : 'transparent'}
                 />
 
                 <AppText
                   variant="caption"
                   style={{
-                    color: liked ? '#F87171' : colors.textSecondary,
+                    color: liked ? colors.error : colors.textSecondary,
                   }}
                 >
                   {liked ? post.kudos + 1 : post.kudos} Kudos
@@ -126,7 +126,7 @@ const createStyles = (colors: any, spacing: any, radius: any) =>
       padding: spacing.md,
       marginBottom: spacing.md,
       elevation: 2,
-      shadowColor: '#000',
+      shadowColor: colors.black,
       shadowOpacity: 0.04,
       shadowRadius: 7,
       shadowOffset: { width: 0, height: 3 },

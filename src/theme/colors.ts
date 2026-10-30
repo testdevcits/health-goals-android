@@ -40,6 +40,7 @@ export const lightColors = {
   warningLight: '#FFFBEB',
   info: '#3B82F6',
   infoLight: '#EFF6FF',
+  purpleLight: '#F3E8FF',
 
   // ── Brand accents ─────────────────────────────────────────
   coral: '#FF8278',
@@ -49,6 +50,13 @@ export const lightColors = {
   white: '#FFFFFF',
   black: '#000000',
   overlay: 'rgba(0,0,0,0.45)',
+  whiteOverlay12: 'rgba(255,255,255,0.12)',
+  whiteOverlay17: 'rgba(255,255,255,0.17)',
+  whiteOverlay18: 'rgba(255,255,255,0.18)',
+  whiteOverlay20: 'rgba(255,255,255,0.20)',
+  whiteOverlay35: 'rgba(255,255,255,0.35)',
+  whiteOverlay65: 'rgba(255,255,255,0.65)',
+  whiteOverlay90: 'rgba(255,255,255,0.9)',
 
   // ── Gradient stops ────────────────────────────────────────
   gradientStart: '#00D2AA',
@@ -96,6 +104,7 @@ export const darkColors = {
   warningLight: '#2D1F0A',
   info: '#60A5FA',
   infoLight: '#0A1A2D',
+  purpleLight: '#2D1A47',
 
   // ── Brand accents ─────────────────────────────────────────
   coral: '#FF8278',
@@ -105,6 +114,13 @@ export const darkColors = {
   white: '#FFFFFF',
   black: '#000000',
   overlay: 'rgba(0,0,0,0.6)',
+  whiteOverlay12: 'rgba(255,255,255,0.12)',
+  whiteOverlay17: 'rgba(255,255,255,0.17)',
+  whiteOverlay18: 'rgba(255,255,255,0.18)',
+  whiteOverlay20: 'rgba(255,255,255,0.20)',
+  whiteOverlay35: 'rgba(255,255,255,0.35)',
+  whiteOverlay65: 'rgba(255,255,255,0.65)',
+  whiteOverlay90: 'rgba(255,255,255,0.9)',
 
   // ── Gradient stops ────────────────────────────────────────
   gradientStart: '#00D2AA',

@@ -73,7 +73,13 @@ const ProgramDetail = ({
         </View>
 
         <View
-          style={[styles.includedCard, { backgroundColor: colors.surface }]}
+          style={[
+            styles.includedCard,
+            {
+              backgroundColor: colors.surface,
+              shadowColor: colors.black,
+            },
+          ]}
         >
           <AppText variant="subtitle1" bold mb={spacing.md}>
             What is included
@@ -146,7 +152,6 @@ const styles = StyleSheet.create({
     borderRadius: radius.lg,
     marginBottom: spacing.xl,
     elevation: 2,
-    shadowColor: '#000000',
     shadowOpacity: 0.04,
     shadowRadius: 8,
     shadowOffset: { width: 0, height: 3 },

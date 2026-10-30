@@ -41,7 +41,7 @@ const PermissionModal: React.FC<PermissionModalProps> = ({
       statusBarTranslucent
       onRequestClose={onClose}
     >
-      <View style={styles.backdrop}>
+      <View style={[styles.backdrop, { backgroundColor: colors.overlay }]}>
         <View
           accessibilityViewIsModal
           style={[
@@ -49,6 +49,7 @@ const PermissionModal: React.FC<PermissionModalProps> = ({
             {
               backgroundColor: colors.surface,
               borderColor: colors.border,
+              shadowColor: colors.black,
               borderRadius: radius.xxl,
               marginHorizontal: spacing.xl,
               padding: spacing.xl,
@@ -122,14 +123,12 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: 'rgba(0, 0, 0, 0.58)',
   },
   card: {
     width: '90%',
     alignItems: 'center',
     borderWidth: StyleSheet.hairlineWidth,
     elevation: 12,
-    shadowColor: '#000000',
     shadowOpacity: 0.2,
     shadowRadius: 24,
     shadowOffset: { width: 0, height: 12 },

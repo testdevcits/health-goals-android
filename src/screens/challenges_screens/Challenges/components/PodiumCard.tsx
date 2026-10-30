@@ -1,6 +1,7 @@
 import React, { memo } from 'react';
 import { View } from 'react-native';
 import { AppText } from '../../../../components';
+import { useTheme } from '../../../../theme/useTheme';
 import type { LeaderboardPerson } from '../data/challengesData';
 import type { ChallengesStyles } from '../styles.Challenges';
 
@@ -10,6 +11,8 @@ interface PodiumCardProps {
 }
 
 const PodiumCard: React.FC<PodiumCardProps> = ({ leaderboard, styles }) => {
+  const { theme } = useTheme();
+  const { colors } = theme;
   const topThree = [leaderboard[1], leaderboard[0], leaderboard[2]];
 
   return (
@@ -18,10 +21,10 @@ const PodiumCard: React.FC<PodiumCardProps> = ({ leaderboard, styles }) => {
         const isFirst = person.rank === 1;
         const podiumColor =
           person.rank === 1
-            ? '#FFD500'
+            ? colors.warning
             : person.rank === 2
-            ? '#B8B8B8'
-            : '#C17A36';
+            ? colors.textTertiary
+            : colors.coral;
 
         return (
           <View

@@ -18,7 +18,6 @@ const DailyActivities: React.FC<{ navigation: DailyActivityNavigation }> = ({
   const insets = useSafeAreaInsets();
   const styles = createDailyActivityStyles(theme);
   const { data, error, loading } = useTodayHealthData(true);
-  console.log('==datadata==========', data);
   const steps = data?.steps ?? 0;
   const exerciseMinutes = data?.exerciseMinutes ?? 0;
   const calories = data?.calories ?? 0;

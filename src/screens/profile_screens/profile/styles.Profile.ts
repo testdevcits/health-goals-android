@@ -1,8 +1,9 @@
 import { StyleSheet } from 'react-native';
 import { spacing } from '../../../theme/spacing';
 import { radius } from '../../../theme/radius';
+import type { AppColors } from '../../../theme/colors';
 
-const styles = StyleSheet.create({
+const createStyles = (colors: AppColors) => StyleSheet.create({
   container: {
     flex: 1,
   },
@@ -12,7 +13,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.base,
     paddingBottom: spacing.md,
     borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: '#E7ECF1',
+    borderBottomColor: colors.border,
   },
 
   headerMain: {
@@ -38,7 +39,7 @@ const styles = StyleSheet.create({
     width: 40,
     height: 40,
     borderRadius: radius.full,
-    backgroundColor: '#398FE2',
+    backgroundColor: colors.info,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -59,11 +60,11 @@ const styles = StyleSheet.create({
     borderRadius: radius.full,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#398FE2',
+    backgroundColor: colors.info,
     borderWidth: 4,
-    borderColor: '#FFFFFF',
+    borderColor: colors.surface,
     elevation: 4,
-    shadowColor: '#000000',
+    shadowColor: colors.black,
     shadowOpacity: 0.1,
     shadowRadius: 8,
     shadowOffset: { width: 0, height: 3 },
@@ -81,7 +82,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.xs,
     marginBottom: spacing.lg,
     elevation: 2,
-    shadowColor: '#000000',
+    shadowColor: colors.black,
     shadowOpacity: 0.04,
     shadowRadius: 8,
     shadowOffset: { width: 0, height: 3 },
@@ -107,7 +108,7 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
     marginBottom: spacing.lg,
     elevation: 2,
-    shadowColor: '#000000',
+    shadowColor: colors.black,
     shadowOpacity: 0.04,
     shadowRadius: 8,
     shadowOffset: { width: 0, height: 3 },
@@ -134,4 +135,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default styles;
+export default createStyles;

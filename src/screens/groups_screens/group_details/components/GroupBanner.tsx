@@ -23,7 +23,7 @@ export const GroupBanner: React.FC<Props> = memo(
         <View
           style={[
             styles.iconContainer,
-            { backgroundColor: 'rgba(255,255,255,0.17)' },
+            { backgroundColor: colors.whiteOverlay17 },
           ]}
         >
           <AppText style={styles.groupIcon}>🏃</AppText>
@@ -86,7 +86,7 @@ export const GroupBanner: React.FC<Props> = memo(
         <View
           style={[
             styles.settingsButton,
-            { backgroundColor: 'rgba(255,255,255,0.2)' },
+            { backgroundColor: colors.whiteOverlay20 },
           ]}
         >
           <AppText style={[styles.settingsIcon, { color: colors.white }]}>

@@ -20,9 +20,8 @@ const Notifications = () => {
   const { theme } = useTheme();
   const navigation = useNavigation();
 
-  const [notifications, setNotifications] = useState(INITIAL_NOTIFICATIONS);
-
   const { colors } = theme;
+  const [notifications, setNotifications] = useState(INITIAL_NOTIFICATIONS);
 
   const unreadCount = notifications.filter(item => item?.unread).length;
 

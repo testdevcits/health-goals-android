@@ -95,7 +95,10 @@ const AppSelect: React.FC<AppSelectProps> = ({
         statusBarTranslucent
         onRequestClose={() => setVisible(false)}
       >
-        <Pressable style={styles.backdrop} onPress={() => setVisible(false)}>
+        <Pressable
+          style={[styles.backdrop, { backgroundColor: colors.overlay }]}
+          onPress={() => setVisible(false)}
+        >
           <Pressable
             style={[
               styles.sheet,
@@ -178,7 +181,6 @@ const styles = StyleSheet.create({
   },
   backdrop: {
     flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.5)',
     justifyContent: 'flex-end',
   },
   sheet: {

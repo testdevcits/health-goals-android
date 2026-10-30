@@ -12,7 +12,7 @@ import { Bell, ChevronRight } from 'lucide-react-native';
 import { useTheme } from '../../../theme/useTheme';
 import { AppText } from '../../../components';
 import { spacing } from '../../../theme/spacing';
-import styles from './styles.Profile';
+import createStyles from './styles.Profile';
 import { getProfileMenuItems } from './conts';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
@@ -23,6 +23,7 @@ type ProfileNavigationProp = NativeStackNavigationProp<RootStackParamList>;
 const ProfileScreen: React.FC = () => {
   const { theme } = useTheme();
   const { colors } = theme;
+  const styles = createStyles(colors);
   const insets = useSafeAreaInsets();
   const navigation = useNavigation<ProfileNavigationProp>();
   const menuItems = useMemo(() => getProfileMenuItems(colors), [colors]);

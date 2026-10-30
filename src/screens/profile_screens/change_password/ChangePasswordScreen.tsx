@@ -5,7 +5,7 @@ import {
   AppHeader,
   AppInput,
   AppText,
-  ProfileScreen,
+   
 } from '../../../components';
 import { ProfileScreenNavigation } from '../components/ProfileScreenLayout';
 import { useTheme } from '../../../theme/useTheme';

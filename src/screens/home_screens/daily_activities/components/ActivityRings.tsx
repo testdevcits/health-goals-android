@@ -5,7 +5,9 @@ import { useTheme } from '../../../../theme/useTheme';
 import { createDailyActivityStyles } from '../styles.DailyActivities';
 
 const ActivityRings: React.FC<{ rings: any[] }> = ({ rings }) => {
-  const styles = createDailyActivityStyles(useTheme().theme);
+  const { theme } = useTheme();
+  const { colors } = theme;
+  const styles = createDailyActivityStyles(theme);
   const center = 110;
 
   return (
@@ -23,7 +25,7 @@ const ActivityRings: React.FC<{ rings: any[] }> = ({ rings }) => {
                 cy={center}
                 r={ring.radius}
                 fill="none"
-                stroke="#E9EDF1"
+                stroke={colors.border}
                 strokeWidth={10}
               />
               <Circle

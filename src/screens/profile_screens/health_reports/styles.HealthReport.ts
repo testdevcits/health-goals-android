@@ -1,6 +1,7 @@
 import { StyleSheet } from 'react-native';
+import type { AppColors } from '../../../theme/colors';
 
-const styles = StyleSheet.create({
+const createStyles = (colors: AppColors) => StyleSheet.create({
   reportCard: { padding: 16, marginBottom: 12 },
   reportHeading: {
     flexDirection: 'row',
@@ -27,7 +28,7 @@ const styles = StyleSheet.create({
     alignItems: 'flex-end',
     justifyContent: 'space-around',
     borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: '#E2E8F0',
+    borderBottomColor: colors.border,
     marginBottom: 12,
   },
   chartDay: { alignItems: 'center', justifyContent: 'flex-end', gap: 6 },
@@ -48,4 +49,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default styles;
+export default createStyles;

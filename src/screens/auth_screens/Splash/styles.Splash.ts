@@ -3,7 +3,7 @@ import { StyleSheet } from 'react-native';
 import { AppTheme } from '../../../theme';
 
 export const createSplashStyles = (theme: AppTheme) => {
-  const { spacing, radius } = theme;
+  const { spacing, radius, colors } = theme;
 
   return StyleSheet.create({
     container: {
@@ -25,7 +25,7 @@ export const createSplashStyles = (theme: AppTheme) => {
       width: 90,
       height: 90,
       borderRadius: radius.xxl,
-      backgroundColor: 'rgba(255,255,255,0.18)',
+      backgroundColor: colors.whiteOverlay18,
       alignItems: 'center',
       justifyContent: 'center',
     },
@@ -47,10 +47,10 @@ export const createSplashStyles = (theme: AppTheme) => {
       borderRadius: 4,
     },
     dotActive: {
-      backgroundColor: 'rgba(255,255,255,0.9)',
+      backgroundColor: colors.whiteOverlay90,
     },
     dotInactive: {
-      backgroundColor: 'rgba(255,255,255,0.35)',
+      backgroundColor: colors.whiteOverlay35,
     },
   });
 };

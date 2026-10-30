@@ -59,6 +59,7 @@ const CustomSwitch: React.FC<CustomSwitchProps> = ({
           styles.thumb,
           {
             backgroundColor: colors.white,
+            shadowColor: colors.black,
             transform: [{ translateX }],
           },
         ]}
@@ -82,7 +83,6 @@ const styles = StyleSheet.create({
     height: THUMB_SIZE,
     borderRadius: THUMB_SIZE / 2,
     elevation: 2,
-    shadowColor: '#000000',
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.15,
     shadowRadius: 2,

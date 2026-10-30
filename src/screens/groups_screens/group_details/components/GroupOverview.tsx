@@ -103,9 +103,9 @@ const MemberRow: React.FC<{
           style={{
             color:
               index === 0
-                ? '#B77900'
+                ? colors.warning
                 : index === 2
-                ? '#B45309'
+                ? colors.coral
                 : colors.textSecondary,
           }}
           bold

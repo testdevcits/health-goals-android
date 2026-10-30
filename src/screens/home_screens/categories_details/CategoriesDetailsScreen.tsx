@@ -2,7 +2,7 @@ import React from 'react';
 import { ScrollView, StatusBar, View } from 'react-native';
 import { AppHeader, AppText } from '../../../components';
 import { useTheme } from '../../../theme/useTheme';
-import styles from './styles.CategoriesDetails';
+import createStyles from './styles.CategoriesDetails';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { HomeStackParamList } from '../../../navigations/HomeStack';
 import { WORKOUT_CATEGORIES } from '../Home/const';
@@ -25,6 +25,7 @@ type Props = NativeStackScreenProps<
 const CategoriesDetailsScreen: React.FC<Props> = ({ navigation, route }) => {
   const { theme } = useTheme();
   const { colors } = theme;
+  const styles = createStyles(theme);
   const workoutId =
     route.params.source === 'home' ? route.params.workoutId : undefined;
   const homeCategory = WORKOUT_CATEGORIES.find(item => item?.id === workoutId);
@@ -179,7 +180,7 @@ const CategoriesDetailsScreen: React.FC<Props> = ({ navigation, route }) => {
                       {
                         height: `${item?.value}%`,
                         backgroundColor:
-                          item?.value <= 5 ? '#F6BFC1' : '#F16F73',
+                          item?.value <= 5 ? colors.coralLight : colors.coral,
                       },
                     ]}
                   />

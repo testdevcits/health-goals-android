@@ -30,7 +30,12 @@ const RecommandedCard = ({
         },
       ]}
     >
-      <View style={styles.recommendationAccent} />
+      <View
+        style={[
+          styles.recommendationAccent,
+          { backgroundColor: colors.primary },
+        ]}
+      />
 
       <View style={styles.recommendationContent}>
         <View style={styles.recommendationHeading}>
@@ -38,10 +43,10 @@ const RecommandedCard = ({
             {item?.emoji} {item?.title}
           </AppText>
 
-          <View style={styles.tag}>
+          <View style={[styles.tag, { backgroundColor: colors.primaryLight }]}>
             <AppText
               variant="caption"
-              style={{ color: colors.primaryDark }}
+              style={{ color: colors.primary }}
               bold
             >
               {item?.tag}
@@ -77,7 +82,6 @@ const styles = StyleSheet.create({
 
   recommendationAccent: {
     width: 4,
-    backgroundColor: '#00C6A2',
   },
 
   recommendationContent: {
@@ -93,7 +97,6 @@ const styles = StyleSheet.create({
     gap: spacing.xs,
   },
   tag: {
-    backgroundColor: '#E0FAF5',
     paddingHorizontal: spacing.sm,
     paddingVertical: spacing.xxs,
     borderRadius: radius.full,

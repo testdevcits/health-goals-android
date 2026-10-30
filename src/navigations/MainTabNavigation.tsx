@@ -14,6 +14,7 @@ import GroupsStack from './GroupsStack';
 import DiscoverStack from './DiscoverStack';
 import ProfileStack from './ProfileStack';
 import { fonts } from '../theme/fonts';
+import { useTheme } from '../theme/useTheme';
 
 type MainTabParamList = {
   Home: undefined;
@@ -44,13 +45,16 @@ const ProfileTabIcon = ({ color, size }: TabIconProps) => (
 );
 
 const MainTabNavigation = () => {
+  const { theme } = useTheme();
+  const styles = createStyles(theme.colors);
+
   return (
     <Tab.Navigator
       initialRouteName="Home"
       screenOptions={{
         headerShown: false,
-        tabBarActiveTintColor: '#00C6A2',
-        tabBarInactiveTintColor: '#94A3B8',
+        tabBarActiveTintColor: theme.colors.primary,
+        tabBarInactiveTintColor: theme.colors.textTertiary,
         tabBarStyle: styles.tabBar,
         tabBarLabelStyle: styles.tabBarLabel,
         tabBarHideOnKeyboard: true,
@@ -98,20 +102,21 @@ const MainTabNavigation = () => {
   );
 };
 
-const styles = StyleSheet.create({
-  tabBar: {
-    height: 65,
-    paddingTop: 8,
-    paddingBottom: 8,
-    backgroundColor: '#FFFFFF',
-    borderTopWidth: StyleSheet.hairlineWidth,
-    borderTopColor: '#E2E8F0',
-    elevation: 8,
-  },
-  tabBarLabel: {
-    fontSize: 10,
-    fontFamily: fonts.semiBold,
-  },
-});
+const createStyles = (colors: ReturnType<typeof useTheme>['theme']['colors']) =>
+  StyleSheet.create({
+    tabBar: {
+      height: 65,
+      paddingTop: 8,
+      paddingBottom: 8,
+      backgroundColor: colors.surface,
+      borderTopWidth: StyleSheet.hairlineWidth,
+      borderTopColor: colors.border,
+      elevation: 8,
+    },
+    tabBarLabel: {
+      fontSize: 10,
+      fontFamily: fonts.semiBold,
+    },
+  });
 
 export default MainTabNavigation;

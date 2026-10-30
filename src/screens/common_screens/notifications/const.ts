@@ -1,10 +1,12 @@
+import type { AppColors } from '../../../theme/colors';
+
 export type NotificationItem = {
   id: string;
   emoji: string;
   title: string;
   time: string;
   unread: boolean;
-  bgColor: string;
+  bgColor: keyof AppColors;
 };
 
 export const INITIAL_NOTIFICATIONS: NotificationItem[] = [
@@ -14,7 +16,7 @@ export const INITIAL_NOTIFICATIONS: NotificationItem[] = [
     title: 'Sarah passed you on the leaderboard',
     time: '12 min ago',
     unread: true,
-    bgColor: '#FFF4D6',
+    bgColor: 'warningLight',
   },
   {
     id: '2',
@@ -22,7 +24,7 @@ export const INITIAL_NOTIFICATIONS: NotificationItem[] = [
     title: 'You hit a 12-day streak!',
     time: '1h ago',
     unread: true,
-    bgColor: '#FFE9E5',
+    bgColor: 'coralLight',
   },
   {
     id: '3',
@@ -30,7 +32,7 @@ export const INITIAL_NOTIFICATIONS: NotificationItem[] = [
     title: 'Mike invited you to Weekend Sprint',
     time: '2h ago',
     unread: true,
-    bgColor: '#E8F0FF',
+    bgColor: 'infoLight',
   },
   {
     id: '4',
@@ -38,7 +40,7 @@ export const INITIAL_NOTIFICATIONS: NotificationItem[] = [
     title: 'Time to log your afternoon water',
     time: '3h ago',
     unread: false,
-    bgColor: '#DFF6FF',
+    bgColor: 'infoLight',
   },
   {
     id: '5',
@@ -46,6 +48,6 @@ export const INITIAL_NOTIFICATIONS: NotificationItem[] = [
     title: 'You have points to redeem',
     time: 'Yesterday',
     unread: false,
-    bgColor: '#F3E8FF',
+    bgColor: 'purpleLight',
   },
 ];

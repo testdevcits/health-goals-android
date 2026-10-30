@@ -44,10 +44,10 @@ const MyGroups = ({
               {
                 backgroundColor:
                   group?.emoji === '🏃'
-                    ? '#DDF8F3'
+                    ? colors.primaryLight
                     : group?.emoji === '💼'
-                    ? '#EFEBFF'
-                    : '#FFF1E3',
+                    ? colors.infoLight
+                    : colors.warningLight,
               },
             ]}
           >
@@ -130,7 +130,7 @@ const createStyles = (colors: any, spacing: any, radius: any) =>
       minHeight: 108,
       gap: spacing.md,
       elevation: 2,
-      shadowColor: '#000',
+      shadowColor: colors.black,
       shadowOpacity: 0.04,
       shadowRadius: 7,
       shadowOffset: { width: 0, height: 3 },
@@ -174,7 +174,7 @@ const createStyles = (colors: any, spacing: any, radius: any) =>
     memberAvatarText: {
       fontSize: 9,
       lineHeight: 10,
-      color: '#fff',
+      color: colors.white,
       includeFontPadding: false,
       textAlignVertical: 'center',
     },

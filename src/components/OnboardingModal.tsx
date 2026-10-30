@@ -81,12 +81,13 @@ const OnboardingModal: React.FC<OnboardingModalProps> = ({
       statusBarTranslucent
       onRequestClose={onDismiss}
     >
-      <View style={styles.backdrop}>
+      <View style={[styles.backdrop, { backgroundColor: colors.overlay }]}>
         <View
           style={[
             styles.card,
             {
               backgroundColor: colors.surface,
+              shadowColor: colors.black,
               borderRadius: radius.xxl,
               marginHorizontal: spacing.xl,
               padding: spacing.xl,
@@ -155,7 +156,6 @@ const OnboardingModal: React.FC<OnboardingModalProps> = ({
 const styles = StyleSheet.create({
   backdrop: {
     flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.6)',
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -163,7 +163,6 @@ const styles = StyleSheet.create({
     width: '90%',
     alignItems: 'center',
     elevation: 10,
-    shadowColor: '#000',
     shadowOpacity: 0.25,
     shadowRadius: 20,
     shadowOffset: { width: 0, height: 10 },

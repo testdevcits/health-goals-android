@@ -5,8 +5,10 @@ import {
   getGrantedPermissions,
   getSdkStatus,
   initialize,
+  readRecords,
   SdkAvailabilityStatus,
 } from 'react-native-health-connect';
+import { ExerciseType } from 'react-native-health-connect';
 import type { Permission } from 'react-native-health-connect';
 
 export const HEALTH_PERMISSIONS: Permission[] = [
@@ -25,10 +27,36 @@ export interface TodayHealthData {
   distanceMeters: number | null;
   calories: number | null;
   exerciseMinutes: number | null;
+  workouts: WorkoutReportSession[] | null;
   hourlySteps: number[] | null;
   hourlyCalories: number[] | null;
   hourlyExerciseMinutes: number[] | null;
 }
+
+export interface WorkoutReportSession {
+  activity: string;
+  startTime: string;
+  endTime: string;
+  durationMinutes: number;
+}
+
+const EXERCISE_NAMES = new Map<number, string>([
+  [ExerciseType.BIKING, 'Cycling'],
+  [ExerciseType.BIKING_STATIONARY, 'Indoor cycling'],
+  [ExerciseType.DANCING, 'Dance'],
+  [ExerciseType.ELLIPTICAL, 'Elliptical'],
+  [ExerciseType.HIGH_INTENSITY_INTERVAL_TRAINING, 'HIIT'],
+  [ExerciseType.HIKING, 'Hiking'],
+  [ExerciseType.RUNNING, 'Running'],
+  [ExerciseType.RUNNING_TREADMILL, 'Treadmill running'],
+  [ExerciseType.STRENGTH_TRAINING, 'Strength training'],
+  [ExerciseType.STRETCHING, 'Stretching'],
+  [ExerciseType.SWIMMING_OPEN_WATER, 'Open-water swimming'],
+  [ExerciseType.SWIMMING_POOL, 'Pool swimming'],
+  [ExerciseType.WALKING, 'Walking'],
+  [ExerciseType.WEIGHTLIFTING, 'Weightlifting'],
+  [ExerciseType.YOGA, 'Yoga'],
+]);
 
 const EMPTY_HOURS = () => Array.from({ length: 24 }, () => 0);
 
@@ -59,6 +87,7 @@ const createEmptyData = (
   distanceMeters: null,
   calories: null,
   exerciseMinutes: null,
+  workouts: null,
   hourlySteps: null,
   hourlyCalories: null,
   hourlyExerciseMinutes: null,
@@ -116,6 +145,7 @@ export const readTodayHealthData = async (
     hourlyStepsResult,
     hourlyCaloriesResult,
     hourlyExerciseResult,
+    workoutRecords,
   ] = await Promise.all([
     hasSteps ? aggregateRecord({ recordType: 'Steps', timeRangeFilter }) : null,
     hasDistance
@@ -145,6 +175,13 @@ export const readTodayHealthData = async (
           ...hourlyFilter,
         })
       : null,
+    hasExercise
+      ? readRecords('ExerciseSession', {
+          timeRangeFilter,
+          ascendingOrder: true,
+          pageSize: 1000,
+        })
+      : null,
   ]);
 
   const toHourlyValues = <T extends { startTime: string }>(
@@ -169,6 +206,20 @@ export const readTodayHealthData = async (
     calories: caloriesResult?.ENERGY_TOTAL.inKilocalories ?? null,
     exerciseMinutes: exerciseResult
       ? exerciseResult.EXERCISE_DURATION_TOTAL.inSeconds / 60
+      : null,
+    workouts: workoutRecords
+      ? workoutRecords.records.map(record => ({
+          activity:
+            record.title?.trim() ||
+            EXERCISE_NAMES.get(record.exerciseType) ||
+            'Workout',
+          startTime: record.startTime,
+          endTime: record.endTime,
+          durationMinutes:
+            (new Date(record.endTime).getTime() -
+              new Date(record.startTime).getTime()) /
+            60000,
+        }))
       : null,
     hourlySteps: toHourlyValues(
       hourlyStepsResult,

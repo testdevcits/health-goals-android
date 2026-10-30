@@ -12,7 +12,7 @@ import AppNavigation from './src/navigations/AppNavigation';
 import BootSplash from 'react-native-bootsplash';
 
 function ThemedRoot() {
-  const { colorScheme } = useTheme();
+  const { colorScheme, theme } = useTheme();
   return (
     <>
       <StatusBar
@@ -23,7 +23,7 @@ function ThemedRoot() {
       <SafeAreaProvider
         style={{
           flex: 1,
-          backgroundColor: colorScheme === 'dark' ? '#000000' : '#FFFFFF',
+          backgroundColor: theme.colors.background,
         }}
       >
         <SafeAreaView style={{ flex: 1 }}>
