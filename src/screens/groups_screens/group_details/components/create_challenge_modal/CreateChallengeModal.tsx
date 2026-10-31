@@ -8,7 +8,9 @@ import {
   Pressable,
 } from 'react-native';
 import { X, ChevronDown } from 'lucide-react-native';
-import { AppInput, AppText } from '../../../../components';
+import { AppInput, AppText } from '../../../../../components';
+import { useTheme } from '../../../../../theme/useTheme';
+import createChallengeModalStyles from './styles.CreateChallengeModal';
 
 interface Props {
   visible: boolean;
@@ -17,9 +19,6 @@ interface Props {
   duration: string;
   reward: string;
   bottomInset: number;
-  colors: any;
-  styles: any;
-  spacing: any;
   onClose: () => void;
   onChangeName: (v: string) => void;
   onChangeGoal: (v: string) => void;
@@ -36,9 +35,6 @@ export const CreateChallengeModal: React.FC<Props> = memo(
     duration,
     reward,
     bottomInset,
-    colors,
-    styles,
-    spacing,
     onClose,
     onChangeName,
     onChangeGoal,
@@ -46,6 +42,9 @@ export const CreateChallengeModal: React.FC<Props> = memo(
     onCycleReward,
     onSubmit,
   }) => {
+    const { theme } = useTheme();
+    const { colors, spacing, radius } = theme;
+    const styles = createChallengeModalStyles(colors, spacing, radius);
     const [nameError, setNameError] = useState('');
     const [goalError, setGoalError] = useState('');
     const validateName = (value: string): boolean => {
@@ -152,7 +151,9 @@ export const CreateChallengeModal: React.FC<Props> = memo(
               <AppText variant="caption" secondary>
                 Challenge Name
               </AppText>
+
               <AppInput
+                label="Challenge Name"
                 value={challengeName}
                 onChangeText={(text: string) => {
                   onChangeName(text);

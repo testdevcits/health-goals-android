@@ -40,7 +40,7 @@ const HomeScreen: React.FC<Props> = ({ navigation }) => {
           onViewDetails={() => navigation.navigate('DailyActivities')}
           navigation={navigation}
         />
-        <TodayUpdate />
+        {/* <TodayUpdate /> */}
         <WorkoutCategories
           onViewAllPress={() => navigation.navigate('Categories')}
         />

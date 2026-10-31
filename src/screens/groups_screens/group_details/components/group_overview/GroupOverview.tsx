@@ -1,19 +1,18 @@
 import React, { memo } from 'react';
 import { View, Pressable, Alert } from 'react-native';
-import { AppText } from '../../../../components';
+import { AppText } from '../../../../../components';
 import {
   Member,
   GroupChallenge,
   WEEKLY_STEPS,
   formatSteps,
-} from '../constants';
+} from '../../constants';
+import { useTheme } from '../../../../../theme/useTheme';
+import createGroupOverviewStyles from './styles.GroupOverview';
 
 interface Props {
   members: Member[];
   challenges: GroupChallenge[];
-  colors: any;
-  styles: any;
-  spacing: any;
   onNewChallenge: () => void;
 }
 
@@ -186,53 +185,57 @@ const ChallengeCard: React.FC<{ challenge: GroupChallenge; styles: any }> =
   ));
 
 export const GroupOverview: React.FC<Props> = memo(
-  ({ members, challenges, colors, styles, spacing, onNewChallenge }) => (
-    <>
-      <GoalCard styles={styles} />
+  ({ members, challenges, onNewChallenge }) => {
+    const { theme } = useTheme();
+    const { colors, spacing, radius } = theme;
+    const styles = createGroupOverviewStyles(colors, spacing, radius);
 
-      <WeeklyChart styles={styles} />
+    return (
+      <>
+        <GoalCard styles={styles} />
 
-      {/* Top 3 contributors */}
-      <View style={styles.section}>
-        <View style={styles.sectionHeading}>
-          <AppText variant="subtitle1">Top Contributors</AppText>
-        </View>
-        <View style={styles.contributorsCard}>
-          {members.slice(0, 3).map((m, i) => (
-            <MemberRow
-              key={m.id}
-              member={m}
-              index={i}
-              colors={colors}
-              styles={styles}
-            />
-          ))}
-        </View>
-        <AppText variant="caption" secondary center mt={spacing.sm}>
-          View the leaderboard to see all members
-        </AppText>
-      </View>
+        <WeeklyChart styles={styles} />
 
-      {/* Challenges */}
-      <View style={styles.section}>
-        <View style={styles.sectionHeading}>
-          <AppText variant="subtitle1">Challenges</AppText>
-        </View>
-        {challenges.map(c => (
-          <ChallengeCard key={c.id} challenge={c} styles={styles} />
-        ))}
-        <Pressable
-          accessibilityRole="button"
-          onPress={onNewChallenge}
-          style={styles.newChallengeButton}
-        >
-          <AppText variant="buttonSm" primary>
-            + New Challenge
+        <View style={styles.section}>
+          <View style={styles.sectionHeading}>
+            <AppText variant="subtitle1">Top Contributors</AppText>
+          </View>
+          <View style={styles.contributorsCard}>
+            {members.slice(0, 3).map((m, i) => (
+              <MemberRow
+                key={m.id}
+                member={m}
+                index={i}
+                colors={colors}
+                styles={styles}
+              />
+            ))}
+          </View>
+          <AppText variant="caption" secondary center mt={spacing.sm}>
+            View the leaderboard to see all members
           </AppText>
-        </Pressable>
-      </View>
-    </>
-  ),
+        </View>
+
+        <View style={styles.section}>
+          <View style={styles.sectionHeading}>
+            <AppText variant="subtitle1">Challenges</AppText>
+          </View>
+          {challenges.map(c => (
+            <ChallengeCard key={c.id} challenge={c} styles={styles} />
+          ))}
+          <Pressable
+            accessibilityRole="button"
+            onPress={onNewChallenge}
+            style={styles.newChallengeButton}
+          >
+            <AppText variant="buttonSm" primary>
+              + New Challenge
+            </AppText>
+          </Pressable>
+        </View>
+      </>
+    );
+  },
 );
 
 export { MemberRow };

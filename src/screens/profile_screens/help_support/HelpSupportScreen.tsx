@@ -1,11 +1,5 @@
 import React, { useMemo, useState } from 'react';
-import {
-  Alert,
-  Pressable,
-  ScrollView,
-  TextInput,
-  View,
-} from 'react-native';
+import { Alert, Pressable, ScrollView, TextInput, View } from 'react-native';
 import { ChevronDown, Search } from 'lucide-react-native';
 import {
   AppHeader,
@@ -19,6 +13,7 @@ import {
   ProfileSectionLabel,
 } from '../components/ProfileScreenLayout';
 import createStyles from './styles.HelpSupport';
+import { useNavigation } from '@react-navigation/native';
 
 const faqs = [
   {
@@ -48,9 +43,10 @@ const faqs = [
   },
 ];
 
-const HelpSupportScreen: React.FC<{ navigation: ProfileScreenNavigation }> = ({
-  navigation,
+const HelpSupportScreen: React.FC<{   }> = ({
+   
 }) => {
+  const navigation:any =useNavigation()
   const { theme } = useTheme();
   const [query, setQuery] = useState('');
   const [expandedFaq, setExpandedFaq] = useState<number | null>(null);
@@ -94,41 +90,27 @@ const HelpSupportScreen: React.FC<{ navigation: ProfileScreenNavigation }> = ({
         </View>
         <ProfileCard style={styles.supportCard}>
           <ProfileListRow
-            icon="💬"
-            title="Live Chat with Support"
-            detail="Typically replies in under 5 min"
-            onPress={() =>
-              Alert.alert('Live chat', 'Support chat is ready to start.')
-            }
+            icon="🤖"
+            title="AI Legal & Health Assistant"
+            detail="Instant answers on privacy, terms & disclaimers"
+            onPress={() => navigation.navigate('AiChatBot')}
           />
           <ProfileListRow
             icon="📧"
             title="Email Support"
             detail="support@vitality.app"
-            onPress={() =>
-              Alert.alert('Email support', 'Contact us at support@vitality.app')
-            }
+            onPress={() => navigation.navigate('EmailSupport')}
           />
-          <ProfileListRow
+          {/* <ProfileListRow
             icon="🐞"
             title="Report a Bug"
             detail="Help us improve the app"
-            onPress={() =>
-              Alert.alert(
-                'Report a bug',
-                'Tell our support team what went wrong.',
-              )
-            }
-          />
+            onPress={() => navigation.navigate('AiChatBot')}
+          /> */}
           <ProfileListRow
             icon="📜"
             title="Community Guidelines"
-            onPress={() =>
-              Alert.alert(
-                'Community Guidelines',
-                'Be respectful, supportive, and kind to everyone in the community.',
-              )
-            }
+            onPress={() => navigation.navigate('CommunityGuidelines')}
             last
           />
         </ProfileCard>

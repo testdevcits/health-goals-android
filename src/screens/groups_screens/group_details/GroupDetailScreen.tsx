@@ -5,26 +5,23 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTheme } from '../../../theme/useTheme';
 import createStyles from './styles.GroupDetails';
 
-import { GroupBanner } from './components/GroupBanner';
-import { GroupTabs } from './components/GroupTabs';
-import { GroupOverview } from './components/GroupOverview';
-import { GroupLeaderboard } from './components/GroupLeaderboard';
-import { GroupChat } from './components/GroupChat';
-import { CreateChallengeModal } from './components/CreateChallengeModal';
+import { GroupBanner } from './components/group_banner/GroupBanner';
+import { GroupTabs } from './components/groups_tab/GroupTabs';
+import { GroupOverview } from './components/group_overview/GroupOverview';
+import { GroupLeaderboard } from './components/group_leaderboard/GroupLeaderboard';
+import { CreateChallengeModal } from './components/create_challenge_modal/CreateChallengeModal';
 
 import {
   DetailTab,
-  GroupMessage,
   GroupChallenge,
   INITIAL_MEMBERS,
-  INITIAL_MESSAGES,
   INITIAL_CHALLENGES,
   DURATION_OPTIONS,
   REWARD_OPTIONS,
 } from './constants';
 import { AppHeader } from '../../../components';
 import { useNavigation } from '@react-navigation/native';
-import ChallengesTab from './components/ChallengesTab';
+import ChallengesTab from './components/challengestab/ChallengesTab';
 
 // ─── Screen props ─────────────────────────────────────────────────────────────
 
@@ -42,39 +39,17 @@ const GroupDetailScreen: React.FC<GroupDetailScreenProps> = ({
   memberCount = 8,
 }) => {
   const { theme } = useTheme();
-  const { colors, spacing, radius } = theme;
+  const { colors, spacing } = theme;
   const insets = useSafeAreaInsets();
   const navigation = useNavigation();
 
   const styles = useMemo(
-    () => createStyles(colors, spacing, radius),
-    [colors, spacing, radius],
+    () => createStyles(colors, spacing),
+    [colors, spacing],
   );
 
   // ─── Tab ────────────────────────────────────────────────────────────────────
   const [activeTab, setActiveTab] = useState<DetailTab>('Overview');
-
-  // ─── Chat ───────────────────────────────────────────────────────────────────
-  const [messages, setMessages] = useState<GroupMessage[]>(INITIAL_MESSAGES);
-  const [messageDraft, setMessageDraft] = useState('');
-
-  const handleSendMessage = useCallback(() => {
-    const text = messageDraft.trim();
-    if (!text) return;
-
-    const newMessage: GroupMessage = {
-      id: `${Date.now()}`,
-      name: 'Alex',
-      initials: 'A',
-      message: text,
-      time: 'Now',
-      color: colors.primary,
-      mine: true,
-    };
-
-    setMessages(prev => [...prev, newMessage]);
-    setMessageDraft('');
-  }, [messageDraft]);
 
   // ─── Challenges ─────────────────────────────────────────────────────────────
   const [challenges, setChallenges] =
@@ -151,17 +126,12 @@ const GroupDetailScreen: React.FC<GroupDetailScreenProps> = ({
         <GroupTabs
           activeTab={activeTab}
           onTabChange={setActiveTab}
-          colors={colors}
-          styles={styles}
         />
 
         {activeTab === 'Overview' && (
           <GroupOverview
             members={INITIAL_MEMBERS}
             challenges={challenges}
-            colors={colors}
-            styles={styles}
-            spacing={spacing}
             onNewChallenge={() => setCreateChallengeVisible(true)}
           />
         )}
@@ -169,27 +139,13 @@ const GroupDetailScreen: React.FC<GroupDetailScreenProps> = ({
         {activeTab === 'Leaderboard' && (
           <GroupLeaderboard
             members={INITIAL_MEMBERS}
-            colors={colors}
-            styles={styles}
           />
         )}
-
-        {/* {activeTab === 'Chat' && (
-          <GroupChat
-            messages={messages}
-            messageDraft={messageDraft}
-            onChangeDraft={setMessageDraft}
-            onSend={handleSendMessage}
-            colors={colors}
-            styles={styles}
-          />
-        )} */}
 
         {activeTab === 'Challenges' && (
           <ChallengesTab
             onNewChallenge={() => setCreateChallengeVisible(true)}
             challenges={challenges}
-            styles={styles}
           />
         )}
       </ScrollView>
@@ -201,9 +157,6 @@ const GroupDetailScreen: React.FC<GroupDetailScreenProps> = ({
         duration={duration}
         reward={reward}
         bottomInset={insets.bottom}
-        colors={colors}
-        styles={styles}
-        spacing={spacing}
         onClose={() => setCreateChallengeVisible(false)}
         onChangeName={setChallengeName}
         onChangeGoal={setChallengeGoal}

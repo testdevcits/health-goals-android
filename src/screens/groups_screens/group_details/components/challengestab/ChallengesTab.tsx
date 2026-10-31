@@ -1,8 +1,10 @@
 import { Pressable, View } from 'react-native';
 import React from 'react';
-import { AppText } from '../../../../components';
-import ChallengeCard from '../../../../components/ChallengeCard';
-import { useTheme } from '../../../../theme/useTheme';
+import { AppText } from '../../../../../components';
+import ChallengeCard from '../../../../../components/ChallengeCard';
+import { useTheme } from '../../../../../theme/useTheme';
+import createGroupOverviewStyles from '../group_overview/styles.GroupOverview';
+import styles from './styles.ChallengesTab';
 
 interface ChallengeItem {
   id: string;
@@ -18,16 +20,15 @@ interface ChallengeItem {
 interface ChallengesTabProps {
   onNewChallenge?: () => void;
   challenges: ChallengeItem[];
-  styles: any;
 }
 
 const ChallengesTab: React.FC<ChallengesTabProps> = ({
   onNewChallenge,
   challenges,
-  styles,
 }) => {
   const { theme } = useTheme();
   const { colors, spacing, radius } = theme;
+  const overviewStyles = createGroupOverviewStyles(colors, spacing, radius);
 
   return (
     <View style={styles.section}>
@@ -52,7 +53,7 @@ const ChallengesTab: React.FC<ChallengesTabProps> = ({
       <Pressable
         accessibilityRole="button"
         onPress={onNewChallenge}
-        style={styles.newChallengeButton}
+        style={overviewStyles.newChallengeButton}
       >
         <AppText variant="buttonSm" primary>
           + New Challenge

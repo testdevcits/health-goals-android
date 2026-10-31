@@ -10,6 +10,9 @@ import RewardsScreen from '../screens/profile_screens/rewards/RewardsScreen';
 import PrivacyScreen from '../screens/profile_screens/privacy/PrivacyScreen';
 import HealthReportsScreen from '../screens/profile_screens/health_reports/HealthReportsScreen';
 import HelpSupportScreen from '../screens/profile_screens/help_support/HelpSupportScreen';
+import AiChatBot from '../screens/profile_screens/help_support/screens/ai_agent_chat/AiChatBot';
+import EmailSupport from '../screens/profile_screens/help_support/screens/email_support/EmailSupport';
+import CommunityGuidelines from '../screens/profile_screens/help_support/screens/community_guidelines/CommunityGuidelines';
 
 export type RootStackParamList = {
   Profile: undefined;
@@ -21,6 +24,9 @@ export type RootStackParamList = {
   Privacy: undefined;
   HealthReports: undefined;
   HelpSupport: undefined;
+  AiChatBot: undefined;
+  EmailSupport: undefined;
+  CommunityGuidelines: undefined;
 };
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
@@ -40,6 +46,12 @@ const ProfileStack = () => {
       <Stack.Screen name="Privacy" component={PrivacyScreen} />
       <Stack.Screen name="HealthReports" component={HealthReportsScreen} />
       <Stack.Screen name="HelpSupport" component={HelpSupportScreen} />
+      <Stack.Screen name="AiChatBot" component={AiChatBot} />
+      <Stack.Screen name="EmailSupport" component={EmailSupport} />
+      <Stack.Screen
+        name="CommunityGuidelines"
+        component={CommunityGuidelines}
+      />
     </Stack.Navigator>
   );
 };

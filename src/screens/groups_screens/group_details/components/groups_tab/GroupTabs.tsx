@@ -1,17 +1,21 @@
 import React, { memo } from 'react';
 import { View, Pressable } from 'react-native';
-import { AppText } from '../../../../components';
-import { DetailTab, DETAIL_TABS } from '../constants';
+import { AppText } from '../../../../../components';
+import { useTheme } from '../../../../../theme/useTheme';
+import { DetailTab, DETAIL_TABS } from '../../constants';
+import createGroupTabsStyles from './styles.GroupTabs';
 
 interface Props {
   activeTab: DetailTab;
   onTabChange: (tab: DetailTab) => void;
-  colors: any;
-  styles: any;
 }
 
-export const GroupTabs: React.FC<Props> = memo(
-  ({ activeTab, onTabChange, colors, styles }) => (
+export const GroupTabs: React.FC<Props> = memo(({ activeTab, onTabChange }) => {
+  const { theme } = useTheme();
+  const { colors, spacing, radius } = theme;
+  const styles = createGroupTabsStyles(colors, spacing, radius);
+
+  return (
     <View style={styles.tabs}>
       {DETAIL_TABS.map(tab => {
         const selected = activeTab === tab;
@@ -37,5 +41,5 @@ export const GroupTabs: React.FC<Props> = memo(
         );
       })}
     </View>
-  ),
-);
+  );
+});
