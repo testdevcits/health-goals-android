@@ -7,7 +7,12 @@ import {
   StatusBar,
   View,
 } from 'react-native';
-import { AppButton, AppHeader, AppText } from '../../../components';
+import {
+  AppButton,
+  AppHeader,
+  AppText,
+  ConfirmationModal,
+} from '../../../components';
 import { createWorkoutSessionStyles } from './styles.WorkoutSession';
 import { useTheme } from '../../../theme/useTheme';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
@@ -26,6 +31,17 @@ import {
 import { WORKOUT_ACTIVITIES } from './workoutActivities';
 
 type Activity = (typeof WORKOUT_ACTIVITIES)[number] & { color: string };
+
+interface WorkoutConfirmation {
+  title: string;
+  message: string;
+  actions: {
+    label: string;
+    variant?: 'primary' | 'outline';
+    destructive?: boolean;
+    onPress?: () => void | Promise<void>;
+  }[];
+}
 
 const generateActivityColor = (seed: number) => {
   const hue = (seed * 47 + Math.floor(Math.random() * 60)) % 360;
@@ -113,12 +129,22 @@ const WorkoutSessionScreen: React.FC<Props> = ({ navigation, route }) => {
     null,
   );
   const [elapsedSeconds, setElapsedSeconds] = useState(0);
+  const [confirmation, setConfirmation] = useState<WorkoutConfirmation | null>(
+    null,
+  );
   const isRunning =
     workoutSession !== null && workoutSession.startedAtMilliseconds !== null;
   const hasStarted = workoutSession !== null;
   const currentActivity =
     activities.find(activity => activity.id === workoutSession?.activityId) ??
     selectedActivity;
+
+  const handleConfirmationAction = async (
+    action: WorkoutConfirmation['actions'][number],
+  ) => {
+    setConfirmation(null);
+    await action.onPress?.();
+  };
 
   useEffect(() => {
     const activityId = route.params?.activityId;
@@ -233,13 +259,13 @@ const WorkoutSessionScreen: React.FC<Props> = ({ navigation, route }) => {
 
   const handleSelectActivity = (activity: Activity) => {
     if (hasStarted) {
-      Alert.alert(
-        'Change activity?',
-        'Changing activity will reset the current workout.',
-        [
-          { text: 'Cancel', style: 'cancel' },
+      setConfirmation({
+        title: 'Change activity?',
+        message: 'Changing activity will reset the current workout.',
+        actions: [
+          { label: 'Cancel', variant: 'outline' },
           {
-            text: 'Reset and change',
+            label: 'Reset and change',
             onPress: async () => {
               try {
                 await clearWorkoutSession();
@@ -253,7 +279,7 @@ const WorkoutSessionScreen: React.FC<Props> = ({ navigation, route }) => {
             },
           },
         ],
-      );
+      });
       return;
     }
 
@@ -272,13 +298,13 @@ const WorkoutSessionScreen: React.FC<Props> = ({ navigation, route }) => {
       return;
     }
 
-    Alert.alert(
-      'Finish workout?',
-      `Save your ${currentActivity.name.toLowerCase()} session?`,
-      [
-        { text: 'Continue workout', style: 'cancel' },
+    setConfirmation({
+      title: 'Finish workout?',
+      message: `Save your ${currentActivity.name.toLowerCase()} session?`,
+      actions: [
+        { label: 'Continue workout', variant: 'outline' },
         {
-          text: 'Finish & Save',
+          label: 'Finish & Save',
           onPress: async () => {
             try {
               await clearWorkoutSession();
@@ -292,23 +318,23 @@ const WorkoutSessionScreen: React.FC<Props> = ({ navigation, route }) => {
           },
         },
       ],
-    );
+    });
   };
 
   const handleBack = () => {
     if (hasStarted) {
-      Alert.alert(
-        'Workout in progress',
-        'Your workout will keep running if you leave this screen.',
-        [
-          { text: 'Stay', style: 'cancel' },
+      setConfirmation({
+        title: 'Workout in progress',
+        message: 'Your workout will keep running if you leave this screen.',
+        actions: [
+          { label: 'Stay', variant: 'outline' },
           {
-            text: 'Keep running',
+            label: 'Keep running',
             onPress: () => navigation.goBack(),
           },
           {
-            text: 'Discard workout',
-            style: 'destructive',
+            label: 'Discard workout',
+            destructive: true,
             onPress: async () => {
               try {
                 await clearWorkoutSession();
@@ -322,7 +348,7 @@ const WorkoutSessionScreen: React.FC<Props> = ({ navigation, route }) => {
             },
           },
         ],
-      );
+      });
       return;
     }
 
@@ -345,6 +371,28 @@ const WorkoutSessionScreen: React.FC<Props> = ({ navigation, route }) => {
         subtitle="Track your session"
         onBackPress={handleBack}
       />
+
+      <ConfirmationModal
+        visible={confirmation !== null}
+        onClose={() => setConfirmation(null)}
+        title={confirmation?.title}
+        message={confirmation?.message}
+        position="center"
+        showCloseButton={false}
+      >
+        {confirmation?.actions.map(action => (
+          <AppButton
+            key={action.label}
+            title={action.label}
+            variant={action.variant ?? 'primary'}
+            onPress={() => handleConfirmationAction(action)}
+            style={[
+              styles.modalActionButton,
+              action.destructive && styles.destructiveActionButton,
+            ]}
+          />
+        ))}
+      </ConfirmationModal>
 
       <ScrollView
         showsVerticalScrollIndicator={false}
@@ -393,7 +441,7 @@ const WorkoutSessionScreen: React.FC<Props> = ({ navigation, route }) => {
           <AppText style={styles.heroEmoji}>{currentActivity.emoji}</AppText>
 
           <AppText variant="h3" style={styles.heroActivityName}>
-            {currentActivity.name.toUpperCase()}
+            {currentActivity?.name?.toUpperCase()}
           </AppText>
 
           {/* Heartbeat-style decorative line */}

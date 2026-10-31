@@ -157,6 +157,12 @@ export const createWorkoutSessionStyles = (colors: any) =>
     startButtonText: {
       color: colors.white,
     },
+    modalActionButton: {
+      marginTop: spacing.sm,
+    },
+    destructiveActionButton: {
+      backgroundColor: colors.error,
+    },
     finishButton: {
       minHeight: 44,
       alignItems: 'center',

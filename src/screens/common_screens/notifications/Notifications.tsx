@@ -48,6 +48,7 @@ const Notifications = () => {
           onBackPress={() => {
             navigation.goBack();
           }}
+          showNotifications={false}
         />
 
         {/* Section Header */}

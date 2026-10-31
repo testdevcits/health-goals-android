@@ -5,7 +5,12 @@ import { Bell, ChevronLeft } from 'lucide-react-native';
 import AppText from '../AppText';
 import { useTheme } from '../../theme/useTheme';
 import { styles as createStyles } from './AppHeader.styles';
-import { useNavigation } from '@react-navigation/native';
+import { NavigationProp, useNavigation } from '@react-navigation/native';
+
+type AppHeaderNavigationParamList = {
+  Notifications: undefined;
+  Profile: undefined;
+};
 
 interface AppHeaderProps {
   title: string;
@@ -30,7 +35,8 @@ const AppHeader: React.FC<AppHeaderProps> = ({
   const { colors } = theme;
   const componentStyles = createStyles(theme);
 
-  const navigation: any = useNavigation();
+  const navigation =
+    useNavigation<NavigationProp<AppHeaderNavigationParamList>>();
 
   return (
     <View style={componentStyles.header}>
@@ -44,7 +50,6 @@ const AppHeader: React.FC<AppHeaderProps> = ({
             ]}
             accessibilityRole="button"
             accessibilityLabel="Go back"
-            disabled={!onBackPress}
             hitSlop={8}
           >
             <ChevronLeft size={20} color={colors.textPrimary} />
@@ -76,7 +81,6 @@ const AppHeader: React.FC<AppHeaderProps> = ({
             ]}
             accessibilityRole="button"
             accessibilityLabel="Notifications"
-            disabled={!onNotificationPress}
             hitSlop={8}
           >
             <Bell size={19} color={colors.warning} />
