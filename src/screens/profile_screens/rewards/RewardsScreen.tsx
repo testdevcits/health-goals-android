@@ -8,7 +8,8 @@ import {
   ProfileListRow,
 } from '../../../components';
 import { useTheme } from '../../../theme/useTheme';
-import { authenticatedRequest, apiErrorMessage } from '../../../services/api';
+import { authenticatedRequest } from '../../../services/authenticatedApi';
+import { apiErrorMessage } from '../../../services/api';
 import {
   ProfileScreenNavigation,
   ProfileSectionLabel,

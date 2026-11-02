@@ -7,7 +7,7 @@ import { createHomeStyles } from '../styles.Home';
 import { useNavigation } from '@react-navigation/native';
 import { useFocusEffect } from '@react-navigation/native';
 import { useCallback } from 'react';
-import { authenticatedRequest } from '../../../../services/api';
+import { authenticatedRequest } from '../../../../services/authenticatedApi';
 
 type UserProfile = { name?: string; email?: string };
 

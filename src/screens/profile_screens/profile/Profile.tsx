@@ -19,7 +19,7 @@ import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '../../../navigations/ProfileStack';
 import { useFocusEffect } from '@react-navigation/native';
-import { authenticatedRequest } from '../../../services/api';
+import { authenticatedRequest } from '../../../services/authenticatedApi';
 
 type ProfileNavigationProp = NativeStackNavigationProp<RootStackParamList>;
 

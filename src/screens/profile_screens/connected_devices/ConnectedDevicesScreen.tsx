@@ -31,7 +31,6 @@ import {
   AppText,
   ProfileCard,
   ProfileListRow,
-  ProfileScreen,
 } from '../../../components';
 import { useTheme } from '../../../theme/useTheme';
 import { ProfileScreenNavigation } from '../components/ProfileScreenLayout';

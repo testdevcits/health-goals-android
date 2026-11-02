@@ -8,7 +8,8 @@ import CreateGroupModal from './components/CreateGroupModal';
 import FeedTab from './tabs/FeedTab';
 import MyGroups from './tabs/MyGroups';
 import { Group, FeedPost } from './data';
-import { authenticatedRequest, apiErrorMessage } from '../../../services/api';
+import { authenticatedRequest } from '../../../services/authenticatedApi';
+import { apiErrorMessage } from '../../../services/api';
 
 type GroupTab = 'My Groups' | 'Discover' | 'Feed';
 
@@ -41,8 +42,6 @@ const GroupsScreen: React.FC = () => {
   const [selectedIcon, setSelectedIcon] = useState('🏃');
   const [isPrivate, setIsPrivate] = useState(true);
 
-  const [likedPosts, setLikedPosts] = useState<string[]>([]);
-
   const styles = createStyles(colors, spacing, radius);
 
   const resetCreateForm = () => {
@@ -67,18 +66,6 @@ const GroupsScreen: React.FC = () => {
   const joinGroup = async (groupId: string) => {
     try { await authenticatedRequest('POST', `/community/groups/${encodeURIComponent(groupId)}/join`); await refresh(); setActiveTab('My Groups'); }
     catch (error) { Alert.alert('Could not join group', apiErrorMessage(error)); }
-  };
-
-  const toggleKudos = (postId: string) => {
-    setLikedPosts(previous =>
-      previous.includes(postId)
-        ? previous.filter(id => id !== postId)
-        : [...previous, postId],
-    );
-  };
-
-  const handleShare = (post: FeedPost) => {
-    Alert.alert('Share post', `Share ${post.name}'s update with your friends.`);
   };
 
   return (
@@ -126,7 +113,7 @@ const GroupsScreen: React.FC = () => {
         showsVerticalScrollIndicator={false}
         contentContainerStyle={styles.scrollContent}
       >
-        {activeTab === 'My Groups' ? (
+        {activeTab !== 'Feed' ? (
           <MyGroups
             groups={groups}
             avatarColors={avatarColors}
@@ -137,9 +124,6 @@ const GroupsScreen: React.FC = () => {
         ) : (
           <FeedTab
             posts={posts}
-            likedPosts={likedPosts}
-            toggleKudos={toggleKudos}
-            handleShare={handleShare}
           />
         )}
       </ScrollView>
@@ -162,5 +146,3 @@ const GroupsScreen: React.FC = () => {
 };
 
 export default GroupsScreen;
-
-

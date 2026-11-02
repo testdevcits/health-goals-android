@@ -1,5 +1,5 @@
 import React, { useMemo, useState } from 'react';
-import { Alert, Pressable, ScrollView, TextInput, View } from 'react-native';
+import { Pressable, ScrollView, TextInput, View } from 'react-native';
 import { ChevronDown, Search } from 'lucide-react-native';
 import {
   AppHeader,
@@ -8,12 +8,10 @@ import {
   ProfileListRow,
 } from '../../../components';
 import { useTheme } from '../../../theme/useTheme';
-import {
-  ProfileScreenNavigation,
-  ProfileSectionLabel,
-} from '../components/ProfileScreenLayout';
+import { ProfileSectionLabel } from '../components/ProfileScreenLayout';
 import createStyles from './styles.HelpSupport';
-import { useNavigation } from '@react-navigation/native';
+import type { NativeStackScreenProps } from '@react-navigation/native-stack';
+import type { RootStackParamList } from '../../../navigations/ProfileStack';
 
 const faqs = [
   {
@@ -43,10 +41,9 @@ const faqs = [
   },
 ];
 
-const HelpSupportScreen: React.FC<{   }> = ({
-   
-}) => {
-  const navigation:any =useNavigation()
+type Props = NativeStackScreenProps<RootStackParamList, 'HelpSupport'>;
+
+const HelpSupportScreen: React.FC<Props> = ({ navigation }) => {
   const { theme } = useTheme();
   const [query, setQuery] = useState('');
   const [expandedFaq, setExpandedFaq] = useState<number | null>(null);

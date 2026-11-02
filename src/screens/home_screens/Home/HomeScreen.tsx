@@ -10,7 +10,6 @@ import EnergyCard from './components/EnergyCard';
 import HomeHeader from './components/HomeHeader';
 import NotificationBanner from './components/NotificationBanner';
 import WorkoutCategories from './components/WorkoutCategories';
-import TodayUpdate from './components/TodayUpdate';
 import { createHomeStyles } from './styles.Home';
 import QuickActions from './components/QuickActions';
 
@@ -40,7 +39,6 @@ const HomeScreen: React.FC<Props> = ({ navigation }) => {
           onViewDetails={() => navigation.navigate('DailyActivities')}
           navigation={navigation}
         />
-        {/* <TodayUpdate /> */}
         <WorkoutCategories
           onViewAllPress={() => navigation.navigate('Categories')}
         />

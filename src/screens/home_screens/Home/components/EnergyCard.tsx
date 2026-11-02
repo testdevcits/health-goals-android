@@ -6,7 +6,7 @@ import { AppText } from '../../../../components';
 import { useTheme } from '../../../../theme/useTheme';
 import { createHomeStyles } from '../styles.Home';
 import { useFocusEffect } from '@react-navigation/native';
-import { authenticatedRequest } from '../../../../services/api';
+import { authenticatedRequest } from '../../../../services/authenticatedApi';
 
 const CIRCLE_SIZE = 88;
 const STROKE_WIDTH = 7;
@@ -139,7 +139,7 @@ const EnergyCard: React.FC = () => {
         <View style={styles.streakPill}>
           <Text style={styles.streakEmoji}>🔥</Text>
           <AppText variant="caption" bold color="textInverse">
-          {streakPeriod ?? initialStreak}-day streak
+            {streakPeriod}-day streak
           </AppText>
         </View>
       </View>

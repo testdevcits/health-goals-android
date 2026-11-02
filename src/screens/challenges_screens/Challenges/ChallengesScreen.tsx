@@ -14,7 +14,8 @@ import {
 import BadgesTab from './tabs/BadgesTab';
 import ChallengesTab from './tabs/ChallengesTab';
 import createStyles from './styles.Challenges';
-import { authenticatedRequest, apiErrorMessage } from '../../../services/api';
+import { authenticatedRequest } from '../../../services/authenticatedApi';
+import { apiErrorMessage } from '../../../services/api';
 import { Footprints, Sunrise, Dumbbell } from 'lucide-react-native';
 
 type Props = NativeStackScreenProps<ChallengesStackParamList, 'Challenges'>;

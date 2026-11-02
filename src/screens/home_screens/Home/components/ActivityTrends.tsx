@@ -5,7 +5,7 @@ import { AppText, SectionHeader } from '../../../../components';
 import { useTheme } from '../../../../theme/useTheme';
 import { DAYS, TREND_DATA, TREND_TABS, TrendTab } from '../const';
 import { createHomeStyles } from '../styles.Home';
-import { authenticatedRequest } from '../../../../services/api';
+import { authenticatedRequest } from '../../../../services/authenticatedApi';
 
 const BAR_MAX_HEIGHT = 100;
 

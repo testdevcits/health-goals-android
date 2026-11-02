@@ -1,6 +1,6 @@
 import * as Keychain from 'react-native-keychain';
 import { Platform } from 'react-native';
-import { authenticatedRequest } from './api';
+import { authenticatedRequest } from './authenticatedApi';
 import { readSession } from './auth';
 
 const INSTALL_ID_SERVICE = 'com.vitality.device-id';

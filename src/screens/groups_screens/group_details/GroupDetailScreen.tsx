@@ -22,7 +22,8 @@ import { useNavigation } from '@react-navigation/native';
 import ChallengesTab from './components/challengestab/ChallengesTab';
 import { useRoute, type RouteProp } from '@react-navigation/native';
 import type { RootStackParamList } from '../../../navigations/GroupsStack';
-import { authenticatedRequest, apiErrorMessage } from '../../../services/api';
+import { authenticatedRequest } from '../../../services/authenticatedApi';
+import { apiErrorMessage } from '../../../services/api';
 import { GroupChat } from './components/group_chats/GroupChat';
 import type { Member } from './constants';
 import { createAuthenticatedChatSocket } from '../../../services/chatSocket';
@@ -167,7 +168,7 @@ const GroupDetailScreen: React.FC<GroupDetailScreenProps> = ({
       await authenticatedRequest('POST', `/community/groups/${encodeURIComponent(groupId)}/challenges`, { title: challengeName.trim(), description: challengeGoal.trim(), metricType: 'steps', targetValue, startsAt: new Date().toISOString(), endsAt, rewardPoints: Number.parseInt(reward, 10) || 0 });
       await refreshGroup(); setCreateChallengeVisible(false); setChallengeName(''); setChallengeGoal(''); setDuration(DURATION_OPTIONS[0]); setReward(REWARD_OPTIONS[1]); setActiveTab('Challenges');
     } catch (error) { Alert.alert('Could not create challenge', apiErrorMessage(error)); }
-  }, [challengeName, challengeGoal, duration, reward, colors.primary, groupId, refreshGroup]);
+  }, [challengeName, challengeGoal, duration, reward, groupId, refreshGroup]);
 
   const sendMessage = useCallback(async () => {
     const message = messageDraft.trim(); if (!message) return;

@@ -50,7 +50,7 @@ class HealthAppConfigModule(context: ReactApplicationContext) : ReactContextBase
       putExtra(Intent.EXTRA_SUBJECT, title)
       addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
     }
-    currentActivity?.startActivity(Intent.createChooser(intent, "Share health report"))
+    reactApplicationContext.currentActivity?.startActivity(Intent.createChooser(intent, "Share health report"))
   }
 }
 

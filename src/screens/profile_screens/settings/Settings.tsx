@@ -242,31 +242,17 @@ const Settings = ({ navigation }: { navigation: SettingsNavigation }) => {
     }
   };
 
-  const handleLocationTrackingChange = (enabled: boolean) => {
-    if (locationLoading) return;
-
-    if (!enabled) {
-      stopLocationTracking();
-      return;
-    }
-
-    Alert.alert(
-      'Enable continuous location tracking?',
-      'Vitality will record your location in the background, including when the app is closed, until you turn this off. Location data currently stays on this device.',
-      [
-        { text: 'Cancel', style: 'cancel' },
-        {
-          text: 'Continue',
-          onPress: () => {
-            startLocationTracking();
-          },
-        },
-      ],
-    );
-  };
-
   const [showLocationConfirmation, setShowLocationConfirmation] =
     React.useState(false);
+
+  const handleLocationTrackingChange = (enabled: boolean) => {
+    if (locationLoading) return;
+    if (enabled) {
+      setShowLocationConfirmation(true);
+    } else {
+      stopLocationTracking();
+    }
+  };
 
   const handleStartLocationTracking = () => {
     setShowLocationConfirmation(false);
@@ -379,8 +365,7 @@ const Settings = ({ navigation }: { navigation: SettingsNavigation }) => {
                 : 'Continuously record location in the background'
             }
             switchValue={locationTracking}
-            // onSwitchChange={handleLocationTrackingChange}
-            onSwitchChange={() => setShowLocationConfirmation(true)}
+            onSwitchChange={handleLocationTrackingChange}
             showDivider={false}
           />
         </SettingsSection>

@@ -20,7 +20,7 @@ import ImagePicker from 'react-native-image-crop-picker';
 import { useTheme } from '../../../theme/useTheme';
 import createStyles from './styles.EditProfile';
 import { useFocusEffect } from '@react-navigation/native';
-import { authenticatedRequest } from '../../../services/api';
+import { authenticatedRequest } from '../../../services/authenticatedApi';
 import { apiErrorMessage } from '../../../services/api';
 
 const EditProfileScreen: React.FC<{ navigation: ProfileScreenNavigation }> = ({

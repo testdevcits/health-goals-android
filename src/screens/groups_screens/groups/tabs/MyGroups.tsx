@@ -1,4 +1,4 @@
-import { Pressable, StyleSheet, View } from 'react-native';
+import { Pressable, View } from 'react-native';
 import React, { memo } from 'react';
 import { AppText } from '../../../../components';
 import { ChevronRight } from 'lucide-react-native';
@@ -7,6 +7,7 @@ import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '../../../../navigations/GroupsStack';
 import createStyles from './styles.MyGroups';
+import type { Group } from '../data';
 
 type GroupsNavigationProp = NativeStackNavigationProp<RootStackParamList>;
 
@@ -17,8 +18,8 @@ const MyGroups = ({
   onJoinGroup,
   discover = false,
 }: {
-  groups: any[];
-  avatarColors?: string[]; // optional prop
+  groups: Group[];
+  avatarColors?: string[];
   setCreateModalVisible: (visible: boolean) => void;
   onJoinGroup?: (id: string) => void;
   discover?: boolean;

@@ -29,7 +29,7 @@ import {
   type WorkoutSession,
 } from './workoutSessionStore';
 import { WORKOUT_ACTIVITIES } from './workoutActivities';
-import { authenticatedRequest } from '../../../services/api';
+import { authenticatedRequest } from '../../../services/authenticatedApi';
 
 type Activity = (typeof WORKOUT_ACTIVITIES)[number] & { color: string };
 

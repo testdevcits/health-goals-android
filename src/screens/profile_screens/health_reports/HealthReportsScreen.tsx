@@ -11,7 +11,8 @@ import {
 import { useTheme } from '../../../theme/useTheme';
 import { ProfileScreenNavigation } from '../components/ProfileScreenLayout';
 import createStyles from './styles.HealthReport';
-import { authenticatedRequest, apiErrorMessage } from '../../../services/api';
+import { authenticatedRequest } from '../../../services/authenticatedApi';
+import { apiErrorMessage } from '../../../services/api';
 
 const METRICS = { Steps: 'steps', Sleep: 'sleep', Workouts: 'workout' } as const;
 type DailyValue = { date: string; value: number; count: number; unit: string };
@@ -33,10 +34,12 @@ const HealthReportsScreen: React.FC<{
   useFocusEffect(useCallback(() => {
     let active = true;
     setLoading(true); setError('');
+    const requestTo = new Date();
+    const requestFrom = new Date(requestTo.getTime() - 6 * 86400000);
     const metricType = activeTab === 'Workouts' ? 'workout' : METRICS[activeTab as keyof typeof METRICS];
     Promise.all([
-      authenticatedRequest<{ history: DailyValue[] }>('GET', `/health/history?metricType=${metricType}&from=${dateKey(from)}&to=${dateKey(to)}`),
-      authenticatedRequest<{ items: Array<{ day: string; totals?: { steps?: number; workoutMinutes?: number; sleepMinutes?: number }; creditedCoins?: number }> }>('GET', `/activity/history?from=${dateKey(from)}&to=${dateKey(to)}&limit=7`),
+      authenticatedRequest<{ history: DailyValue[] }>('GET', `/health/history?metricType=${metricType}&from=${dateKey(requestFrom)}&to=${dateKey(requestTo)}`),
+      authenticatedRequest<{ items: Array<{ day: string; totals?: { steps?: number; workoutMinutes?: number; sleepMinutes?: number }; creditedCoins?: number }> }>('GET', `/activity/history?from=${dateKey(requestFrom)}&to=${dateKey(requestTo)}&limit=7`),
     ]).then(([records, coins]) => { if (active) { setHistory(records.history || []); setDailyCoins(coins.items || []); } })
       .catch(cause => { if (active) setError(apiErrorMessage(cause)); })
       .finally(() => { if (active) setLoading(false); });

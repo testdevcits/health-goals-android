@@ -7,7 +7,8 @@ import { Dumbbell } from 'lucide-react-native';
 import { useTheme } from '../../../theme/useTheme';
 import { AppHeader, AppText } from '../../../components';
 import { createCardStyles, createStyles } from './styles.AllChallenges';
-import { authenticatedRequest, apiErrorMessage } from '../../../services/api';
+import { authenticatedRequest } from '../../../services/authenticatedApi';
+import { apiErrorMessage } from '../../../services/api';
 
 type ChallengeCategory = 'All' | 'Steps' | 'Mind' | 'Strength';
 

@@ -8,13 +8,31 @@ import {
   SdkAvailabilityStatus,
 } from 'react-native-health-connect';
 import type { Permission } from 'react-native-health-connect';
-import { authenticatedRequest } from './api';
+import { authenticatedRequest } from './authenticatedApi';
 import { ensureHealthConnectDevice } from './devices';
 
 const OFFSET_MS = 330 * 60 * 1000;
 const SOURCE = 'health_connect';
 let activeSync: Promise<{ synced: number }> | null = null;
 let lastSuccessfulSync = 0;
+
+const WALKING_TYPES = new Set<number>([ExerciseType.WALKING]);
+const RUNNING_TYPES = new Set<number>([ExerciseType.RUNNING]);
+const TREADMILL_TYPES = new Set<number>([ExerciseType.RUNNING_TREADMILL]);
+const HIKING_TYPES = new Set<number>([ExerciseType.HIKING]);
+const CYCLING_TYPES = new Set<number>([
+  ExerciseType.BIKING,
+  ExerciseType.BIKING_STATIONARY,
+]);
+const YOGA_TYPES = new Set<number>([ExerciseType.YOGA]);
+const STRENGTH_TYPES = new Set<number>([
+  ExerciseType.STRENGTH_TRAINING,
+  ExerciseType.WEIGHTLIFTING,
+]);
+const SWIMMING_TYPES = new Set<number>([
+  ExerciseType.SWIMMING_OPEN_WATER,
+  ExerciseType.SWIMMING_POOL,
+]);
 
 type RecordType =
   | 'Steps'
@@ -161,14 +179,14 @@ function kilograms(mass: any) {
 }
 
 function workoutType(exerciseType: number) {
-  if ([ExerciseType.WALKING].includes(exerciseType)) return 'walking';
-  if ([ExerciseType.RUNNING].includes(exerciseType)) return 'running';
-  if ([ExerciseType.RUNNING_TREADMILL].includes(exerciseType)) return 'treadmill';
-  if ([ExerciseType.HIKING].includes(exerciseType)) return 'hiking';
-  if ([ExerciseType.BIKING, ExerciseType.BIKING_STATIONARY].includes(exerciseType)) return 'cycling';
-  if ([ExerciseType.YOGA].includes(exerciseType)) return 'yoga';
-  if ([ExerciseType.STRENGTH_TRAINING, ExerciseType.WEIGHTLIFTING].includes(exerciseType)) return 'strength';
-  if ([ExerciseType.SWIMMING_OPEN_WATER, ExerciseType.SWIMMING_POOL].includes(exerciseType)) return 'swimming';
+  if (WALKING_TYPES.has(exerciseType)) return 'walking';
+  if (RUNNING_TYPES.has(exerciseType)) return 'running';
+  if (TREADMILL_TYPES.has(exerciseType)) return 'treadmill';
+  if (HIKING_TYPES.has(exerciseType)) return 'hiking';
+  if (CYCLING_TYPES.has(exerciseType)) return 'cycling';
+  if (YOGA_TYPES.has(exerciseType)) return 'yoga';
+  if (STRENGTH_TYPES.has(exerciseType)) return 'strength';
+  if (SWIMMING_TYPES.has(exerciseType)) return 'swimming';
   return 'other';
 }
 

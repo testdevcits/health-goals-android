@@ -1,8 +1,12 @@
-import { StyleSheet, Text, View } from 'react-native';
+import { View } from 'react-native';
 import React from 'react';
 import { AppHeader } from '../../../../../components';
+import type { NativeStackScreenProps } from '@react-navigation/native-stack';
+import type { RootStackParamList } from '../../../../../navigations/ProfileStack';
 
-const AiChatBot = ({ navigation }:any) => {
+type Props = NativeStackScreenProps<RootStackParamList, 'AiChatBot'>;
+
+const AiChatBot: React.FC<Props> = ({ navigation }) => {
   return (
     <View style={{ flex: 1 }}>
       <AppHeader
@@ -15,5 +19,3 @@ const AiChatBot = ({ navigation }:any) => {
 };
 
 export default AiChatBot;
-
-const styles = StyleSheet.create({});
