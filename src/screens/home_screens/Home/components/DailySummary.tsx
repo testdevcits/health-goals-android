@@ -108,7 +108,6 @@ const DailySummary: React.FC<{
   const healthDataState = useTodayHealthData();
   const healthData = healthDataState.data;
 
-  console.log('=======healthData========', healthData);
 
   const [workoutSession, setWorkoutSession] =
     React.useState<WorkoutSession | null>(null);

@@ -5,8 +5,9 @@ export interface Group {
   members: number;
   rank?: string;
   emoji: string;
-  avatars: string[];
+  avatars: Array<string | { initial: string }>;
   private: boolean;
+  joined?: boolean;
 }
 
 export interface FeedPost {

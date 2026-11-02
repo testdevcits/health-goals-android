@@ -14,10 +14,14 @@ const MyGroups = ({
   groups,
   avatarColors,
   setCreateModalVisible,
+  onJoinGroup,
+  discover = false,
 }: {
   groups: any[];
   avatarColors?: string[]; // optional prop
   setCreateModalVisible: (visible: boolean) => void;
+  onJoinGroup?: (id: string) => void;
+  discover?: boolean;
 }) => {
   // Default avatar colors palette if none provided
   const defaultAvatarColors = ['#FF6B6B', '#4ECDC4', '#FFCE54', '#A29BFE'];
@@ -36,7 +40,7 @@ const MyGroups = ({
         <Pressable
           key={group?.id}
           accessibilityRole="button"
-          onPress={() => navigation.navigate('GroupDetails')}
+          onPress={() => navigation.navigate('GroupDetails', { groupId: group.id, name: group.name, description: group.description, members: group.members })}
           style={styles.groupCard}
         >
           <View
@@ -66,9 +70,9 @@ const MyGroups = ({
             </AppText>
 
             <View style={styles.memberAvatars}>
-              {group?.avatars
+              {(group?.avatars || [])
                 .slice(0, 4)
-                .map(({ initial }: { initial: string }, i: number) => (
+                .map((avatar, i: number) => (
                   <View
                     key={`${group?.id}-${i}`}
                     style={[
@@ -80,7 +84,7 @@ const MyGroups = ({
                     ]}
                   >
                     <AppText style={styles.memberAvatarText} bold>
-                      {initial}
+                      {typeof avatar === 'string' ? avatar : avatar.initial}
                     </AppText>
                   </View>
                 ))}
@@ -95,7 +99,7 @@ const MyGroups = ({
             </View>
           </View>
 
-          <ChevronRight size={19} color={colors.textTertiary} />
+          {discover && !group?.joined ? <Pressable onPress={() => onJoinGroup?.(group.id)} style={{ padding: 8 }}><AppText variant="caption" primary bold>Join</AppText></Pressable> : <ChevronRight size={19} color={colors.textTertiary} />}
         </Pressable>
       ))}
 

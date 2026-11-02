@@ -4,7 +4,6 @@ import { AppText } from '../../../../../components';
 import {
   Member,
   GroupChallenge,
-  WEEKLY_STEPS,
   formatSteps,
 } from '../../constants';
 import { useTheme } from '../../../../../theme/useTheme';
@@ -16,12 +15,16 @@ interface Props {
   onNewChallenge: () => void;
 }
 
-const GoalCard: React.FC<{ styles: any }> = memo(({ styles }) => (
+const GoalCard: React.FC<{ styles: any; members: Member[] }> = memo(({ styles, members }) => {
+  const total = members.reduce((sum, member) => sum + member.steps, 0);
+  const target = members.length * 10000;
+  const percent = target ? Math.min(100, Math.round(total / target * 100)) : 0;
+  return (
   <View style={styles.goalCard}>
     <View style={styles.goalRing}>
       <View style={styles.goalRingInner}>
         <AppText variant="h3" center>
-          69%
+          {percent}%
         </AppText>
         <AppText variant="caption" secondary center>
           OF GOAL
@@ -33,22 +36,23 @@ const GoalCard: React.FC<{ styles: any }> = memo(({ styles }) => (
         WEEKLY GROUP GOAL
       </AppText>
       <View style={styles.goalNumbers}>
-        <AppText variant="h2">241,200</AppText>
+        <AppText variant="h2">{formatSteps(total)}</AppText>
         <AppText variant="caption" secondary>
-          {' / 350,000 steps'}
+          {` / ${formatSteps(target)} steps`}
         </AppText>
       </View>
       <AppText variant="caption" success bold>
-        🔥 3 days left to close the gap
+        {members.length ? `${members.length} members · last 7 days` : 'No synced steps this week'}
       </AppText>
     </View>
   </View>
-));
+  );
+});
 
-const WeeklyChart: React.FC<{ styles: any }> = memo(({ styles }) => (
+const WeeklyChart: React.FC<{ styles: any; members: Member[] }> = memo(({ styles, members }) => (
   <View style={styles.section}>
     <View style={styles.sectionHeading}>
-      <AppText variant="subtitle1">Group Daily Steps</AppText>
+      <AppText variant="subtitle1">Member Steps · Last 7 Days</AppText>
       <View style={styles.weekBadge}>
         <AppText variant="caption" primary bold>
           This week
@@ -57,13 +61,13 @@ const WeeklyChart: React.FC<{ styles: any }> = memo(({ styles }) => (
     </View>
     <View style={styles.chartCard}>
       <View style={styles.chartBars}>
-        {WEEKLY_STEPS.map(item => (
-          <View key={item.day} style={styles.chartColumn}>
+        {members.slice(0, 7).map((item, index) => (
+          <View key={item.id} style={styles.chartColumn}>
             <View
-              style={[styles.chartBar, { height: `${item.value}%` as any }]}
+              style={[styles.chartBar, { height: `${Math.max(4, item.steps / Math.max(...members.map(m=>m.steps), 1) * 100)}%` as any }]}
             />
             <AppText variant="caption" secondary center style={styles.chartDay}>
-              {item.day}
+              {String(index + 1)}
             </AppText>
           </View>
         ))}
@@ -78,14 +82,14 @@ const MemberRow: React.FC<{
   colors: any;
   styles: any;
 }> = memo(({ member, index, colors, styles }) => {
-  const isCurrentUser = member.id === '3';
+  const isCurrentUser = false;
   return (
     <Pressable
       accessibilityRole="button"
       onPress={() =>
         Alert.alert(
           member.name,
-          `${formatSteps(member.steps)} steps · ${member.streak}-day streak`,
+          `${formatSteps(member.steps)} steps · ${member.streak} active days this week`,
         )
       }
       style={[styles.memberRow, isCurrentUser && styles.currentMemberRow]}
@@ -124,7 +128,7 @@ const MemberRow: React.FC<{
           {member.name}
         </AppText>
         <AppText variant="caption" secondary>
-          🔥 {member.streak}-day streak
+          {member.streak} active days this week
         </AppText>
       </View>
 
@@ -192,9 +196,9 @@ export const GroupOverview: React.FC<Props> = memo(
 
     return (
       <>
-        <GoalCard styles={styles} />
+        <GoalCard styles={styles} members={members} />
 
-        <WeeklyChart styles={styles} />
+        <WeeklyChart styles={styles} members={members} />
 
         <View style={styles.section}>
           <View style={styles.sectionHeading}>

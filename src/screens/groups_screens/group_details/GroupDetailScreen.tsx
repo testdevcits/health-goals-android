@@ -14,14 +14,17 @@ import { CreateChallengeModal } from './components/create_challenge_modal/Create
 import {
   DetailTab,
   GroupChallenge,
-  INITIAL_MEMBERS,
-  INITIAL_CHALLENGES,
   DURATION_OPTIONS,
   REWARD_OPTIONS,
 } from './constants';
 import { AppHeader } from '../../../components';
 import { useNavigation } from '@react-navigation/native';
 import ChallengesTab from './components/challengestab/ChallengesTab';
+import { useRoute, type RouteProp } from '@react-navigation/native';
+import type { RootStackParamList } from '../../../navigations/GroupsStack';
+import { authenticatedRequest, apiErrorMessage } from '../../../services/api';
+import { GroupChat } from './components/group_chats/GroupChat';
+import type { Member } from './constants';
 
 // ─── Screen props ─────────────────────────────────────────────────────────────
 
@@ -34,14 +37,16 @@ interface GroupDetailScreenProps {
 // ─── Screen ───────────────────────────────────────────────────────────────────
 
 const GroupDetailScreen: React.FC<GroupDetailScreenProps> = ({
-  groupName = 'Morning Runners',
-  groupDescription = 'Weekly step challenge',
-  memberCount = 8,
+  groupName: initialGroupName = 'Group',
+  groupDescription: initialGroupDescription = '',
+  memberCount: initialMemberCount = 1,
 }) => {
   const { theme } = useTheme();
   const { colors, spacing } = theme;
   const insets = useSafeAreaInsets();
   const navigation = useNavigation();
+  const route = useRoute<RouteProp<RootStackParamList, 'GroupDetails'>>();
+  const groupId = route.params?.groupId || '';
 
   const styles = useMemo(
     () => createStyles(colors, spacing),
@@ -52,13 +57,35 @@ const GroupDetailScreen: React.FC<GroupDetailScreenProps> = ({
   const [activeTab, setActiveTab] = useState<DetailTab>('Overview');
 
   // ─── Challenges ─────────────────────────────────────────────────────────────
-  const [challenges, setChallenges] =
-    useState<GroupChallenge[]>(INITIAL_CHALLENGES);
+  const [groupName, setGroupName] = useState(route.params?.name || initialGroupName);
+  const [groupDescription, setGroupDescription] = useState(route.params?.description || initialGroupDescription);
+  const [memberCount, setMemberCount] = useState(route.params?.members || initialMemberCount);
+  const [challenges, setChallenges] = useState<GroupChallenge[]>([]);
+  const [members, setMembers] = useState<Member[]>([]);
+  const [messages, setMessages] = useState<any[]>([]);
+  const [messageDraft, setMessageDraft] = useState('');
   const [createChallengeVisible, setCreateChallengeVisible] = useState(false);
   const [challengeName, setChallengeName] = useState('');
   const [challengeGoal, setChallengeGoal] = useState('');
   const [duration, setDuration] = useState(DURATION_OPTIONS[0]);
   const [reward, setReward] = useState(REWARD_OPTIONS[1]);
+
+  const refreshGroup = useCallback(async () => {
+    if (!groupId) return;
+    try {
+      const [groupResult, challengeResult, messageResult, leaderboardResult] = await Promise.all([
+        authenticatedRequest<{ group: { name: string; description: string; members: number } }>('GET', `/community/groups/${encodeURIComponent(groupId)}`),
+        authenticatedRequest<{ challenges: Array<{ id: string; title: string; description: string; status: string; participants: number }> }>('GET', `/community/groups/${encodeURIComponent(groupId)}/challenges`),
+        authenticatedRequest<{ messages: any[] }>('GET', `/community/groups/${encodeURIComponent(groupId)}/messages`),
+        authenticatedRequest<{ leaderboard: Array<{ id: string; rank: number; name: string; steps: number; initials: string; streak: string; color: string }> }>('GET', `/community/groups/${encodeURIComponent(groupId)}/leaderboard`),
+      ]);
+      setGroupName(groupResult.group.name); setGroupDescription(groupResult.group.description); setMemberCount(groupResult.group.members);
+      setChallenges(challengeResult.challenges.map(item => ({ id: item.id, title: item.title, description: item.description, status: item.status, progress: 0, progressLabel: `${item.participants} participants`, color: colors.primary })));
+      setMessages((messageResult.messages || []).map((item: any) => ({ ...item, color: colors.primary })));
+      setMembers((leaderboardResult.leaderboard || []).map(item => ({ id: item.id, name: item.name, initials: item.initials, steps: item.steps, streak: Number.parseInt(item.streak, 10) || 0, color: item.color })));
+    } catch (error) { Alert.alert('Could not load group', apiErrorMessage(error)); }
+  }, [groupId, colors.primary]);
+  React.useEffect(() => { void refreshGroup(); }, [refreshGroup]);
 
   const cycleDuration = useCallback(() => {
     setDuration(prev => {
@@ -74,7 +101,7 @@ const GroupDetailScreen: React.FC<GroupDetailScreenProps> = ({
     });
   }, []);
 
-  const handleCreateChallenge = useCallback(() => {
+  const handleCreateChallenge = useCallback(async () => {
     if (!challengeName.trim() || !challengeGoal.trim()) {
       Alert.alert(
         'Missing details',
@@ -83,24 +110,20 @@ const GroupDetailScreen: React.FC<GroupDetailScreenProps> = ({
       return;
     }
 
-    const newChallenge: GroupChallenge = {
-      id: `${Date.now()}`,
-      title: challengeName.trim(),
-      description: `Goal: ${challengeGoal.trim()}. Duration: ${duration}. Reward: ${reward}.`,
-      status: 'New',
-      progress: 0,
-      progressLabel: 'Not started',
-      color: colors.primary,
-    };
+    try {
+      const targetValue = Number(challengeGoal.replace(/[^0-9.]/g, ''));
+      if (!Number.isSafeInteger(targetValue) || targetValue < 1) throw new Error('Enter a whole number for the target.');
+      const endsAt = new Date(Date.now() + Number.parseInt(duration, 10) * 86400000).toISOString();
+      await authenticatedRequest('POST', `/community/groups/${encodeURIComponent(groupId)}/challenges`, { title: challengeName.trim(), description: challengeGoal.trim(), metricType: 'steps', targetValue, startsAt: new Date().toISOString(), endsAt, rewardPoints: Number.parseInt(reward, 10) || 0 });
+      await refreshGroup(); setCreateChallengeVisible(false); setChallengeName(''); setChallengeGoal(''); setDuration(DURATION_OPTIONS[0]); setReward(REWARD_OPTIONS[1]); setActiveTab('Challenges');
+    } catch (error) { Alert.alert('Could not create challenge', apiErrorMessage(error)); }
+  }, [challengeName, challengeGoal, duration, reward, colors.primary, groupId, refreshGroup]);
 
-    setChallenges(prev => [...prev, newChallenge]);
-    setCreateChallengeVisible(false);
-    setChallengeName('');
-    setChallengeGoal('');
-    setDuration(DURATION_OPTIONS[0]);
-    setReward(REWARD_OPTIONS[1]);
-    setActiveTab('Overview');
-  }, [challengeName, challengeGoal, duration, reward, colors.primary]);
+  const sendMessage = useCallback(async () => {
+    const message = messageDraft.trim(); if (!message) return;
+    try { await authenticatedRequest('POST', `/community/groups/${encodeURIComponent(groupId)}/messages`, { message }); setMessageDraft(''); await refreshGroup(); }
+    catch (error) { Alert.alert('Could not send message', apiErrorMessage(error)); }
+  }, [groupId, messageDraft, refreshGroup]);
 
   // ─── Render ─────────────────────────────────────────────────────────────────
   return (
@@ -120,7 +143,7 @@ const GroupDetailScreen: React.FC<GroupDetailScreenProps> = ({
           groupName={groupName}
           groupDescription={groupDescription}
           memberCount={memberCount}
-          members={INITIAL_MEMBERS}
+          members={members}
         />
 
         <GroupTabs
@@ -130,7 +153,7 @@ const GroupDetailScreen: React.FC<GroupDetailScreenProps> = ({
 
         {activeTab === 'Overview' && (
           <GroupOverview
-            members={INITIAL_MEMBERS}
+            members={members}
             challenges={challenges}
             onNewChallenge={() => setCreateChallengeVisible(true)}
           />
@@ -138,7 +161,7 @@ const GroupDetailScreen: React.FC<GroupDetailScreenProps> = ({
 
         {activeTab === 'Leaderboard' && (
           <GroupLeaderboard
-            members={INITIAL_MEMBERS}
+            members={members}
           />
         )}
 
@@ -148,6 +171,7 @@ const GroupDetailScreen: React.FC<GroupDetailScreenProps> = ({
             challenges={challenges}
           />
         )}
+        {activeTab === 'Chat' && <GroupChat messages={messages} messageDraft={messageDraft} onChangeDraft={setMessageDraft} onSend={() => void sendMessage()} />}
       </ScrollView>
 
       <CreateChallengeModal

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useCallback, useState } from 'react';
 import {
   Alert,
   Image,
@@ -19,20 +19,41 @@ import { Camera } from 'lucide-react-native';
 import ImagePicker from 'react-native-image-crop-picker';
 import { useTheme } from '../../../theme/useTheme';
 import createStyles from './styles.EditProfile';
+import { useFocusEffect } from '@react-navigation/native';
+import { authenticatedRequest } from '../../../services/api';
+import { apiErrorMessage } from '../../../services/api';
 
 const EditProfileScreen: React.FC<{ navigation: ProfileScreenNavigation }> = ({
   navigation,
 }) => {
-  const [name, setName] = useState('Alex Johnson');
-  const [email, setEmail] = useState('alex.johnson@company.com');
-  const [height, setHeight] = useState('178');
-  const [weight, setWeight] = useState('74');
-  const [birthDate, setBirthDate] = useState('18/04/1992');
-  const [goal, setGoal] = useState('Stay active');
+  const [name, setName] = useState('');
+  const [email, setEmail] = useState('');
+  const [height, setHeight] = useState('');
+  const [weight, setWeight] = useState('');
+  const [birthDate, setBirthDate] = useState('');
+  const [goal, setGoal] = useState('');
   const [profileImage, setProfileImage] = useState('');
+  const [profileImageUrl, setProfileImageUrl] = useState('');
+  const [imageBusy, setImageBusy] = useState(false);
   const { theme } = useTheme();
   const { colors } = theme;
   const styles = createStyles(colors);
+  useFocusEffect(useCallback(() => {
+    let active = true;
+    authenticatedRequest<{ user: { name?: string; email?: string; goal?: string; heightCm?: number | null; weightKg?: number | null; birthDate?: string; profileImageUrl?: string } }>('GET', '/auth/me')
+      .then(({ user }) => {
+        if (!active) return;
+        setName(user?.name || '');
+        setEmail(user?.email || '');
+        setGoal(user?.goal || '');
+        setHeight(user?.heightCm == null ? '' : String(user.heightCm));
+        setWeight(user?.weightKg == null ? '' : String(user.weightKg));
+        setBirthDate(user?.birthDate || '');
+        setProfileImageUrl(user?.profileImageUrl || '');
+      })
+      .catch(() => {});
+    return () => { active = false; };
+  }, []));
   const handleChooseImage = async () => {
     try {
       const image = await ImagePicker.openPicker({
@@ -43,10 +64,18 @@ const EditProfileScreen: React.FC<{ navigation: ProfileScreenNavigation }> = ({
         height: 500,
         compressImageQuality: 0.8,
         includeExif: false,
+        includeBase64: true,
         freeStyleCropEnabled: false,
       });
-
-      setProfileImage(image.path);
+      if (!image.data) throw new Error('The selected image could not be prepared. Please select it again.');
+      setImageBusy(true);
+      const mime = image.mime || 'image/jpeg';
+      const result = await authenticatedRequest<{ user: { profileImageUrl?: string } }>('POST', '/auth/me/profile-image', {
+        image: `data:${mime};base64,${image.data}`,
+      }, 60000);
+      setProfileImage('');
+      setProfileImageUrl(result.user.profileImageUrl || '');
+      Alert.alert('Photo saved', 'Your photo was uploaded to Cloudinary.');
     } catch (error: any) {
       if (error?.code === 'E_PICKER_CANCELLED') {
         return;
@@ -54,8 +83,27 @@ const EditProfileScreen: React.FC<{ navigation: ProfileScreenNavigation }> = ({
 
       Alert.alert(
         'Image Picker',
-        error?.message || 'Unable to select profile image.',
+        apiErrorMessage(error) || error?.message || 'Unable to select profile image.',
       );
+    } finally {
+      setImageBusy(false);
+    }
+  };
+
+  const saveProfile = async () => {
+    try {
+      const user = await authenticatedRequest<{ user: { name: string; goal?: string; heightCm?: number | null; weightKg?: number | null; birthDate?: string } }>('PATCH', '/auth/me', {
+        name,
+        goal,
+        heightCm: height.trim() ? Number(height) : null,
+        weightKg: weight.trim() ? Number(weight) : null,
+        birthDate,
+      });
+      setName(user.user.name || '');
+      Alert.alert('Profile saved', 'Your profile details are updated.');
+      navigation.goBack();
+    } catch (error) {
+      Alert.alert('Could not save profile', apiErrorMessage(error));
     }
   };
 
@@ -73,6 +121,8 @@ const EditProfileScreen: React.FC<{ navigation: ProfileScreenNavigation }> = ({
               source={
                 profileImage
                   ? { uri: profileImage }
+                  : profileImageUrl
+                  ? { uri: profileImageUrl }
                   : {
                       uri: 'https://imgv3.fotor.com/images/slider-image/after-image-generated-by-ai-profile-pictuire-maker-for-mobile.jpg',
                     }
@@ -85,6 +135,8 @@ const EditProfileScreen: React.FC<{ navigation: ProfileScreenNavigation }> = ({
               onPress={handleChooseImage}
               style={styles.cameraButton}
               hitSlop={8}
+              disabled={imageBusy}
+              accessibilityState={{ busy: imageBusy }}
             >
               <Camera size={16} color={colors.textPrimary} strokeWidth={2} />
             </Pressable>
@@ -93,7 +145,7 @@ const EditProfileScreen: React.FC<{ navigation: ProfileScreenNavigation }> = ({
           <AppInput
             label="Email"
             value={email}
-            onChangeText={setEmail}
+            editable={false}
             keyboardType="email-address"
             autoCapitalize="none"
           />
@@ -151,12 +203,7 @@ const EditProfileScreen: React.FC<{ navigation: ProfileScreenNavigation }> = ({
           </View>
           <AppButton
             title="Save Changes"
-            onPress={() =>
-              Alert.alert(
-                'Profile updated',
-                'Your personal details have been saved.',
-              )
-            }
+            onPress={() => void saveProfile()}
             style={styles.saveButton}
           />
         </View>

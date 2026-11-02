@@ -35,7 +35,7 @@ const HomeScreen: React.FC<Props> = ({ navigation }) => {
             onDismiss={() => setNotificationPromptVisible(false)}
           />
         ) : null}
-        <EnergyCard energy={85} streak_period={12} />
+        <EnergyCard />
         <DailySummary
           onViewDetails={() => navigation.navigate('DailyActivities')}
           navigation={navigation}

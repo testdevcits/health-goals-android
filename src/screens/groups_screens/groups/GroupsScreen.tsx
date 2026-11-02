@@ -1,14 +1,16 @@
-import React, { useState } from 'react';
+import React, { useCallback, useState } from 'react';
 import { View, ScrollView, Pressable, Alert } from 'react-native';
+import { useFocusEffect } from '@react-navigation/native';
 import { useTheme } from '../../../theme/useTheme';
 import { AppHeader, AppText } from '../../../components';
 import createStyles from './styles.Groups';
 import CreateGroupModal from './components/CreateGroupModal';
 import FeedTab from './tabs/FeedTab';
 import MyGroups from './tabs/MyGroups';
-import { initialGroups, initialPosts, Group, FeedPost } from './data';
+import { Group, FeedPost } from './data';
+import { authenticatedRequest, apiErrorMessage } from '../../../services/api';
 
-type GroupTab = 'My Groups' | 'Feed';
+type GroupTab = 'My Groups' | 'Discover' | 'Feed';
 
 const avatarColors = ['#FF8278', '#579CF4', '#00C6A2', '#FF9B38', '#8175F5'];
 
@@ -17,8 +19,21 @@ const GroupsScreen: React.FC = () => {
   const { colors, spacing, radius } = theme;
 
   const [activeTab, setActiveTab] = useState<GroupTab>('My Groups');
-  const [groups, setGroups] = useState<Group[]>(initialGroups);
-  const posts: FeedPost[] = initialPosts;
+  const [groups, setGroups] = useState<Group[]>([]);
+  const [posts, setPosts] = useState<FeedPost[]>([]);
+
+  const refresh = useCallback(async () => {
+    try {
+      if (activeTab === 'Feed') {
+        const feedResult = await authenticatedRequest<{ posts: FeedPost[] }>('GET', '/community/feed');
+        setPosts(feedResult.posts || []);
+      } else {
+        const groupResult = await authenticatedRequest<{ groups: Group[] }>('GET', activeTab === 'Discover' ? '/community/groups/discover' : '/community/groups');
+        setGroups(groupResult.groups || []);
+      }
+    } catch (error) { Alert.alert('Could not load community', apiErrorMessage(error)); }
+  }, [activeTab]);
+  useFocusEffect(useCallback(() => { void refresh(); }, [refresh]));
 
   const [createModalVisible, setCreateModalVisible] = useState(false);
 
@@ -36,7 +51,7 @@ const GroupsScreen: React.FC = () => {
     setIsPrivate(true);
   };
 
-  const handleCreateGroup = () => {
+  const handleCreateGroup = async () => {
     const name = groupName.trim();
 
     if (!name) {
@@ -44,20 +59,14 @@ const GroupsScreen: React.FC = () => {
       return;
     }
 
-    const newGroup: Group = {
-      id: `${Date.now()}`,
-      name,
-      description: 'Your new community',
-      members: 1,
-      emoji: selectedIcon,
-      avatars: ['A'],
-      private: isPrivate,
-    };
-
-    setGroups(previous => [newGroup, ...previous]);
-    setCreateModalVisible(false);
-    resetCreateForm();
-    setActiveTab('My Groups');
+    try {
+      await authenticatedRequest('POST', '/community/groups', { name, description: 'Your new community', emoji: selectedIcon, private: isPrivate });
+      await refresh(); setCreateModalVisible(false); resetCreateForm(); setActiveTab('My Groups');
+    } catch (error) { Alert.alert('Could not create group', apiErrorMessage(error)); }
+  };
+  const joinGroup = async (groupId: string) => {
+    try { await authenticatedRequest('POST', `/community/groups/${encodeURIComponent(groupId)}/join`); await refresh(); setActiveTab('My Groups'); }
+    catch (error) { Alert.alert('Could not join group', apiErrorMessage(error)); }
   };
 
   const toggleKudos = (postId: string) => {
@@ -84,7 +93,7 @@ const GroupsScreen: React.FC = () => {
 
       {/* My Groups / Feed selector */}
       <View style={styles.tabs}>
-        {(['My Groups', 'Feed'] as GroupTab[]).map(tab => {
+        {(['My Groups', 'Discover', 'Feed'] as GroupTab[]).map(tab => {
           const selected = activeTab === tab;
 
           return (
@@ -122,6 +131,8 @@ const GroupsScreen: React.FC = () => {
             groups={groups}
             avatarColors={avatarColors}
             setCreateModalVisible={setCreateModalVisible}
+            onJoinGroup={joinGroup}
+            discover={activeTab === 'Discover'}
           />
         ) : (
           <FeedTab
@@ -152,4 +163,4 @@ const GroupsScreen: React.FC = () => {
 
 export default GroupsScreen;
 
- 
+

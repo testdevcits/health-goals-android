@@ -1,9 +1,11 @@
-import React, { useState } from 'react';
+import React, { useCallback, useState } from 'react';
 import { TouchableOpacity, View } from 'react-native';
+import { useFocusEffect } from '@react-navigation/native';
 import { AppText, SectionHeader } from '../../../../components';
 import { useTheme } from '../../../../theme/useTheme';
 import { DAYS, TREND_DATA, TREND_TABS, TrendTab } from '../const';
 import { createHomeStyles } from '../styles.Home';
+import { authenticatedRequest } from '../../../../services/api';
 
 const BAR_MAX_HEIGHT = 100;
 
@@ -47,7 +49,23 @@ const ActivityTrends: React.FC<{ onPressDetails: () => void }> = ({
   const { theme } = useTheme();
   const styles = createHomeStyles(theme);
   const [activeTab, setActiveTab] = useState<TrendTab>('Steps');
-  const trendData = TREND_DATA[activeTab];
+  const [trendData, setTrendData] = useState(TREND_DATA);
+  useFocusEffect(useCallback(() => {
+    let active = true;
+    const end = new Date(); const start = new Date(Date.now() - 6 * 86400000);
+    const key = (date: Date) => `${date.getFullYear()}-${String(date.getMonth()+1).padStart(2,'0')}-${String(date.getDate()).padStart(2,'0')}`;
+    const metricType = activeTab === 'Steps' ? 'steps' : activeTab === 'Sleep' ? 'sleep' : 'active_minutes';
+    authenticatedRequest<{ history: Array<{ date: string; value: number }> }>('GET', `/health/history?metricType=${metricType}&from=${key(start)}&to=${key(end)}`)
+      .then(({ history }) => {
+        if (!active || !history.length) return;
+        const values = history.slice(-7).map(row => row.value);
+        const sum = values.reduce((total, value) => total + value, 0);
+        const average = Math.round(sum / values.length);
+        setTrendData(current => ({ ...current, [activeTab]: { ...current[activeTab], bars: values, stats: current[activeTab].stats.map((stat, index) => index === 0 ? { ...stat, value: activeTab === 'Sleep' ? `${Math.floor(average / 60)}h ${Math.round(average % 60)}m` : sum.toLocaleString() } : index === 1 ? { ...stat, value: activeTab === 'Sleep' ? `${(average / 60).toFixed(1)}h` : average.toLocaleString() } : index === 2 && activeTab === 'Steps' ? { ...stat, value: values.filter(value => value >= 10000).length.toString() } : stat) } }));
+      }).catch(() => {});
+    return () => { active = false; };
+  }, [activeTab]));
+  const activeTrendData = trendData[activeTab];
 
   return (
     <>
@@ -76,9 +94,9 @@ const ActivityTrends: React.FC<{ onPressDetails: () => void }> = ({
             </TouchableOpacity>
           ))}
         </View>
-        <BarChart data={trendData.bars} color={trendData.color} />
+        <BarChart data={activeTrendData.bars} color={activeTrendData.color} />
         <View style={styles.statsRow}>
-          {trendData.stats.map((stat, index) => (
+          {activeTrendData.stats.map((stat, index) => (
             <React.Fragment key={stat.label}>
               {index > 0 && <View style={styles.statDivider} />}
               <View style={styles.statItem}>

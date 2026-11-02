@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
+import React, { useCallback, useState } from 'react';
 import { Alert, Pressable, ScrollView, StyleSheet, View } from 'react-native';
+import { useFocusEffect } from '@react-navigation/native';
 import {
   AppHeader,
   AppText,
@@ -7,63 +8,48 @@ import {
   ProfileListRow,
 } from '../../../components';
 import { useTheme } from '../../../theme/useTheme';
+import { authenticatedRequest, apiErrorMessage } from '../../../services/api';
 import {
   ProfileScreenNavigation,
   ProfileSectionLabel,
 } from '../components/ProfileScreenLayout';
 
-const rewards = [
-  {
-    icon: '☕',
-    title: '$5 Coffee eGift',
-    detail: 'Starbucks or local café',
-    cost: 500,
-  },
-  {
-    icon: '🎁',
-    title: '$10 Amazon Gift Card',
-    detail: 'Digital delivery instantly',
-    cost: 1000,
-  },
-  {
-    icon: '💪',
-    title: 'Fitness Band Discount',
-    detail: '20% off select wearables',
-    cost: 1500,
-  },
-  {
-    icon: '❤️',
-    title: 'Donate to Charity',
-    detail: '$10 to a health charity',
-    cost: 2000,
-  },
-  {
-    icon: '🏖️',
-    title: 'Extra PTO Day',
-    detail: 'Redeem with your HR portal',
-    cost: 5000,
-  },
-];
+type Reward = { id: string; title: string; description?: string; pointsRequired: number; provider?: string; stock?: number };
+type Redemption = { id: string; pointsUsed: number; status: string; redemptionCode?: string; createdAt?: string; rewardId?: string };
+const rewardIcon = (title: string) => /coffee|cafe/i.test(title) ? '☕' : /fitness|band|wearable/i.test(title) ? '💪' : /donat|charity|health/i.test(title) ? '❤️' : '🎁';
 
 const RewardsScreen: React.FC<{ navigation: ProfileScreenNavigation }> = ({
   navigation,
 }) => {
   const { theme } = useTheme();
   const { colors } = theme;
-  const [points, setPoints] = useState(2840);
+  const [points, setPoints] = useState(0);
+  const [rewards, setRewards] = useState<Reward[]>([]);
+  const [redemptions, setRedemptions] = useState<Redemption[]>([]);
 
-  const redeem = (title: string, cost: number) => {
-    if (points < cost) {
-      Alert.alert(
-        'Not enough points',
-        `You need ${(
-          cost - points
-        ).toLocaleString()} more points for this reward.`,
-      );
-      return;
+  const refresh = useCallback(async () => {
+    const [walletResult, rewardsResult, redemptionsResult] = await Promise.allSettled([
+      authenticatedRequest<{ wallet?: { availablePoints?: number } }>('GET', '/wallet'),
+      authenticatedRequest<{ rewards: Reward[] }>('GET', '/rewards'),
+      authenticatedRequest<{ redemptions: Redemption[] }>('GET', '/redemptions'),
+    ]);
+    if (walletResult.status === 'fulfilled') setPoints(walletResult.value.wallet?.availablePoints ?? 0);
+    if (rewardsResult.status === 'fulfilled') setRewards(rewardsResult.value.rewards || []);
+    if (redemptionsResult.status === 'fulfilled') setRedemptions(redemptionsResult.value.redemptions || []);
+    const failure = [walletResult, rewardsResult, redemptionsResult].find(result => result.status === 'rejected');
+    if (failure?.status === 'rejected') Alert.alert('Could not load rewards', apiErrorMessage(failure.reason));
+  }, []);
+
+  useFocusEffect(useCallback(() => { void refresh(); }, [refresh]));
+
+  const redeem = async (reward: Reward) => {
+    try {
+      const result = await authenticatedRequest<{ redemption: Redemption }>('POST', `/rewards/${encodeURIComponent(reward.id)}/redeem`);
+      await refresh();
+      Alert.alert('Reward redeemed', result.redemption?.redemptionCode ? `Your code: ${result.redemption.redemptionCode}` : `${reward.title} has been redeemed.`);
+    } catch (error) {
+      Alert.alert('Could not redeem reward', apiErrorMessage(error));
     }
-    setPoints(value => value - cost);
-    Alert.alert('Reward redeemed', `${title} has been redeemed.`);
   };
 
   return (
@@ -91,8 +77,8 @@ const RewardsScreen: React.FC<{ navigation: ProfileScreenNavigation }> = ({
         </View>
         <ProfileSectionLabel>Available Rewards</ProfileSectionLabel>
         <View style={styles.rewardList}>
-          {rewards.map(reward => (
-            <ProfileCard key={reward.title}>
+          {rewards.length === 0 ? <ProfileCard><AppText variant="caption" secondary>No rewards available yet.</AppText></ProfileCard> : rewards.map(reward => (
+            <ProfileCard key={reward.id}>
               <View style={styles.rewardRow}>
                 <View
                   style={[
@@ -100,25 +86,26 @@ const RewardsScreen: React.FC<{ navigation: ProfileScreenNavigation }> = ({
                     { backgroundColor: theme.colors.primaryLight },
                   ]}
                 >
-                  <AppText variant="h3">{reward.icon}</AppText>
+                  <AppText variant="h3">{rewardIcon(reward.title)}</AppText>
                 </View>
                 <View style={styles.rewardCopy}>
                   <AppText variant="subtitle2" bold>
                     {reward.title}
                   </AppText>
                   <AppText variant="caption" secondary>
-                    {reward.detail}
+                    {reward.description || reward.provider || ''}
                   </AppText>
                 </View>
                 <Pressable
-                  onPress={() => redeem(reward.title, reward.cost)}
+                  onPress={() => void redeem(reward)}
+                  disabled={points < reward.pointsRequired || reward.stock === 0}
                   style={styles.redeemAction}
                 >
-                  <AppText variant="subtitle2" color="warning" bold>
-                    {reward.cost.toLocaleString()} pts
+                  <AppText variant="subtitle2" color={points < reward.pointsRequired || reward.stock === 0 ? 'textTertiary' : 'warning'} bold>
+                    {reward.pointsRequired.toLocaleString()} pts
                   </AppText>
-                  <AppText variant="caption" primary bold>
-                    Redeem
+                  <AppText variant="caption" color={points < reward.pointsRequired || reward.stock === 0 ? 'textTertiary' : 'primary'} bold>
+                    {reward.stock === 0 ? 'Out of stock' : points < reward.pointsRequired ? 'Not enough points' : 'Redeem'}
                   </AppText>
                 </Pressable>
               </View>
@@ -127,13 +114,17 @@ const RewardsScreen: React.FC<{ navigation: ProfileScreenNavigation }> = ({
         </View>
         <ProfileSectionLabel>Recent Redemptions</ProfileSectionLabel>
         <ProfileCard>
-          <ProfileListRow
-            icon="☕"
-            title="$5 Coffee eGift"
-            detail="Redeemed Jun 2, 2026"
-            action="−500"
-            last
-          />
+          {redemptions.length === 0 ? <ProfileListRow icon="🎁" title="No redemptions yet" detail="Your reward history will appear here" last /> : null}
+          {redemptions.slice(0, 5).map((redemption, index) => (
+            <ProfileListRow
+              key={redemption.id}
+              icon="🎁"
+              title={redemption.redemptionCode || 'Reward redemption'}
+              detail={`${redemption.status}${redemption.createdAt ? ` · ${new Date(redemption.createdAt).toLocaleDateString()}` : ''}`}
+              action={`−${redemption.pointsUsed.toLocaleString()}`}
+              last={index === Math.min(redemptions.length, 5) - 1}
+            />
+          ))}
         </ProfileCard>
       </ScrollView>
     </View>

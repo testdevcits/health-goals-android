@@ -27,6 +27,8 @@ import {
 } from '../../../utils/AppPermissions';
 import createStyles from './styles.Setting';
 import LogoutModal from './components/LogoutModal';
+import { logout } from '../../../services/auth';
+import { navigationRef } from '../../../navigations/AppNavigation';
 
 type SettingsGroup = 'units' | 'language' | 'appearance';
 type SettingsNavigation = {
@@ -64,9 +66,10 @@ const Settings = ({ navigation }: { navigation: SettingsNavigation }) => {
   const [language, setLanguage] = useState('हिन्दी');
   const [activeGroup, setActiveGroup] = useState<SettingsGroup | null>(null);
   const [modalVisible, setModalVisible] = React.useState(false);
-  const handleSignOut = () => {
-    // TODO: sign‑out logic
+  const handleSignOut = async () => {
+    try { await logout(); } catch { /* Clear the local session even while offline. */ }
     setModalVisible(false);
+    navigationRef.resetRoot({ index: 0, routes: [{ name: 'Login' }] });
   };
 
   const refreshDeviceSettings = useCallback(async () => {

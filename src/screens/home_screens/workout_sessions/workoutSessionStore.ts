@@ -3,6 +3,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 const STORAGE_KEY = '@vitality/active-workout-session';
 
 export interface WorkoutSession {
+  sessionId: string;
   activityId: string;
   elapsedMilliseconds: number;
   startedAtMilliseconds: number | null;
@@ -46,6 +47,9 @@ const loadSession = (): Promise<WorkoutSession | null> => {
       }
 
       session = {
+        sessionId: 'sessionId' in storedSession && typeof storedSession.sessionId === 'string'
+          ? storedSession.sessionId
+          : `${storedSession.activityId}:${storedSession.elapsedMilliseconds}:${storedSession.startedAtMilliseconds ?? 0}`,
         activityId: storedSession.activityId,
         elapsedMilliseconds: storedSession.elapsedMilliseconds,
         startedAtMilliseconds: storedSession.startedAtMilliseconds,
@@ -101,6 +105,7 @@ export const startWorkoutSession = (activityId: string) =>
   transition(
     current =>
       current ?? {
+        sessionId: `${activityId}:${Date.now()}:${Math.random().toString(36).slice(2)}`,
         activityId,
         elapsedMilliseconds: 0,
         startedAtMilliseconds: Date.now(),

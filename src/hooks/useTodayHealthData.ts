@@ -4,6 +4,7 @@ import {
   readTodayHealthData,
   type TodayHealthData,
 } from '../services/healthConnect';
+import { syncRecentHealthData } from '../services/healthSync';
 
 type HealthDataState = {
   loading: boolean;
@@ -25,6 +26,11 @@ export const useTodayHealthData = (includeHourlyData = false) => {
 
       readTodayHealthData(includeHourlyData)
         .then(data => {
+          if (data.status === 'ready') {
+            void syncRecentHealthData().catch(error => {
+              console.warn('Could not sync Health Connect data:', error);
+            });
+          }
           if (isActive) {
             setState({ loading: false, data, error: null });
           }

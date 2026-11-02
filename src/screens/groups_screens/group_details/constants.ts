@@ -1,6 +1,6 @@
 // ─── Types ──────────────────────────────────────────────────────────────────
 
-export type DetailTab = 'Overview' | 'Leaderboard' | 'Challenges';
+export type DetailTab = 'Overview' | 'Leaderboard' | 'Challenges' | 'Chat';
 
 export interface Member {
   id: string;
@@ -37,6 +37,7 @@ export const DETAIL_TABS: DetailTab[] = [
   'Overview',
   'Leaderboard',
   'Challenges',
+  'Chat',
 ];
 
 export const INITIAL_MEMBERS: Member[] = [

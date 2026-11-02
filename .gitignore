@@ -73,3 +73,8 @@ yarn-error.log
 !.yarn/releases
 !.yarn/sdks
 !.yarn/versions
+
+# Do not commit application secrets from the bundled frontend/backend projects
+**/.env
+**/.env.*
+!**/.env.example

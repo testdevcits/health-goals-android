@@ -8,12 +8,17 @@ import {
   TextInput,
   KeyboardAvoidingView,
   Platform,
+  Alert,
 } from 'react-native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../../../navigations/AppNavigation';
 import { useTheme } from '../../../theme/useTheme';
 import { AppText, AppInput, AppButton } from '../../../components';
 import { createLoginStyles } from './styles.Login';
+import { requestLogin, signInWithGoogle } from '../../../services/auth';
+import { apiErrorMessage } from '../../../services/api';
+import { GOOGLE_WEB_CLIENT_ID } from '../../../services/googleConfig';
+import { GoogleSignin } from '@react-native-google-signin/google-signin';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Login'>;
 
@@ -36,8 +41,8 @@ const LoginScreen: React.FC<Props> = ({ navigation }) => {
   const { theme } = useTheme();
   const styles = createLoginStyles(theme);
 
-  const [email, setEmail] = useState('alex.johnson@company.com');
-  const [password, setPassword] = useState('123456');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [errors, setErrors] = useState({ email: '', password: '' });
   const [loading, setLoading] = useState(false);
 
@@ -53,10 +58,35 @@ const LoginScreen: React.FC<Props> = ({ navigation }) => {
   const handleSignIn = async () => {
     if (!validate()) return;
     setLoading(true);
-    await new Promise((r: any) => setTimeout(r, 1400));
-    setLoading(false);
-    navigation.navigate('MainTabNavigation');
-    // TODO: navigate to Home
+    try {
+      const challenge = await requestLogin(email, password);
+      navigation.navigate('VerifyEmail', {
+        challengeId: challenge.challengeId,
+        email,
+        purpose: 'login',
+        deliveryMode: challenge.deliveryMode,
+      });
+    } catch (error) {
+      Alert.alert('Sign in failed', apiErrorMessage(error));
+    } finally { setLoading(false); }
+  };
+
+  const handleGoogleSignIn = async () => {
+    if (!GOOGLE_WEB_CLIENT_ID) {
+      Alert.alert('Google sign-in setup needed', 'Add the Google Web OAuth client ID in src/services/googleConfig.ts and GOOGLE_CLIENT_ID in the backend environment.');
+      return;
+    }
+    setLoading(true);
+    try {
+      GoogleSignin.configure({ webClientId: GOOGLE_WEB_CLIENT_ID });
+      await GoogleSignin.hasPlayServices({ showPlayServicesUpdateDialog: true });
+      const result = await GoogleSignin.signIn();
+      if (result.type !== 'success' || !result.data.idToken) return;
+      await signInWithGoogle(result.data.idToken);
+      navigation.reset({ index: 0, routes: [{ name: 'MainTabNavigation' }] });
+    } catch (error) {
+      Alert.alert('Google sign-in failed', apiErrorMessage(error));
+    } finally { setLoading(false); }
   };
 
   return (
@@ -154,7 +184,7 @@ const LoginScreen: React.FC<Props> = ({ navigation }) => {
           />
           <AppButton
             title="Continue with Google"
-            onPress={() => {}}
+            onPress={handleGoogleSignIn}
             variant="outline"
             leftIcon={<Text style={{ fontSize: 18 }}>🔵</Text>}
           />

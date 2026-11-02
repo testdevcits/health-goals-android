@@ -7,12 +7,15 @@ import {
   TouchableOpacity,
   KeyboardAvoidingView,
   Platform,
+  Alert,
 } from 'react-native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../../../navigations/AppNavigation';
 import { useTheme } from '../../../theme/useTheme';
 import { AppText, AppInput, AppButton } from '../../../components';
 import { createForgotPasswordStyles } from './styles.ForgotPassword';
+import { requestPasswordReset, resetPassword } from '../../../services/auth';
+import { apiErrorMessage } from '../../../services/api';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'ForgotPassword'>;
 
@@ -31,6 +34,11 @@ const ForgotPasswordScreen: React.FC<Props> = ({ navigation }) => {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const [sent, setSent] = useState(false);
+  const [challengeId, setChallengeId] = useState('');
+  const [developmentCode, setDevelopmentCode] = useState(false);
+  const [otp, setOtp] = useState('');
+  const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
 
   const handleSend = async () => {
     const err = validateEmail(email);
@@ -38,9 +46,25 @@ const ForgotPasswordScreen: React.FC<Props> = ({ navigation }) => {
     if (err) return;
 
     setLoading(true);
-    await new Promise((r: any) => setTimeout(r, 1400));
-    setLoading(false);
-    setSent(true);
+    try {
+      const challenge = await requestPasswordReset(email);
+      setChallengeId(challenge.challengeId || '');
+      setDevelopmentCode(challenge.deliveryMode === 'development');
+      setSent(true);
+    } catch (e) { Alert.alert('Could not request reset', apiErrorMessage(e)); }
+    finally { setLoading(false); }
+  };
+
+  const handleReset = async () => {
+    if (!/^\d{6}$/.test(otp)) { Alert.alert('Check the code', 'Enter the 6-digit reset code from your email.'); return; }
+    if (password.length < 8) { Alert.alert('Choose a stronger password', 'Password must be at least 8 characters.'); return; }
+    if (password !== confirmPassword) { Alert.alert('Passwords do not match', 'Re-enter the same password in both fields.'); return; }
+    setLoading(true);
+    try {
+      await resetPassword(challengeId, otp, password);
+      Alert.alert('Password updated', 'You can now sign in with your new password.', [{ text: 'Sign in', onPress: () => navigation.navigate('Login') }]);
+    } catch (e) { Alert.alert('Password reset failed', apiErrorMessage(e)); }
+    finally { setLoading(false); }
   };
 
   return (
@@ -62,8 +86,7 @@ const ForgotPasswordScreen: React.FC<Props> = ({ navigation }) => {
             Reset Password
           </AppText>
           <AppText variant="body2" secondary center style={styles.subtitleText}>
-            Enter the email linked to your account and we'll send you a secure
-            reset link.
+            Enter your account email and we will send a secure reset code.
           </AppText>
         </View>
 
@@ -76,12 +99,17 @@ const ForgotPasswordScreen: React.FC<Props> = ({ navigation }) => {
               <AppText variant="subtitle1" center mb={8}>
                 Check your inbox!
               </AppText>
+              {developmentCode && <AppText variant="caption" secondary center style={{ marginTop: 8 }}>Development code: 123456</AppText>}
               <AppText variant="body2" secondary center>
-                We sent a password reset link to{'\n'}
+                If an account exists, a reset code was sent to{'\n'}
                 <AppText variant="body2" primary bold>
                   {email}
                 </AppText>
               </AppText>
+              <AppInput label="Reset code" placeholder="000000" value={otp} onChangeText={t => setOtp(t.replace(/\D/g, '').slice(0, 6))} keyboardType="number-pad" containerStyle={{ marginTop: 20 }} />
+              <AppInput label="New password" placeholder="At least 8 characters" value={password} onChangeText={setPassword} isPassword />
+              <AppInput label="Confirm new password" placeholder="Re-enter password" value={confirmPassword} onChangeText={setConfirmPassword} isPassword />
+              <AppButton title="Reset password" onPress={handleReset} loading={loading} style={styles.sendButton} />
             </View>
           ) : (
             <>
@@ -102,7 +130,7 @@ const ForgotPasswordScreen: React.FC<Props> = ({ navigation }) => {
               />
 
               <AppButton
-                title="Send Reset Link"
+                title="Send Reset Code"
                 onPress={handleSend}
                 loading={loading}
                 style={styles.sendButton}

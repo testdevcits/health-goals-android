@@ -6,7 +6,7 @@ import GroupDetailScreen from '../screens/groups_screens/group_details/GroupDeta
 
 export type RootStackParamList = {
   Groups: undefined;
-  GroupDetails: undefined;
+  GroupDetails: { groupId: string; name: string; description: string; members: number };
 };
 
 const Stack = createNativeStackNavigator<RootStackParamList>();

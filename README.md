@@ -1,5 +1,26 @@
 This is a new [**React Native**](https://reactnative.dev) project, bootstrapped using [`@react-native-community/cli`](https://github.com/react-native-community/cli).
 
+## App authentication and backend connection
+
+Email/password sign-in and signup call the backend at `/api/v1/auth`. The backend sends a 6-digit email verification code for both flows. After verification, access and refresh tokens are stored in the device Keychain/Keystore; the app refreshes the session on launch and signs out through the backend. Forgot password sends an email code and updates the password after verification.
+
+Debug builds use `http://10.0.2.2:5000/api/v1` by default for the Android emulator. For a physical phone, connect the phone and computer to the same Wi-Fi, find the computer's LAN IPv4 address, then install with that address (replace `192.168.1.20`):
+
+```sh
+cd android
+./gradlew installDebug -PHEALTH_API_BASE_URL=http://192.168.1.20:5000
+```
+
+The backend listens on port `5000`; allow inbound connections to that port on the computer firewall if needed. The app appends `/api/v1` to the supplied origin.
+
+Google sign-in setup:
+
+1. Create OAuth credentials in Google Cloud for the Android app (`com.vitality`) using the debug/release signing SHA-1 fingerprints, and create a Web application OAuth client ID.
+2. Set the Web client ID as `GOOGLE_CLIENT_ID` in the backend environment and pass it as `-PGOOGLE_WEB_CLIENT_ID=<web-client-id>` to Gradle.
+3. Build a release with `./gradlew assembleRelease -PHEALTH_API_BASE_URL=https://<deployed-api-host> -PGOOGLE_WEB_CLIENT_ID=<web-client-id>`.
+
+Release builds require both an HTTPS API origin and Google Web client ID. The admin dashboard continues to use its existing email OTP flow.
+
 # Getting Started
 
 > **Note**: Make sure you have completed the [Set Up Your Environment](https://reactnative.dev/docs/set-up-your-environment) guide before proceeding.
@@ -95,3 +116,13 @@ To learn more about React Native, take a look at the following resources:
 - [Learn the Basics](https://reactnative.dev/docs/getting-started) - a **guided tour** of the React Native **basics**.
 - [Blog](https://reactnative.dev/blog) - read the latest official React Native **Blog** posts.
 - [`@facebook/react-native`](https://github.com/facebook/react-native) - the Open Source; GitHub **repository** for React Native.
+# Android production configuration
+
+Debug builds use `http://10.0.2.2:5000` for the local Android emulator. Build a release with the deployed HTTPS API origin and Google OAuth web client ID supplied as Gradle properties:
+
+```sh
+cd android
+./gradlew assembleRelease -PHEALTH_API_BASE_URL=https://api.example.com -PGOOGLE_WEB_CLIENT_ID=your-web-client-id
+```
+
+The same Google OAuth web client ID must be set as `GOOGLE_CLIENT_ID` in backend `.env`. Release builds fail if the HTTPS API origin or OAuth client ID is missing. Do not place Cloudinary credentials in Android configuration.

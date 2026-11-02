@@ -8,6 +8,7 @@ import {
   TextInput,
   KeyboardAvoidingView,
   Platform,
+  Alert,
 } from 'react-native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../../../navigations/AppNavigation';
@@ -21,6 +22,8 @@ import {
   SelectOption,
 } from '../../../components';
 import { createRegisterStyles } from './styles.Register';
+import { requestRegistration } from '../../../services/auth';
+import { apiErrorMessage } from '../../../services/api';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Register'>;
 
@@ -98,10 +101,17 @@ const RegisterScreen: React.FC<Props> = ({ navigation }) => {
   const handleCreate = async () => {
     if (!validate()) return;
     setLoading(true);
-    await new Promise((r: any) => setTimeout(r, 1600));
-    setLoading(false);
-    // TODO: call API then navigate to Main
-    navigation.replace('MainTabNavigation');
+    try {
+      const challenge = await requestRegistration(fullName, email, password, companyCode, goal);
+      navigation.navigate('VerifyEmail', {
+        challengeId: challenge.challengeId,
+        email,
+        purpose: 'register',
+        deliveryMode: challenge.deliveryMode,
+      });
+    } catch (error) {
+      Alert.alert('Account creation failed', apiErrorMessage(error));
+    } finally { setLoading(false); }
   };
 
   return (

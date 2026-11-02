@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
-import { Alert, Pressable, ScrollView,   View } from 'react-native';
+import React, { useCallback, useState } from 'react';
+import { Alert, NativeModules, Pressable, ScrollView, View } from 'react-native';
+import { useFocusEffect } from '@react-navigation/native';
 import {
   AppButton,
   AppHeader,
@@ -10,27 +11,10 @@ import {
 import { useTheme } from '../../../theme/useTheme';
 import { ProfileScreenNavigation } from '../components/ProfileScreenLayout';
 import createStyles from './styles.HealthReport';
+import { authenticatedRequest, apiErrorMessage } from '../../../services/api';
 
-const monthlyReports = [
-  {
-    title: 'Monthly Report',
-    date: 'May 2026',
-    metrics: [
-      ['246K', 'Total Steps'],
-      ['7h 02m', 'Avg Sleep'],
-      ['18', 'Workouts'],
-    ],
-  },
-  {
-    title: 'Sleep Analysis',
-    date: 'Jun 2026',
-    metrics: [
-      ['88%', 'Sleep Score'],
-      ['1h 48m', 'Deep Sleep'],
-      ['22m', 'Awake'],
-    ],
-  },
-];
+const METRICS = { Steps: 'steps', Sleep: 'sleep', Workouts: 'workout' } as const;
+type DailyValue = { date: string; value: number; count: number; unit: string };
 
 const HealthReportsScreen: React.FC<{
   navigation: ProfileScreenNavigation;
@@ -39,8 +23,43 @@ const HealthReportsScreen: React.FC<{
   const { colors } = theme;
   const styles = createStyles(colors);
   const [activeTab, setActiveTab] = useState('Steps');
-  const shareReport = (title: string) =>
-    Alert.alert('Share report', `${title} is ready to share.`);
+  const [history, setHistory] = useState<DailyValue[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+  const [dailyCoins, setDailyCoins] = useState<Array<{ day: string; totals?: { steps?: number; workoutMinutes?: number; sleepMinutes?: number }; creditedCoins?: number }>>([]);
+  const to = new Date();
+  const from = new Date(Date.now() - 6 * 86400000);
+  const dateKey = (date: Date) => `${date.getFullYear()}-${String(date.getMonth()+1).padStart(2,'0')}-${String(date.getDate()).padStart(2,'0')}`;
+  useFocusEffect(useCallback(() => {
+    let active = true;
+    setLoading(true); setError('');
+    const metricType = activeTab === 'Workouts' ? 'workout' : METRICS[activeTab as keyof typeof METRICS];
+    Promise.all([
+      authenticatedRequest<{ history: DailyValue[] }>('GET', `/health/history?metricType=${metricType}&from=${dateKey(from)}&to=${dateKey(to)}`),
+      authenticatedRequest<{ items: Array<{ day: string; totals?: { steps?: number; workoutMinutes?: number; sleepMinutes?: number }; creditedCoins?: number }> }>('GET', `/activity/history?from=${dateKey(from)}&to=${dateKey(to)}&limit=7`),
+    ]).then(([records, coins]) => { if (active) { setHistory(records.history || []); setDailyCoins(coins.items || []); } })
+      .catch(cause => { if (active) setError(apiErrorMessage(cause)); })
+      .finally(() => { if (active) setLoading(false); });
+    return () => { active = false; };
+  }, [activeTab]));
+  const shareReport = (title: string) => {
+    const total = history.reduce((sum, item) => sum + item.value, 0);
+    const content = [
+      `Report period: ${from.toLocaleDateString()} – ${to.toLocaleDateString()}`,
+      `Selected metric: ${activeTab}`,
+      `Synced total: ${total.toLocaleString()} ${history[0]?.unit || ''}`,
+      `Daily average: ${history.length ? Math.round(total / history.length).toLocaleString() : 0}`,
+      `Coins credited: ${dailyCoins.reduce((sum, item) => sum + (item.creditedCoins || 0), 0)}`,
+      `Days with activity: ${dailyCoins.length}`,
+      `Data points: ${history.length}`,
+    ].join('\n');
+    const sharePdf = NativeModules.HealthAppConfig?.sharePdf;
+    if (typeof sharePdf !== 'function') {
+      Alert.alert('Report export unavailable', 'Update the Android app build to enable PDF sharing.');
+      return;
+    }
+    sharePdf(title, content);
+  };
 
   return (
     <View style={{ flex: 1, backgroundColor: colors.backgroundSecondary }}>
@@ -58,7 +77,7 @@ const HealthReportsScreen: React.FC<{
               This Week
             </AppText>
             <AppText variant="caption" primary bold>
-              Jun 9 – 15
+              {from.toLocaleDateString()} – {to.toLocaleDateString()}
             </AppText>
           </View>
           <View
@@ -88,15 +107,15 @@ const HealthReportsScreen: React.FC<{
               </Pressable>
             ))}
           </View>
-          {activeTab === 'Steps' ? (
+          {activeTab === 'Steps' && history.length ? (
             <View style={styles.chart}>
-              {[58, 72, 36, 84, 64, 51, 29].map((height, index) => (
+              {history.slice(-7).map((item, index) => (
                 <View key={index} style={styles.chartDay}>
                   <View
                     style={[
                       styles.bar,
                       {
-                        height,
+                        height: Math.max(7, Math.min(100, Math.round(item.value / Math.max(...history.map(row => row.value), 1) * 100))),
                         backgroundColor:
                           index === 3
                             ? theme.colors.primary
@@ -105,39 +124,25 @@ const HealthReportsScreen: React.FC<{
                     ]}
                   />
                   <AppText variant="caption" color="textTertiary">
-                    {['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'][index]}
+                    {new Date(`${item.date}T12:00:00`).toLocaleDateString([], { weekday: 'short' })}
                   </AppText>
                 </View>
               ))}
             </View>
           ) : (
             <View style={styles.chartPlaceholder}>
-              <AppText variant="h3" primary>
-                {activeTab === 'Sleep' ? '7h 42m' : '5 workouts'}
-              </AppText>
+              <AppText variant="h3" primary>{loading ? 'Loading…' : error ? 'Data unavailable' : history.length ? `${history.reduce((sum, item) => sum + item.value, 0).toLocaleString()} ${history[0].unit}` : 'No synced data yet'}</AppText>
               <AppText variant="caption" secondary>
-                This week
+                {error || 'This week'}
               </AppText>
             </View>
           )}
           <View style={styles.metricsRow}>
             {(activeTab === 'Steps'
-              ? [
-                  ['55,872', 'Total Steps'],
-                  ['7,981', 'Daily Avg'],
-                  ['2', 'Days >10K'],
-                ]
+              ? [[history.reduce((sum, item) => sum + item.value, 0).toLocaleString(), 'Total Steps'], [history.length ? Math.round(history.reduce((sum, item) => sum + item.value, 0) / history.length).toLocaleString() : '—', 'Daily Avg'], [history.filter(item => item.value >= 10000).length.toString(), 'Days >10K']]
               : activeTab === 'Sleep'
-              ? [
-                  ['7h 42m', 'Avg Sleep'],
-                  ['88%', 'Sleep Score'],
-                  ['1h 48m', 'Deep Sleep'],
-                ]
-              : [
-                  ['5', 'Workouts'],
-                  ['3h 20m', 'Active Time'],
-                  ['1,420', 'Calories'],
-                ]
+              ? [[history.length ? `${Math.floor(history.reduce((sum, item) => sum + item.value, 0) / history.length / 60)}h ${Math.round(history.reduce((sum, item) => sum + item.value, 0) / history.length % 60)}m` : '—', 'Avg Sleep'], [history.length.toString(), 'Days Recorded'], [dailyCoins.reduce((sum, day) => sum + (day.creditedCoins || 0), 0).toString(), 'Coins Earned']]
+              : [[history.reduce((sum, item) => sum + item.count, 0).toString(), 'Workouts'], [history.reduce((sum, item) => sum + item.value, 0).toLocaleString(), 'Total Minutes'], [dailyCoins.reduce((sum, day) => sum + (day.creditedCoins || 0), 0).toString(), 'Coins Earned']]
             ).map(([value, label]) => (
               <ProfileMetric key={label} value={value} label={label} />
             ))}
@@ -155,48 +160,26 @@ const HealthReportsScreen: React.FC<{
             <AppButton
               title="View PDF"
               onPress={() =>
-                Alert.alert('PDF report', 'Your weekly report is ready.')
+                shareReport('Weekly health report')
               }
               style={styles.reportButton}
             />
           </View>
         </ProfileCard>
 
-        {monthlyReports.map(report => (
-          <ProfileCard key={report.title} style={styles.reportCard}>
-            <View style={styles.reportHeading}>
-              <AppText variant="subtitle2" bold>
-                {report.title}
-              </AppText>
-              <AppText variant="caption" primary bold>
-                {report.date}
-              </AppText>
-            </View>
-            <View style={styles.metricsRow}>
-              {report.metrics.map(([value, label]) => (
-                <ProfileMetric key={label} value={value} label={label} />
-              ))}
-            </View>
-            <View style={styles.reportActions}>
-              <AppButton
-                title="Share"
-                variant="ghost"
-                onPress={() => shareReport(report.title)}
-                style={[
-                  styles.reportButton,
-                  { backgroundColor: theme.colors.primaryLight },
-                ]}
-              />
-              <AppButton
-                title="View PDF"
-                onPress={() =>
-                  Alert.alert('PDF report', `${report.title} is ready.`)
-                }
-                style={styles.reportButton}
-              />
-            </View>
-          </ProfileCard>
-        ))}
+        <ProfileCard style={styles.reportCard}>
+          <AppText variant="subtitle2" bold>Daily coins this week</AppText>
+          <AppText variant="caption" secondary>Coins credited after activity settlement</AppText>
+          <View style={styles.metricsRow}>
+            <ProfileMetric value={dailyCoins.reduce((sum, day) => sum + (day.creditedCoins || 0), 0).toLocaleString()} label="Coins Earned" />
+            <ProfileMetric value={dailyCoins.length.toString()} label="Active Days" />
+            <ProfileMetric value={dailyCoins.reduce((sum, day) => sum + (day.totals?.steps || 0), 0).toLocaleString()} label="Week Steps" />
+          </View>
+          <View style={styles.reportActions}>
+            <AppButton title="Share" variant="ghost" onPress={() => shareReport('This week’s report')} style={[styles.reportButton, { backgroundColor: theme.colors.primaryLight }]} />
+            <AppButton title="View PDF" onPress={() => Alert.alert('PDF report', 'PDF export is not available yet.')} style={styles.reportButton} />
+          </View>
+        </ProfileCard>
       </ScrollView>
     </View>
   );

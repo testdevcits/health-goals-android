@@ -71,8 +71,15 @@ def enableProguardInReleaseBuilds =  true
  * this variant is about 6MiB larger per architecture than default.
  */
 def jscFlavor = 'io.github.react-native-community:jsc-android:2026004.+'
+def healthApiBaseUrl = project.findProperty('HEALTH_API_BASE_URL') ?: System.getenv('HEALTH_API_BASE_URL') ?: ''
+def googleWebClientId = project.findProperty('GOOGLE_WEB_CLIENT_ID') ?: System.getenv('GOOGLE_WEB_CLIENT_ID') ?: ''
+if (gradle.startParameter.taskNames.any { it.toLowerCase().contains('release') }) {
+    if (!healthApiBaseUrl.startsWith('https://')) throw new GradleException('Release builds require -PHEALTH_API_BASE_URL=https://your-backend-host')
+    if (!googleWebClientId.trim()) throw new GradleException('Release builds require -PGOOGLE_WEB_CLIENT_ID=<Google OAuth web client ID>')
+}
 
 android {
+    buildFeatures { buildConfig true }
     ndkVersion rootProject.ext.ndkVersion
     buildToolsVersion rootProject.ext.buildToolsVersion
     compileSdk rootProject.ext.compileSdkVersion
@@ -84,6 +91,8 @@ android {
         targetSdkVersion rootProject.ext.targetSdkVersion
         versionCode 1
         versionName "1.0"
+        buildConfigField "String", "HEALTH_API_BASE_URL", "\"${healthApiBaseUrl.replace('\\', '\\\\').replace('"', '\\"')}\""
+        buildConfigField "String", "GOOGLE_WEB_CLIENT_ID", "\"${googleWebClientId.replace('\\', '\\\\').replace('"', '\\"')}\""
     }
     splits {
         abi {
@@ -104,11 +113,13 @@ android {
     buildTypes {
         debug {
             signingConfig signingConfigs.debug
+            manifestPlaceholders = [usesCleartextTraffic: "true"]
         }
         release {
             // Caution! In production, you need to generate your own keystore file.
             // see https://reactnative.dev/docs/signed-apk-android.
             signingConfig signingConfigs.debug
+            manifestPlaceholders = [usesCleartextTraffic: "false"]
             minifyEnabled enableProguardInReleaseBuilds
             shrinkResources true
             proguardFiles getDefaultProguardFile("proguard-android.txt"), "proguard-rules.pro"

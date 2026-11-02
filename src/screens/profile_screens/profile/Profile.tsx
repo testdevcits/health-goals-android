@@ -1,5 +1,6 @@
-import React, { useMemo } from 'react';
+import React, { useCallback, useMemo, useState } from 'react';
 import {
+  Image,
   View,
   StyleSheet,
   ScrollView,
@@ -17,6 +18,8 @@ import { getProfileMenuItems } from './conts';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '../../../navigations/ProfileStack';
+import { useFocusEffect } from '@react-navigation/native';
+import { authenticatedRequest } from '../../../services/api';
 
 type ProfileNavigationProp = NativeStackNavigationProp<RootStackParamList>;
 
@@ -27,17 +30,23 @@ const ProfileScreen: React.FC = () => {
   const insets = useSafeAreaInsets();
   const navigation = useNavigation<ProfileNavigationProp>();
   const menuItems = useMemo(() => getProfileMenuItems(colors), [colors]);
-
-  const profile = {
-    name: 'Alex Johnson',
-    email: 'alex.johnson@company.com',
-    membership: 'Enterprise Member',
-    initials: 'AJ',
-    points: '2,840',
-    streak: '12',
-    badges: '4',
-    rank: '#4',
-  };
+  const [profile, setProfile] = useState({ name: '', email: '', phone: '', points: 0, profileImageUrl: '' });
+  useFocusEffect(useCallback(() => {
+    let active = true;
+    Promise.allSettled([
+      authenticatedRequest<{ user: { name?: string; email?: string; profileImageUrl?: string; deviceProfile?: { brand?: string; manufacturer?: string; model?: string } | null } }>('GET', '/auth/me'),
+      authenticatedRequest<{ wallet?: { availablePoints?: number; balance?: number } }>('GET', '/wallet'),
+    ]).then(([userResult, walletResult]) => {
+      if (!active) return;
+      const user = userResult.status === 'fulfilled' ? userResult.value.user : {};
+      const wallet = walletResult.status === 'fulfilled' ? walletResult.value.wallet : undefined;
+      const device = user?.deviceProfile;
+      const phone = device ? [device.brand || device.manufacturer, device.model].filter(Boolean).join(' ') : '';
+      setProfile({ name: user?.name || '', email: user?.email || '', phone, points: Number(wallet?.availablePoints ?? wallet?.balance ?? 0), profileImageUrl: user?.profileImageUrl || '' });
+    });
+    return () => { active = false; };
+  }, []));
+  const initials = profile.name.split(/\s+/).filter(Boolean).map(part => part[0]).join('').slice(0, 2).toUpperCase() || 'U';
 
   const handleMenuPress = (id: string) => {
     switch (id) {
@@ -97,9 +106,7 @@ const ProfileScreen: React.FC = () => {
           </Pressable>
 
           <View style={styles.smallAvatar}>
-            <AppText variant="subtitle2" color="white" bold>
-              {profile.initials}
-            </AppText>
+            {profile.profileImageUrl ? <Image source={{ uri: profile.profileImageUrl }} style={{ width: '100%', height: '100%', borderRadius: 22 }} /> : <AppText variant="subtitle2" color="white" bold>{initials}</AppText>}
           </View>
         </View>
       </View>
@@ -114,27 +121,25 @@ const ProfileScreen: React.FC = () => {
         {/* Profile information */}
         <View style={styles.profileSection}>
           <View style={styles.largeAvatar}>
-            <AppText variant="display" color="white">
-              {profile.initials}
-            </AppText>
+            {profile.profileImageUrl ? <Image source={{ uri: profile.profileImageUrl }} style={{ width: '100%', height: '100%', borderRadius: 44 }} /> : <AppText variant="display" color="white">{initials}</AppText>}
           </View>
 
           <AppText variant="h3" center mt={spacing.md}>
-            {profile.name}
+            {profile.name || 'Your profile'}
           </AppText>
 
           <AppText variant="caption" secondary center style={styles.emailText}>
-            {profile.email} · {profile.membership}
+            {[profile.email, profile.phone].filter(Boolean).join(' · ') || ' '}
           </AppText>
         </View>
 
         {/* Rewards and activity summary */}
         <View style={[styles.statsCard, { backgroundColor: colors.surface }]}>
           {[
-            { value: profile.points, label: 'Points' },
-            { value: profile.streak, label: 'Day Streak' },
-            { value: profile.badges, label: 'Badges' },
-            { value: profile.rank, label: 'Rank' },
+            { value: profile.points.toLocaleString(), label: 'Points' },
+            { value: '—', label: 'Day Streak' },
+            { value: '—', label: 'Badges' },
+            { value: '—', label: 'Rank' },
           ].map((stat, index) => (
             <React.Fragment key={stat.label}>
               {index > 0 && (

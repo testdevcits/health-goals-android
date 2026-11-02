@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useCallback, useState } from 'react';
 import {
   Alert,
   Modal,
@@ -17,8 +17,12 @@ import TrendChart from './components/TrendChart';
 import TrendInsight from './components/TrendInsight';
 import TrendStats from './components/TrendStats';
 import TrendTabs from './components/TrendTabs';
-import { TrendMetric, trendData } from './trendData';
+import { TrendMetric, trendData as initialTrendData } from './trendData';
 import { DailyActivityTrendsNavigation } from './types';
+import { useFocusEffect } from '@react-navigation/native';
+import { authenticatedRequest, apiErrorMessage } from '../../../services/api';
+
+const metricTypes = { Steps: 'steps', Sleep: 'sleep', Heart: 'heart_rate', Stress: 'stress' } as const;
 
 const DailyActivityTrends: React.FC<{
   navigation: DailyActivityTrendsNavigation;
@@ -35,7 +39,38 @@ const DailyActivityTrends: React.FC<{
     Stress: '3',
   });
   const [goalDraft, setGoalDraft] = useState(goalValues.Steps);
+  const [trendData, setTrendData] = useState(initialTrendData);
   const data = trendData[activeMetric];
+  useFocusEffect(useCallback(() => {
+    let active = true;
+    (async () => {
+      try {
+        const [recordsResult, goalResult] = await Promise.allSettled([
+          authenticatedRequest<{ records: Array<{ metricType: string; value: number; unit: string; recordedAt: string }> }>('GET', `/health/records?metricType=${metricTypes[activeMetric]}`),
+          authenticatedRequest<{ user: { healthGoals?: Record<string, number>; goal?: string } }>('GET', '/auth/me'),
+        ]);
+        if (!active) return;
+        if (goalResult.status === 'fulfilled') {
+          const saved = goalResult.value.user?.healthGoals?.[metricTypes[activeMetric]];
+          if (saved) setGoalValues(current => ({ ...current, [activeMetric]: String(activeMetric === 'Sleep' ? saved / 60 : saved) }));
+        }
+        if (recordsResult.status === 'fulfilled' && recordsResult.value.records?.length) {
+          const records = recordsResult.value.records.filter(row => new Date(row.recordedAt) >= new Date(Date.now() - 7 * 86400000)).reverse();
+          if (records.length) {
+            const values = records.map(row => Number(row.value));
+            const average = Math.round(values.reduce((sum, value) => sum + value, 0) / values.length);
+            const total = values.reduce((sum, value) => sum + value, 0);
+            const savedGoal = goalResult.status === 'fulfilled' ? goalResult.value.user?.healthGoals?.[metricTypes[activeMetric]] : undefined;
+            const goal = Number(savedGoal || goalValues[activeMetric].replace(/,/g, '')) * (activeMetric === 'Sleep' && !savedGoal ? 60 : 1);
+            const bars = [...Array(Math.max(0, 7 - values.length)).fill(0), ...values.slice(-7)].map(value => goal ? Math.max(0, Math.min(100, Math.round((value / goal) * 100))) : 50);
+            const averageLabel = activeMetric === 'Sleep' ? `${Math.floor(average / 60)}h ${Math.round(average % 60)}m` : `${average}${activeMetric === 'Heart' ? ' bpm' : ''}`;
+            setTrendData(current => ({ ...current, [activeMetric]: { ...current[activeMetric], bars, stats: current[activeMetric].stats.map((stat, index) => index === 0 ? { ...stat, value: activeMetric === 'Steps' ? total.toLocaleString() : averageLabel } : index === 1 ? { ...stat, value: activeMetric === 'Sleep' ? `${(average / 60).toFixed(1)}h` : String(average) } : stat), insight: `${records.length} synced ${activeMetric.toLowerCase()} readings in the last 7 days. Your average is ${averageLabel}.` } }));
+          }
+        }
+      } catch { /* Keep the existing chart content while offline. */ }
+    })();
+    return () => { active = false; };
+  }, [activeMetric]));
 
   const openGoalEditor = () => {
     setGoalDraft(goalValues[activeMetric]);
@@ -48,8 +83,18 @@ const DailyActivityTrends: React.FC<{
       Alert.alert('Invalid goal', 'Enter a goal that includes a number.');
       return;
     }
-    setGoalValues(current => ({ ...current, [activeMetric]: normalizedGoal }));
-    setGoalModalVisible(false);
+    const numericGoal = Number(normalizedGoal.replace(/,/g, ''));
+    if (!Number.isFinite(numericGoal) || numericGoal <= 0) {
+      Alert.alert('Invalid goal', 'Enter a number greater than zero.');
+      return;
+    }
+    const storedTarget = activeMetric === 'Sleep' ? Math.round(numericGoal * 60) : numericGoal;
+    authenticatedRequest<{ user: { healthGoals?: Record<string, number> } }>('PATCH', '/auth/me/goals', { metricType: metricTypes[activeMetric], targetValue: storedTarget })
+      .then(() => {
+        setGoalValues(current => ({ ...current, [activeMetric]: normalizedGoal }));
+        setGoalModalVisible(false);
+      })
+      .catch(error => Alert.alert('Could not save goal', apiErrorMessage(error)));
   };
 
   return (

@@ -19,6 +19,8 @@ export const HEALTH_PERMISSIONS: Permission[] = [
   { accessType: 'read', recordType: 'SleepSession' },
   { accessType: 'read', recordType: 'ExerciseSession' },
   { accessType: 'read', recordType: 'Weight' },
+  { accessType: 'read', recordType: 'OxygenSaturation' },
+  { accessType: 'read', recordType: 'BloodPressure' },
 ];
 
 export interface TodayHealthData {
@@ -124,8 +126,14 @@ export const readTodayHealthData = async (
     'TotalCaloriesBurned',
   );
   const hasExercise = hasReadPermission(grantedPermissions, 'ExerciseSession');
+  const hasHeartRate = hasReadPermission(grantedPermissions, 'HeartRate');
+  const hasSleep = hasReadPermission(grantedPermissions, 'SleepSession');
+  const hasWeight = hasReadPermission(grantedPermissions, 'Weight');
+  const hasOxygen = hasReadPermission(grantedPermissions, 'OxygenSaturation');
+  const hasBloodPressure = hasReadPermission(grantedPermissions, 'BloodPressure');
   const hasAnyPermission =
-    hasSteps || hasDistance || hasCalories || hasExercise;
+    hasSteps || hasDistance || hasCalories || hasExercise || hasHeartRate ||
+    hasSleep || hasWeight || hasOxygen || hasBloodPressure;
 
   if (!hasAnyPermission) {
     return createEmptyData('permission-required');

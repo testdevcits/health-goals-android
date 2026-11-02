@@ -1,11 +1,13 @@
-import React, { useState } from 'react';
-import { View, ScrollView, Pressable } from 'react-native';
+import React, { useCallback, useState } from 'react';
+import { Alert, View, ScrollView, Pressable } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
+import { useFocusEffect } from '@react-navigation/native';
 import { Dumbbell } from 'lucide-react-native';
 
 import { useTheme } from '../../../theme/useTheme';
 import { AppHeader, AppText } from '../../../components';
 import { createCardStyles, createStyles } from './styles.AllChallenges';
+import { authenticatedRequest, apiErrorMessage } from '../../../services/api';
 
 type ChallengeCategory = 'All' | 'Steps' | 'Mind' | 'Strength';
 
@@ -19,6 +21,7 @@ interface Challenge {
   progressLabel: string;
   color: string;
   emoji: string;
+  joined?: boolean;
 }
 
 interface AllChallengesScreenProps {
@@ -26,65 +29,6 @@ interface AllChallengesScreenProps {
 }
 
 const categories: ChallengeCategory[] = ['All', 'Steps', 'Mind', 'Strength'];
-
-const challenges: Challenge[] = [
-  {
-    id: 'step-sprint',
-    title: '30-Day Step Sprint',
-    description:
-      'Walk 10,000 steps daily with your team. Top 3 win gift cards.',
-    category: 'Steps',
-    status: 'LIVE',
-    progress: 68,
-    progressLabel: '20 of 30 days',
-    color: '#00C6A2',
-    emoji: '👟',
-  },
-  {
-    id: 'morning-yoga',
-    title: 'Morning Yoga Streak',
-    description: 'Complete a 15-min yoga session before 9 AM for 7 days.',
-    category: 'Mind',
-    status: '5/7 days',
-    progress: 71,
-    progressLabel: '2 days left',
-    color: '#7563FF',
-    emoji: '🧘',
-  },
-  {
-    id: 'hydration-hero',
-    title: 'Hydration Hero',
-    description: 'Log 8 glasses of water every day this week.',
-    category: 'Mind',
-    status: 'Daily',
-    progress: 50,
-    progressLabel: '4 of 8 today',
-    color: '#FF9B38',
-    emoji: '💧',
-  },
-  {
-    id: '100k-steps',
-    title: '100K Steps Month',
-    description: 'Hit 100,000 total steps before the month ends.',
-    category: 'Steps',
-    status: 'Monthly',
-    progress: 62,
-    progressLabel: '62,000 / 100,000',
-    color: '#00C6A2',
-    emoji: '🚶',
-  },
-  {
-    id: 'strength-builder',
-    title: 'Strength Builder',
-    description: 'Complete 3 strength workouts every week.',
-    category: 'Strength',
-    status: 'Weekly',
-    progress: 33,
-    progressLabel: '1 of 3 workouts',
-    color: '#F97365',
-    emoji: '💪',
-  },
-];
 
 const AllChallengesScreen: React.FC<AllChallengesScreenProps> = ({
   onContinue,
@@ -96,6 +40,18 @@ const AllChallengesScreen: React.FC<AllChallengesScreenProps> = ({
 
   const [selectedCategory, setSelectedCategory] =
     useState<ChallengeCategory>('All');
+  const [challenges, setChallenges] = useState<Challenge[]>([]);
+  const refresh = useCallback(async () => {
+    try {
+      const result = await authenticatedRequest<{ challenges: Array<{ id: string; title: string; description: string; metricType: string; targetValue: number; status: string; joined: boolean }> }>('GET', '/community/challenges');
+      setChallenges((result.challenges || []).map(item => ({ id: item.id, title: item.title, description: item.description || `${item.targetValue} ${item.metricType}`, category: item.metricType === 'steps' ? 'Steps' : item.metricType === 'workout' ? 'Strength' : 'Mind', status: item.status, progress: 0, progressLabel: `${item.targetValue.toLocaleString()} target`, color: '#00C6A2', emoji: item.metricType === 'steps' ? '👟' : item.metricType === 'workout' ? '💪' : '🧘', joined: item.joined })));
+    } catch (error) { Alert.alert('Could not load challenges', apiErrorMessage(error)); }
+  }, []);
+  useFocusEffect(useCallback(() => { void refresh(); }, [refresh]));
+  const joinChallenge = async (challengeId: string) => {
+    try { await authenticatedRequest('POST', `/community/challenges/${encodeURIComponent(challengeId)}/join`); await refresh(); }
+    catch (error) { Alert.alert('Could not join challenge', apiErrorMessage(error)); }
+  };
 
   const filteredChallenges = challenges.filter(
     challenge =>
@@ -158,7 +114,7 @@ const AllChallengesScreen: React.FC<AllChallengesScreenProps> = ({
             <ChallengeCard
               key={challenge.id}
               challenge={challenge}
-              onContinue={onContinue}
+              onContinue={id => { if (onContinue) onContinue(id); else void joinChallenge(id); }}
               colors={colors}
               spacing={spacing}
               radius={radius}
@@ -267,11 +223,12 @@ const ChallengeCard: React.FC<ChallengeCardProps> = ({
       {/* Continue action */}
       <Pressable
         accessibilityRole="button"
-        onPress={() => onContinue?.(challenge.id)}
+        onPress={() => !challenge.joined && onContinue?.(challenge.id)}
+        disabled={challenge.joined}
         style={[styles.continueButton, { backgroundColor: colors.primary }]}
       >
         <AppText variant="buttonSm" color="white">
-          Continue
+          {challenge.joined ? 'Joined' : 'Join challenge'}
         </AppText>
       </Pressable>
     </View>

@@ -12,6 +12,7 @@ export interface Challenge {
   status: string;
   color: string;
   icon: LucideIcon;
+  joined?: boolean;
 }
 
 export interface Badge {

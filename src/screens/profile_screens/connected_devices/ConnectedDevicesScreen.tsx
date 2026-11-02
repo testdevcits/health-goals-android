@@ -24,6 +24,7 @@ import {
 } from 'react-native-health-connect';
 import type { Permission } from 'react-native-health-connect';
 import { HEALTH_PERMISSIONS } from '../../../services/healthConnect';
+import { syncRecentHealthData } from '../../../services/healthSync';
 
 import {
   AppHeader,
@@ -328,6 +329,11 @@ const ConnectedDevicesScreen: React.FC<{
       const permissions = await requestPermission(HEALTH_PERMISSIONS);
       setGrantedPermissions(matchingHealthPermissions(permissions));
       setConnectionState('available');
+      if (permissions.some(permission => permission.accessType === 'read')) {
+        void syncRecentHealthData().catch(error => {
+          setErrorMessage(error instanceof Error ? error.message : 'Health data could not be synced.');
+        });
+      }
     } catch {
       setErrorMessage('Health permissions were not updated. Please try again.');
     } finally {

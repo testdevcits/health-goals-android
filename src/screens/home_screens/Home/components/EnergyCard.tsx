@@ -5,6 +5,8 @@ import Svg, { Circle } from 'react-native-svg';
 import { AppText } from '../../../../components';
 import { useTheme } from '../../../../theme/useTheme';
 import { createHomeStyles } from '../styles.Home';
+import { useFocusEffect } from '@react-navigation/native';
+import { authenticatedRequest } from '../../../../services/api';
 
 const CIRCLE_SIZE = 88;
 const STROKE_WIDTH = 7;
@@ -70,10 +72,31 @@ const EnergyCircle: React.FC<{ energy: number }> = ({ energy }) => {
   );
 };
 
-const EnergyCard: React.FC<{ energy: number; streak_period: number }> = ({
-  energy,
-  streak_period,
-}) => {
+const EnergyCard: React.FC = () => {
+  const [energy, setEnergy] = React.useState(0);
+  const [streakPeriod, setStreakPeriod] = React.useState(0);
+  const [stepsTarget, setStepsTarget] = React.useState(10000);
+  useFocusEffect(React.useCallback(() => {
+    let active = true;
+    Promise.all([
+      authenticatedRequest<{ totals?: { steps?: number }; creditedCoins?: number }>('GET', '/activity/today'),
+      authenticatedRequest<{ user: { healthGoals?: Record<string, number> } }>('GET', '/auth/me'),
+      authenticatedRequest<{ items: Array<{ day: string; creditedCoins?: number; totals?: { steps?: number; workoutMinutes?: number; meditationMinutes?: number } }> }>('GET', '/activity/history?limit=30'),
+    ]).then(([day, profile, history]) => {
+      if (!active) return;
+      const target = profile.user?.healthGoals?.steps || 10000;
+      const steps = day.totals?.steps || 0;
+      setStepsTarget(target);
+      setEnergy(Math.min(100, Math.round(steps / target * 100)));
+      const activeDays = new Set((history.items || []).filter(item => (item.creditedCoins || 0) > 0 || Boolean(item.totals?.steps || item.totals?.workoutMinutes || item.totals?.meditationMinutes)).map(item => item.day));
+      const today = new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Kolkata' }).format(new Date());
+      if ((day.creditedCoins || 0) > 0 || day.totals?.steps || history.items?.some(item => item.day === today && (item.totals?.steps || item.totals?.workoutMinutes || item.totals?.meditationMinutes))) activeDays.add(today);
+      let streak = 0; const cursor = new Date();
+      while (activeDays.has(new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Kolkata' }).format(cursor))) { streak += 1; cursor.setUTCDate(cursor.getUTCDate() - 1); }
+      setStreakPeriod(streak);
+    }).catch(() => { if (active) { setEnergy(0); setStreakPeriod(0); } });
+    return () => { active = false; };
+  }, []));
   const { theme } = useTheme();
   const { colors } = theme;
   const styles = createHomeStyles(theme);
@@ -107,16 +130,16 @@ const EnergyCard: React.FC<{ energy: number; streak_period: number }> = ({
           color="textInverse"
           style={styles.energyDescription}
         >
-          Your recovery is strong today. A 20-min walk would push you to{' '}
+          Today’s synced steps goal is {stepsTarget.toLocaleString()}. Your progress is{' '}
           <AppText variant="caption" bold color="textInverse">
-            {energy}.
+            {energy}%.
           </AppText>
         </AppText>
 
         <View style={styles.streakPill}>
           <Text style={styles.streakEmoji}>🔥</Text>
           <AppText variant="caption" bold color="textInverse">
-            {streak_period}-day streak
+          {streakPeriod ?? initialStreak}-day streak
           </AppText>
         </View>
       </View>
