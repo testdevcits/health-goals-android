@@ -27,7 +27,7 @@ The server uses these MongoDB collections:
 Copy `.env.example` to `.env` and set local values:
 
 ```env
-PORT=5000
+PORT=8000
 NODE_ENV=development
 USE_MONGODB=true
 MONGODB_URI=mongodb://localhost:27017/health_app
@@ -129,13 +129,13 @@ Authorization: Bearer <jwt_token>
 Test server health:
 
 ```bash
-curl http://localhost:5000/api/health
+curl http://localhost:8000/api/health
 ```
 
 Register:
 
 ```bash
-curl -X POST http://localhost:5000/api/v1/auth/register \
+curl -X POST http://localhost:8000/api/v1/auth/register \
   -H "Content-Type: application/json" \
   -d '{"name":"Test User","email":"test@example.com","password":"password123"}'
 ```
@@ -143,7 +143,7 @@ curl -X POST http://localhost:5000/api/v1/auth/register \
 Login:
 
 ```bash
-curl -X POST http://localhost:5000/api/v1/auth/login \
+curl -X POST http://localhost:8000/api/v1/auth/login \
   -H "Content-Type: application/json" \
   -d '{"email":"test@example.com","password":"password123"}'
 ```
@@ -151,7 +151,7 @@ curl -X POST http://localhost:5000/api/v1/auth/login \
 Create a Health Connect-ready record:
 
 ```bash
-curl -X POST http://localhost:5000/api/v1/health/records \
+curl -X POST http://localhost:8000/api/v1/health/records \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer <jwt_token>" \
   -d '{
@@ -168,7 +168,7 @@ curl -X POST http://localhost:5000/api/v1/health/records \
 Sync Health Connect-ready records:
 
 ```bash
-curl -X POST http://localhost:5000/api/v1/health/sync \
+curl -X POST http://localhost:8000/api/v1/health/sync \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer <jwt_token>" \
   -d '{
@@ -191,14 +191,14 @@ The backend uses `userId + source + sourceRecordId` for duplicate protection, so
 Get records:
 
 ```bash
-curl http://localhost:5000/api/v1/health/records \
+curl http://localhost:8000/api/v1/health/records \
   -H "Authorization: Bearer <jwt_token>"
 ```
 
 Get dashboard:
 
 ```bash
-curl http://localhost:5000/api/v1/health/dashboard \
+curl http://localhost:8000/api/v1/health/dashboard \
   -H "Authorization: Bearer <jwt_token>"
 ```
 

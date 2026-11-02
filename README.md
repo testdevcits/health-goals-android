@@ -4,14 +4,14 @@ This is a new [**React Native**](https://reactnative.dev) project, bootstrapped 
 
 Email/password sign-in and signup call the backend at `/api/v1/auth`. The backend sends a 6-digit email verification code for both flows. After verification, access and refresh tokens are stored in the device Keychain/Keystore; the app refreshes the session on launch and signs out through the backend. Forgot password sends an email code and updates the password after verification.
 
-Debug builds use `http://10.0.2.2:5000/api/v1` by default for the Android emulator. For a physical phone, connect the phone and computer to the same Wi-Fi, find the computer's LAN IPv4 address, then install with that address (replace `192.168.1.20`):
+Debug builds use `http://10.0.2.2:8000/api/v1` by default for the Android emulator. For a physical phone, connect the phone and computer to the same Wi-Fi, find the computer's LAN IPv4 address, then install with that address (replace `192.168.1.20`):
 
 ```sh
 cd android
-./gradlew installDebug -PHEALTH_API_BASE_URL=http://192.168.1.20:5000
+./gradlew installDebug -PHEALTH_API_BASE_URL=http://192.168.1.20:8000
 ```
 
-The backend listens on port `5000`; allow inbound connections to that port on the computer firewall if needed. The app appends `/api/v1` to the supplied origin.
+The backend listens on port `8000`; allow inbound connections to that port on the computer firewall if needed. The app appends `/api/v1` to the supplied origin.
 
 Group chat uses Socket.IO. Local debug builds use the same origin as the API by default. Release builds require the HTTPS URL of the long-running chat server with `-PHEALTH_CHAT_SOCKET_URL=https://your-chat-service-host`.
 
@@ -120,7 +120,7 @@ To learn more about React Native, take a look at the following resources:
 - [`@facebook/react-native`](https://github.com/facebook/react-native) - the Open Source; GitHub **repository** for React Native.
 # Android production configuration
 
-Debug builds use `http://10.0.2.2:5000` for the local Android emulator. Build a release with the deployed HTTPS API origin and Google OAuth web client ID supplied as Gradle properties:
+Debug builds use `http://10.0.2.2:8000` for the local Android emulator. Build a release with the deployed HTTPS API origin and Google OAuth web client ID supplied as Gradle properties:
 
 ```sh
 cd android

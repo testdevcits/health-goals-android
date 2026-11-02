@@ -4,7 +4,7 @@ import { NativeModules } from 'react-native';
 // Android emulator reaches the host machine through 10.0.2.2. Replace this
 // with the deployed HTTPS API origin for release builds.
 const configuredBaseUrl = String(NativeModules.HealthAppConfig?.apiBaseUrl || '').trim().replace(/\/api\/v1\/?$/, '');
-export const API_BASE_URL = (configuredBaseUrl || (__DEV__ ? 'http://10.0.2.2:5000' : 'https://release-api-not-configured.invalid')).replace(/\/$/, '') + '/api/v1';
+export const API_BASE_URL = (configuredBaseUrl || (__DEV__ ? 'http://10.0.2.2:8000' : 'https://release-api-not-configured.invalid')).replace(/\/$/, '') + '/api/v1';
 
 export const api = axios.create({
   baseURL: API_BASE_URL,
