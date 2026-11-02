@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useMemo } from 'react';
+import React, { useState, useCallback, useMemo, useRef } from 'react';
 import { View, ScrollView, Alert } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
@@ -25,6 +25,18 @@ import type { RootStackParamList } from '../../../navigations/GroupsStack';
 import { authenticatedRequest, apiErrorMessage } from '../../../services/api';
 import { GroupChat } from './components/group_chats/GroupChat';
 import type { Member } from './constants';
+import { createAuthenticatedChatSocket } from '../../../services/chatSocket';
+import type { Socket } from 'socket.io-client';
+
+const mergeChatMessages = (current: any[], incoming: any[], userId: string, color: string) => {
+  const messages = new Map(current.map(item => [item.id, item]));
+  incoming.forEach(item => messages.set(item.id, {
+    ...item,
+    color: item.color || color,
+    mine: item.senderId ? item.senderId === userId : Boolean(item.mine),
+  }));
+  return [...messages.values()].sort((a, b) => new Date(a.createdAt || 0).getTime() - new Date(b.createdAt || 0).getTime());
+};
 
 // ─── Screen props ─────────────────────────────────────────────────────────────
 
@@ -69,6 +81,8 @@ const GroupDetailScreen: React.FC<GroupDetailScreenProps> = ({
   const [challengeGoal, setChallengeGoal] = useState('');
   const [duration, setDuration] = useState(DURATION_OPTIONS[0]);
   const [reward, setReward] = useState(REWARD_OPTIONS[1]);
+  const chatSocketRef = useRef<Socket | null>(null);
+  const chatUserIdRef = useRef('');
 
   const refreshGroup = useCallback(async () => {
     if (!groupId) return;
@@ -86,6 +100,42 @@ const GroupDetailScreen: React.FC<GroupDetailScreenProps> = ({
     } catch (error) { Alert.alert('Could not load group', apiErrorMessage(error)); }
   }, [groupId, colors.primary]);
   React.useEffect(() => { void refreshGroup(); }, [refreshGroup]);
+
+  React.useEffect(() => {
+    if (activeTab !== 'Chat' || !groupId) return;
+    let active = true;
+    let socket: Socket | null = null;
+    void createAuthenticatedChatSocket().then(connection => {
+      if (!active) {
+        connection.socket.disconnect();
+        return;
+      }
+      socket = connection.socket;
+      chatSocketRef.current = socket;
+      chatUserIdRef.current = connection.userId;
+      socket.on('group:message', (message: any) => {
+        if (active) setMessages(current => mergeChatMessages(current, [message], chatUserIdRef.current, colors.primary));
+      });
+      socket.on('connect', () => {
+        socket?.emit('group:join', { groupId }, (result: any) => {
+          if (!active || !result?.ok) return;
+          void authenticatedRequest<{ messages: any[] }>('GET', `/community/groups/${encodeURIComponent(groupId)}/messages`)
+            .then(result => { if (active) setMessages(current => mergeChatMessages(current, result.messages || [], chatUserIdRef.current, colors.primary)); })
+            .catch(() => {});
+        });
+      });
+      socket.connect();
+    }).catch(error => console.warn('Realtime group chat is unavailable:', error));
+
+    return () => {
+      active = false;
+      if (socket) {
+        socket.emit('group:leave', { groupId });
+        socket.disconnect();
+      }
+      if (chatSocketRef.current === socket) chatSocketRef.current = null;
+    };
+  }, [activeTab, groupId, colors.primary]);
 
   const cycleDuration = useCallback(() => {
     setDuration(prev => {
@@ -121,9 +171,25 @@ const GroupDetailScreen: React.FC<GroupDetailScreenProps> = ({
 
   const sendMessage = useCallback(async () => {
     const message = messageDraft.trim(); if (!message) return;
-    try { await authenticatedRequest('POST', `/community/groups/${encodeURIComponent(groupId)}/messages`, { message }); setMessageDraft(''); await refreshGroup(); }
+    try {
+      const socket = chatSocketRef.current;
+      if (socket?.connected) {
+        const result = await new Promise<any>((resolve, reject) => {
+          const timeout = setTimeout(() => reject(new Error('Chat server did not respond. Try again.')), 12000);
+          socket.emit('group:send', { groupId, message }, (response: any) => {
+            clearTimeout(timeout);
+            response?.ok ? resolve(response) : reject(new Error(response?.error || 'Could not send message.'));
+          });
+        });
+        setMessages(current => mergeChatMessages(current, [result.message], chatUserIdRef.current, colors.primary));
+      } else {
+        const result = await authenticatedRequest<{ message: any }>('POST', `/community/groups/${encodeURIComponent(groupId)}/messages`, { message });
+        setMessages(current => mergeChatMessages(current, [result.message], chatUserIdRef.current, colors.primary));
+      }
+      setMessageDraft('');
+    }
     catch (error) { Alert.alert('Could not send message', apiErrorMessage(error)); }
-  }, [groupId, messageDraft, refreshGroup]);
+  }, [groupId, messageDraft, colors.primary]);
 
   // ─── Render ─────────────────────────────────────────────────────────────────
   return (

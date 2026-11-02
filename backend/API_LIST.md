@@ -144,6 +144,8 @@ Example: `/activity/records?page=1&limit=20&metricType=steps&from=2026-10-01&to=
 | GET | `/community/groups/:id` | Group details; private group sirf members ke liye. |
 | POST | `/community/groups/:id/join` | Group join karein. |
 | GET/POST | `/community/groups/:id/messages` | Joined members ka chat history/send; send body `message`. |
+| Socket.IO | `group:join` | Auth token ke saath joined group room join karein; payload `{ groupId }`. |
+| Socket.IO | `group:send` | Payload `{ groupId, message }`; saved message group members ko `group:message` event mein milta hai. |
 | GET/POST | `/community/groups/:id/challenges` | Group challenges list/create. |
 | GET | `/community/challenges` | Active challenges list karein. |
 | POST | `/community/challenges` | Challenge banayein: `title`, `metricType`, `targetValue`, `endsAt`, optional `description`, `startsAt`, `rewardPoints`. |

@@ -57,6 +57,12 @@ Required production variables:
 
 Set `GOOGLE_CLIENT_ID` if Google sign-in is enabled and set `ADMIN_EMAILS` to the admin account addresses. Vercel runs the settlement endpoint once daily at 18:30 UTC (midnight IST); on Hobby, invocation can be delayed within the scheduled hour. `GET /api/health` checks that the function is responding. After the first deployment, use the Vercel HTTPS domain as the API origin in the admin frontend and Android release build.
 
+### Realtime group chat
+
+Vercel serves the REST API and message history; it does not host the persistent Socket.IO connection. Create a separate long-running Web Service from the same repository, set its root directory to `backend`, use `npm ci` as the build command and `npm run start:socket` as the start command. Configure `MONGODB_URI`, `JWT_SECRET`, `JWT_REFRESH_SECRET`, `NODE_ENV=production`, and `USE_MONGODB=true` on that service. Its `/health` path is the service health check. The app's `HEALTH_CHAT_SOCKET_URL` must point to this service's HTTPS origin. The REST API and chat service must use the same database and JWT secret.
+
+The Socket.IO protocol authenticates with the existing access token. Join a room with `group:join` and `{ "groupId": "..." }`; send with `group:send` and `{ "groupId": "...", "message": "..." }`; saved messages arrive to room members as `group:message`. Message history remains available through the REST endpoint when the app reconnects.
+
 The local `backend/.env` is not uploaded. Add values in Vercel's environment variable settings; never paste secrets into source files or commit them.
 
 For Google sign-in, set `GOOGLE_CLIENT_ID` to the Google OAuth Web application client ID. The mobile app sends a Google ID token to `POST /api/v1/auth/google`; the backend verifies it before creating or signing in a user. Mobile registration supports optional `companyCode` and `goal` fields.

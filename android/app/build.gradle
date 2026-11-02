@@ -72,9 +72,11 @@ def enableProguardInReleaseBuilds =  true
  */
 def jscFlavor = 'io.github.react-native-community:jsc-android:2026004.+'
 def healthApiBaseUrl = project.findProperty('HEALTH_API_BASE_URL') ?: System.getenv('HEALTH_API_BASE_URL') ?: ''
+def healthChatSocketUrl = project.findProperty('HEALTH_CHAT_SOCKET_URL') ?: System.getenv('HEALTH_CHAT_SOCKET_URL') ?: ''
 def googleWebClientId = project.findProperty('GOOGLE_WEB_CLIENT_ID') ?: System.getenv('GOOGLE_WEB_CLIENT_ID') ?: ''
 if (gradle.startParameter.taskNames.any { it.toLowerCase().contains('release') }) {
     if (!healthApiBaseUrl.startsWith('https://')) throw new GradleException('Release builds require -PHEALTH_API_BASE_URL=https://your-backend-host')
+    if (!healthChatSocketUrl.startsWith('https://')) throw new GradleException('Release builds require -PHEALTH_CHAT_SOCKET_URL=https://your-realtime-host')
     if (!googleWebClientId.trim()) throw new GradleException('Release builds require -PGOOGLE_WEB_CLIENT_ID=<Google OAuth web client ID>')
 }
 
@@ -92,6 +94,7 @@ android {
         versionCode 1
         versionName "1.0"
         buildConfigField "String", "HEALTH_API_BASE_URL", "\"${healthApiBaseUrl.replace('\\', '\\\\').replace('"', '\\"')}\""
+        buildConfigField "String", "HEALTH_CHAT_SOCKET_URL", "\"${healthChatSocketUrl.replace('\\', '\\\\').replace('"', '\\"')}\""
         buildConfigField "String", "GOOGLE_WEB_CLIENT_ID", "\"${googleWebClientId.replace('\\', '\\\\').replace('"', '\\"')}\""
     }
     splits {

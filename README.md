@@ -13,13 +13,15 @@ cd android
 
 The backend listens on port `5000`; allow inbound connections to that port on the computer firewall if needed. The app appends `/api/v1` to the supplied origin.
 
+Group chat uses Socket.IO. Local debug builds use the same origin as the API by default. Release builds require the HTTPS URL of the long-running chat server with `-PHEALTH_CHAT_SOCKET_URL=https://your-chat-service-host`.
+
 Google sign-in setup:
 
 1. Create OAuth credentials in Google Cloud for the Android app (`com.vitality`) using the debug/release signing SHA-1 fingerprints, and create a Web application OAuth client ID.
 2. Set the Web client ID as `GOOGLE_CLIENT_ID` in the backend environment and pass it as `-PGOOGLE_WEB_CLIENT_ID=<web-client-id>` to Gradle.
-3. Build a release with `./gradlew assembleRelease -PHEALTH_API_BASE_URL=https://<deployed-api-host> -PGOOGLE_WEB_CLIENT_ID=<web-client-id>`.
+3. Build a release with `./gradlew assembleRelease -PHEALTH_API_BASE_URL=https://<deployed-api-host> -PHEALTH_CHAT_SOCKET_URL=https://<long-running-chat-host> -PGOOGLE_WEB_CLIENT_ID=<web-client-id>`.
 
-Release builds require both an HTTPS API origin and Google Web client ID. The admin dashboard continues to use its existing email OTP flow.
+Release builds require HTTPS API and chat server origins plus a Google Web client ID. The admin dashboard continues to use its existing email OTP flow.
 
 # Getting Started
 
