@@ -10,7 +10,7 @@ import SplashScreen from '../screens/auth_screens/Splash/SplashScreen';
 import RegisterScreen from '../screens/auth_screens/Register/RegisterScreen';
 import ForgotPasswordScreen from '../screens/auth_screens/ForgotPassword/ForgotPasswordScreen';
 import Notifications from '../screens/common_screens/notifications/Notifications';
-import VerifyEmailScreen from '../screens/auth_screens/VerifyEmailScreen';
+import VerifyEmailScreen from '../screens/auth_screens/verify_email /VerifyEmailScreen';
 import { restoreSession } from '../services/auth';
 
 export type RootStackParamList = {
