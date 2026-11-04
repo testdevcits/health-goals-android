@@ -1,4 +1,4 @@
-import React, { useCallback, useRef, useState } from 'react';
+import React, { useRef, useState } from 'react';
 import {
   Alert,
   Modal,
@@ -10,7 +10,7 @@ import {
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { X } from 'lucide-react-native';
-import { AppButton, AppHeader, AppText } from '../../../components';
+import { AppButton, AppEmptyState, AppErrorView, AppHeader, AppLoader, AppText } from '../../../components';
 import { useTheme } from '../../../theme/useTheme';
 import { createTrendStyles } from './styles.DailyActivityTrends';
 import TrendChart from './components/TrendChart';
@@ -19,7 +19,7 @@ import TrendStats from './components/TrendStats';
 import TrendTabs from './components/TrendTabs';
 import { TrendMetric, trendData as initialTrendData } from './trendData';
 import { DailyActivityTrendsNavigation } from './types';
-import { useFocusEffect } from '@react-navigation/native';
+import { useIsFocused } from '@react-navigation/native';
 import { authenticatedRequest } from '../../../services/authenticatedApi';
 import { getCurrentUser } from '../../../services/profile';
 import { apiErrorMessage } from '../../../services/api';
@@ -45,9 +45,18 @@ const DailyActivityTrends: React.FC<{
   goalValuesRef.current = goalValues;
   const [goalDraft, setGoalDraft] = useState(goalValues.Steps);
   const [trendData, setTrendData] = useState(initialTrendData);
+  const [loading, setLoading] = useState(true);
+  const [hasData, setHasData] = useState(false);
+  const [loadError, setLoadError] = useState('');
+  const [reloadKey, setReloadKey] = useState(0);
   const data = trendData[activeMetric];
-  useFocusEffect(useCallback(() => {
+  const isFocused = useIsFocused();
+  React.useEffect(() => {
+    if (!isFocused) return;
     let active = true;
+    setLoading(true);
+    setLoadError('');
+    setHasData(false);
     (async () => {
       try {
         const [recordsResult, goalResult] = await Promise.allSettled([
@@ -58,6 +67,10 @@ const DailyActivityTrends: React.FC<{
         if (goalResult.status === 'fulfilled') {
           const saved = goalResult.value.healthGoals?.[metricTypes[activeMetric]];
           if (saved) setGoalValues(current => ({ ...current, [activeMetric]: String(activeMetric === 'Sleep' ? saved / 60 : saved) }));
+        }
+        if (recordsResult.status === 'rejected') {
+          setLoadError(apiErrorMessage(recordsResult.reason));
+          return;
         }
         if (recordsResult.status === 'fulfilled' && recordsResult.value.records?.length) {
           const records = recordsResult.value.records.filter(row => new Date(row.recordedAt) >= new Date(Date.now() - 7 * 86400000)).reverse();
@@ -70,12 +83,22 @@ const DailyActivityTrends: React.FC<{
             const bars = [...Array(Math.max(0, 7 - values.length)).fill(0), ...values.slice(-7)].map(value => goal ? Math.max(0, Math.min(100, Math.round((value / goal) * 100))) : 50);
             const averageLabel = activeMetric === 'Sleep' ? `${Math.floor(average / 60)}h ${Math.round(average % 60)}m` : `${average}${activeMetric === 'Heart' ? ' bpm' : ''}`;
             setTrendData(current => ({ ...current, [activeMetric]: { ...current[activeMetric], bars, stats: current[activeMetric].stats.map((stat, index) => index === 0 ? { ...stat, value: activeMetric === 'Steps' ? total.toLocaleString() : averageLabel } : index === 1 ? { ...stat, value: activeMetric === 'Sleep' ? `${(average / 60).toFixed(1)}h` : String(average) } : stat), insight: `${records.length} synced ${activeMetric.toLowerCase()} readings in the last 7 days. Your average is ${averageLabel}.` } }));
+            setHasData(true);
           }
         }
-      } catch { /* Keep the existing chart content while offline. */ }
-    })();
+      } catch (error) {
+        if (active) setLoadError(apiErrorMessage(error));
+      } finally {
+        if (active) setLoading(false);
+      }
+    })().catch(error => {
+      if (active) {
+        setLoadError(apiErrorMessage(error));
+        setLoading(false);
+      }
+    });
     return () => { active = false; };
-  }, [activeMetric]));
+  }, [activeMetric, isFocused, reloadKey]);
 
   const openGoalEditor = () => {
     setGoalDraft(goalValues[activeMetric]);
@@ -123,9 +146,20 @@ const DailyActivityTrends: React.FC<{
         ]}
       >
         <TrendTabs activeMetric={activeMetric} onSelect={setActiveMetric} />
-        <TrendChart metric={activeMetric} data={data} />
-        <TrendStats metric={activeMetric} stats={data.stats} />
-        <TrendInsight text={data.insight} />
+        {loading ? <AppLoader message={`Loading ${activeMetric.toLowerCase()} trends…`} /> : loadError ? (
+          <AppErrorView message={loadError} onRefresh={() => setReloadKey(value => value + 1)} />
+        ) : !hasData ? (
+          <AppEmptyState
+            title={`No ${activeMetric.toLowerCase()} data yet`}
+            description="Health records from the last 7 days will appear here after they sync."
+          />
+        ) : (
+          <>
+            <TrendChart metric={activeMetric} data={data} />
+            <TrendStats metric={activeMetric} stats={data.stats} />
+            <TrendInsight text={data.insight} />
+          </>
+        )}
         <AppButton
           title="Adjust Goal"
           onPress={openGoalEditor}

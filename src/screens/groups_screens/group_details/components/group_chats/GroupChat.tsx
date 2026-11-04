@@ -1,7 +1,7 @@
 import React, { memo } from 'react';
 import { View, ScrollView, TextInput, Pressable } from 'react-native';
 import { Send } from 'lucide-react-native';
-import { AppText } from '../../../../../components';
+import { AppEmptyState, AppText } from '../../../../../components';
 import { GroupMessage } from '../../constants';
 import { useTheme } from '../../../../../theme/useTheme';
 import createGroupChatStyles from './styles.GroupChat';
@@ -27,7 +27,12 @@ export const GroupChat: React.FC<Props> = memo(
           showsVerticalScrollIndicator={false}
           keyboardShouldPersistTaps="handled"
         >
-          {messages.map(message => (
+          {messages.length === 0 ? (
+            <AppEmptyState
+              title="Start the conversation"
+              description="Send the first message to your group."
+            />
+          ) : messages.map(message => (
             <View
               key={message.id}
               style={[styles.messageRow, message.mine && styles.myMessageRow]}

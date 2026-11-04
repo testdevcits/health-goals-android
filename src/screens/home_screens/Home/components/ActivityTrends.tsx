@@ -1,7 +1,7 @@
-import React, { useCallback, useState } from 'react';
+import React, { useState } from 'react';
 import { TouchableOpacity, View } from 'react-native';
-import { useFocusEffect } from '@react-navigation/native';
-import { AppText, SectionHeader } from '../../../../components';
+import { useIsFocused } from '@react-navigation/native';
+import { AppEmptyState, AppErrorView, AppLoader, AppText, SectionHeader } from '../../../../components';
 import { useTheme } from '../../../../theme/useTheme';
 import { DAYS, TREND_DATA, TREND_TABS, TrendTab } from '../const';
 import { createHomeStyles } from '../styles.Home';
@@ -15,7 +15,7 @@ const BarChart: React.FC<{ data: number[]; color: string }> = ({
 }) => {
   const { theme } = useTheme();
   const styles = createHomeStyles(theme);
-  const maxValue = Math.max(...data);
+  const maxValue = Math.max(...data, 1);
 
   return (
     <View style={styles.chartArea}>
@@ -50,21 +50,39 @@ const ActivityTrends: React.FC<{ onPressDetails: () => void }> = ({
   const styles = createHomeStyles(theme);
   const [activeTab, setActiveTab] = useState<TrendTab>('Steps');
   const [trendData, setTrendData] = useState(TREND_DATA);
-  useFocusEffect(useCallback(() => {
+  const [loading, setLoading] = useState(true);
+  const [hasData, setHasData] = useState(false);
+  const [loadError, setLoadError] = useState('');
+  const [reloadKey, setReloadKey] = useState(0);
+  const isFocused = useIsFocused();
+  React.useEffect(() => {
+    if (!isFocused) return;
     let active = true;
+    setLoading(true);
+    setLoadError('');
+    setHasData(false);
     const end = new Date(); const start = new Date(Date.now() - 6 * 86400000);
     const key = (date: Date) => `${date.getFullYear()}-${String(date.getMonth()+1).padStart(2,'0')}-${String(date.getDate()).padStart(2,'0')}`;
     const metricType = activeTab === 'Steps' ? 'steps' : activeTab === 'Sleep' ? 'sleep' : 'active_minutes';
     authenticatedRequest<{ history: Array<{ date: string; value: number }> }>('GET', `/health/history?metricType=${metricType}&from=${key(start)}&to=${key(end)}`)
       .then(({ history }) => {
-        if (!active || !history.length) return;
+        if (!active) return;
+        if (!history.length) {
+          setLoading(false);
+          return;
+        }
         const values = history.slice(-7).map(row => row.value);
         const sum = values.reduce((total, value) => total + value, 0);
         const average = Math.round(sum / values.length);
         setTrendData(current => ({ ...current, [activeTab]: { ...current[activeTab], bars: values, stats: current[activeTab].stats.map((stat, index) => index === 0 ? { ...stat, value: activeTab === 'Sleep' ? `${Math.floor(average / 60)}h ${Math.round(average % 60)}m` : sum.toLocaleString() } : index === 1 ? { ...stat, value: activeTab === 'Sleep' ? `${(average / 60).toFixed(1)}h` : average.toLocaleString() } : index === 2 && activeTab === 'Steps' ? { ...stat, value: values.filter(value => value >= 10000).length.toString() } : stat) } }));
-      }).catch(() => {});
+        setHasData(true);
+      }).catch(error => {
+        if (active) setLoadError(error instanceof Error ? error.message : 'Could not load activity trends.');
+      }).finally(() => {
+        if (active) setLoading(false);
+      });
     return () => { active = false; };
-  }, [activeTab]));
+  }, [activeTab, isFocused, reloadKey]);
   const activeTrendData = trendData[activeTab];
 
   return (
@@ -94,22 +112,33 @@ const ActivityTrends: React.FC<{ onPressDetails: () => void }> = ({
             </TouchableOpacity>
           ))}
         </View>
-        <BarChart data={activeTrendData.bars} color={activeTrendData.color} />
-        <View style={styles.statsRow}>
-          {activeTrendData.stats.map((stat, index) => (
-            <React.Fragment key={stat.label}>
-              {index > 0 && <View style={styles.statDivider} />}
-              <View style={styles.statItem}>
-                <AppText variant="subtitle1" bold mb={2}>
-                  {stat.value}
-                </AppText>
-                <AppText variant="caption" secondary>
-                  {stat.label}
-                </AppText>
-              </View>
-            </React.Fragment>
-          ))}
-        </View>
+        {loading ? <AppLoader message="Loading activity trends…" /> : loadError ? (
+          <AppErrorView message={loadError} onRefresh={() => setReloadKey(value => value + 1)} />
+        ) : !hasData ? (
+          <AppEmptyState
+            title={`No ${activeTab.toLowerCase()} data yet`}
+            description="Health data from the last 7 days will appear here after it syncs."
+          />
+        ) : (
+          <>
+            <BarChart data={activeTrendData.bars} color={activeTrendData.color} />
+            <View style={styles.statsRow}>
+              {activeTrendData.stats.map((stat, index) => (
+                <React.Fragment key={stat.label}>
+                  {index > 0 && <View style={styles.statDivider} />}
+                  <View style={styles.statItem}>
+                    <AppText variant="subtitle1" bold mb={2}>
+                      {stat.value}
+                    </AppText>
+                    <AppText variant="caption" secondary>
+                      {stat.label}
+                    </AppText>
+                  </View>
+                </React.Fragment>
+              ))}
+            </View>
+          </>
+        )}
       </View>
     </>
   );

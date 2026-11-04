@@ -1,7 +1,7 @@
 import React from 'react';
 import { ScrollView, StatusBar, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { AppHeader, AppText } from '../../../components';
+import { AppEmptyState, AppErrorView, AppHeader, AppLoader } from '../../../components';
 import { useTheme } from '../../../theme/useTheme';
 import { createDailyActivityStyles } from './styles.DailyActivities';
 import ActivityChart from './components/ActivityChart';
@@ -17,7 +17,8 @@ const DailyActivities: React.FC<{ navigation: DailyActivityNavigation }> = ({
   const { theme } = useTheme();
   const insets = useSafeAreaInsets();
   const styles = createDailyActivityStyles(theme);
-  const { data, error, loading } = useTodayHealthData(true);
+  const [refreshToken, setRefreshToken] = React.useState(0);
+  const { data, error, loading } = useTodayHealthData(true, refreshToken);
   const steps = data?.steps ?? 0;
   const exerciseMinutes = data?.exerciseMinutes ?? 0;
   const calories = data?.calories ?? 0;
@@ -41,18 +42,6 @@ const DailyActivities: React.FC<{ navigation: DailyActivityNavigation }> = ({
 
     return `${formatHour(activeHour)} - ${formatHour((activeHour + 1) % 24)}`;
   };
-  const connectionMessage = loading
-    ? 'Loading today’s health data…'
-    : error
-    ? error
-    : data?.status === 'permission-required'
-    ? 'Connect Health Connect in Profile > Connected Devices to sync your activity.'
-    : data?.status === 'unavailable'
-    ? 'Health Connect is unavailable. Install or update it to sync activity.'
-    : data?.status === 'unsupported'
-    ? 'Health Connect activity sync is available on Android.'
-    : null;
-
   return (
     <View style={[styles.screen, {}]}>
       <StatusBar
@@ -75,15 +64,30 @@ const DailyActivities: React.FC<{ navigation: DailyActivityNavigation }> = ({
           { paddingBottom: insets.bottom + 28 },
         ]}
       >
-        {connectionMessage ? (
-          <AppText
-            variant="caption"
-            color={error ? 'textError' : 'textSecondary'}
-            style={{ marginTop: theme.spacing.md }}
-          >
-            {connectionMessage}
-          </AppText>
-        ) : null}
+        {loading ? <AppLoader message="Loading today’s activity…" /> : error ? (
+          <AppErrorView message={error} onRefresh={() => setRefreshToken(value => value + 1)} />
+        ) : data?.status === 'permission-required' ? (
+          <AppEmptyState
+            title="Health access needed"
+            description="Connect Health Connect in Profile → Connected Devices and allow access to the health metrics you want to see."
+          />
+        ) : data?.status === 'unavailable' ? (
+          <AppEmptyState
+            title="Health Connect unavailable"
+            description="Install or update Health Connect, then return to view your activity."
+          />
+        ) : data?.status === 'unsupported' ? (
+          <AppEmptyState
+            title="Android only"
+            description="Health Connect activity sync is currently available on Android."
+          />
+        ) : !data || [data.steps, data.distanceMeters, data.calories, data.exerciseMinutes].every(value => value === null) ? (
+          <AppEmptyState
+            title="No activity recorded today"
+            description="Your steps, workouts, distance, and calories will appear here after Health Connect records them."
+          />
+        ) : (
+          <>
         <ActivityRings
           rings={[
             {
@@ -161,6 +165,8 @@ const DailyActivities: React.FC<{ navigation: DailyActivityNavigation }> = ({
           color={theme.colors.warning}
           values={hourlyCalories}
         />
+          </>
+        )}
       </ScrollView>
     </View>
   );

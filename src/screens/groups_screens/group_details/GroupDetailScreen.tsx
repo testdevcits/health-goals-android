@@ -17,7 +17,7 @@ import {
   DURATION_OPTIONS,
   REWARD_OPTIONS,
 } from './constants';
-import { AppHeader } from '../../../components';
+import { AppErrorView, AppHeader, AppLoader } from '../../../components';
 import { useNavigation } from '@react-navigation/native';
 import ChallengesTab from './components/challengestab/ChallengesTab';
 import { useRoute, type RouteProp } from '@react-navigation/native';
@@ -77,6 +77,8 @@ const GroupDetailScreen: React.FC<GroupDetailScreenProps> = ({
   const [challenges, setChallenges] = useState<GroupChallenge[]>([]);
   const [members, setMembers] = useState<Member[]>([]);
   const [messages, setMessages] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState('');
   const [messageDraft, setMessageDraft] = useState('');
   const [createChallengeVisible, setCreateChallengeVisible] = useState(false);
   const [challengeName, setChallengeName] = useState('');
@@ -88,6 +90,8 @@ const GroupDetailScreen: React.FC<GroupDetailScreenProps> = ({
 
   const refreshGroup = useCallback(async () => {
     if (!groupId) return;
+    setLoading(true);
+    setLoadError('');
     try {
       const [groupResult, challengeResult, messageResult, leaderboardResult] = await Promise.all([
         authenticatedRequest<{ group: { name: string; description: string; members: number } }>('GET', `/community/groups/${encodeURIComponent(groupId)}`),
@@ -99,7 +103,13 @@ const GroupDetailScreen: React.FC<GroupDetailScreenProps> = ({
       setChallenges(challengeResult.challenges.map(item => ({ id: item.id, title: item.title, description: item.description, status: item.status, progress: 0, progressLabel: `${item.participants} participants`, color: colors.primary })));
       setMessages((messageResult.messages || []).map((item: any) => ({ ...item, color: colors.primary })));
       setMembers((leaderboardResult.leaderboard || []).map(item => ({ id: item.id, name: item.name, initials: item.initials, steps: item.steps, streak: Number.parseInt(item.streak, 10) || 0, color: item.color })));
-    } catch (error) { showAppToast('error', 'Could not load group', apiErrorMessage(error)); }
+    } catch (error) {
+      const message = apiErrorMessage(error);
+      setLoadError(message);
+      showAppToast('error', 'Could not load group', message);
+    } finally {
+      setLoading(false);
+    }
   }, [groupId, colors.primary]);
   React.useEffect(() => { void refreshGroup(); }, [refreshGroup]);
 
@@ -208,6 +218,12 @@ const GroupDetailScreen: React.FC<GroupDetailScreenProps> = ({
         showsVerticalScrollIndicator={false}
         keyboardShouldPersistTaps="handled"
       >
+        {loading ? (
+          <AppLoader message="Loading group details…" />
+        ) : loadError ? (
+          <AppErrorView message={loadError} onRefresh={() => { refreshGroup(); }} />
+        ) : (
+          <>
         <GroupBanner
           groupName={groupName}
           groupDescription={groupDescription}
@@ -241,6 +257,8 @@ const GroupDetailScreen: React.FC<GroupDetailScreenProps> = ({
           />
         )}
         {activeTab === 'Chat' && <GroupChat messages={messages} messageDraft={messageDraft} onChangeDraft={setMessageDraft} onSend={() => void sendMessage()} />}
+          </>
+        )}
       </ScrollView>
 
       <CreateChallengeModal

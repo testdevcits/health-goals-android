@@ -5,7 +5,7 @@ import { useFocusEffect } from '@react-navigation/native';
 import { Dumbbell } from 'lucide-react-native';
 
 import { useTheme } from '../../../theme/useTheme';
-import { AppHeader, AppText } from '../../../components';
+import { AppEmptyState, AppErrorView, AppHeader, AppLoader, AppText } from '../../../components';
 import { createCardStyles, createStyles } from './styles.AllChallenges';
 import { authenticatedRequest } from '../../../services/authenticatedApi';
 import { apiErrorMessage } from '../../../services/api';
@@ -43,11 +43,21 @@ const AllChallengesScreen: React.FC<AllChallengesScreenProps> = ({
   const [selectedCategory, setSelectedCategory] =
     useState<ChallengeCategory>('All');
   const [challenges, setChallenges] = useState<Challenge[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState('');
   const refresh = useCallback(async () => {
+    setLoading(true);
+    setLoadError('');
     try {
       const result = await authenticatedRequest<{ challenges: Array<{ id: string; title: string; description: string; metricType: string; targetValue: number; status: string; joined: boolean }> }>('GET', '/community/challenges');
       setChallenges((result.challenges || []).map(item => ({ id: item.id, title: item.title, description: item.description || `${item.targetValue} ${item.metricType}`, category: item.metricType === 'steps' ? 'Steps' : item.metricType === 'workout' ? 'Strength' : 'Mind', status: item.status, progress: 0, progressLabel: `${item.targetValue.toLocaleString()} target`, color: '#00C6A2', emoji: item.metricType === 'steps' ? '👟' : item.metricType === 'workout' ? '💪' : '🧘', joined: item.joined })));
-    } catch (error) { showAppToast('error', 'Could not load challenges', apiErrorMessage(error)); }
+    } catch (error) {
+      const message = apiErrorMessage(error);
+      setLoadError(message);
+      showAppToast('error', 'Could not load challenges', message);
+    } finally {
+      setLoading(false);
+    }
   }, []);
   useFocusEffect(useCallback(() => { void refresh(); }, [refresh]));
   const joinChallenge = async (challengeId: string) => {
@@ -77,7 +87,7 @@ const AllChallengesScreen: React.FC<AllChallengesScreenProps> = ({
         showsVerticalScrollIndicator={false}
         contentContainerStyle={styles.scrollContent}
       >
-        <View style={styles.categoryContainer}>
+        {!loading && !loadError ? <View style={styles.categoryContainer}>
           {categories.map(category => {
             const isSelected = selectedCategory === category;
 
@@ -109,32 +119,30 @@ const AllChallengesScreen: React.FC<AllChallengesScreenProps> = ({
               </Pressable>
             );
           })}
-        </View>
+        </View> : null}
 
         <View style={styles.challengeList}>
-          {filteredChallenges.map(challenge => (
-            <ChallengeCard
-              key={challenge.id}
-              challenge={challenge}
-              onContinue={id => { if (onContinue) onContinue(id); else void joinChallenge(id); }}
-              colors={colors}
-              spacing={spacing}
-              radius={radius}
+          {loading ? <AppLoader message="Loading challenges…" /> : loadError ? (
+            <AppErrorView message={loadError} onRefresh={() => { refresh(); }} />
+          ) : filteredChallenges.length ? (
+            filteredChallenges.map(challenge => (
+              <ChallengeCard
+                key={challenge.id}
+                challenge={challenge}
+                onContinue={id => { if (onContinue) onContinue(id); else void joinChallenge(id); }}
+                colors={colors}
+                spacing={spacing}
+                radius={radius}
+              />
+            ))
+          ) : (
+            <AppEmptyState
+              title="No challenges found"
+              description={selectedCategory === 'All' ? 'New challenges will appear here when available.' : `There are no ${selectedCategory.toLowerCase()} challenges right now.`}
+              icon={<Dumbbell size={28} color={colors.primary} strokeWidth={1.8} />}
+              actionLabel={selectedCategory !== 'All' ? 'Show all challenges' : undefined}
+              onAction={selectedCategory !== 'All' ? () => setSelectedCategory('All') : undefined}
             />
-          ))}
-
-          {filteredChallenges.length === 0 && (
-            <View style={styles.emptyState}>
-              <Dumbbell size={36} color={colors.textTertiary} />
-
-              <AppText variant="subtitle1" center mt={spacing.md}>
-                No challenges yet
-              </AppText>
-
-              <AppText variant="body2" secondary center mt={spacing.xs}>
-                Check back later for new challenges.
-              </AppText>
-            </View>
           )}
         </View>
       </ScrollView>

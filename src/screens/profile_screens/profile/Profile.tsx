@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo, useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import {
   Image,
   View,
@@ -18,11 +18,12 @@ import { getProfileMenuItems } from './conts';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '../../../navigations/ProfileStack';
-import { useFocusEffect } from '@react-navigation/native';
+import { useIsFocused } from '@react-navigation/native';
 import { authenticatedRequest } from '../../../services/authenticatedApi';
 import { getCurrentUser } from '../../../services/profile';
 import { useAppDispatch, useAppSelector } from '../../../store/hooks';
 import { setProfile } from '../../../store/profileSlice';
+import { AppEmptyState, AppErrorView, AppLoader } from '../../../components';
 
 type ProfileNavigationProp = NativeStackNavigationProp<RootStackParamList>;
 
@@ -36,8 +37,16 @@ const ProfileScreen: React.FC = () => {
   const dispatch = useAppDispatch();
   const user = useAppSelector(state => state.profile.user);
   const [points, setPoints] = useState(0);
-  useFocusEffect(useCallback(() => {
+  const [walletLoading, setWalletLoading] = useState(true);
+  const [profileLoading, setProfileLoading] = useState(!user);
+  const [profileError, setProfileError] = useState('');
+  const [reloadKey, setReloadKey] = useState(0);
+  const isFocused = useIsFocused();
+  React.useEffect(() => {
+    if (!isFocused) return;
     let active = true;
+    setProfileLoading(true);
+    setProfileError('');
     Promise.allSettled([
       getCurrentUser(),
       authenticatedRequest<{ wallet?: { availablePoints?: number; balance?: number } }>('GET', '/wallet'),
@@ -46,10 +55,12 @@ const ProfileScreen: React.FC = () => {
       const fetchedUser = userResult.status === 'fulfilled' ? userResult.value : null;
       const wallet = walletResult.status === 'fulfilled' ? walletResult.value.wallet : undefined;
       if (fetchedUser) dispatch(setProfile(fetchedUser));
+      else if (userResult.status === 'rejected') setProfileError('We could not load your profile. Check your connection and try again.');
       setPoints(Number(wallet?.availablePoints ?? wallet?.balance ?? 0));
-    });
+      setWalletLoading(false);
+    }).finally(() => { if (active) setProfileLoading(false); });
     return () => { active = false; };
-  }, [dispatch]));
+  }, [dispatch, isFocused, reloadKey]);
   const name = user?.name ?? '';
   const profileImageUrl = user?.profileImageUrl ?? '';
   const device = user?.deviceProfile;
@@ -128,6 +139,12 @@ const ProfileScreen: React.FC = () => {
           { paddingBottom: insets.bottom + spacing.xl },
         ]}
       >
+        {!user && profileLoading ? <AppLoader message="Loading your profile…" /> : !user && profileError ? (
+          <AppErrorView message={profileError} onRefresh={() => setReloadKey(value => value + 1)} />
+        ) : !user ? (
+          <AppEmptyState title="Profile unavailable" description="Sign in again to view your account details." />
+        ) : (
+          <>
         {/* Profile information */}
         <View style={styles.profileSection}>
           <View style={styles.largeAvatar}>
@@ -146,7 +163,7 @@ const ProfileScreen: React.FC = () => {
         {/* Rewards and activity summary */}
         <View style={[styles.statsCard, { backgroundColor: colors.surface }]}>
           {[
-            { value: points.toLocaleString(), label: 'Points' },
+            { value: walletLoading ? '…' : points.toLocaleString(), label: 'Points' },
             { value: '—', label: 'Day Streak' },
             { value: '—', label: 'Badges' },
             { value: '—', label: 'Rank' },
@@ -212,6 +229,8 @@ const ProfileScreen: React.FC = () => {
             </Pressable>
           ))}
         </View>
+          </>
+        )}
       </ScrollView>
     </View>
   );

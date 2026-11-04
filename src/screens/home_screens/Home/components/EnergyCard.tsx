@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text } from 'react-native';
+import { ActivityIndicator, View, Text } from 'react-native';
 import Svg, { Circle } from 'react-native-svg';
 
 import { AppText } from '../../../../components';
@@ -77,16 +77,29 @@ const EnergyCard: React.FC = () => {
   const [energy, setEnergy] = React.useState(0);
   const [streakPeriod, setStreakPeriod] = React.useState(0);
   const [stepsTarget, setStepsTarget] = React.useState(10000);
+  const [loading, setLoading] = React.useState(true);
+  const [loadError, setLoadError] = React.useState(false);
+  const [hasActivity, setHasActivity] = React.useState(false);
   useFocusEffect(React.useCallback(() => {
     let active = true;
+    setLoading(true);
+    setLoadError(false);
     Promise.all([
-      authenticatedRequest<{ totals?: { steps?: number }; creditedCoins?: number }>('GET', '/activity/today'),
+      authenticatedRequest<{ totals?: { steps?: number; workoutMinutes?: number; meditationMinutes?: number }; creditedCoins?: number }>('GET', '/activity/today'),
       getCurrentUser(),
       authenticatedRequest<{ items: Array<{ day: string; creditedCoins?: number; totals?: { steps?: number; workoutMinutes?: number; meditationMinutes?: number } }> }>('GET', '/activity/history?limit=30'),
     ]).then(([day, profile, history]) => {
       if (!active) return;
       const target = profile.healthGoals?.steps || 10000;
       const steps = day.totals?.steps || 0;
+      setHasActivity(
+        steps > 0 ||
+        Boolean(day.totals?.workoutMinutes) ||
+        Boolean(day.totals?.meditationMinutes) ||
+        (history.items || []).some(item =>
+          Boolean(item.totals?.steps || item.totals?.workoutMinutes || item.totals?.meditationMinutes),
+        ),
+      );
       setStepsTarget(target);
       setEnergy(Math.min(100, Math.round(steps / target * 100)));
       const activeDays = new Set((history.items || []).filter(item => (item.creditedCoins || 0) > 0 || Boolean(item.totals?.steps || item.totals?.workoutMinutes || item.totals?.meditationMinutes)).map(item => item.day));
@@ -95,7 +108,8 @@ const EnergyCard: React.FC = () => {
       let streak = 0; const cursor = new Date();
       while (activeDays.has(new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Kolkata' }).format(cursor))) { streak += 1; cursor.setUTCDate(cursor.getUTCDate() - 1); }
       setStreakPeriod(streak);
-    }).catch(() => { if (active) { setEnergy(0); setStreakPeriod(0); } });
+    }).catch(() => { if (active) setLoadError(true); })
+      .finally(() => { if (active) setLoading(false); });
     return () => { active = false; };
   }, []));
   const { theme } = useTheme();
@@ -104,6 +118,23 @@ const EnergyCard: React.FC = () => {
 
   return (
     <View style={styles.energyCard}>
+      {loading ? (
+        <View style={styles.energyStatus}>
+          <ActivityIndicator size="small" color={colors.white} />
+          <AppText variant="caption" color="textInverse">Loading today’s progress…</AppText>
+        </View>
+      ) : loadError ? (
+        <View style={styles.energyStatus}>
+          <AppText variant="subtitle1" bold color="textInverse">Progress unavailable</AppText>
+          <AppText variant="caption" color="textInverse">Reopen Home to try again.</AppText>
+        </View>
+      ) : !hasActivity ? (
+        <View style={styles.energyStatus}>
+          <AppText variant="subtitle1" bold color="textInverse">No activity yet</AppText>
+          <AppText variant="caption" color="textInverse">Your steps and streak will appear here after activity syncs.</AppText>
+        </View>
+      ) : (
+      <>
       <EnergyCircle energy={energy} />
 
       {/* Right side with a subtle circular gray background */}
@@ -144,6 +175,8 @@ const EnergyCard: React.FC = () => {
           </AppText>
         </View>
       </View>
+      </>
+      )}
     </View>
   );
 };

@@ -2,7 +2,7 @@ import React, { useCallback, useState } from 'react';
 import { View, ScrollView, Pressable, Alert } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
 import { useTheme } from '../../../theme/useTheme';
-import { AppHeader, AppText } from '../../../components';
+import { AppEmptyState, AppErrorView, AppHeader, AppLoader, AppText } from '../../../components';
 import createStyles from './styles.Groups';
 import CreateGroupModal from './components/CreateGroupModal';
 import FeedTab from './tabs/FeedTab';
@@ -23,8 +23,12 @@ const GroupsScreen: React.FC = () => {
   const [activeTab, setActiveTab] = useState<GroupTab>('My Groups');
   const [groups, setGroups] = useState<Group[]>([]);
   const [posts, setPosts] = useState<FeedPost[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState('');
 
   const refresh = useCallback(async () => {
+    setLoading(true);
+    setLoadError('');
     try {
       if (activeTab === 'Feed') {
         const feedResult = await authenticatedRequest<{ posts: FeedPost[] }>('GET', '/community/feed');
@@ -33,7 +37,13 @@ const GroupsScreen: React.FC = () => {
         const groupResult = await authenticatedRequest<{ groups: Group[] }>('GET', activeTab === 'Discover' ? '/community/groups/discover' : '/community/groups');
         setGroups(groupResult.groups || []);
       }
-    } catch (error) { showAppToast('error', 'Could not load community', apiErrorMessage(error)); }
+    } catch (error) {
+      const message = apiErrorMessage(error);
+      setLoadError(message);
+      showAppToast('error', 'Could not load community', message);
+    } finally {
+      setLoading(false);
+    }
   }, [activeTab]);
   useFocusEffect(useCallback(() => { void refresh(); }, [refresh]));
 
@@ -115,18 +125,34 @@ const GroupsScreen: React.FC = () => {
         showsVerticalScrollIndicator={false}
         contentContainerStyle={styles.scrollContent}
       >
-        {activeTab !== 'Feed' ? (
-          <MyGroups
-            groups={groups}
-            avatarColors={avatarColors}
-            setCreateModalVisible={setCreateModalVisible}
-            onJoinGroup={joinGroup}
-            discover={activeTab === 'Discover'}
-          />
+        {loading ? (
+          <AppLoader message={activeTab === 'Feed' ? 'Loading community feed…' : 'Loading groups…'} />
+        ) : loadError ? (
+          <AppErrorView message={loadError} onRefresh={() => { refresh(); }} />
+        ) : activeTab !== 'Feed' ? (
+          groups.length ? (
+            <MyGroups
+              groups={groups}
+              avatarColors={avatarColors}
+              setCreateModalVisible={setCreateModalVisible}
+              onJoinGroup={joinGroup}
+              discover={activeTab === 'Discover'}
+            />
+          ) : (
+            <AppEmptyState
+              title={activeTab === 'Discover' ? 'No groups to discover' : 'No groups yet'}
+              description={activeTab === 'Discover' ? 'New communities will appear here when available.' : 'Create a group or explore communities to get started.'}
+              actionLabel={activeTab === 'Discover' ? undefined : 'Create a group'}
+              onAction={activeTab === 'Discover' ? undefined : () => setCreateModalVisible(true)}
+            />
+          )
         ) : (
-          <FeedTab
-            posts={posts}
-          />
+          posts.length ? <FeedTab posts={posts} /> : (
+            <AppEmptyState
+              title="Your feed is quiet"
+              description="Group activity and updates will show here when they are available."
+            />
+          )
         )}
       </ScrollView>
 

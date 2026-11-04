@@ -1,9 +1,12 @@
-import React, { useCallback, useState } from 'react';
+import React, { useState } from 'react';
 import { Alert, NativeModules, Pressable, ScrollView, View } from 'react-native';
-import { useFocusEffect } from '@react-navigation/native';
+import { useIsFocused } from '@react-navigation/native';
 import {
   AppButton,
+  AppEmptyState,
+  AppErrorView,
   AppHeader,
+  AppLoader,
   AppText,
   ProfileCard,
   ProfileMetric,
@@ -27,11 +30,14 @@ const HealthReportsScreen: React.FC<{
   const [history, setHistory] = useState<DailyValue[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [reloadKey, setReloadKey] = useState(0);
   const [dailyCoins, setDailyCoins] = useState<Array<{ day: string; totals?: { steps?: number; workoutMinutes?: number; sleepMinutes?: number }; creditedCoins?: number }>>([]);
   const to = new Date();
   const from = new Date(Date.now() - 6 * 86400000);
   const dateKey = (date: Date) => `${date.getFullYear()}-${String(date.getMonth()+1).padStart(2,'0')}-${String(date.getDate()).padStart(2,'0')}`;
-  useFocusEffect(useCallback(() => {
+  const isFocused = useIsFocused();
+  React.useEffect(() => {
+    if (!isFocused) return;
     let active = true;
     setLoading(true); setError('');
     const requestTo = new Date();
@@ -44,7 +50,7 @@ const HealthReportsScreen: React.FC<{
       .catch(cause => { if (active) setError(apiErrorMessage(cause)); })
       .finally(() => { if (active) setLoading(false); });
     return () => { active = false; };
-  }, [activeTab]));
+  }, [activeTab, isFocused, reloadKey]);
   const shareReport = (title: string) => {
     const total = history.reduce((sum, item) => sum + item.value, 0);
     const content = [
@@ -110,7 +116,19 @@ const HealthReportsScreen: React.FC<{
               </Pressable>
             ))}
           </View>
-          {activeTab === 'Steps' && history.length ? (
+          {loading ? (
+            <AppLoader message="Loading your health report…" />
+          ) : error ? (
+            <AppErrorView
+              message={error}
+              onRefresh={() => setReloadKey(value => value + 1)}
+            />
+          ) : history.length === 0 ? (
+            <AppEmptyState
+              title="No health data for this week"
+              description="Connect Health Connect and allow access to this metric to see your report."
+            />
+          ) : activeTab === 'Steps' ? (
             <View style={styles.chart}>
               {history.slice(-7).map((item, index) => (
                 <View key={index} style={styles.chartDay}>
@@ -134,13 +152,15 @@ const HealthReportsScreen: React.FC<{
             </View>
           ) : (
             <View style={styles.chartPlaceholder}>
-              <AppText variant="h3" primary>{loading ? 'Loading…' : error ? 'Data unavailable' : history.length ? `${history.reduce((sum, item) => sum + item.value, 0).toLocaleString()} ${history[0].unit}` : 'No synced data yet'}</AppText>
+              <AppText variant="h3" primary>
+                {history.reduce((sum, item) => sum + item.value, 0).toLocaleString()} {history[0]?.unit}
+              </AppText>
               <AppText variant="caption" secondary>
-                {error || 'This week'}
+                {activeTab === 'Sleep' ? 'Sleep recorded this week' : 'Workout minutes recorded this week'}
               </AppText>
             </View>
           )}
-          <View style={styles.metricsRow}>
+          {!loading && !error && history.length > 0 ? <View style={styles.metricsRow}>
             {(activeTab === 'Steps'
               ? [[history.reduce((sum, item) => sum + item.value, 0).toLocaleString(), 'Total Steps'], [history.length ? Math.round(history.reduce((sum, item) => sum + item.value, 0) / history.length).toLocaleString() : '—', 'Daily Avg'], [history.filter(item => item.value >= 10000).length.toString(), 'Days >10K']]
               : activeTab === 'Sleep'
@@ -149,8 +169,8 @@ const HealthReportsScreen: React.FC<{
             ).map(([value, label]) => (
               <ProfileMetric key={label} value={value} label={label} />
             ))}
-          </View>
-          <View style={styles.reportActions}>
+          </View> : null}
+          {!loading && !error && history.length > 0 ? <View style={styles.reportActions}>
             <AppButton
               title="Share"
               variant="ghost"
@@ -167,17 +187,27 @@ const HealthReportsScreen: React.FC<{
               }
               style={styles.reportButton}
             />
-          </View>
+          </View> : null}
         </ProfileCard>
 
         <ProfileCard style={styles.reportCard}>
           <AppText variant="subtitle2" bold>Daily coins this week</AppText>
           <AppText variant="caption" secondary>Coins credited after activity settlement</AppText>
-          <View style={styles.metricsRow}>
+          {loading ? <AppLoader message="Loading activity settlement…" /> : error ? (
+            <AppErrorView
+              message={error}
+              onRefresh={() => setReloadKey(value => value + 1)}
+            />
+          ) : dailyCoins.length === 0 ? (
+            <AppEmptyState
+              title="No activity settlement yet"
+              description="Daily points will appear here after the server processes your activity."
+            />
+          ) : <View style={styles.metricsRow}>
             <ProfileMetric value={dailyCoins.reduce((sum, day) => sum + (day.creditedCoins || 0), 0).toLocaleString()} label="Coins Earned" />
             <ProfileMetric value={dailyCoins.length.toString()} label="Active Days" />
             <ProfileMetric value={dailyCoins.reduce((sum, day) => sum + (day.totals?.steps || 0), 0).toLocaleString()} label="Week Steps" />
-          </View>
+          </View>}
           <View style={styles.reportActions}>
             <AppButton title="Share" variant="ghost" onPress={() => shareReport('This week’s report')} style={[styles.reportButton, { backgroundColor: theme.colors.primaryLight }]} />
             <AppButton title="View PDF" onPress={() => Alert.alert('PDF report', 'PDF export is not available yet.')} style={styles.reportButton} />

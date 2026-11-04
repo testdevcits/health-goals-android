@@ -51,6 +51,12 @@ export const styles = (theme: AppTheme) => {
       borderRadius: radius.full,
       alignItems: 'center',
       justifyContent: 'center',
+      overflow: 'hidden',
+    },
+
+    avatarImage: {
+      width: '100%',
+      height: '100%',
     },
   });
 };

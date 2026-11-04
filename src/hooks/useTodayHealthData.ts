@@ -12,7 +12,10 @@ type HealthDataState = {
   error: string | null;
 };
 
-export const useTodayHealthData = (includeHourlyData = false) => {
+export const useTodayHealthData = (
+  includeHourlyData = false,
+  refreshToken = 0,
+) => {
   const [state, setState] = useState<HealthDataState>({
     loading: true,
     data: null,
@@ -51,7 +54,7 @@ export const useTodayHealthData = (includeHourlyData = false) => {
       return () => {
         isActive = false;
       };
-    }, [includeHourlyData]),
+    }, [includeHourlyData, refreshToken]),
   );
 
   return state;

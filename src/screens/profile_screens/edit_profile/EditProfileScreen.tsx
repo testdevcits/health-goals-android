@@ -1,10 +1,12 @@
-import React, { useCallback, useState } from 'react';
+import React, { useState } from 'react';
 import { Image, Modal, Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { Calendar } from 'react-native-calendars';
 import {
   AppButton,
+  AppErrorView,
   AppHeader,
   AppInput,
+  AppLoader,
   AppSelect,
   AppText,
 } from '../../../components';
@@ -14,7 +16,7 @@ import { Camera } from 'lucide-react-native';
 import ImagePicker from 'react-native-image-crop-picker';
 import { useTheme } from '../../../theme/useTheme';
 import createStyles from './styles.EditProfile';
-import { useFocusEffect } from '@react-navigation/native';
+import { useIsFocused } from '@react-navigation/native';
 import { authenticatedRequest } from '../../../services/authenticatedApi';
 import { getCurrentUser } from '../../../services/profile';
 import { apiErrorMessage } from '../../../services/api';
@@ -65,14 +67,21 @@ const EditProfileScreen: React.FC<{ navigation: ProfileScreenNavigation }> = ({
   const [profileImage, setProfileImage] = useState('');
   const [profileImageUrl, setProfileImageUrl] = useState('');
   const [imageBusy, setImageBusy] = useState(false);
+  const [savingProfile, setSavingProfile] = useState(false);
   const [isCalendarVisible, setIsCalendarVisible] = useState(false);
+  const [profileLoading, setProfileLoading] = useState(true);
+  const [profileLoadError, setProfileLoadError] = useState('');
+  const [reloadKey, setReloadKey] = useState(0);
   const selectedBirthDate = dateToCalendarString(birthDate);
   const { theme } = useTheme();
   const { colors } = theme;
   const styles = createStyles(colors);
-  useFocusEffect(
-    useCallback(() => {
+  const isFocused = useIsFocused();
+  React.useEffect(() => {
+    if (!isFocused) return;
       let active = true;
+      setProfileLoading(true);
+      setProfileLoadError('');
       getCurrentUser()
         .then(user => {
           if (!active) return;
@@ -85,12 +94,20 @@ const EditProfileScreen: React.FC<{ navigation: ProfileScreenNavigation }> = ({
           setBirthDate(user?.birthDate || '');
           setProfileImageUrl(user?.profileImageUrl || '');
         })
-        .catch(() => {});
+        .catch(error => {
+          if (active) {
+            const message = apiErrorMessage(error);
+            setProfileLoadError(message);
+            showAppToast('error', 'Could not load profile', message);
+          }
+        })
+        .finally(() => {
+          if (active) setProfileLoading(false);
+        });
       return () => {
         active = false;
       };
-    }, [dispatch]),
-  );
+    }, [dispatch, isFocused, reloadKey]);
   const handleChooseImage = async () => {
     try {
       const image = await ImagePicker.openPicker({
@@ -142,6 +159,7 @@ const EditProfileScreen: React.FC<{ navigation: ProfileScreenNavigation }> = ({
   };
 
   const saveProfile = async () => {
+    setSavingProfile(true);
     try {
       const user = await authenticatedRequest<{
         user: {
@@ -164,6 +182,8 @@ const EditProfileScreen: React.FC<{ navigation: ProfileScreenNavigation }> = ({
       navigation.goBack();
     } catch (error) {
       showAppToast('error', 'Could not save profile', apiErrorMessage(error));
+    } finally {
+      setSavingProfile(false);
     }
   };
 
@@ -176,7 +196,14 @@ const EditProfileScreen: React.FC<{ navigation: ProfileScreenNavigation }> = ({
         showNotifications={false}
         showProfile={false}
       />
-      <ScrollView contentContainerStyle={{ flexGrow: 1, paddingBottom: 100 }}>
+      {profileLoading ? (
+        <AppLoader message="Loading your profile…" />
+      ) : profileLoadError ? (
+        <AppErrorView
+          message={profileLoadError}
+          onRefresh={() => setReloadKey(value => value + 1)}
+        />
+      ) : <ScrollView contentContainerStyle={{ flexGrow: 1, paddingBottom: 100 }}>
         <View style={styles.form}>
           <View style={styles.profileImageContainer}>
             <Image
@@ -281,10 +308,12 @@ const EditProfileScreen: React.FC<{ navigation: ProfileScreenNavigation }> = ({
           <AppButton
             title="Save Changes"
             onPress={() => void saveProfile()}
+            loading={savingProfile}
+            disabled={savingProfile}
             style={styles.saveButton}
           />
         </View>
-      </ScrollView>
+      </ScrollView>}
       <Modal
         visible={isCalendarVisible}
         transparent

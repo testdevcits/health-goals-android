@@ -13,6 +13,7 @@ export interface Challenge {
   color: string;
   icon: LucideIcon;
   joined?: boolean;
+  joinable?: boolean;
 }
 
 export interface Badge {

@@ -1,6 +1,6 @@
 import { Pressable, View } from 'react-native';
 import React from 'react';
-import { AppText } from '../../../../../components';
+import { AppEmptyState, AppText } from '../../../../../components';
 import ChallengeCard from '../../../../../components/ChallengeCard';
 import { useTheme } from '../../../../../theme/useTheme';
 import createGroupOverviewStyles from '../group_overview/styles.GroupOverview';
@@ -36,7 +36,12 @@ const ChallengesTab: React.FC<ChallengesTabProps> = ({
         <AppText variant="subtitle1">Challenges</AppText>
       </View>
 
-      {challenges?.map((challenge: ChallengeItem) => (
+      {challenges.length === 0 ? (
+        <AppEmptyState
+          title="No group challenges yet"
+          description="Create a challenge to help your group stay motivated."
+        />
+      ) : challenges.map((challenge: ChallengeItem) => (
         <ChallengeCard
           key={challenge.id}
           challenge={{

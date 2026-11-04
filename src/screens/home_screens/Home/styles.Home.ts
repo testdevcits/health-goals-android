@@ -110,6 +110,13 @@ export const createHomeStyles = (theme: AppTheme) => {
       shadowRadius: 12,
       shadowOffset: { width: 0, height: 4 },
     },
+    energyStatus: {
+      flex: 1,
+      minHeight: 84,
+      alignItems: 'center',
+      justifyContent: 'center',
+      gap: spacing.xs,
+    },
     energyCircle: {
       width: 84,
       height: 84,

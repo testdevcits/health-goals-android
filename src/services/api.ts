@@ -37,7 +37,7 @@ export const api = axios.create({
 });
 
 const SENSITIVE_FIELD =
-  /password|passcode|otp|token|secret|authorization|cookie|api.?key|credential|email|phone|identifier|user.?id|query|search/i;
+  /password|passcode|otp|token|secret|authorization|cookie|api.?key|credential|email|phone|identifier|user.?id|query|search|redemption.?code|coupon|voucher|ticket.?number|ticket.?image|booking.?reference|profile.?image|image|base64|data.?uri/i;
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null;
@@ -212,7 +212,7 @@ if (__DEV__) {
           `${Date.now() -
             (requestStartedAt.get(response.config) ?? Date.now())}ms`,
         ],
-        ['BODY', response.data],
+        ['BODY', sanitizeValue(response.data)],
       ]);
 
       return response;
@@ -236,7 +236,7 @@ if (__DEV__) {
         }
 
         if (error.response?.data !== undefined) {
-          entries.push(['RESPONSE BODY', error.response.data]);
+          entries.push(['RESPONSE BODY', sanitizeValue(error.response.data)]);
         }
 
         console.error('╔══════════════════ ❌ HTTP ERROR RESPONSE ═══════════╗');

@@ -1,11 +1,12 @@
 import React, { memo } from 'react';
-import { Pressable, View } from 'react-native';
+import { Image, Pressable, View } from 'react-native';
 import { Bell, ChevronLeft } from 'lucide-react-native';
 
 import AppText from '../AppText';
 import { useTheme } from '../../theme/useTheme';
 import { styles as createStyles } from './AppHeader.styles';
 import { NavigationProp, useNavigation } from '@react-navigation/native';
+import { useAppSelector } from '../../store/hooks';
 
 type AppHeaderNavigationParamList = {
   Notifications: undefined;
@@ -19,7 +20,6 @@ interface AppHeaderProps {
   onNotificationPress?: () => void;
   isBack?: boolean;
   showNotifications?: boolean;
-  avatarText?: string;
   showProfile?: boolean;
 }
 
@@ -30,12 +30,21 @@ const AppHeader: React.FC<AppHeaderProps> = ({
   onNotificationPress,
   isBack = true,
   showNotifications = true,
-  avatarText = '',
   showProfile = true,
 }) => {
   const { theme } = useTheme();
   const { colors } = theme;
   const componentStyles = createStyles(theme);
+  const profile = useAppSelector(state => state.profile.user);
+  const name = profile?.name?.trim() ?? '';
+  const initials =
+    name
+      .split(/\s+/)
+      .filter(Boolean)
+      .map(part => part[0])
+      .join('')
+      .slice(0, 2)
+      .toUpperCase() || 'U';
 
   const navigation =
     useNavigation<NavigationProp<AppHeaderNavigationParamList>>();
@@ -93,10 +102,21 @@ const AppHeader: React.FC<AppHeaderProps> = ({
           <Pressable
             onPress={() => navigation.navigate('Profile')}
             style={[componentStyles.avatar, { backgroundColor: colors.info }]}
+            accessibilityRole="button"
+            accessibilityLabel={`Profile${name ? ` for ${name}` : ''}`}
           >
-            <AppText variant="subtitle2" color="white" bold>
-              {avatarText}
-            </AppText>
+            {profile?.profileImageUrl ? (
+              <Image
+                source={{ uri: profile.profileImageUrl }}
+                style={componentStyles.avatarImage}
+                resizeMode="cover"
+                accessibilityIgnoresInvertColors
+              />
+            ) : (
+              <AppText variant="subtitle2" color="white" bold>
+                {initials}
+              </AppText>
+            )}
           </Pressable>
         )}
       </View>
