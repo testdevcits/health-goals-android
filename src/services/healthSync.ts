@@ -13,7 +13,7 @@ import { ensureHealthConnectDevice } from './devices';
 
 const OFFSET_MS = 330 * 60 * 1000;
 const SOURCE = 'health_connect';
-let activeSync: Promise<{ synced: number }> | null = null;
+let activeSync: Promise<HealthSyncResult> | null = null;
 let lastSuccessfulSync = 0;
 
 const WALKING_TYPES = new Set<number>([ExerciseType.WALKING]);
@@ -279,22 +279,32 @@ async function collectRecords(deviceId: string) {
     .slice(-1000);
 }
 
-export function syncRecentHealthData() {
+type HealthSyncResult = { synced: number; created: number; duplicates: number };
+
+const emptySyncResult = (): HealthSyncResult => ({ synced: 0, created: 0, duplicates: 0 });
+
+export function syncRecentHealthData(force = false): Promise<HealthSyncResult> {
   if (activeSync) return activeSync;
-  if (Date.now() - lastSuccessfulSync < 30000) return Promise.resolve({ synced: 0 });
+  if (!force && Date.now() - lastSuccessfulSync < 30000) return Promise.resolve(emptySyncResult());
   activeSync = (async () => {
     const status = await getSdkStatus();
-    if (status !== SdkAvailabilityStatus.SDK_AVAILABLE || !(await initialize())) return { synced: 0 };
+    if (status !== SdkAvailabilityStatus.SDK_AVAILABLE || !(await initialize())) return emptySyncResult();
     const deviceId = await ensureHealthConnectDevice();
     const records = await collectRecords(deviceId);
     let synced = 0;
+    let created = 0;
+    let duplicates = 0;
     for (let offset = 0; offset < records.length; offset += 100) {
       const batch = records.slice(offset, offset + 100);
-      await authenticatedRequest('POST', '/health/sync', { records: batch });
+      const result = await authenticatedRequest<{ created?: number; duplicates?: number }>(
+        'POST', '/health/sync', { records: batch },
+      );
       synced += batch.length;
+      created += Number(result.created) || 0;
+      duplicates += Number(result.duplicates) || 0;
     }
     lastSuccessfulSync = Date.now();
-    return { synced };
+    return { synced, created, duplicates };
   })().finally(() => { activeSync = null; });
   return activeSync;
 }

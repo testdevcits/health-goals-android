@@ -7,6 +7,7 @@ import { useTheme } from '../../../../theme/useTheme';
 import { createHomeStyles } from '../styles.Home';
 import { useFocusEffect } from '@react-navigation/native';
 import { authenticatedRequest } from '../../../../services/authenticatedApi';
+import { useTodayHealthData } from '../../../../hooks/useTodayHealthData';
 import { getCurrentUser } from '../../../../services/profile';
 
 const CIRCLE_SIZE = 88;
@@ -74,6 +75,7 @@ const EnergyCircle: React.FC<{ energy: number }> = ({ energy }) => {
 };
 
 const EnergyCard: React.FC = () => {
+  const { data: todayHealthData } = useTodayHealthData();
   const [energy, setEnergy] = React.useState(0);
   const [streakPeriod, setStreakPeriod] = React.useState(0);
   const [stepsTarget, setStepsTarget] = React.useState(10000);
@@ -91,7 +93,10 @@ const EnergyCard: React.FC = () => {
     ]).then(([day, profile, history]) => {
       if (!active) return;
       const target = profile.healthGoals?.steps || 10000;
-      const steps = day.totals?.steps || 0;
+      // Health Connect's aggregate is the device's deduplicated daily total.
+      // Prefer it over the backend settlement total, which can lag until sync
+      // and points processing finish.
+      const steps = todayHealthData?.steps ?? day.totals?.steps ?? 0;
       setHasActivity(
         steps > 0 ||
         Boolean(day.totals?.workoutMinutes) ||
@@ -111,7 +116,7 @@ const EnergyCard: React.FC = () => {
     }).catch(() => { if (active) setLoadError(true); })
       .finally(() => { if (active) setLoading(false); });
     return () => { active = false; };
-  }, []));
+  }, [todayHealthData?.steps]));
   const { theme } = useTheme();
   const { colors } = theme;
   const styles = createHomeStyles(theme);

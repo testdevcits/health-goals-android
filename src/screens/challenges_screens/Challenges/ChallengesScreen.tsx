@@ -86,11 +86,13 @@ const ChallengesScreen: React.FC<Props> = ({ navigation }) => {
       })));
     }
 
-    if (badgeResult.status === 'fulfilled') {
-      const communityBadges = badgeResult.value.badges || [];
-      const achievements = competitionResult.status === 'fulfilled'
-        ? competitionResult.value.achievements || []
-        : [];
+    const communityBadges = badgeResult.status === 'fulfilled'
+      ? badgeResult.value.badges || []
+      : [];
+    const achievements = competitionResult.status === 'fulfilled'
+      ? competitionResult.value.achievements || []
+      : [];
+    if (badgeResult.status === 'fulfilled' || competitionResult.status === 'fulfilled') {
       const earnedBadges: Badge[] = achievements.map(achievement => ({
         id: achievement.key,
         title: achievement.title || achievement.ruleTitle || 'Achievement',
@@ -109,17 +111,21 @@ const ChallengesScreen: React.FC<Props> = ({ navigation }) => {
       const currentCompetitions = result.competitions || [];
       setCompetitions(currentCompetitions);
       setRuleChallenges(currentCompetitions.map(competition => {
-        const progress = competition.myProgress?.[0];
+        const progressEntries = competition.myProgress || [];
+        const progress = progressEntries[0];
         const startsInFuture = Date.parse(competition.start) > Date.now();
         const metric = competition.metric.replace(/_/g, ' ');
+        const progressSummary = progressEntries.length
+          ? progressEntries.map(entry =>
+            `${entry.name}: ${entry.value.toLocaleString()} / ${competition.targetValue.toLocaleString()} ${metric}`,
+          ).join(' · ')
+          : `Goal: ${competition.targetValue.toLocaleString()} ${metric}`;
         return {
           id: `rule:${competition.id}`,
           title: competition.title,
           description: `${competition.ruleType.replace(/_/g, ' ')} · ${competition.audience.toLowerCase()} ${metric} goal`,
           progress: Math.max(0, Math.min(100, progress?.progress ?? 0)),
-          progressLabel: progress
-            ? `${progress.value.toLocaleString()} / ${competition.targetValue.toLocaleString()} ${metric}`
-            : `Goal: ${competition.targetValue.toLocaleString()} ${metric}`,
+          progressLabel: progressSummary,
           status: startsInFuture ? 'UPCOMING' : competition.status,
           color: '#8175F5',
           icon: competition.metric === 'steps' ? Footprints : competition.metric === 'workout' ? Dumbbell : Sunrise,
@@ -182,7 +188,7 @@ const ChallengesScreen: React.FC<Props> = ({ navigation }) => {
                 <View key={competition.id} style={styles.competitionCard}>
                   <AppText variant="subtitle1" bold>{competition.title}</AppText>
                   <AppText variant="caption" secondary>
-                    {competition.metric.replace(/_/g, ' ')} · target {competition.targetValue.toLocaleString()} · {competition.status}
+                    {competition.audience.toLowerCase()} {competition.ruleType.toLowerCase().replace(/_/g, ' ')} · {competition.metric.replace(/_/g, ' ')} · target {competition.targetValue.toLocaleString()} · {Date.parse(competition.start) > Date.now() ? 'UPCOMING' : competition.status}
                   </AppText>
                   <AppText variant="caption" secondary>
                     {new Date(competition.start).toLocaleDateString()} – {new Date(competition.end).toLocaleDateString()}
@@ -190,7 +196,7 @@ const ChallengesScreen: React.FC<Props> = ({ navigation }) => {
                   {(competition.myProgress || []).map((entry, index) => (
                     <View key={`${entry.id}:${index}`} style={styles.competitionEntry}>
                       <AppText variant="body2" bold>
-                        {entry.name}: #{entry.rank} · {entry.value.toLocaleString()}
+                        {entry.name}{entry.rank > 0 ? `: #${entry.rank}` : ''} · {entry.value.toLocaleString()}
                       </AppText>
                       <AppText variant="caption" secondary>
                         {Math.round(entry.progress)}% progress{entry.achieved ? ' · target reached' : ''}

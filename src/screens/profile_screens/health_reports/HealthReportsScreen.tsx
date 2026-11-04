@@ -16,6 +16,7 @@ import { ProfileScreenNavigation } from '../components/ProfileScreenLayout';
 import createStyles from './styles.HealthReport';
 import { authenticatedRequest } from '../../../services/authenticatedApi';
 import { apiErrorMessage } from '../../../services/api';
+import { readStepsHistory } from '../../../services/healthConnect';
 
 const METRICS = { Steps: 'steps', Sleep: 'sleep', Workouts: 'workout' } as const;
 type DailyValue = { date: string; value: number; count: number; unit: string };
@@ -32,6 +33,7 @@ const HealthReportsScreen: React.FC<{
   const [error, setError] = useState('');
   const [reloadKey, setReloadKey] = useState(0);
   const [dailyCoins, setDailyCoins] = useState<Array<{ day: string; totals?: { steps?: number; workoutMinutes?: number; sleepMinutes?: number }; creditedCoins?: number }>>([]);
+  const [weekStepTotal, setWeekStepTotal] = useState(0);
   const to = new Date();
   const from = new Date(Date.now() - 6 * 86400000);
   const dateKey = (date: Date) => `${date.getFullYear()}-${String(date.getMonth()+1).padStart(2,'0')}-${String(date.getDate()).padStart(2,'0')}`;
@@ -44,9 +46,12 @@ const HealthReportsScreen: React.FC<{
     const requestFrom = new Date(requestTo.getTime() - 6 * 86400000);
     const metricType = activeTab === 'Workouts' ? 'workout' : METRICS[activeTab as keyof typeof METRICS];
     Promise.all([
-      authenticatedRequest<{ history: DailyValue[] }>('GET', `/health/history?metricType=${metricType}&from=${dateKey(requestFrom)}&to=${dateKey(requestTo)}`),
+      activeTab === 'Steps'
+        ? readStepsHistory(7)
+        : authenticatedRequest<{ history: DailyValue[] }>('GET', `/health/history?metricType=${metricType}&from=${dateKey(requestFrom)}&to=${dateKey(requestTo)}`).then(result => result.history),
       authenticatedRequest<{ items: Array<{ day: string; totals?: { steps?: number; workoutMinutes?: number; sleepMinutes?: number }; creditedCoins?: number }> }>('GET', `/activity/history?from=${dateKey(requestFrom)}&to=${dateKey(requestTo)}&limit=7`),
-    ]).then(([records, coins]) => { if (active) { setHistory(records.history || []); setDailyCoins(coins.items || []); } })
+      readStepsHistory(7),
+    ]).then(([reportHistory, coins, stepHistory]) => { if (active) { setHistory(reportHistory || []); setDailyCoins(coins.items || []); setWeekStepTotal(stepHistory.reduce((sum, item) => sum + item.value, 0)); } })
       .catch(cause => { if (active) setError(apiErrorMessage(cause)); })
       .finally(() => { if (active) setLoading(false); });
     return () => { active = false; };
@@ -206,7 +211,7 @@ const HealthReportsScreen: React.FC<{
           ) : <View style={styles.metricsRow}>
             <ProfileMetric value={dailyCoins.reduce((sum, day) => sum + (day.creditedCoins || 0), 0).toLocaleString()} label="Coins Earned" />
             <ProfileMetric value={dailyCoins.length.toString()} label="Active Days" />
-            <ProfileMetric value={dailyCoins.reduce((sum, day) => sum + (day.totals?.steps || 0), 0).toLocaleString()} label="Week Steps" />
+            <ProfileMetric value={weekStepTotal.toLocaleString()} label="Week Steps" />
           </View>}
           <View style={styles.reportActions}>
             <AppButton title="Share" variant="ghost" onPress={() => shareReport('This week’s report')} style={[styles.reportButton, { backgroundColor: theme.colors.primaryLight }]} />

@@ -1,7 +1,7 @@
 import React from 'react';
 import { ScrollView, StatusBar, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { AppEmptyState, AppErrorView, AppHeader, AppLoader } from '../../../components';
+import { AppButton, AppEmptyState, AppErrorView, AppHeader, AppLoader, AppText } from '../../../components';
 import { useTheme } from '../../../theme/useTheme';
 import { createDailyActivityStyles } from './styles.DailyActivities';
 import ActivityChart from './components/ActivityChart';
@@ -10,6 +10,7 @@ import ActivityRings from './components/ActivityRings';
 import DailyTotals from './components/DailyTotals';
 import type { DailyActivityNavigation } from './types';
 import { useTodayHealthData } from '../../../hooks/useTodayHealthData';
+import { syncRecentHealthData } from '../../../services/healthSync';
 
 const DailyActivities: React.FC<{ navigation: DailyActivityNavigation }> = ({
   navigation,
@@ -18,7 +19,26 @@ const DailyActivities: React.FC<{ navigation: DailyActivityNavigation }> = ({
   const insets = useSafeAreaInsets();
   const styles = createDailyActivityStyles(theme);
   const [refreshToken, setRefreshToken] = React.useState(0);
+  const [syncing, setSyncing] = React.useState(false);
+  const [syncMessage, setSyncMessage] = React.useState('');
   const { data, error, loading } = useTodayHealthData(true, refreshToken);
+  const syncNow = async () => {
+    setSyncing(true);
+    setSyncMessage('');
+    try {
+      const result = await syncRecentHealthData(true);
+      setSyncMessage(
+        result.synced === 0
+          ? 'No recent Health Connect records were available to sync.'
+          : `Sent ${result.synced} records · ${result.created} new · ${result.duplicates} already synced.`,
+      );
+      setRefreshToken(value => value + 1);
+    } catch (cause) {
+      setSyncMessage(cause instanceof Error ? cause.message : 'Could not sync with the backend. Try again.');
+    } finally {
+      setSyncing(false);
+    }
+  };
   const steps = data?.steps ?? 0;
   const exerciseMinutes = data?.exerciseMinutes ?? 0;
   const calories = data?.calories ?? 0;
@@ -64,6 +84,10 @@ const DailyActivities: React.FC<{ navigation: DailyActivityNavigation }> = ({
           { paddingBottom: insets.bottom + 28 },
         ]}
       >
+        <View style={{ paddingHorizontal: theme.spacing.base, marginBottom: theme.spacing.md }}>
+          <AppButton title="Sync latest data" onPress={() => { void syncNow(); }} loading={syncing} />
+          {syncMessage ? <AppText variant="caption" secondary style={{ marginTop: theme.spacing.xs }}>{syncMessage}</AppText> : null}
+        </View>
         {loading ? <AppLoader message="Loading today’s activity…" /> : error ? (
           <AppErrorView message={error} onRefresh={() => setRefreshToken(value => value + 1)} />
         ) : data?.status === 'permission-required' ? (

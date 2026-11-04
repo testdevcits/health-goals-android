@@ -24,6 +24,7 @@ import { authenticatedRequest } from '../../../services/authenticatedApi';
 import { getCurrentUser } from '../../../services/profile';
 import { apiErrorMessage } from '../../../services/api';
 import { showAppToast } from '../../../utils/appToast';
+import { readStepsHistory } from '../../../services/healthConnect';
 
 const metricTypes = { Steps: 'steps', Sleep: 'sleep', Heart: 'heart_rate', Stress: 'stress' } as const;
 
@@ -60,7 +61,9 @@ const DailyActivityTrends: React.FC<{
     (async () => {
       try {
         const [recordsResult, goalResult] = await Promise.allSettled([
-          authenticatedRequest<{ records: Array<{ metricType: string; value: number; unit: string; recordedAt: string }> }>('GET', `/health/records?metricType=${metricTypes[activeMetric]}`),
+          activeMetric === 'Steps'
+            ? readStepsHistory(7).then(history => ({ records: history.map(item => ({ metricType: 'steps', value: item.value, unit: item.unit, recordedAt: `${item.date}T12:00:00` })) }))
+            : authenticatedRequest<{ records: Array<{ metricType: string; value: number; unit: string; recordedAt: string }> }>('GET', `/health/records?metricType=${metricTypes[activeMetric]}`),
           getCurrentUser(),
         ]);
         if (!active) return;

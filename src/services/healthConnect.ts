@@ -1,6 +1,7 @@
 import { Platform } from 'react-native';
 import {
   aggregateGroupByDuration,
+  aggregateGroupByPeriod,
   aggregateRecord,
   getGrantedPermissions,
   getSdkStatus,
@@ -40,6 +41,13 @@ export interface WorkoutReportSession {
   startTime: string;
   endTime: string;
   durationMinutes: number;
+}
+
+export interface DailyStepTotal {
+  date: string;
+  value: number;
+  count: number;
+  unit: 'steps';
 }
 
 const EXERCISE_NAMES = new Map<number, string>([
@@ -242,4 +250,48 @@ export const readTodayHealthData = async (
       result => result.result.EXERCISE_DURATION_TOTAL.inSeconds / 60,
     ),
   };
+};
+
+/** Read daily totals through Health Connect aggregation so overlapping sources
+ * follow the same deduplication and app-priority rules as its own step total. */
+export const readStepsHistory = async (days = 7): Promise<DailyStepTotal[]> => {
+  if (Platform.OS !== 'android' || days < 1) return [];
+
+  const sdkStatus = await getSdkStatus();
+  if (sdkStatus !== SdkAvailabilityStatus.SDK_AVAILABLE || !(await initialize())) return [];
+
+  const granted = (await getGrantedPermissions()).filter(
+    (permission): permission is Permission =>
+      'accessType' in permission && 'recordType' in permission,
+  );
+  if (!hasReadPermission(granted, 'Steps')) return [];
+
+  const end = new Date();
+  end.setHours(0, 0, 0, 0);
+  end.setDate(end.getDate() + 1);
+  const start = new Date(end);
+  start.setDate(start.getDate() - days);
+
+  const grouped = await aggregateGroupByPeriod({
+    recordType: 'Steps',
+    timeRangeFilter: {
+      operator: 'between',
+      startTime: start.toISOString(),
+      endTime: end.toISOString(),
+    },
+    timeRangeSlicer: { period: 'DAYS', length: 1 },
+  });
+  const totals = new Map<string, number>();
+  grouped.forEach(group => {
+    const date = new Date(group.startTime);
+    const key = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+    totals.set(key, (totals.get(key) || 0) + group.result.COUNT_TOTAL);
+  });
+
+  return Array.from({ length: days }, (_, index) => {
+    const date = new Date(start);
+    date.setDate(start.getDate() + index);
+    const key = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+    return { date: key, value: totals.get(key) || 0, count: 0, unit: 'steps' as const };
+  });
 };
