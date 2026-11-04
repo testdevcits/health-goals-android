@@ -1,15 +1,13 @@
 import {
   ExerciseType,
   getGrantedPermissions,
-  getSdkStatus,
-  initialize,
   readRecords,
   RecordingMethod,
-  SdkAvailabilityStatus,
 } from 'react-native-health-connect';
 import type { Permission } from 'react-native-health-connect';
 import { authenticatedRequest } from './authenticatedApi';
 import { ensureHealthConnectDevice } from './devices';
+import { ensureHealthConnectInitialized } from './healthConnect';
 
 const OFFSET_MS = 330 * 60 * 1000;
 const SOURCE = 'health_connect';
@@ -287,8 +285,7 @@ export function syncRecentHealthData(force = false): Promise<HealthSyncResult> {
   if (activeSync) return activeSync;
   if (!force && Date.now() - lastSuccessfulSync < 30000) return Promise.resolve(emptySyncResult());
   activeSync = (async () => {
-    const status = await getSdkStatus();
-    if (status !== SdkAvailabilityStatus.SDK_AVAILABLE || !(await initialize())) return emptySyncResult();
+    if (!(await ensureHealthConnectInitialized())) return emptySyncResult();
     const deviceId = await ensureHealthConnectDevice();
     const records = await collectRecords(deviceId);
     let synced = 0;

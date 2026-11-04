@@ -7,6 +7,7 @@ import {
 } from 'react-native-health-connect';
 import type { BackgroundAccessPermission } from 'react-native-health-connect';
 import { syncRecentHealthData } from './healthSync';
+import { ensureHealthConnectInitialized } from './healthConnect';
 
 const ENABLED_KEY = '@vitality/background-health-sync-enabled';
 const BACKGROUND_ACCESS_PERMISSION: BackgroundAccessPermission = {
@@ -31,6 +32,10 @@ export async function isBackgroundHealthSyncEnabled(): Promise<boolean> {
     return false;
   }
 
+  if (!(await ensureHealthConnectInitialized())) {
+    return false;
+  }
+
   const [enabled, permissions] = await Promise.all([
     AsyncStorage.getItem(ENABLED_KEY),
     getGrantedPermissions(),
@@ -41,6 +46,12 @@ export async function isBackgroundHealthSyncEnabled(): Promise<boolean> {
 export async function requestBackgroundHealthReadPermission(): Promise<boolean> {
   if (!supportsBackgroundRead()) {
     return false;
+  }
+
+  if (!(await ensureHealthConnectInitialized())) {
+    throw new Error(
+      'Health Connect is unavailable. Install or update it, then try again.',
+    );
   }
 
   const permissions = await getGrantedPermissions();
@@ -104,6 +115,11 @@ export async function initializeBackgroundHealthSync(): Promise<void> {
     return;
   }
 
+  if (!(await ensureHealthConnectInitialized())) {
+    await BackgroundFetch.stop();
+    return;
+  }
+
   await configureBackgroundFetch();
   if (await isBackgroundHealthSyncEnabled()) {
     await BackgroundFetch.start();
@@ -116,6 +132,12 @@ export async function enableBackgroundHealthSync(): Promise<void> {
   if (!supportsBackgroundRead()) {
     throw new Error(
       'Background Health Connect sync requires Android 14 or later.',
+    );
+  }
+
+  if (!(await ensureHealthConnectInitialized())) {
+    throw new Error(
+      'Health Connect is unavailable. Install or update it, then try again.',
     );
   }
 

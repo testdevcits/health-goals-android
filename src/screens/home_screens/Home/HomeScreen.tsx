@@ -1,9 +1,11 @@
-import React, { useState } from 'react';
-import { ScrollView, View } from 'react-native';
+import React, { useCallback, useState } from 'react';
+import { AppState, ScrollView, View } from 'react-native';
+import { useFocusEffect } from '@react-navigation/native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { HomeStackParamList } from '../../../navigations/HomeStack';
 import { OnboardingModal } from '../../../components';
 import { useTheme } from '../../../theme/useTheme';
+import { getNotificationPermission } from '../../../utils/AppPermissions';
 import ActivityTrends from './components/ActivityTrends';
 import DailySummary from './components/DailySummary';
 import EnergyCard from './components/EnergyCard';
@@ -18,9 +20,42 @@ type Props = NativeStackScreenProps<HomeStackParamList, 'Home'>;
 const HomeScreen: React.FC<Props> = ({ navigation }) => {
   const { theme } = useTheme();
   const styles = createHomeStyles(theme);
-  const [notificationPromptVisible, setNotificationPromptVisible] =
-    useState(true);
+  const [notificationsEnabled, setNotificationsEnabled] = useState<
+    boolean | null
+  >(null);
   const [onboardingVisible, setOnboardingVisible] = useState(true);
+
+  useFocusEffect(
+    useCallback(() => {
+      let active = true;
+
+      const refreshNotificationPermission = async () => {
+        try {
+          const enabled = await getNotificationPermission();
+          if (active) {
+            setNotificationsEnabled(enabled);
+          }
+        } catch (error) {
+          console.error('Unable to check notification permission:', error);
+          if (active) {
+            setNotificationsEnabled(false);
+          }
+        }
+      };
+
+      refreshNotificationPermission();
+      const subscription = AppState.addEventListener('change', state => {
+        if (state === 'active') {
+          refreshNotificationPermission();
+        }
+      });
+
+      return () => {
+        active = false;
+        subscription.remove();
+      };
+    }, []),
+  );
 
   return (
     <View style={[styles.container, {}]}>
@@ -29,9 +64,9 @@ const HomeScreen: React.FC<Props> = ({ navigation }) => {
         contentContainerStyle={styles.scroll}
         showsVerticalScrollIndicator={false}
       >
-        {notificationPromptVisible ? (
+        {notificationsEnabled === false ? (
           <NotificationBanner
-            onDismiss={() => setNotificationPromptVisible(false)}
+            onDismiss={() => setNotificationsEnabled(true)}
           />
         ) : null}
         <EnergyCard />

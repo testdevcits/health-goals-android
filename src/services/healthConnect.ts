@@ -70,6 +70,41 @@ const EXERCISE_NAMES = new Map<number, string>([
 
 const EMPTY_HOURS = () => Array.from({ length: 24 }, () => 0);
 
+let initializationPromise: Promise<boolean> | null = null;
+
+export async function ensureHealthConnectInitialized(): Promise<boolean> {
+  if (Platform.OS !== 'android') {
+    return false;
+  }
+
+  if (!initializationPromise) {
+    initializationPromise = (async () => {
+      const sdkStatus = await getSdkStatus();
+      if (
+        sdkStatus === SdkAvailabilityStatus.SDK_UNAVAILABLE ||
+        sdkStatus ===
+          SdkAvailabilityStatus.SDK_UNAVAILABLE_PROVIDER_UPDATE_REQUIRED
+      ) {
+        return false;
+      }
+
+      return initialize();
+    })()
+      .then(initialized => {
+        if (!initialized) {
+          initializationPromise = null;
+        }
+        return initialized;
+      })
+      .catch(error => {
+        initializationPromise = null;
+        throw error;
+      });
+  }
+
+  return initializationPromise;
+}
+
 const hasReadPermission = (permissions: Permission[], recordType: string) =>
   permissions.some(
     permission =>
@@ -110,17 +145,9 @@ export const readTodayHealthData = async (
     return createEmptyData('unsupported');
   }
 
-  const sdkStatus = await getSdkStatus();
-  if (
-    sdkStatus === SdkAvailabilityStatus.SDK_UNAVAILABLE ||
-    sdkStatus === SdkAvailabilityStatus.SDK_UNAVAILABLE_PROVIDER_UPDATE_REQUIRED
-  ) {
-    return createEmptyData('unavailable');
-  }
-
-  const initialized = await initialize();
+  const initialized = await ensureHealthConnectInitialized();
   if (!initialized) {
-    throw new Error('Health Connect could not be initialized.');
+    return createEmptyData('unavailable');
   }
 
   const grantedPermissions = (await getGrantedPermissions()).filter(
@@ -257,8 +284,7 @@ export const readTodayHealthData = async (
 export const readStepsHistory = async (days = 7): Promise<DailyStepTotal[]> => {
   if (Platform.OS !== 'android' || days < 1) return [];
 
-  const sdkStatus = await getSdkStatus();
-  if (sdkStatus !== SdkAvailabilityStatus.SDK_AVAILABLE || !(await initialize())) return [];
+  if (!(await ensureHealthConnectInitialized())) return [];
 
   const granted = (await getGrantedPermissions()).filter(
     (permission): permission is Permission =>

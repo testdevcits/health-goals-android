@@ -140,6 +140,14 @@ const WorkoutSessionScreen: React.FC<Props> = ({ navigation, route }) => {
     activities.find(activity => activity.id === workoutSession?.activityId) ??
     selectedActivity;
 
+  const returnToPreviousScreen = () => {
+    if (navigation.canGoBack()) {
+      navigation.goBack();
+    } else {
+      navigation.replace('Home');
+    }
+  };
+
   const handleConfirmationAction = async (
     action: WorkoutConfirmation['actions'][number],
   ) => {
@@ -338,7 +346,7 @@ const WorkoutSessionScreen: React.FC<Props> = ({ navigation, route }) => {
                 await authenticatedRequest('POST', '/health/sync', { records: records.slice(offset, offset + 100) });
               }
               await clearWorkoutSession();
-              navigation.goBack();
+              returnToPreviousScreen();
             } catch (error) {
               Alert.alert(
                 'Could not finish workout',
@@ -360,7 +368,7 @@ const WorkoutSessionScreen: React.FC<Props> = ({ navigation, route }) => {
           { label: 'Stay', variant: 'outline' },
           {
             label: 'Keep running',
-            onPress: () => navigation.goBack(),
+            onPress: returnToPreviousScreen,
           },
           {
             label: 'Discard workout',
@@ -368,7 +376,7 @@ const WorkoutSessionScreen: React.FC<Props> = ({ navigation, route }) => {
             onPress: async () => {
               try {
                 await clearWorkoutSession();
-                navigation.goBack();
+                returnToPreviousScreen();
               } catch (error) {
                 Alert.alert(
                   'Could not discard workout',
@@ -382,7 +390,7 @@ const WorkoutSessionScreen: React.FC<Props> = ({ navigation, route }) => {
       return;
     }
 
-    navigation.goBack();
+    returnToPreviousScreen();
   };
 
   return (
