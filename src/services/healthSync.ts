@@ -192,12 +192,20 @@ function workoutType(exerciseType: number) {
 
 async function readType(type: RecordType, granted: Permission[], range: any) {
   if (!hasPermission(granted, type)) return [] as any[];
-  try {
-    const result = await readRecords(type as any, { timeRangeFilter: range, pageSize: 1000 } as any);
-    return result.records as any[];
-  } catch {
-    return [] as any[];
-  }
+  const records: any[] = [];
+  let pageToken: string | undefined;
+
+  do {
+    const result = await readRecords(type as any, {
+      timeRangeFilter: range,
+      pageSize: 1000,
+      ...(pageToken ? { pageToken } : {}),
+    } as any);
+    records.push(...result.records);
+    pageToken = result.pageToken;
+  } while (pageToken);
+
+  return records;
 }
 
 async function collectRecords(deviceId: string) {

@@ -66,6 +66,10 @@ export const createLoginStyles = (theme: AppTheme) => {
     socialButton: {
       marginBottom: spacing.md,
     },
+    googleIcon: {
+      width: 18,
+      height: 18,
+    },
     // ── Footer ───────────────────────────────────
     footer: {
       flexDirection: 'row',

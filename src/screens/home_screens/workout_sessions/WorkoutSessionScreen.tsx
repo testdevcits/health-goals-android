@@ -328,7 +328,7 @@ const WorkoutSessionScreen: React.FC<Props> = ({ navigation, route }) => {
                 records.push({
                   metricType: 'workout', value: (end - cursor) / 60000, unit: 'min',
                   recordedAt: new Date(cursor).toISOString(), startTime: new Date(cursor).toISOString(),
-                  endTime: new Date(end).toISOString(), source: 'android_app',
+                  endTime: new Date(end).toISOString(), source: 'app',
                   sourceRecordId: `${sourceRecordId}:${day}`, sourceVersion: 1, activityType,
                   metadata: { estimatedCalories: Math.floor(((end - cursor) / 60000) * currentActivity.caloriesPerMinute), estimatedDistanceKm: Number((currentActivity.speedKmh * (end - cursor) / 3600000).toFixed(2)) },
                 });

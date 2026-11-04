@@ -10,6 +10,7 @@ import MyGroups from './tabs/MyGroups';
 import { Group, FeedPost } from './data';
 import { authenticatedRequest } from '../../../services/authenticatedApi';
 import { apiErrorMessage } from '../../../services/api';
+import { showAppToast } from '../../../utils/appToast';
 
 type GroupTab = 'My Groups' | 'Discover' | 'Feed';
 
@@ -32,7 +33,7 @@ const GroupsScreen: React.FC = () => {
         const groupResult = await authenticatedRequest<{ groups: Group[] }>('GET', activeTab === 'Discover' ? '/community/groups/discover' : '/community/groups');
         setGroups(groupResult.groups || []);
       }
-    } catch (error) { Alert.alert('Could not load community', apiErrorMessage(error)); }
+    } catch (error) { showAppToast('error', 'Could not load community', apiErrorMessage(error)); }
   }, [activeTab]);
   useFocusEffect(useCallback(() => { void refresh(); }, [refresh]));
 
@@ -61,11 +62,12 @@ const GroupsScreen: React.FC = () => {
     try {
       await authenticatedRequest('POST', '/community/groups', { name, description: 'Your new community', emoji: selectedIcon, private: isPrivate });
       await refresh(); setCreateModalVisible(false); resetCreateForm(); setActiveTab('My Groups');
-    } catch (error) { Alert.alert('Could not create group', apiErrorMessage(error)); }
+      showAppToast('success', 'Group created', 'Your community is ready.');
+    } catch (error) { showAppToast('error', 'Could not create group', apiErrorMessage(error)); }
   };
   const joinGroup = async (groupId: string) => {
-    try { await authenticatedRequest('POST', `/community/groups/${encodeURIComponent(groupId)}/join`); await refresh(); setActiveTab('My Groups'); }
-    catch (error) { Alert.alert('Could not join group', apiErrorMessage(error)); }
+    try { await authenticatedRequest('POST', `/community/groups/${encodeURIComponent(groupId)}/join`); await refresh(); setActiveTab('My Groups'); showAppToast('success', 'Group joined'); }
+    catch (error) { showAppToast('error', 'Could not join group', apiErrorMessage(error)); }
   };
 
   return (

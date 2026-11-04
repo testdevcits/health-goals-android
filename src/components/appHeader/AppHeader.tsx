@@ -20,6 +20,7 @@ interface AppHeaderProps {
   isBack?: boolean;
   showNotifications?: boolean;
   avatarText?: string;
+  showProfile?: boolean;
 }
 
 const AppHeader: React.FC<AppHeaderProps> = ({
@@ -29,7 +30,8 @@ const AppHeader: React.FC<AppHeaderProps> = ({
   onNotificationPress,
   isBack = true,
   showNotifications = true,
-  avatarText = 'AJ',
+  avatarText = '',
+  showProfile = true,
 }) => {
   const { theme } = useTheme();
   const { colors } = theme;
@@ -87,14 +89,16 @@ const AppHeader: React.FC<AppHeaderProps> = ({
           </Pressable>
         )}
 
-        <Pressable
-          onPress={() => navigation.navigate('Profile')}
-          style={[componentStyles.avatar, { backgroundColor: colors.info }]}
-        >
-          <AppText variant="subtitle2" color="white" bold>
-            {avatarText}
-          </AppText>
-        </Pressable>
+        {showProfile && (
+          <Pressable
+            onPress={() => navigation.navigate('Profile')}
+            style={[componentStyles.avatar, { backgroundColor: colors.info }]}
+          >
+            <AppText variant="subtitle2" color="white" bold>
+              {avatarText}
+            </AppText>
+          </Pressable>
+        )}
       </View>
     </View>
   );

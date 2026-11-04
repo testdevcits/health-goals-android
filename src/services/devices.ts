@@ -5,7 +5,13 @@ import { readSession } from './auth';
 
 const INSTALL_ID_SERVICE = 'com.vitality.device-id';
 let registration: Promise<string> | null = null;
+let registrationUserId: string | null = null;
 let profileSync: { userId: string; promise: Promise<string> } | null = null;
+
+type RegisteredDevice = {
+  id: string;
+  deviceIdentifier: string;
+};
 
 function createInstallId() {
   return 'android-' + Array.from({ length: 4 }, () =>
@@ -51,35 +57,52 @@ export async function ensureHealthConnectDevice(): Promise<string> {
   const session = await readSession();
   if (!session?.user?.id) throw new Error('Please sign in to sync health data.');
   const registrationKey = session.user.id;
-  if (!registration || (registration as any).userId !== registrationKey) {
-    const task = (async () => {
+  if (!registration || registrationUserId !== registrationKey) {
+    const task = (async (): Promise<string> => {
       const deviceIdentifier = await syncPhoneProfile();
       const constants = Platform.constants as typeof Platform.constants & {
         Manufacturer?: string; Brand?: string; Model?: string;
       };
-      const result = await authenticatedRequest<{ devices: any[] }>('GET', '/devices');
-      if (!result.devices.some(device => device.deviceIdentifier === deviceIdentifier)) {
-        await authenticatedRequest('POST', '/devices', {
-          deviceType: 'phone',
-          deviceIdentifier,
-          manufacturer: constants.Manufacturer || constants.Brand || 'Unknown',
-          model: constants.Model || 'Unknown Android model',
-          platform: 'android',
-        });
+      const result = await authenticatedRequest<{ devices: RegisteredDevice[] }>(
+        'GET',
+        '/devices',
+      );
+      const existingDevice = result.devices.find(
+        device => device.deviceIdentifier === deviceIdentifier,
+      );
+      if (existingDevice) {
+        if (!existingDevice.id) {
+          throw new Error('Registered device response did not include an ID.');
+        }
+        return existingDevice.id;
       }
-      return deviceIdentifier;
-    })().catch(error => {
-      throw error;
-    });
-    (task as any).userId = registrationKey;
+
+      const created = await authenticatedRequest<{
+        device: RegisteredDevice;
+      }>('POST', '/devices', {
+        deviceType: 'phone',
+        deviceIdentifier,
+        manufacturer: constants.Manufacturer || constants.Brand || 'Unknown',
+        model: constants.Model || 'Unknown Android model',
+        platform: 'android',
+      });
+      if (!created.device?.id) {
+        throw new Error('Device registration response did not include an ID.');
+      }
+      return created.device.id;
+    })();
     registration = task;
+    registrationUserId = registrationKey;
     task.catch(() => { if (registration === task) registration = null; });
   }
   return registration;
 }
 
 export async function listDevices() {
-  return authenticatedRequest<{ devices: any[] }>('GET', '/devices');
+  return authenticatedRequest<{ devices: RegisteredDevice[] }>(
+    'GET',
+    '/devices',
+  );
 }
 
 export async function removeDevice(id: string) {

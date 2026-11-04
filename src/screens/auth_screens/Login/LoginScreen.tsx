@@ -9,16 +9,19 @@ import {
   KeyboardAvoidingView,
   Platform,
   Alert,
+  Image,
 } from 'react-native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../../../navigations/AppNavigation';
 import { useTheme } from '../../../theme/useTheme';
 import { AppText, AppInput, AppButton } from '../../../components';
+import { GoogleIcon } from '../../../assets/images/ImageIndex';
 import { createLoginStyles } from './styles.Login';
 import { requestLogin, signInWithGoogle } from '../../../services/auth';
 import { apiErrorMessage } from '../../../services/api';
 import { GOOGLE_WEB_CLIENT_ID } from '../../../services/googleConfig';
 import { GoogleSignin } from '@react-native-google-signin/google-signin';
+import { showAppToast } from '../../../utils/appToast';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Login'>;
 
@@ -67,26 +70,35 @@ const LoginScreen: React.FC<Props> = ({ navigation }) => {
         deliveryMode: challenge.deliveryMode,
       });
     } catch (error) {
-      Alert.alert('Sign in failed', apiErrorMessage(error));
-    } finally { setLoading(false); }
+      showAppToast('error', 'Sign in failed', apiErrorMessage(error));
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleGoogleSignIn = async () => {
     if (!GOOGLE_WEB_CLIENT_ID) {
-      Alert.alert('Google sign-in setup needed', 'Add the Google Web OAuth client ID in src/services/googleConfig.ts and GOOGLE_CLIENT_ID in the backend environment.');
+      Alert.alert(
+        'Google sign-in setup needed',
+        'Add the Google Web OAuth client ID in src/services/googleConfig.ts and GOOGLE_CLIENT_ID in the backend environment.',
+      );
       return;
     }
     setLoading(true);
     try {
       GoogleSignin.configure({ webClientId: GOOGLE_WEB_CLIENT_ID });
-      await GoogleSignin.hasPlayServices({ showPlayServicesUpdateDialog: true });
+      await GoogleSignin.hasPlayServices({
+        showPlayServicesUpdateDialog: true,
+      });
       const result = await GoogleSignin.signIn();
       if (result.type !== 'success' || !result.data.idToken) return;
       await signInWithGoogle(result.data.idToken);
       navigation.reset({ index: 0, routes: [{ name: 'MainTabNavigation' }] });
     } catch (error) {
-      Alert.alert('Google sign-in failed', apiErrorMessage(error));
-    } finally { setLoading(false); }
+      showAppToast('error', 'Google sign-in failed', apiErrorMessage(error));
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -175,18 +187,29 @@ const LoginScreen: React.FC<Props> = ({ navigation }) => {
           </View>
 
           {/* Social */}
-          <AppButton
-            title="Continue with Apple"
-            onPress={() => {}}
-            variant="outline"
-            leftIcon={<Text style={{ fontSize: 18 }}>🍎</Text>}
-            style={styles.socialButton}
-          />
+          {Platform.OS === 'ios' && (
+            <AppButton
+              title="Continue with Apple"
+              onPress={() => {}}
+              variant="outline"
+              leftIcon={<Text style={{ fontSize: 18 }}>🍎</Text>}
+              style={styles.socialButton}
+            />
+          )}
+
           <AppButton
             title="Continue with Google"
             onPress={handleGoogleSignIn}
             variant="outline"
-            leftIcon={<Text style={{ fontSize: 18 }}>🔵</Text>}
+            leftIcon={
+              <Image
+                source={GoogleIcon}
+                style={styles.googleIcon}
+                resizeMode="contain"
+                accessible={false}
+              />
+            }
+            style={styles.socialButton}
           />
 
           {/* Create account */}

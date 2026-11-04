@@ -1,5 +1,5 @@
 import React, { useCallback, useState } from 'react';
-import { Alert, ScrollView, View } from 'react-native';
+import { ScrollView, View } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { AppHeader, AppText } from '../../../components';
@@ -16,6 +16,7 @@ import ChallengesTab from './tabs/ChallengesTab';
 import createStyles from './styles.Challenges';
 import { authenticatedRequest } from '../../../services/authenticatedApi';
 import { apiErrorMessage } from '../../../services/api';
+import { showAppToast } from '../../../utils/appToast';
 import { Footprints, Sunrise, Dumbbell } from 'lucide-react-native';
 
 type Props = NativeStackScreenProps<ChallengesStackParamList, 'Challenges'>;
@@ -34,12 +35,12 @@ const ChallengesScreen: React.FC<Props> = ({ navigation }) => {
       ]);
       setChallenges((result.challenges || []).map(item => ({ id: item.id, title: item.title, description: item.description || `${item.targetValue} ${item.metricType}`, progress: item.progress || 0, progressLabel: `${item.currentValue.toLocaleString()} / ${item.targetValue.toLocaleString()} · ${item.participants} participants`, status: item.status === 'ACTIVE' ? 'LIVE' : 'ENDED', color: '#00C6A2', icon: item.metricType === 'steps' ? Footprints : item.metricType === 'workout' ? Dumbbell : Sunrise, joined: item.joined })));
       setBadges(badgeResult.badges || []);
-    } catch (error) { Alert.alert('Could not load challenges', apiErrorMessage(error)); }
+    } catch (error) { showAppToast('error', 'Could not load challenges', apiErrorMessage(error)); }
   }, []);
   useFocusEffect(useCallback(() => { void refresh(); }, [refresh]));
   const joinChallenge = async (id: string) => {
     try { await authenticatedRequest('POST', `/community/challenges/${encodeURIComponent(id)}/join`); await refresh(); }
-    catch (error) { Alert.alert('Could not join challenge', apiErrorMessage(error)); }
+    catch (error) { showAppToast('error', 'Could not join challenge', apiErrorMessage(error)); }
   };
 
   return (

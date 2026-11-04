@@ -21,7 +21,9 @@ import { TrendMetric, trendData as initialTrendData } from './trendData';
 import { DailyActivityTrendsNavigation } from './types';
 import { useFocusEffect } from '@react-navigation/native';
 import { authenticatedRequest } from '../../../services/authenticatedApi';
+import { getCurrentUser } from '../../../services/profile';
 import { apiErrorMessage } from '../../../services/api';
+import { showAppToast } from '../../../utils/appToast';
 
 const metricTypes = { Steps: 'steps', Sleep: 'sleep', Heart: 'heart_rate', Stress: 'stress' } as const;
 
@@ -50,11 +52,11 @@ const DailyActivityTrends: React.FC<{
       try {
         const [recordsResult, goalResult] = await Promise.allSettled([
           authenticatedRequest<{ records: Array<{ metricType: string; value: number; unit: string; recordedAt: string }> }>('GET', `/health/records?metricType=${metricTypes[activeMetric]}`),
-          authenticatedRequest<{ user: { healthGoals?: Record<string, number>; goal?: string } }>('GET', '/auth/me'),
+          getCurrentUser(),
         ]);
         if (!active) return;
         if (goalResult.status === 'fulfilled') {
-          const saved = goalResult.value.user?.healthGoals?.[metricTypes[activeMetric]];
+          const saved = goalResult.value.healthGoals?.[metricTypes[activeMetric]];
           if (saved) setGoalValues(current => ({ ...current, [activeMetric]: String(activeMetric === 'Sleep' ? saved / 60 : saved) }));
         }
         if (recordsResult.status === 'fulfilled' && recordsResult.value.records?.length) {
@@ -63,7 +65,7 @@ const DailyActivityTrends: React.FC<{
             const values = records.map(row => Number(row.value));
             const average = Math.round(values.reduce((sum, value) => sum + value, 0) / values.length);
             const total = values.reduce((sum, value) => sum + value, 0);
-            const savedGoal = goalResult.status === 'fulfilled' ? goalResult.value.user?.healthGoals?.[metricTypes[activeMetric]] : undefined;
+            const savedGoal = goalResult.status === 'fulfilled' ? goalResult.value.healthGoals?.[metricTypes[activeMetric]] : undefined;
             const goal = Number(savedGoal || goalValuesRef.current[activeMetric].replace(/,/g, '')) * (activeMetric === 'Sleep' && !savedGoal ? 60 : 1);
             const bars = [...Array(Math.max(0, 7 - values.length)).fill(0), ...values.slice(-7)].map(value => goal ? Math.max(0, Math.min(100, Math.round((value / goal) * 100))) : 50);
             const averageLabel = activeMetric === 'Sleep' ? `${Math.floor(average / 60)}h ${Math.round(average % 60)}m` : `${average}${activeMetric === 'Heart' ? ' bpm' : ''}`;
@@ -96,8 +98,9 @@ const DailyActivityTrends: React.FC<{
       .then(() => {
         setGoalValues(current => ({ ...current, [activeMetric]: normalizedGoal }));
         setGoalModalVisible(false);
+        showAppToast('success', 'Goal updated', 'Your daily target has been saved.');
       })
-      .catch(error => Alert.alert('Could not save goal', apiErrorMessage(error)));
+      .catch(error => showAppToast('error', 'Could not save goal', apiErrorMessage(error)));
   };
 
   return (

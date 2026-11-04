@@ -7,20 +7,22 @@ import { createHomeStyles } from '../styles.Home';
 import { useNavigation } from '@react-navigation/native';
 import { useFocusEffect } from '@react-navigation/native';
 import { useCallback } from 'react';
-import { authenticatedRequest } from '../../../../services/authenticatedApi';
-
-type UserProfile = { name?: string; email?: string };
+import { getCurrentUser } from '../../../../services/profile';
+import { useAppDispatch, useAppSelector } from '../../../../store/hooks';
+import { setProfile } from '../../../../store/profileSlice';
 
 const HomeHeader: React.FC = () => {
-  const [fullName, setFullName] = React.useState('');
+  const dispatch = useAppDispatch();
+  const profile = useAppSelector(state => state.profile.user);
+  const fullName = profile?.name ?? '';
   const name = fullName.split(' ')[0] || '';
   useFocusEffect(useCallback(() => {
     let active = true;
-    authenticatedRequest<{ user: UserProfile }>('GET', '/auth/me')
-      .then(result => { if (active) setFullName(result.user?.name || ''); })
+    getCurrentUser()
+      .then(user => { if (active) dispatch(setProfile(user)); })
       .catch(() => {});
     return () => { active = false; };
-  }, []));
+  }, [dispatch]));
   const { theme } = useTheme();
   const styles = createHomeStyles(theme);
   const navigation = useNavigation();

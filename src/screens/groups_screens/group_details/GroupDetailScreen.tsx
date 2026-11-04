@@ -24,6 +24,7 @@ import { useRoute, type RouteProp } from '@react-navigation/native';
 import type { RootStackParamList } from '../../../navigations/GroupsStack';
 import { authenticatedRequest } from '../../../services/authenticatedApi';
 import { apiErrorMessage } from '../../../services/api';
+import { showAppToast } from '../../../utils/appToast';
 import { GroupChat } from './components/group_chats/GroupChat';
 import type { Member } from './constants';
 import { createAuthenticatedChatSocket } from '../../../services/chatSocket';
@@ -98,7 +99,7 @@ const GroupDetailScreen: React.FC<GroupDetailScreenProps> = ({
       setChallenges(challengeResult.challenges.map(item => ({ id: item.id, title: item.title, description: item.description, status: item.status, progress: 0, progressLabel: `${item.participants} participants`, color: colors.primary })));
       setMessages((messageResult.messages || []).map((item: any) => ({ ...item, color: colors.primary })));
       setMembers((leaderboardResult.leaderboard || []).map(item => ({ id: item.id, name: item.name, initials: item.initials, steps: item.steps, streak: Number.parseInt(item.streak, 10) || 0, color: item.color })));
-    } catch (error) { Alert.alert('Could not load group', apiErrorMessage(error)); }
+    } catch (error) { showAppToast('error', 'Could not load group', apiErrorMessage(error)); }
   }, [groupId, colors.primary]);
   React.useEffect(() => { void refreshGroup(); }, [refreshGroup]);
 
@@ -167,7 +168,8 @@ const GroupDetailScreen: React.FC<GroupDetailScreenProps> = ({
       const endsAt = new Date(Date.now() + Number.parseInt(duration, 10) * 86400000).toISOString();
       await authenticatedRequest('POST', `/community/groups/${encodeURIComponent(groupId)}/challenges`, { title: challengeName.trim(), description: challengeGoal.trim(), metricType: 'steps', targetValue, startsAt: new Date().toISOString(), endsAt, rewardPoints: Number.parseInt(reward, 10) || 0 });
       await refreshGroup(); setCreateChallengeVisible(false); setChallengeName(''); setChallengeGoal(''); setDuration(DURATION_OPTIONS[0]); setReward(REWARD_OPTIONS[1]); setActiveTab('Challenges');
-    } catch (error) { Alert.alert('Could not create challenge', apiErrorMessage(error)); }
+      showAppToast('success', 'Challenge created', 'Your group challenge is ready.');
+    } catch (error) { showAppToast('error', 'Could not create challenge', apiErrorMessage(error)); }
   }, [challengeName, challengeGoal, duration, reward, groupId, refreshGroup]);
 
   const sendMessage = useCallback(async () => {
@@ -189,7 +191,7 @@ const GroupDetailScreen: React.FC<GroupDetailScreenProps> = ({
       }
       setMessageDraft('');
     }
-    catch (error) { Alert.alert('Could not send message', apiErrorMessage(error)); }
+    catch (error) { showAppToast('error', 'Could not send message', apiErrorMessage(error)); }
   }, [groupId, messageDraft, colors.primary]);
 
   // ─── Render ─────────────────────────────────────────────────────────────────

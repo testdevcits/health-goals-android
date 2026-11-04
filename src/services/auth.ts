@@ -1,12 +1,13 @@
 import * as Keychain from 'react-native-keychain';
 import { api } from './api';
+import type { UserProfile } from './profile';
 
 const KEYCHAIN_SERVICE = 'com.vitality.auth';
 
 export type AuthTokens = {
   accessToken: string;
   refreshToken: string;
-  user: { id: string; name: string; email: string; [key: string]: unknown };
+  user: UserProfile;
 };
 
 type ApiResult<T> = { data: T };
@@ -74,7 +75,7 @@ export async function restoreSession(): Promise<AuthTokens | null> {
   try {
     const response = await api.post<ApiResult<AuthTokens>>('/auth/refresh', { refreshToken: session.refreshToken });
     const refreshed = response.data.data;
-    const profile = await api.get<ApiResult<{ user: AuthTokens['user'] }>>('/auth/me', {
+    const profile = await api.get<ApiResult<{ user: UserProfile }>>('/auth/me', {
       headers: { Authorization: `Bearer ${refreshed.accessToken}` },
     });
     return saveTokens({ ...refreshed, user: profile.data.data.user }, true);

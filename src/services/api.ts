@@ -1,6 +1,5 @@
 
 import axios, {
-  type AxiosRequestConfig,
   type InternalAxiosRequestConfig,
 } from 'axios';
 import { NativeModules } from 'react-native';
@@ -37,12 +36,8 @@ export const api = axios.create({
   },
 });
 
-// ============================================
-// SENSITIVE DATA SANITIZATION
-// ============================================
-
 const SENSITIVE_FIELD =
-  /password|passcode|otp|token|secret|authorization|cookie|api.?key|credential|email|phone/i;
+  /password|passcode|otp|token|secret|authorization|cookie|api.?key|credential|email|phone|identifier|user.?id|query|search/i;
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null;
@@ -52,15 +47,6 @@ function sanitizeValue(
   value: unknown,
   seen = new WeakSet<object>(),
 ): unknown {
-  if (typeof value === 'string') {
-    try {
-      const parsed = JSON.parse(value);
-      return sanitizeValue(parsed, seen);
-    } catch {
-      return '[STRING OMITTED]';
-    }
-  }
-
   if (value === null || typeof value !== 'object') {
     return value;
   }
@@ -80,13 +66,40 @@ function sanitizeValue(
   }
 
   return Object.fromEntries(
-    Object.entries(value).map(([key, item]) => [
+    Object.entries(value).map(([key, nestedValue]) => [
       key,
       SENSITIVE_FIELD.test(key)
         ? '[REDACTED]'
-        : sanitizeValue(item, seen),
+        : sanitizeValue(nestedValue, seen),
     ]),
   );
+}
+
+function sanitizeRequestPayload(value: unknown): unknown {
+  if (typeof FormData !== 'undefined' && value instanceof FormData) {
+    return '[FormData omitted]';
+  }
+
+  if (typeof value === 'string') {
+    try {
+      return sanitizeValue(JSON.parse(value));
+    } catch {
+      return '[STRING OMITTED]';
+    }
+  }
+
+  return sanitizeValue(value);
+}
+
+function logHttpBlock(
+  title: string,
+  entries: Array<[label: string, value: unknown]>,
+): void {
+  console.info(`╔══════════════════ ${title} ══════════════════╗`);
+  entries.forEach(([label, value]) => {
+    console.info(`║ ${label}:`, value);
+  });
+  console.info('╚═════════════════════════════════════════════════════╝');
 }
 
 // ============================================
@@ -137,16 +150,10 @@ function sanitizeUrl(url: string): string {
 // REQUEST DETAILS
 // ============================================
 
-function getRequestDetails(config: AxiosRequestConfig = {}) {
+function getRequestDetails(config: InternalAxiosRequestConfig) {
   return {
     method: config.method?.toUpperCase() ?? 'UNKNOWN',
     url: sanitizeUrl(axios.getUri(config)),
-    headers: sanitizeValue(
-      Object.fromEntries(
-        Object.entries(config.headers ?? {}),
-      ),
-    ),
-    payload: sanitizeValue(config.data),
   };
 }
 
@@ -155,9 +162,35 @@ function getRequestDetails(config: AxiosRequestConfig = {}) {
 // ============================================
 
 if (__DEV__) {
+  const requestStartedAt = new WeakMap<object, number>();
+
   api.interceptors.request.use(
     (config: InternalAxiosRequestConfig) => {
-      console.info('[API] Request', getRequestDetails(config));
+      requestStartedAt.set(config, Date.now());
+      const headers =
+        typeof config.headers?.toJSON === 'function'
+          ? config.headers.toJSON()
+          : config.headers;
+      const entries: Array<[string, unknown]> = [
+        ['METHOD', config.method?.toUpperCase() ?? 'UNKNOWN'],
+        ['URL', getRequestDetails(config).url],
+      ];
+
+      if (config.params && Object.keys(config.params).length > 0) {
+        entries.push(['PARAMS', sanitizeValue(config.params)]);
+      }
+
+      if (headers && Object.keys(headers).length > 0) {
+        entries.push(['HEADERS', sanitizeValue(headers)]);
+      }
+
+      if (config.data !== undefined) {
+        entries.push(['PAYLOAD', sanitizeRequestPayload(config.data)]);
+      } else {
+        entries.push(['PAYLOAD', 'None']);
+      }
+
+      logHttpBlock('🚀 HTTP REQUEST', entries);
       return config;
     },
     error => {
@@ -171,27 +204,49 @@ if (__DEV__) {
 
   api.interceptors.response.use(
     response => {
-      console.info('[API] Response', {
-        ...getRequestDetails(response.config),
-        status: response.status,
-        payload: sanitizeValue(response.data),
-      });
+      logHttpBlock('✅ HTTP RESPONSE', [
+        ...Object.entries(getRequestDetails(response.config)),
+        ['STATUS', `${response.status} ${response.statusText || 'OK'}`],
+        [
+          'DURATION',
+          `${Date.now() -
+            (requestStartedAt.get(response.config) ?? Date.now())}ms`,
+        ],
+        ['BODY', response.data],
+      ]);
 
       return response;
     },
     error => {
       if (axios.isAxiosError(error)) {
-        console.error('[API] Request failed', {
-          ...getRequestDetails(error.config),
-          status: error.response?.status,
-          code: error.code,
-          response: sanitizeValue(error.response?.data),
-          message: error.message,
+        const config = error.config;
+        const entries: Array<[string, unknown]> = [
+          ...(config ? Object.entries(getRequestDetails(config)) : []),
+          ['STATUS', error.response?.status ?? 'NETWORK_ERROR'],
+          ['ERROR', error.message],
+          ['CODE', error.code],
+        ];
+
+        if (config) {
+          entries.push([
+            'DURATION',
+            `${Date.now() -
+              (requestStartedAt.get(config) ?? Date.now())}ms`,
+          ]);
+        }
+
+        if (error.response?.data !== undefined) {
+          entries.push(['RESPONSE BODY', error.response.data]);
+        }
+
+        console.error('╔══════════════════ ❌ HTTP ERROR RESPONSE ═══════════╗');
+        entries.forEach(([label, value]) => {
+          console.error(`║ ${label}:`, value);
         });
+        console.error('╚═════════════════════════════════════════════════════╝');
       } else {
         console.error('[API] Request failed', {
           code: 'UNKNOWN_ERROR',
-          message: error?.message,
         });
       }
 

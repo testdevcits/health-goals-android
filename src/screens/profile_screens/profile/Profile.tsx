@@ -20,6 +20,9 @@ import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '../../../navigations/ProfileStack';
 import { useFocusEffect } from '@react-navigation/native';
 import { authenticatedRequest } from '../../../services/authenticatedApi';
+import { getCurrentUser } from '../../../services/profile';
+import { useAppDispatch, useAppSelector } from '../../../store/hooks';
+import { setProfile } from '../../../store/profileSlice';
 
 type ProfileNavigationProp = NativeStackNavigationProp<RootStackParamList>;
 
@@ -30,23 +33,30 @@ const ProfileScreen: React.FC = () => {
   const insets = useSafeAreaInsets();
   const navigation = useNavigation<ProfileNavigationProp>();
   const menuItems = useMemo(() => getProfileMenuItems(colors), [colors]);
-  const [profile, setProfile] = useState({ name: '', email: '', phone: '', points: 0, profileImageUrl: '' });
+  const dispatch = useAppDispatch();
+  const user = useAppSelector(state => state.profile.user);
+  const [points, setPoints] = useState(0);
   useFocusEffect(useCallback(() => {
     let active = true;
     Promise.allSettled([
-      authenticatedRequest<{ user: { name?: string; email?: string; profileImageUrl?: string; deviceProfile?: { brand?: string; manufacturer?: string; model?: string } | null } }>('GET', '/auth/me'),
+      getCurrentUser(),
       authenticatedRequest<{ wallet?: { availablePoints?: number; balance?: number } }>('GET', '/wallet'),
     ]).then(([userResult, walletResult]) => {
       if (!active) return;
-      const user = userResult.status === 'fulfilled' ? userResult.value.user : {};
+      const fetchedUser = userResult.status === 'fulfilled' ? userResult.value : null;
       const wallet = walletResult.status === 'fulfilled' ? walletResult.value.wallet : undefined;
-      const device = user?.deviceProfile;
-      const phone = device ? [device.brand || device.manufacturer, device.model].filter(Boolean).join(' ') : '';
-      setProfile({ name: user?.name || '', email: user?.email || '', phone, points: Number(wallet?.availablePoints ?? wallet?.balance ?? 0), profileImageUrl: user?.profileImageUrl || '' });
+      if (fetchedUser) dispatch(setProfile(fetchedUser));
+      setPoints(Number(wallet?.availablePoints ?? wallet?.balance ?? 0));
     });
     return () => { active = false; };
-  }, []));
-  const initials = profile.name.split(/\s+/).filter(Boolean).map(part => part[0]).join('').slice(0, 2).toUpperCase() || 'U';
+  }, [dispatch]));
+  const name = user?.name ?? '';
+  const profileImageUrl = user?.profileImageUrl ?? '';
+  const device = user?.deviceProfile;
+  const phone = device
+    ? [device.brand || device.manufacturer, device.model].filter(Boolean).join(' ')
+    : '';
+  const initials = name.split(/\s+/).filter(Boolean).map(part => part[0]).join('').slice(0, 2).toUpperCase() || 'U';
 
   const handleMenuPress = (id: string) => {
     switch (id) {
@@ -106,7 +116,7 @@ const ProfileScreen: React.FC = () => {
           </Pressable>
 
           <View style={styles.smallAvatar}>
-            {profile.profileImageUrl ? <Image source={{ uri: profile.profileImageUrl }} style={{ width: '100%', height: '100%', borderRadius: 22 }} /> : <AppText variant="subtitle2" color="white" bold>{initials}</AppText>}
+            {profileImageUrl ? <Image source={{ uri: profileImageUrl }} style={{ width: '100%', height: '100%', borderRadius: 22 }} /> : <AppText variant="subtitle2" color="white" bold>{initials}</AppText>}
           </View>
         </View>
       </View>
@@ -121,22 +131,22 @@ const ProfileScreen: React.FC = () => {
         {/* Profile information */}
         <View style={styles.profileSection}>
           <View style={styles.largeAvatar}>
-            {profile.profileImageUrl ? <Image source={{ uri: profile.profileImageUrl }} style={{ width: '100%', height: '100%', borderRadius: 44 }} /> : <AppText variant="display" color="white">{initials}</AppText>}
+            {profileImageUrl ? <Image source={{ uri: profileImageUrl }} style={{ width: '100%', height: '100%', borderRadius: 44 }} /> : <AppText variant="display" color="white">{initials}</AppText>}
           </View>
 
           <AppText variant="h3" center mt={spacing.md}>
-            {profile.name || 'Your profile'}
+            {name || 'Your profile'}
           </AppText>
 
           <AppText variant="caption" secondary center style={styles.emailText}>
-            {[profile.email, profile.phone].filter(Boolean).join(' · ') || ' '}
+            {[user?.email, phone].filter(Boolean).join(' · ') || ' '}
           </AppText>
         </View>
 
         {/* Rewards and activity summary */}
         <View style={[styles.statsCard, { backgroundColor: colors.surface }]}>
           {[
-            { value: profile.points.toLocaleString(), label: 'Points' },
+            { value: points.toLocaleString(), label: 'Points' },
             { value: '—', label: 'Day Streak' },
             { value: '—', label: 'Badges' },
             { value: '—', label: 'Rank' },

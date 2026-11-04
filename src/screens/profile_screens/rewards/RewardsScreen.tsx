@@ -10,6 +10,7 @@ import {
 import { useTheme } from '../../../theme/useTheme';
 import { authenticatedRequest } from '../../../services/authenticatedApi';
 import { apiErrorMessage } from '../../../services/api';
+import { showAppToast } from '../../../utils/appToast';
 import {
   ProfileScreenNavigation,
   ProfileSectionLabel,
@@ -38,7 +39,7 @@ const RewardsScreen: React.FC<{ navigation: ProfileScreenNavigation }> = ({
     if (rewardsResult.status === 'fulfilled') setRewards(rewardsResult.value.rewards || []);
     if (redemptionsResult.status === 'fulfilled') setRedemptions(redemptionsResult.value.redemptions || []);
     const failure = [walletResult, rewardsResult, redemptionsResult].find(result => result.status === 'rejected');
-    if (failure?.status === 'rejected') Alert.alert('Could not load rewards', apiErrorMessage(failure.reason));
+    if (failure?.status === 'rejected') showAppToast('error', 'Could not load rewards', apiErrorMessage(failure.reason));
   }, []);
 
   useFocusEffect(useCallback(() => { void refresh(); }, [refresh]));
@@ -47,9 +48,13 @@ const RewardsScreen: React.FC<{ navigation: ProfileScreenNavigation }> = ({
     try {
       const result = await authenticatedRequest<{ redemption: Redemption }>('POST', `/rewards/${encodeURIComponent(reward.id)}/redeem`);
       await refresh();
-      Alert.alert('Reward redeemed', result.redemption?.redemptionCode ? `Your code: ${result.redemption.redemptionCode}` : `${reward.title} has been redeemed.`);
+      if (result.redemption?.redemptionCode) {
+        Alert.alert('Reward redeemed', `Your code: ${result.redemption.redemptionCode}`);
+      } else {
+        showAppToast('success', 'Reward redeemed', `${reward.title} has been redeemed.`);
+      }
     } catch (error) {
-      Alert.alert('Could not redeem reward', apiErrorMessage(error));
+      showAppToast('error', 'Could not redeem reward', apiErrorMessage(error));
     }
   };
 

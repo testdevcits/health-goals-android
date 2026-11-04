@@ -7,6 +7,7 @@ import { useTheme } from '../../../../theme/useTheme';
 import { createHomeStyles } from '../styles.Home';
 import { useFocusEffect } from '@react-navigation/native';
 import { authenticatedRequest } from '../../../../services/authenticatedApi';
+import { getCurrentUser } from '../../../../services/profile';
 
 const CIRCLE_SIZE = 88;
 const STROKE_WIDTH = 7;
@@ -80,11 +81,11 @@ const EnergyCard: React.FC = () => {
     let active = true;
     Promise.all([
       authenticatedRequest<{ totals?: { steps?: number }; creditedCoins?: number }>('GET', '/activity/today'),
-      authenticatedRequest<{ user: { healthGoals?: Record<string, number> } }>('GET', '/auth/me'),
+      getCurrentUser(),
       authenticatedRequest<{ items: Array<{ day: string; creditedCoins?: number; totals?: { steps?: number; workoutMinutes?: number; meditationMinutes?: number } }> }>('GET', '/activity/history?limit=30'),
     ]).then(([day, profile, history]) => {
       if (!active) return;
-      const target = profile.user?.healthGoals?.steps || 10000;
+      const target = profile.healthGoals?.steps || 10000;
       const steps = day.totals?.steps || 0;
       setStepsTarget(target);
       setEnergy(Math.min(100, Math.round(steps / target * 100)));

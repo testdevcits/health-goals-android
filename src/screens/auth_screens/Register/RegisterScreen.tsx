@@ -8,7 +8,6 @@ import {
   TextInput,
   KeyboardAvoidingView,
   Platform,
-  Alert,
 } from 'react-native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../../../navigations/AppNavigation';
@@ -24,6 +23,7 @@ import {
 import { createRegisterStyles } from './styles.Register';
 import { requestRegistration } from '../../../services/auth';
 import { apiErrorMessage } from '../../../services/api';
+import { showAppToast } from '../../../utils/appToast';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Register'>;
 
@@ -110,7 +110,7 @@ const RegisterScreen: React.FC<Props> = ({ navigation }) => {
         deliveryMode: challenge.deliveryMode,
       });
     } catch (error) {
-      Alert.alert('Account creation failed', apiErrorMessage(error));
+      showAppToast('error', 'Account creation failed', apiErrorMessage(error));
     } finally { setLoading(false); }
   };
 

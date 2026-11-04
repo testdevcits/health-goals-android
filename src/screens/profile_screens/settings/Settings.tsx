@@ -4,6 +4,7 @@ import {
   Linking,
   Modal,
   Pressable,
+  Platform,
   ScrollView,
   View,
 } from 'react-native';
@@ -25,10 +26,19 @@ import {
   openNotificationSettings,
   requestNotificationPermission,
 } from '../../../utils/AppPermissions';
+import {
+  disableBackgroundHealthSync,
+  enableBackgroundHealthSync,
+  isBackgroundHealthSyncEnabled,
+  requestBackgroundHealthReadPermission,
+} from '../../../services/backgroundHealthSync';
+import { openHealthConnectSettings } from 'react-native-health-connect';
 import createStyles from './styles.Setting';
 import LogoutModal from './components/LogoutModal';
 import { logout } from '../../../services/auth';
 import { navigationRef } from '../../../navigations/AppNavigation';
+import { useAppDispatch } from '../../../store/hooks';
+import { clearProfile } from '../../../store/profileSlice';
 
 type SettingsGroup = 'units' | 'language' | 'appearance';
 type SettingsNavigation = {
@@ -52,6 +62,7 @@ const groupOptions: Record<SettingsGroup, string[]> = {
 };
 
 const Settings = ({ navigation }: { navigation: SettingsNavigation }) => {
+  const dispatch = useAppDispatch();
   const { theme, themeMode, setThemeMode } = useTheme();
   const { colors, spacing, radius } = theme;
   const styles = createStyles(colors);
@@ -62,12 +73,16 @@ const Settings = ({ navigation }: { navigation: SettingsNavigation }) => {
   const [challengeAlerts, setChallengeAlerts] = useState(false);
   const [locationTracking, setLocationTracking] = useState(false);
   const [locationLoading, setLocationLoading] = useState(true);
+  const [backgroundHealthSync, setBackgroundHealthSync] = useState(false);
+  const [backgroundHealthSyncLoading, setBackgroundHealthSyncLoading] =
+    useState(true);
   const [units, setUnits] = useState('Metric');
   const [language, setLanguage] = useState('हिन्दी');
   const [activeGroup, setActiveGroup] = useState<SettingsGroup | null>(null);
   const [modalVisible, setModalVisible] = React.useState(false);
   const handleSignOut = async () => {
     try { await logout(); } catch { /* Clear the local session even while offline. */ }
+    dispatch(clearProfile());
     setModalVisible(false);
     navigationRef.resetRoot({ index: 0, routes: [{ name: 'Login' }] });
   };
@@ -107,6 +122,18 @@ const Settings = ({ navigation }: { navigation: SettingsNavigation }) => {
     } finally {
       setNotificationsLoading(false);
       setLocationLoading(false);
+    }
+
+    try {
+      setBackgroundHealthSync(await isBackgroundHealthSyncEnabled());
+    } catch (error) {
+      console.error('Unable to load background health sync settings:', error);
+      Alert.alert(
+        'Health sync settings unavailable',
+        'Vitality could not check Health Connect background access. Your other device settings are still available.',
+      );
+    } finally {
+      setBackgroundHealthSyncLoading(false);
     }
   }, []);
 
@@ -242,6 +269,83 @@ const Settings = ({ navigation }: { navigation: SettingsNavigation }) => {
     }
   };
 
+  const requestAndEnableBackgroundHealthSync = async () => {
+    setBackgroundHealthSyncLoading(true);
+    try {
+      const granted = await requestBackgroundHealthReadPermission();
+      if (!granted) {
+        Alert.alert(
+          'Background health access is off',
+          'Allow background access for Vitality in Health Connect settings to sync health data while the app is closed.',
+          [
+            { text: 'Not now', style: 'cancel' },
+            {
+              text: 'Open Health Connect',
+              onPress: () => {
+                try {
+                  openHealthConnectSettings();
+                } catch (error) {
+                  console.error('Unable to open Health Connect settings:', error);
+                  Alert.alert(
+                    'Could not open Health Connect',
+                    'Open Health Connect from your device settings to manage Vitality’s access.',
+                  );
+                }
+              },
+            },
+          ],
+        );
+        return;
+      }
+
+      await enableBackgroundHealthSync();
+      setBackgroundHealthSync(true);
+    } catch (error) {
+      console.error('Unable to enable background health sync:', error);
+      Alert.alert(
+        'Background sync could not be enabled',
+        error instanceof Error
+          ? error.message
+          : 'Connect Health Connect and allow background access, then try again.',
+      );
+    } finally {
+      setBackgroundHealthSyncLoading(false);
+    }
+  };
+
+  const handleBackgroundHealthSyncChange = (enabled: boolean) => {
+    if (backgroundHealthSyncLoading) {
+      return;
+    }
+
+    if (enabled) {
+      Alert.alert(
+        'Allow background health sync?',
+        'Vitality will periodically read the Health Connect data you have approved and sync it to your account, even when the app is closed. Android may delay background runs to save battery. You can turn this off at any time.',
+        [
+          { text: 'Not now', style: 'cancel' },
+          {
+            text: 'Continue',
+            onPress: requestAndEnableBackgroundHealthSync,
+          },
+        ],
+      );
+      return;
+    }
+
+    setBackgroundHealthSyncLoading(true);
+    disableBackgroundHealthSync()
+      .then(() => setBackgroundHealthSync(false))
+      .catch(error => {
+        console.error('Unable to disable background health sync:', error);
+        Alert.alert(
+          'Could not turn off background sync',
+          'Vitality could not update this setting. Please try again.',
+        );
+      })
+      .finally(() => setBackgroundHealthSyncLoading(false));
+  };
+
   const [showLocationConfirmation, setShowLocationConfirmation] =
     React.useState(false);
 
@@ -369,6 +473,25 @@ const Settings = ({ navigation }: { navigation: SettingsNavigation }) => {
             showDivider={false}
           />
         </SettingsSection>
+
+        {Platform.OS === 'android' && Number(Platform.Version) >= 34 ? (
+          <SettingsSection title="Health Data" colors={colors} styles={styles}>
+            <AppSettingsRow
+              icon="❤️"
+              title="Background Health Sync"
+              description={
+                backgroundHealthSyncLoading
+                  ? 'Checking background access…'
+                  : backgroundHealthSync
+                    ? 'Periodically sync approved Health Connect data'
+                    : 'Sync approved health data while the app is closed'
+              }
+              switchValue={backgroundHealthSync}
+              onSwitchChange={handleBackgroundHealthSyncChange}
+              showDivider={false}
+            />
+          </SettingsSection>
+        ) : null}
 
         <SettingsSection title="Account" colors={colors} styles={styles}>
           <AppSettingsRow

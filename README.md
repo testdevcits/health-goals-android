@@ -23,6 +23,14 @@ Google sign-in setup:
 
 Release builds require HTTPS API and chat server origins plus a Google Web client ID. The admin dashboard continues to use its existing email OTP flow.
 
+## Health Connect and background sync
+
+On Android, connect Health Connect from **Profile → Connected Devices** and grant only the health data permissions you want Vitality to use. Optional background syncing on Android 14 and later is controlled separately in **Settings → Health Data → Background Health Sync**. Enabling it explains the data use and asks Health Connect for background-read access; sync runs are best-effort and Android may delay them to conserve battery. Turning the setting off stops scheduled health sync without revoking the Health Connect permissions you granted.
+
+Background location tracking is a separate, optional setting. Vitality explains the location use and requests “Allow all the time” access only after you choose to enable continuous tracking.
+
+App notifications use a shared theme-aware toast style for brief success, information, and error messages. Important confirmations, permission choices, and messages that need an action remain native dialogs.
+
 # Getting Started
 
 > **Note**: Make sure you have completed the [Set Up Your Environment](https://reactnative.dev/docs/set-up-your-environment) guide before proceeding.
