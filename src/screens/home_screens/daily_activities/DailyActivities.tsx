@@ -35,7 +35,9 @@ const DailyActivities: React.FC<{ navigation: DailyActivityNavigation }> = ({
     try {
       const result = await syncRecentHealthData();
       setSyncMessage(
-        result.synced === 0
+        result.throttled
+          ? 'Health data was synced recently. Try again in a few minutes.'
+          : result.synced === 0
           ? 'No recent Health Connect records were available to sync.'
           : `Sent ${result.synced} records · ${result.created} new · ${result.duplicates} already synced.`,
       );

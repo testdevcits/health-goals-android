@@ -1,6 +1,7 @@
 import axios from 'axios';
 import * as Keychain from 'react-native-keychain';
 import {
+  ExerciseType,
   aggregateGroupByDuration,
   getGrantedPermissions,
   readRecords,
@@ -15,8 +16,10 @@ const IST_OFFSET_MS = 330 * 60 * 1000;
 const DAY_MS = 24 * 60 * 60 * 1000;
 const SOURCE = 'health_connect';
 const VERSION_STORE_SERVICE = 'com.vitality.health-sync-snapshots';
+const LAST_SYNC_STORE_SERVICE = 'com.vitality.health-sync-watermark';
 const MAX_BATCH_SIZE = 100;
 const SNAPSHOT_WINDOW_DAYS = 7;
+const MIN_SYNC_INTERVAL_MS = 5 * 60 * 1000;
 
 let activeSync: Promise<HealthSyncResult> | null = null;
 
@@ -34,12 +37,14 @@ type SnapshotRecord = {
   sourceVersion: number;
   deviceId: string;
   metadata: Record<string, unknown>;
+  activityType?: string;
 };
 
 type HealthSyncResult = {
   synced: number;
   created: number;
   duplicates: number;
+  throttled?: boolean;
 };
 
 type DailyStepsUpload = {
@@ -56,9 +61,18 @@ type SnapshotVersion = {
   updatedAt: number;
 };
 
+type SyncWatermark = { lastSuccessAt: number };
+
 type AggregationGroup = {
   startTime: string;
   result: Record<string, any>;
+};
+
+type HealthConnectWorkout = {
+  startTime: string;
+  endTime: string;
+  exerciseType: number;
+  metadata?: Record<string, any>;
 };
 
 const emptySyncResult = (): HealthSyncResult => ({
@@ -137,6 +151,73 @@ async function readOxygenRecords(
   return records;
 }
 
+async function readWorkoutRecords(
+  granted: Permission[],
+  timeRangeFilter: ReturnType<typeof getIstSnapshotRange>['timeRangeFilter'],
+) {
+  if (!hasReadPermission(granted, 'ExerciseSession')) return [] as HealthConnectWorkout[];
+  const records: HealthConnectWorkout[] = [];
+  let pageToken: string | undefined;
+  do {
+    const result = await readRecords('ExerciseSession', {
+      timeRangeFilter,
+      pageSize: 1000,
+      ...(pageToken ? { pageToken } : {}),
+    } as any);
+    records.push(...(result.records as HealthConnectWorkout[]));
+    pageToken = result.pageToken || undefined;
+  } while (pageToken);
+  return records;
+}
+
+function workoutActivityType(value: number) {
+  if (value === ExerciseType.WALKING) return 'walking';
+  if (value === ExerciseType.RUNNING) return 'running';
+  if (value === ExerciseType.RUNNING_TREADMILL) return 'treadmill';
+  if (value === ExerciseType.HIKING) return 'hiking';
+  if (value === ExerciseType.BIKING || value === ExerciseType.BIKING_STATIONARY) return 'cycling';
+  if (value === ExerciseType.YOGA) return 'yoga';
+  if (value === ExerciseType.STRENGTH_TRAINING || value === ExerciseType.WEIGHTLIFTING) return 'strength';
+  if (value === ExerciseType.SWIMMING_OPEN_WATER || value === ExerciseType.SWIMMING_POOL) return 'swimming';
+  return 'other';
+}
+
+function makeWorkoutSnapshots(deviceId: string, workouts: HealthConnectWorkout[]) {
+  const records: SnapshotRecord[] = [];
+  workouts.forEach(workout => {
+    const start = Date.parse(workout.startTime);
+    const end = Math.min(Date.parse(workout.endTime), Date.now());
+    const id = workout.metadata?.clientRecordId || workout.metadata?.id;
+    const origin = workout.metadata?.dataOrigin;
+    if (!id || !origin || !Number.isFinite(start) || !Number.isFinite(end) || end <= start) return;
+    let cursor = start;
+    while (cursor < end) {
+      const date = istDay(new Date(cursor));
+      const midnight = Date.parse(`${shiftDateKey(date, 1)}T00:00:00.000Z`) - IST_OFFSET_MS;
+      const segmentEnd = Math.min(end, midnight);
+      if (segmentEnd <= cursor) break;
+      records.push({
+        metricType: 'workout',
+        value: roundValue((segmentEnd - cursor) / 60_000, 2),
+        unit: 'min',
+        recordedAt: new Date(cursor).toISOString(),
+        startTime: new Date(cursor).toISOString(),
+        endTime: new Date(segmentEnd).toISOString(),
+        source: SOURCE,
+        dataOrigin: origin,
+        recordingMethod: 'automatic',
+        sourceRecordId: `health_connect:workout:${id}:${date}`.slice(0, 256),
+        sourceVersion: 1,
+        deviceId,
+        metadata: { aggregation: 'session', origin },
+        activityType: workoutActivityType(workout.exerciseType),
+      } as SnapshotRecord);
+      cursor = segmentEnd;
+    }
+  });
+  return records;
+}
+
 function roundValue(value: number, places: number) {
   const multiplier = 10 ** places;
   return Math.round((value + Number.EPSILON) * multiplier) / multiplier;
@@ -203,14 +284,6 @@ function makeDailySnapshots(
       unit: 'kcal',
       places: 1,
       value: (row: AggregationGroup) => row.result.ENERGY_TOTAL.inKilocalories,
-    },
-    {
-      recordType: 'ExerciseSession',
-      metricType: 'workout',
-      unit: 'min',
-      places: 1,
-      value: (row: AggregationGroup) =>
-        row.result.EXERCISE_DURATION_TOTAL.inSeconds / 60,
     },
     {
       recordType: 'SleepSession',
@@ -349,13 +422,16 @@ function makeDailySnapshots(
     const [date, metricKey] = key.split('|');
     const start = Date.parse(`${date}T00:00:00.000Z`) - IST_OFFSET_MS;
     const metricId = metricKey.replace(/_/g, ':');
+    const durationMs = daily.metricType === 'workout'
+      ? Math.max(1, Math.round(daily.value * 60_000))
+      : 1;
     return {
       metricType: daily.metricType,
       value: daily.value,
       unit: daily.unit,
       recordedAt: new Date(start).toISOString(),
       startTime: new Date(start).toISOString(),
-      endTime: new Date(start + DAY_MS).toISOString(),
+      endTime: new Date(start + durationMs).toISOString(),
       source: SOURCE,
       dataOrigin: daily.dataOrigin,
       recordingMethod: 'automatic',
@@ -369,7 +445,7 @@ function makeDailySnapshots(
         origin: daily.dataOrigin,
       },
     } satisfies SnapshotRecord;
-  });
+    });
 }
 
 async function applySnapshotVersions(records: SnapshotRecord[]) {
@@ -399,6 +475,7 @@ async function applySnapshotVersions(records: SnapshotRecord[]) {
     ),
   );
 
+  const changedRecords: SnapshotRecord[] = [];
   records.forEach(record => {
     const fingerprint = JSON.stringify({
       metricType: record.metricType,
@@ -407,15 +484,16 @@ async function applySnapshotVersions(records: SnapshotRecord[]) {
       dataOrigin: record.dataOrigin,
       recordingMethod: record.recordingMethod,
       recordedAt: record.recordedAt,
+      startTime: record.startTime,
+      endTime: record.endTime,
+      activityType: record.activityType,
       metadata: record.metadata,
     });
     const previous = versions[record.sourceRecordId];
-    const sourceVersion = previous
-      ? previous.fingerprint === fingerprint
-        ? previous.sourceVersion
-        : previous.sourceVersion + 1
-      : now;
+    if (previous?.fingerprint === fingerprint) return;
+    const sourceVersion = previous ? previous.sourceVersion + 1 : now;
     record.sourceVersion = sourceVersion;
+    changedRecords.push(record);
     nextVersions[record.sourceRecordId] = {
       fingerprint,
       sourceVersion,
@@ -423,11 +501,13 @@ async function applySnapshotVersions(records: SnapshotRecord[]) {
     };
   });
 
-  await Keychain.setGenericPassword(userId, JSON.stringify(nextVersions), {
-    service: VERSION_STORE_SERVICE,
-    accessible: Keychain.ACCESSIBLE.AFTER_FIRST_UNLOCK,
-  });
-  return records;
+  return {
+    changedRecords,
+    save: () => Keychain.setGenericPassword(userId, JSON.stringify(nextVersions), {
+      service: VERSION_STORE_SERVICE,
+      accessible: Keychain.ACCESSIBLE.AFTER_FIRST_UNLOCK,
+    }),
+  };
 }
 
 async function collectDailySnapshots(deviceId: string) {
@@ -440,30 +520,27 @@ async function collectDailySnapshots(deviceId: string) {
     'Steps',
     'Distance',
     'TotalCaloriesBurned',
-    'ExerciseSession',
     'SleepSession',
     'HeartRate',
     'Weight',
     'BloodPressure',
   ];
-  const [aggregateResults, oxygenRecords] = await Promise.all([
+  const [aggregateResults, oxygenRecords, workoutRecords] = await Promise.all([
     Promise.all(
       aggregateTypes.map(type =>
         aggregateDaily(type, granted, range.timeRangeFilter),
       ),
     ),
     readOxygenRecords(granted, range.timeRangeFilter),
+    readWorkoutRecords(granted, range.timeRangeFilter),
   ]);
   const groups = Object.fromEntries(
     aggregateTypes.map((type, index) => [type, aggregateResults[index]]),
   ) as Record<string, AggregationGroup[]>;
-  const records = await applySnapshotVersions(
-    makeDailySnapshots(deviceId, range.dates, granted, groups, oxygenRecords),
-  );
   const stepsByDate = new Map(
     (groups.Steps || []).map(group => [istDay(group.startTime), group]),
   );
-  const dailySteps = hasReadPermission(granted, 'Steps')
+  const rawDailySteps = hasReadPermission(granted, 'Steps')
     ? range.dates.map(date => {
         const group = stepsByDate.get(date);
         const steps = Number(group?.result.COUNT_TOTAL ?? 0);
@@ -480,7 +557,44 @@ async function collectDailySnapshots(deviceId: string) {
         };
       })
     : [];
-  return { records, dailySteps };
+  const stepSnapshots: SnapshotRecord[] = rawDailySteps.map(record => {
+    const start = Date.parse(`${record.date}T00:00:00.000Z`) - IST_OFFSET_MS;
+    return {
+      metricType: 'steps', value: record.steps, unit: 'count',
+      recordedAt: new Date(start).toISOString(), startTime: new Date(start).toISOString(),
+      endTime: new Date(start + 1).toISOString(), source: SOURCE,
+      dataOrigin: record.dataOrigin, recordingMethod: 'automatic',
+      sourceRecordId: `health_connect:steps:ist:${record.date}:${record.dataOrigin}`.slice(0, 256),
+      sourceVersion: 1, deviceId, metadata: { aggregation: 'daily', timezone: 'Asia/Kolkata' },
+    };
+  });
+  const versioned = await applySnapshotVersions([
+    ...makeDailySnapshots(deviceId, range.dates, granted, groups, oxygenRecords),
+    ...makeWorkoutSnapshots(deviceId, workoutRecords),
+    ...stepSnapshots,
+  ]);
+  const changedStepIds = new Set(versioned.changedRecords.filter(record => record.metricType === 'steps').map(record => record.sourceRecordId));
+  const dailySteps = rawDailySteps.filter(record => changedStepIds.has(`health_connect:steps:ist:${record.date}:${record.dataOrigin}`.slice(0, 256)));
+  return {
+    records: versioned.changedRecords.filter(record => record.metricType !== 'steps'),
+    dailySteps,
+    saveVersions: versioned.save,
+  };
+}
+
+async function lastSuccessfulSyncAt(userId: string) {
+  const credentials = await Keychain.getGenericPassword({ service: LAST_SYNC_STORE_SERVICE });
+  if (!credentials || credentials.username !== userId) return 0;
+  try { return (JSON.parse(credentials.password) as SyncWatermark).lastSuccessAt || 0; }
+  catch { return 0; }
+}
+
+async function saveSuccessfulSyncAt(userId: string) {
+  const watermark: SyncWatermark = { lastSuccessAt: Date.now() };
+  await Keychain.setGenericPassword(userId, JSON.stringify(watermark), {
+    service: LAST_SYNC_STORE_SERVICE,
+    accessible: Keychain.ACCESSIBLE.AFTER_FIRST_UNLOCK,
+  });
 }
 
 async function uploadHealthBatch(batch: SnapshotRecord[]) {
@@ -491,28 +605,51 @@ async function uploadHealthBatch(batch: SnapshotRecord[]) {
         duplicates?: number;
       }>('POST', '/health/sync', { records: batch }, 60_000);
     } catch (error) {
-      const retryableNetworkFailure =
-        axios.isAxiosError(error) &&
-        !error.response &&
-        ['ERR_NETWORK', 'ECONNABORTED', 'ETIMEDOUT'].includes(error.code || '');
-      if (attempt > 0 || !retryableNetworkFailure) throw error;
+      if (attempt > 0 || !isRetryableNetworkFailure(error)) throw error;
       await new Promise<void>(resolve => setTimeout(resolve, 1000));
     }
   }
 }
 
+function isRetryableNetworkFailure(error: unknown) {
+  return axios.isAxiosError(error) && !error.response &&
+    ['ERR_NETWORK', 'ECONNABORTED', 'ETIMEDOUT'].includes(error.code || '');
+}
+
 async function uploadDailySteps(records: DailyStepsUpload[]) {
+  const result = { created: 0, duplicates: 0 };
   for (const record of records) {
-    await authenticatedRequest('POST', '/health/steps/daily', record);
+    let response;
+    for (let attempt = 0; ; attempt += 1) {
+      try {
+        response = await authenticatedRequest<{
+          duplicate?: boolean;
+          updated?: boolean;
+        }>('POST', '/health/steps/daily', record);
+        break;
+      } catch (error) {
+        if (attempt > 0 || !isRetryableNetworkFailure(error)) throw error;
+        await new Promise<void>(resolve => setTimeout(resolve, 1000));
+      }
+    }
+    if (response.duplicate) result.duplicates += 1;
+    else if (!response.updated) result.created += 1;
   }
+  return result;
 }
 
 export function syncRecentHealthData(): Promise<HealthSyncResult> {
   if (activeSync) return activeSync;
   activeSync = (async () => {
     if (!(await ensureHealthConnectInitialized())) return emptySyncResult();
+    const session = await readSession();
+    const userId = session?.user?.id;
+    if (!userId) throw new Error('Please sign in to sync health data.');
+    if (Date.now() - await lastSuccessfulSyncAt(userId) < MIN_SYNC_INTERVAL_MS) {
+      return { ...emptySyncResult(), throttled: true };
+    }
     const deviceId = await ensureHealthConnectDevice();
-    const { records, dailySteps } = await collectDailySnapshots(deviceId);
+    const { records, dailySteps, saveVersions } = await collectDailySnapshots(deviceId);
     let synced = 0;
     let created = 0;
     let duplicates = 0;
@@ -523,7 +660,12 @@ export function syncRecentHealthData(): Promise<HealthSyncResult> {
       created += Number(result.created) || 0;
       duplicates += Number(result.duplicates) || 0;
     }
-    await uploadDailySteps(dailySteps);
+    const stepResult = await uploadDailySteps(dailySteps);
+    created += stepResult.created;
+    duplicates += stepResult.duplicates;
+    await saveVersions();
+    await saveSuccessfulSyncAt(userId);
+    synced += dailySteps.length;
     return { synced, created, duplicates };
   })().finally(() => {
     activeSync = null;
