@@ -75,10 +75,7 @@ const AppNavigation = () => {
   if (!initialRoute)
     return (
       <View
-        style={[
-          styles.loader,
-          { backgroundColor: theme.colors.background },
-        ]}
+        style={[styles.loader, { backgroundColor: theme.colors.background }]}
       >
         <Animated.View
           style={[
@@ -106,11 +103,7 @@ const AppNavigation = () => {
             },
           ]}
         >
-          <HeartPulse
-            size={40}
-            color={theme.colors.primary}
-            strokeWidth={2}
-          />
+          <HeartPulse size={40} color={theme.colors.primary} strokeWidth={2} />
         </Animated.View>
         <AppText
           variant="body2"

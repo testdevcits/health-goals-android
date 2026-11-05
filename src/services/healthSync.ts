@@ -72,7 +72,9 @@ function getIstSnapshotRange(days: number) {
   const endDay = shiftDateKey(today, 1);
   const startMs = Date.parse(`${firstDay}T00:00:00.000Z`) - IST_OFFSET_MS;
   const endMs = Date.parse(`${endDay}T00:00:00.000Z`) - IST_OFFSET_MS;
-  const dates = Array.from({ length: days }, (_, index) => shiftDateKey(firstDay, index));
+  const dates = Array.from({ length: days }, (_, index) =>
+    shiftDateKey(firstDay, index),
+  );
 
   return {
     dates,
@@ -89,7 +91,11 @@ function getIstSnapshotRange(days: number) {
 const hasReadPermission = (granted: Permission[], type: string) =>
   granted.some(row => row.accessType === 'read' && row.recordType === type);
 
-async function aggregateDaily(type: string, granted: Permission[], timeRangeFilter: any) {
+async function aggregateDaily(
+  type: string,
+  granted: Permission[],
+  timeRangeFilter: any,
+) {
   if (!hasReadPermission(granted, type)) return [] as AggregationGroup[];
 
   return aggregateGroupByDuration({
@@ -133,7 +139,15 @@ function makeDailySnapshots(
   groups: Record<string, AggregationGroup[]>,
   oxygenRecords: any[],
 ) {
-  const dailyValues = new Map<string, { metricType: string; value: number; unit: string; metadata?: Record<string, unknown> }>();
+  const dailyValues = new Map<
+    string,
+    {
+      metricType: string;
+      value: number;
+      unit: string;
+      metadata?: Record<string, unknown>;
+    }
+  >();
   const keyOf = (date: string, metric: string) => `${date}|${metric}`;
   const put = (
     date: string,
@@ -161,11 +175,42 @@ function makeDailySnapshots(
     Object.entries(groups).map(([metric, rows]) => [metric, groupByDate(rows)]),
   ) as Record<string, Map<string, AggregationGroup>>;
   const dailyTotalMetrics = [
-    { recordType: 'Steps', metricType: 'steps', unit: 'count', places: 0, value: (row: AggregationGroup) => row.result.COUNT_TOTAL },
-    { recordType: 'Distance', metricType: 'distance', unit: 'km', places: 3, value: (row: AggregationGroup) => row.result.DISTANCE.inMeters / 1000 },
-    { recordType: 'TotalCaloriesBurned', metricType: 'calories', unit: 'kcal', places: 1, value: (row: AggregationGroup) => row.result.ENERGY_TOTAL.inKilocalories },
-    { recordType: 'ExerciseSession', metricType: 'workout', unit: 'min', places: 1, value: (row: AggregationGroup) => row.result.EXERCISE_DURATION_TOTAL.inSeconds / 60 },
-    { recordType: 'SleepSession', metricType: 'sleep', unit: 'min', places: 1, value: (row: AggregationGroup) => row.result.SLEEP_DURATION_TOTAL / 60 },
+    {
+      recordType: 'Steps',
+      metricType: 'steps',
+      unit: 'count',
+      places: 0,
+      value: (row: AggregationGroup) => row.result.COUNT_TOTAL,
+    },
+    {
+      recordType: 'Distance',
+      metricType: 'distance',
+      unit: 'km',
+      places: 3,
+      value: (row: AggregationGroup) => row.result.DISTANCE.inMeters / 1000,
+    },
+    {
+      recordType: 'TotalCaloriesBurned',
+      metricType: 'calories',
+      unit: 'kcal',
+      places: 1,
+      value: (row: AggregationGroup) => row.result.ENERGY_TOTAL.inKilocalories,
+    },
+    {
+      recordType: 'ExerciseSession',
+      metricType: 'workout',
+      unit: 'min',
+      places: 1,
+      value: (row: AggregationGroup) =>
+        row.result.EXERCISE_DURATION_TOTAL.inSeconds / 60,
+    },
+    {
+      recordType: 'SleepSession',
+      metricType: 'sleep',
+      unit: 'min',
+      places: 1,
+      value: (row: AggregationGroup) => row.result.SLEEP_DURATION_TOTAL / 60,
+    },
   ];
 
   dailyTotalMetrics.forEach(metric => {
@@ -174,7 +219,13 @@ function makeDailySnapshots(
     dates.forEach(date => {
       const row = rows.get(date);
       // A zero snapshot clears a previous daily total after source records are removed.
-      put(date, metric.metricType, row ? metric.value(row) : 0, metric.unit, metric.places);
+      put(
+        date,
+        metric.metricType,
+        row ? metric.value(row) : 0,
+        metric.unit,
+        metric.places,
+      );
     });
   });
 
@@ -183,7 +234,9 @@ function makeDailySnapshots(
     dates.forEach(date => {
       const row = rows.get(date);
       if (row && row.result.MEASUREMENTS_COUNT > 0) {
-        put(date, 'heart_rate', row.result.BPM_AVG, 'bpm', 1, { aggregation: 'daily_average' });
+        put(date, 'heart_rate', row.result.BPM_AVG, 'bpm', 1, {
+          aggregation: 'daily_average',
+        });
       }
     });
   }
@@ -192,7 +245,10 @@ function makeDailySnapshots(
     const rows = groupsByDate.Weight || new Map();
     dates.forEach(date => {
       const row = rows.get(date);
-      if (row) put(date, 'weight', row.result.WEIGHT_AVG.inKilograms, 'kg', 3, { aggregation: 'daily_average' });
+      if (row)
+        put(date, 'weight', row.result.WEIGHT_AVG.inKilograms, 'kg', 3, {
+          aggregation: 'daily_average',
+        });
     });
   }
 
@@ -201,8 +257,24 @@ function makeDailySnapshots(
     dates.forEach(date => {
       const row = rows.get(date);
       if (!row) return;
-      put(date, 'blood_pressure', row.result.SYSTOLIC_AVG.inMillimetersOfMercury, 'mmHg', 1, { aggregation: 'daily_average', component: 'systolic' }, 'blood_pressure_systolic');
-      put(date, 'blood_pressure', row.result.DIASTOLIC_AVG.inMillimetersOfMercury, 'mmHg', 1, { aggregation: 'daily_average', component: 'diastolic' }, 'blood_pressure_diastolic');
+      put(
+        date,
+        'blood_pressure',
+        row.result.SYSTOLIC_AVG.inMillimetersOfMercury,
+        'mmHg',
+        1,
+        { aggregation: 'daily_average', component: 'systolic' },
+        'blood_pressure_systolic',
+      );
+      put(
+        date,
+        'blood_pressure',
+        row.result.DIASTOLIC_AVG.inMillimetersOfMercury,
+        'mmHg',
+        1,
+        { aggregation: 'daily_average', component: 'diastolic' },
+        'blood_pressure_diastolic',
+      );
     });
   }
 
@@ -218,7 +290,9 @@ function makeDailySnapshots(
     oxygenByDate.set(date, current);
   });
   oxygenByDate.forEach((entry, date) => {
-    put(date, 'oxygen_saturation', entry.total / entry.count, '%', 1, { aggregation: 'daily_average' });
+    put(date, 'oxygen_saturation', entry.total / entry.count, '%', 1, {
+      aggregation: 'daily_average',
+    });
   });
 
   return Array.from(dailyValues.entries()).map(([key, daily]) => {
@@ -236,7 +310,11 @@ function makeDailySnapshots(
       sourceRecordId: `health_connect:${metricId}:ist:${date}`,
       sourceVersion: 1,
       deviceId,
-      metadata: { aggregation: 'daily', timezone: 'Asia/Kolkata', ...(daily.metadata || {}) },
+      metadata: {
+        aggregation: 'daily',
+        timezone: 'Asia/Kolkata',
+        ...(daily.metadata || {}),
+      },
     } satisfies SnapshotRecord;
   });
 }
@@ -246,11 +324,16 @@ async function applySnapshotVersions(records: SnapshotRecord[]) {
   const userId = session?.user?.id;
   if (!userId) throw new Error('Please sign in to sync health data.');
 
-  const credentials = await Keychain.getGenericPassword({ service: VERSION_STORE_SERVICE });
+  const credentials = await Keychain.getGenericPassword({
+    service: VERSION_STORE_SERVICE,
+  });
   let versions: Record<string, SnapshotVersion> = {};
   if (credentials && credentials.username === userId) {
     try {
-      versions = JSON.parse(credentials.password) as Record<string, SnapshotVersion>;
+      versions = JSON.parse(credentials.password) as Record<
+        string,
+        SnapshotVersion
+      >;
     } catch {
       versions = {};
     }
@@ -258,7 +341,9 @@ async function applySnapshotVersions(records: SnapshotRecord[]) {
 
   const now = Date.now();
   const nextVersions: Record<string, SnapshotVersion> = Object.fromEntries(
-    Object.entries(versions).filter(([, entry]) => now - entry.updatedAt <= 14 * DAY_MS),
+    Object.entries(versions).filter(
+      ([, entry]) => now - entry.updatedAt <= 14 * DAY_MS,
+    ),
   );
 
   records.forEach(record => {
@@ -271,10 +356,16 @@ async function applySnapshotVersions(records: SnapshotRecord[]) {
     });
     const previous = versions[record.sourceRecordId];
     const sourceVersion = previous
-      ? previous.fingerprint === fingerprint ? previous.sourceVersion : previous.sourceVersion + 1
+      ? previous.fingerprint === fingerprint
+        ? previous.sourceVersion
+        : previous.sourceVersion + 1
       : now;
     record.sourceVersion = sourceVersion;
-    nextVersions[record.sourceRecordId] = { fingerprint, sourceVersion, updatedAt: now };
+    nextVersions[record.sourceRecordId] = {
+      fingerprint,
+      sourceVersion,
+      updatedAt: now,
+    };
   });
 
   await Keychain.setGenericPassword(userId, JSON.stringify(nextVersions), {
@@ -286,7 +377,8 @@ async function applySnapshotVersions(records: SnapshotRecord[]) {
 
 async function collectDailySnapshots(deviceId: string) {
   const granted = (await getGrantedPermissions()).filter(
-    (permission): permission is Permission => 'accessType' in permission && 'recordType' in permission,
+    (permission): permission is Permission =>
+      'accessType' in permission && 'recordType' in permission,
   );
   const range = getIstSnapshotRange(SNAPSHOT_WINDOW_DAYS);
   const aggregateTypes = [
@@ -300,7 +392,11 @@ async function collectDailySnapshots(deviceId: string) {
     'BloodPressure',
   ];
   const [aggregateResults, oxygenRecords] = await Promise.all([
-    Promise.all(aggregateTypes.map(type => aggregateDaily(type, granted, range.timeRangeFilter))),
+    Promise.all(
+      aggregateTypes.map(type =>
+        aggregateDaily(type, granted, range.timeRangeFilter),
+      ),
+    ),
     readOxygenRecords(granted, range.timeRangeFilter),
   ]);
   const groups = Object.fromEntries(
@@ -314,13 +410,15 @@ async function collectDailySnapshots(deviceId: string) {
 async function uploadHealthBatch(batch: SnapshotRecord[]) {
   for (let attempt = 0; ; attempt += 1) {
     try {
-      return await authenticatedRequest<{ created?: number; duplicates?: number }>(
-        'POST', '/health/sync', { records: batch }, 60_000,
-      );
+      return await authenticatedRequest<{
+        created?: number;
+        duplicates?: number;
+      }>('POST', '/health/sync', { records: batch }, 60_000);
     } catch (error) {
-      const retryableNetworkFailure = axios.isAxiosError(error)
-        && !error.response
-        && ['ERR_NETWORK', 'ECONNABORTED', 'ETIMEDOUT'].includes(error.code || '');
+      const retryableNetworkFailure =
+        axios.isAxiosError(error) &&
+        !error.response &&
+        ['ERR_NETWORK', 'ECONNABORTED', 'ETIMEDOUT'].includes(error.code || '');
       if (attempt > 0 || !retryableNetworkFailure) throw error;
       await new Promise<void>(resolve => setTimeout(resolve, 1000));
     }
@@ -344,6 +442,8 @@ export function syncRecentHealthData(): Promise<HealthSyncResult> {
       duplicates += Number(result.duplicates) || 0;
     }
     return { synced, created, duplicates };
-  })().finally(() => { activeSync = null; });
+  })().finally(() => {
+    activeSync = null;
+  });
   return activeSync;
 }

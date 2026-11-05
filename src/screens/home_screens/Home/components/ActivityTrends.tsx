@@ -1,7 +1,13 @@
 import React, { useState } from 'react';
 import { TouchableOpacity, View } from 'react-native';
 import { useIsFocused } from '@react-navigation/native';
-import { AppEmptyState, AppErrorView, AppLoader, AppText, SectionHeader } from '../../../../components';
+import {
+  AppEmptyState,
+  AppErrorView,
+  AppLoader,
+  AppText,
+  SectionHeader,
+} from '../../../../components';
 import { useTheme } from '../../../../theme/useTheme';
 import { DAYS, TREND_DATA, TREND_TABS, TrendTab } from '../const';
 import { createHomeStyles } from '../styles.Home';
@@ -63,29 +69,92 @@ const ActivityTrends: React.FC<{ onPressDetails: () => void }> = ({
     setLoadError('');
     setHasData(false);
     const load = async () => {
-      const end = new Date(); const start = new Date(Date.now() - 6 * 86400000);
-      const key = (date: Date) => `${date.getFullYear()}-${String(date.getMonth()+1).padStart(2,'0')}-${String(date.getDate()).padStart(2,'0')}`;
-      const metricType = activeTab === 'Steps' ? 'steps' : activeTab === 'Sleep' ? 'sleep' : 'active_minutes';
-      const history = activeTab === 'Steps'
-        ? await readStepsHistory(7)
-        : (await authenticatedRequest<{ history: Array<{ date: string; value: number }> }>('GET', `/health/history?metricType=${metricType}&from=${key(start)}&to=${key(end)}`)).history;
-        if (!active) return;
-        if (!history.length) {
-          setLoading(false);
-          return;
-        }
-        const values = history.slice(-7).map(row => row.value);
-        const sum = values.reduce((total, value) => total + value, 0);
-        const average = Math.round(sum / values.length);
-        setTrendData(current => ({ ...current, [activeTab]: { ...current[activeTab], bars: values, stats: current[activeTab].stats.map((stat, index) => index === 0 ? { ...stat, value: activeTab === 'Sleep' ? `${Math.floor(average / 60)}h ${Math.round(average % 60)}m` : sum.toLocaleString() } : index === 1 ? { ...stat, value: activeTab === 'Sleep' ? `${(average / 60).toFixed(1)}h` : average.toLocaleString() } : index === 2 && activeTab === 'Steps' ? { ...stat, value: values.filter(value => value >= 10000).length.toString() } : stat) } }));
-        setHasData(true);
+      const end = new Date();
+      const start = new Date(Date.now() - 6 * 86400000);
+      const key = (date: Date) =>
+        `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(
+          2,
+          '0',
+        )}-${String(date.getDate()).padStart(2, '0')}`;
+      const metricType =
+        activeTab === 'Steps'
+          ? 'steps'
+          : activeTab === 'Sleep'
+          ? 'sleep'
+          : 'active_minutes';
+      const history =
+        activeTab === 'Steps'
+          ? await readStepsHistory(7)
+          : (
+              await authenticatedRequest<{
+                history: Array<{ date: string; value: number }>;
+              }>(
+                'GET',
+                `/health/history?metricType=${metricType}&from=${key(
+                  start,
+                )}&to=${key(end)}`,
+              )
+            ).history;
+      if (!active) return;
+      if (!history.length) {
+        setLoading(false);
+        return;
+      }
+      const values = history.slice(-7).map(row => row.value);
+      const sum = values.reduce((total, value) => total + value, 0);
+      const average = Math.round(sum / values.length);
+      setTrendData(current => ({
+        ...current,
+        [activeTab]: {
+          ...current[activeTab],
+          bars: values,
+          stats: current[activeTab].stats.map((stat, index) =>
+            index === 0
+              ? {
+                  ...stat,
+                  value:
+                    activeTab === 'Sleep'
+                      ? `${Math.floor(average / 60)}h ${Math.round(
+                          average % 60,
+                        )}m`
+                      : sum.toLocaleString(),
+                }
+              : index === 1
+              ? {
+                  ...stat,
+                  value:
+                    activeTab === 'Sleep'
+                      ? `${(average / 60).toFixed(1)}h`
+                      : average.toLocaleString(),
+                }
+              : index === 2 && activeTab === 'Steps'
+              ? {
+                  ...stat,
+                  value: values
+                    .filter(value => value >= 10000)
+                    .length.toString(),
+                }
+              : stat,
+          ),
+        },
+      }));
+      setHasData(true);
     };
-    load().catch(error => {
-        if (active) setLoadError(error instanceof Error ? error.message : 'Could not load activity trends.');
-      }).finally(() => {
+    load()
+      .catch(error => {
+        if (active)
+          setLoadError(
+            error instanceof Error
+              ? error.message
+              : 'Could not load activity trends.',
+          );
+      })
+      .finally(() => {
         if (active) setLoading(false);
       });
-    return () => { active = false; };
+    return () => {
+      active = false;
+    };
   }, [activeTab, isFocused, reloadKey]);
   const activeTrendData = trendData[activeTab];
 
@@ -116,8 +185,13 @@ const ActivityTrends: React.FC<{ onPressDetails: () => void }> = ({
             </TouchableOpacity>
           ))}
         </View>
-        {loading ? <AppLoader message="Loading activity trends…" /> : loadError ? (
-          <AppErrorView message={loadError} onRefresh={() => setReloadKey(value => value + 1)} />
+        {loading ? (
+          <AppLoader message="Loading activity trends…" />
+        ) : loadError ? (
+          <AppErrorView
+            message={loadError}
+            onRefresh={() => setReloadKey(value => value + 1)}
+          />
         ) : !hasData ? (
           <AppEmptyState
             title={`No ${activeTab.toLowerCase()} data yet`}
@@ -125,7 +199,10 @@ const ActivityTrends: React.FC<{ onPressDetails: () => void }> = ({
           />
         ) : (
           <>
-            <BarChart data={activeTrendData.bars} color={activeTrendData.color} />
+            <BarChart
+              data={activeTrendData.bars}
+              color={activeTrendData.color}
+            />
             <View style={styles.statsRow}>
               {activeTrendData.stats.map((stat, index) => (
                 <React.Fragment key={stat.label}>

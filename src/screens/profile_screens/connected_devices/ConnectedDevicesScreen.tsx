@@ -330,7 +330,11 @@ const ConnectedDevicesScreen: React.FC<{
       setConnectionState('available');
       if (permissions.some(permission => permission.accessType === 'read')) {
         void syncRecentHealthData().catch(error => {
-          setErrorMessage(error instanceof Error ? error.message : 'Health data could not be synced.');
+          setErrorMessage(
+            error instanceof Error
+              ? error.message
+              : 'Health data could not be synced.',
+          );
         });
       }
     } catch {

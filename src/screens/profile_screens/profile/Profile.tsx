@@ -49,25 +49,49 @@ const ProfileScreen: React.FC = () => {
     setProfileError('');
     Promise.allSettled([
       getCurrentUser(),
-      authenticatedRequest<{ wallet?: { availablePoints?: number; balance?: number } }>('GET', '/wallet'),
-    ]).then(([userResult, walletResult]) => {
-      if (!active) return;
-      const fetchedUser = userResult.status === 'fulfilled' ? userResult.value : null;
-      const wallet = walletResult.status === 'fulfilled' ? walletResult.value.wallet : undefined;
-      if (fetchedUser) dispatch(setProfile(fetchedUser));
-      else if (userResult.status === 'rejected') setProfileError('We could not load your profile. Check your connection and try again.');
-      setPoints(Number(wallet?.availablePoints ?? wallet?.balance ?? 0));
-      setWalletLoading(false);
-    }).finally(() => { if (active) setProfileLoading(false); });
-    return () => { active = false; };
+      authenticatedRequest<{
+        wallet?: { availablePoints?: number; balance?: number };
+      }>('GET', '/wallet'),
+    ])
+      .then(([userResult, walletResult]) => {
+        if (!active) return;
+        const fetchedUser =
+          userResult.status === 'fulfilled' ? userResult.value : null;
+        const wallet =
+          walletResult.status === 'fulfilled'
+            ? walletResult.value.wallet
+            : undefined;
+        if (fetchedUser) dispatch(setProfile(fetchedUser));
+        else if (userResult.status === 'rejected')
+          setProfileError(
+            'We could not load your profile. Check your connection and try again.',
+          );
+        setPoints(Number(wallet?.availablePoints ?? wallet?.balance ?? 0));
+        setWalletLoading(false);
+      })
+      .finally(() => {
+        if (active) setProfileLoading(false);
+      });
+    return () => {
+      active = false;
+    };
   }, [dispatch, isFocused, reloadKey]);
   const name = user?.name ?? '';
   const profileImageUrl = user?.profileImageUrl ?? '';
   const device = user?.deviceProfile;
   const phone = device
-    ? [device.brand || device.manufacturer, device.model].filter(Boolean).join(' ')
+    ? [device.brand || device.manufacturer, device.model]
+        .filter(Boolean)
+        .join(' ')
     : '';
-  const initials = name.split(/\s+/).filter(Boolean).map(part => part[0]).join('').slice(0, 2).toUpperCase() || 'U';
+  const initials =
+    name
+      .split(/\s+/)
+      .filter(Boolean)
+      .map(part => part[0])
+      .join('')
+      .slice(0, 2)
+      .toUpperCase() || 'U';
 
   const handleMenuPress = (id: string) => {
     switch (id) {
@@ -127,7 +151,16 @@ const ProfileScreen: React.FC = () => {
           </Pressable>
 
           <View style={styles.smallAvatar}>
-            {profileImageUrl ? <Image source={{ uri: profileImageUrl }} style={{ width: '100%', height: '100%', borderRadius: 22 }} /> : <AppText variant="subtitle2" color="white" bold>{initials}</AppText>}
+            {profileImageUrl ? (
+              <Image
+                source={{ uri: profileImageUrl }}
+                style={{ width: '100%', height: '100%', borderRadius: 22 }}
+              />
+            ) : (
+              <AppText variant="subtitle2" color="white" bold>
+                {initials}
+              </AppText>
+            )}
           </View>
         </View>
       </View>
@@ -139,96 +172,125 @@ const ProfileScreen: React.FC = () => {
           { paddingBottom: insets.bottom + spacing.xl },
         ]}
       >
-        {!user && profileLoading ? <AppLoader message="Loading your profile…" /> : !user && profileError ? (
-          <AppErrorView message={profileError} onRefresh={() => setReloadKey(value => value + 1)} />
+        {!user && profileLoading ? (
+          <AppLoader message="Loading your profile…" />
+        ) : !user && profileError ? (
+          <AppErrorView
+            message={profileError}
+            onRefresh={() => setReloadKey(value => value + 1)}
+          />
         ) : !user ? (
-          <AppEmptyState title="Profile unavailable" description="Sign in again to view your account details." />
+          <AppEmptyState
+            title="Profile unavailable"
+            description="Sign in again to view your account details."
+          />
         ) : (
           <>
-        {/* Profile information */}
-        <View style={styles.profileSection}>
-          <View style={styles.largeAvatar}>
-            {profileImageUrl ? <Image source={{ uri: profileImageUrl }} style={{ width: '100%', height: '100%', borderRadius: 44 }} /> : <AppText variant="display" color="white">{initials}</AppText>}
-          </View>
-
-          <AppText variant="h3" center mt={spacing.md}>
-            {name || 'Your profile'}
-          </AppText>
-
-          <AppText variant="caption" secondary center style={styles.emailText}>
-            {[user?.email, phone].filter(Boolean).join(' · ') || ' '}
-          </AppText>
-        </View>
-
-        {/* Rewards and activity summary */}
-        <View style={[styles.statsCard, { backgroundColor: colors.surface }]}>
-          {[
-            { value: walletLoading ? '…' : points.toLocaleString(), label: 'Points' },
-            { value: '—', label: 'Day Streak' },
-            { value: '—', label: 'Badges' },
-            { value: '—', label: 'Rank' },
-          ].map((stat, index) => (
-            <React.Fragment key={stat.label}>
-              {index > 0 && (
-                <View
-                  style={[
-                    styles.statDivider,
-                    { backgroundColor: colors.border },
-                  ]}
-                />
-              )}
-
-              <View style={styles.statItem}>
-                <AppText variant="subtitle1" bold center>
-                  {stat.value}
-                </AppText>
-
-                <AppText variant="caption" secondary center>
-                  {stat.label}
-                </AppText>
-              </View>
-            </React.Fragment>
-          ))}
-        </View>
-
-        {/* Account menu */}
-        <AppText variant="subtitle1" bold style={styles.sectionTitle}>
-          Account
-        </AppText>
-
-        <View style={[styles.menuCard, { backgroundColor: colors.surface }]}>
-          {menuItems.map((item, index) => (
-            <Pressable
-              key={item?.id}
-              onPress={() => handleMenuPress(item?.id)}
-              style={({ pressed }) => [
-                styles.menuRow,
-                pressed && { backgroundColor: colors.backgroundSecondary },
-                index !== menuItems.length - 1 && {
-                  borderBottomColor: colors.divider,
-                  borderBottomWidth: StyleSheet.hairlineWidth,
-                },
-              ]}
-              accessibilityRole="button"
-              accessibilityLabel={item?.title}
-            >
-              <View
-                style={[
-                  styles.menuIconContainer,
-                  { backgroundColor: colors.primaryLight },
-                ]}
-              >
-                {item.icon}
+            {/* Profile information */}
+            <View style={styles.profileSection}>
+              <View style={styles.largeAvatar}>
+                {profileImageUrl ? (
+                  <Image
+                    source={{ uri: profileImageUrl }}
+                    style={{ width: '100%', height: '100%', borderRadius: 44 }}
+                  />
+                ) : (
+                  <AppText variant="display" color="white">
+                    {initials}
+                  </AppText>
+                )}
               </View>
 
-              <AppText variant="subtitle2" bold style={styles.menuTitle}>
-                {item?.title}
+              <AppText variant="h3" center mt={spacing.md}>
+                {name || 'Your profile'}
               </AppText>
 
-              <ChevronRight size={18} color={colors.textTertiary} />
-            </Pressable>
-          ))}
-        </View>
+              <AppText
+                variant="caption"
+                secondary
+                center
+                style={styles.emailText}
+              >
+                {[user?.email, phone].filter(Boolean).join(' · ') || ' '}
+              </AppText>
+            </View>
+
+            {/* Rewards and activity summary */}
+            <View
+              style={[styles.statsCard, { backgroundColor: colors.surface }]}
+            >
+              {[
+                {
+                  value: walletLoading ? '…' : points.toLocaleString(),
+                  label: 'Points',
+                },
+                { value: '—', label: 'Day Streak' },
+                { value: '—', label: 'Badges' },
+                { value: '—', label: 'Rank' },
+              ].map((stat, index) => (
+                <React.Fragment key={stat.label}>
+                  {index > 0 && (
+                    <View
+                      style={[
+                        styles.statDivider,
+                        { backgroundColor: colors.border },
+                      ]}
+                    />
+                  )}
+
+                  <View style={styles.statItem}>
+                    <AppText variant="subtitle1" bold center>
+                      {stat.value}
+                    </AppText>
+
+                    <AppText variant="caption" secondary center>
+                      {stat.label}
+                    </AppText>
+                  </View>
+                </React.Fragment>
+              ))}
+            </View>
+
+            {/* Account menu */}
+            <AppText variant="subtitle1" bold style={styles.sectionTitle}>
+              Account
+            </AppText>
+
+            <View
+              style={[styles.menuCard, { backgroundColor: colors.surface }]}
+            >
+              {menuItems.map((item, index) => (
+                <Pressable
+                  key={item?.id}
+                  onPress={() => handleMenuPress(item?.id)}
+                  style={({ pressed }) => [
+                    styles.menuRow,
+                    pressed && { backgroundColor: colors.backgroundSecondary },
+                    index !== menuItems.length - 1 && {
+                      borderBottomColor: colors.divider,
+                      borderBottomWidth: StyleSheet.hairlineWidth,
+                    },
+                  ]}
+                  accessibilityRole="button"
+                  accessibilityLabel={item?.title}
+                >
+                  <View
+                    style={[
+                      styles.menuIconContainer,
+                      { backgroundColor: colors.primaryLight },
+                    ]}
+                  >
+                    {item.icon}
+                  </View>
+
+                  <AppText variant="subtitle2" bold style={styles.menuTitle}>
+                    {item?.title}
+                  </AppText>
+
+                  <ChevronRight size={18} color={colors.textTertiary} />
+                </Pressable>
+              ))}
+            </View>
           </>
         )}
       </ScrollView>

@@ -1,4 +1,4 @@
-import { View, Text, TextInput, Alert } from 'react-native';
+import { TextInput, Alert } from 'react-native';
 import React, { useRef, useState } from 'react';
 import { GOOGLE_WEB_CLIENT_ID } from '../../../services/googleConfig';
 import { apiErrorMessage } from '../../../services/api';
@@ -91,7 +91,7 @@ const useLogin = ({ navigation }: any) => {
 
     validateEmail,
     validatePassword,
-    setErrors
+    setErrors,
   };
 };
 

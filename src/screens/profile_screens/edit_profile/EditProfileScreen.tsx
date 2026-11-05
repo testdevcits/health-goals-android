@@ -1,5 +1,12 @@
 import React, { useState } from 'react';
-import { Image, Modal, Pressable, ScrollView, StyleSheet, View } from 'react-native';
+import {
+  Image,
+  Modal,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  View,
+} from 'react-native';
 import { Calendar } from 'react-native-calendars';
 import {
   AppButton,
@@ -41,7 +48,10 @@ const dateToCalendarString = (value: string): string | undefined => {
     return undefined;
   }
 
-  return `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+  return `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(
+    2,
+    '0',
+  )}`;
 };
 
 const calendarStringToBirthDate = (value: string) => {
@@ -51,7 +61,10 @@ const calendarStringToBirthDate = (value: string) => {
 
 const getTodayCalendarString = () => {
   const today = new Date();
-  return `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+  return `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(
+    2,
+    '0',
+  )}-${String(today.getDate()).padStart(2, '0')}`;
 };
 
 const EditProfileScreen: React.FC<{ navigation: ProfileScreenNavigation }> = ({
@@ -79,35 +92,35 @@ const EditProfileScreen: React.FC<{ navigation: ProfileScreenNavigation }> = ({
   const isFocused = useIsFocused();
   React.useEffect(() => {
     if (!isFocused) return;
-      let active = true;
-      setProfileLoading(true);
-      setProfileLoadError('');
-      getCurrentUser()
-        .then(user => {
-          if (!active) return;
-          dispatch(setProfile(user));
-          setName(user?.name || '');
-          setEmail(user?.email || '');
-          setGoal(user?.goal || '');
-          setHeight(user?.heightCm == null ? '' : String(user.heightCm));
-          setWeight(user?.weightKg == null ? '' : String(user.weightKg));
-          setBirthDate(user?.birthDate || '');
-          setProfileImageUrl(user?.profileImageUrl || '');
-        })
-        .catch(error => {
-          if (active) {
-            const message = apiErrorMessage(error);
-            setProfileLoadError(message);
-            showAppToast('error', 'Could not load profile', message);
-          }
-        })
-        .finally(() => {
-          if (active) setProfileLoading(false);
-        });
-      return () => {
-        active = false;
-      };
-    }, [dispatch, isFocused, reloadKey]);
+    let active = true;
+    setProfileLoading(true);
+    setProfileLoadError('');
+    getCurrentUser()
+      .then(user => {
+        if (!active) return;
+        dispatch(setProfile(user));
+        setName(user?.name || '');
+        setEmail(user?.email || '');
+        setGoal(user?.goal || '');
+        setHeight(user?.heightCm == null ? '' : String(user.heightCm));
+        setWeight(user?.weightKg == null ? '' : String(user.weightKg));
+        setBirthDate(user?.birthDate || '');
+        setProfileImageUrl(user?.profileImageUrl || '');
+      })
+      .catch(error => {
+        if (active) {
+          const message = apiErrorMessage(error);
+          setProfileLoadError(message);
+          showAppToast('error', 'Could not load profile', message);
+        }
+      })
+      .finally(() => {
+        if (active) setProfileLoading(false);
+      });
+    return () => {
+      active = false;
+    };
+  }, [dispatch, isFocused, reloadKey]);
   const handleChooseImage = async () => {
     try {
       const image = await ImagePicker.openPicker({
@@ -139,7 +152,9 @@ const EditProfileScreen: React.FC<{ navigation: ProfileScreenNavigation }> = ({
       );
       setProfileImage('');
       setProfileImageUrl(result.user.profileImageUrl || '');
-      dispatch(updateProfile({ profileImageUrl: result.user.profileImageUrl || '' }));
+      dispatch(
+        updateProfile({ profileImageUrl: result.user.profileImageUrl || '' }),
+      );
       showAppToast('success', 'Photo saved', 'Your profile photo was updated.');
     } catch (error: any) {
       if (error?.code === 'E_PICKER_CANCELLED') {
@@ -203,117 +218,121 @@ const EditProfileScreen: React.FC<{ navigation: ProfileScreenNavigation }> = ({
           message={profileLoadError}
           onRefresh={() => setReloadKey(value => value + 1)}
         />
-      ) : <ScrollView contentContainerStyle={{ flexGrow: 1, paddingBottom: 100 }}>
-        <View style={styles.form}>
-          <View style={styles.profileImageContainer}>
-            <Image
-              source={
-                profileImage
-                  ? { uri: profileImage }
-                  : profileImageUrl
-                  ? { uri: profileImageUrl }
-                  : {
-                      uri: 'https://imgv3.fotor.com/images/slider-image/after-image-generated-by-ai-profile-pictuire-maker-for-mobile.jpg',
-                    }
-              }
-              style={[styles.profileImage, { borderRadius: radius.full }]}
-              resizeMode="cover"
-            />
+      ) : (
+        <ScrollView contentContainerStyle={{ flexGrow: 1, paddingBottom: 100 }}>
+          <View style={styles.form}>
+            <View style={styles.profileImageContainer}>
+              <Image
+                source={
+                  profileImage
+                    ? { uri: profileImage }
+                    : profileImageUrl
+                    ? { uri: profileImageUrl }
+                    : {
+                        uri: 'https://imgv3.fotor.com/images/slider-image/after-image-generated-by-ai-profile-pictuire-maker-for-mobile.jpg',
+                      }
+                }
+                style={[styles.profileImage, { borderRadius: radius.full }]}
+                resizeMode="cover"
+              />
 
-            <Pressable
-              onPress={handleChooseImage}
-              style={styles.cameraButton}
-              hitSlop={8}
-              disabled={imageBusy}
-              accessibilityState={{ busy: imageBusy }}
-            >
-              <Camera size={16} color={colors.textPrimary} strokeWidth={2} />
-            </Pressable>
-          </View>
-          <AppInput label="Full Name" value={name} onChangeText={setName} />
-          <AppInput
-            label="Email"
-            value={email}
-            editable={false}
-            keyboardType="email-address"
-            autoCapitalize="none"
-          />
-          <View style={styles.twoColumns}>
-            <AppInput
-              containerStyle={styles.column}
-              label="Height (cm)"
-              value={height}
-              onChangeText={setHeight}
-              keyboardType="numeric"
-              error={
-                parseInt(height) < 50 || parseInt(height) > 300
-                  ? 'Height must be between 50 and 300 cm'
-                  : undefined
-              }
-            />
-            <AppInput
-              containerStyle={styles.column}
-              label="Weight (kg)"
-              value={weight}
-              onChangeText={setWeight}
-              keyboardType="numeric"
-              error={
-                parseInt(weight) < 20 || parseInt(weight) > 500
-                  ? 'Weight must be between 20 and 500 kg'
-                  : undefined
-              }
-            />
-          </View>
-          <View style={styles.field}>
-            <AppText variant="label" secondary mb={6}>
-              Date of Birth
-            </AppText>
-            <Pressable
-              onPress={() => setIsCalendarVisible(true)}
-              style={[
-                styles.dateField,
-                {
-                  backgroundColor: colors.inputBg,
-                  borderColor: colors.inputBorder,
-                },
-              ]}
-              accessibilityRole="button"
-              accessibilityLabel={
-                birthDate ? `Date of birth, ${birthDate}` : 'Choose date of birth'
-              }
-            >
-              <AppText
-                variant="body2"
-                color={birthDate ? 'textPrimary' : 'textTertiary'}
+              <Pressable
+                onPress={handleChooseImage}
+                style={styles.cameraButton}
+                hitSlop={8}
+                disabled={imageBusy}
+                accessibilityState={{ busy: imageBusy }}
               >
-                {birthDate || 'Select date of birth'}
+                <Camera size={16} color={colors.textPrimary} strokeWidth={2} />
+              </Pressable>
+            </View>
+            <AppInput label="Full Name" value={name} onChangeText={setName} />
+            <AppInput
+              label="Email"
+              value={email}
+              editable={false}
+              keyboardType="email-address"
+              autoCapitalize="none"
+            />
+            <View style={styles.twoColumns}>
+              <AppInput
+                containerStyle={styles.column}
+                label="Height (cm)"
+                value={height}
+                onChangeText={setHeight}
+                keyboardType="numeric"
+                error={
+                  parseInt(height) < 50 || parseInt(height) > 300
+                    ? 'Height must be between 50 and 300 cm'
+                    : undefined
+                }
+              />
+              <AppInput
+                containerStyle={styles.column}
+                label="Weight (kg)"
+                value={weight}
+                onChangeText={setWeight}
+                keyboardType="numeric"
+                error={
+                  parseInt(weight) < 20 || parseInt(weight) > 500
+                    ? 'Weight must be between 20 and 500 kg'
+                    : undefined
+                }
+              />
+            </View>
+            <View style={styles.field}>
+              <AppText variant="label" secondary mb={6}>
+                Date of Birth
               </AppText>
-            </Pressable>
-          </View>
-          <View style={styles.field}>
-            <AppText variant="label" secondary mb={6}>
-              Primary Goal
-            </AppText>
-            <AppSelect
-              value={goal}
-              onSelect={setGoal}
-              options={[
-                { label: 'Stay active', value: 'Stay active' },
-                { label: 'Lose weight', value: 'Lose weight' },
-                { label: 'Build strength', value: 'Build strength' },
-                { label: 'Improve fitness', value: 'Improve fitness' },
-              ]}
+              <Pressable
+                onPress={() => setIsCalendarVisible(true)}
+                style={[
+                  styles.dateField,
+                  {
+                    backgroundColor: colors.inputBg,
+                    borderColor: colors.inputBorder,
+                  },
+                ]}
+                accessibilityRole="button"
+                accessibilityLabel={
+                  birthDate
+                    ? `Date of birth, ${birthDate}`
+                    : 'Choose date of birth'
+                }
+              >
+                <AppText
+                  variant="body2"
+                  color={birthDate ? 'textPrimary' : 'textTertiary'}
+                >
+                  {birthDate || 'Select date of birth'}
+                </AppText>
+              </Pressable>
+            </View>
+            <View style={styles.field}>
+              <AppText variant="label" secondary mb={6}>
+                Primary Goal
+              </AppText>
+              <AppSelect
+                value={goal}
+                onSelect={setGoal}
+                options={[
+                  { label: 'Stay active', value: 'Stay active' },
+                  { label: 'Lose weight', value: 'Lose weight' },
+                  { label: 'Build strength', value: 'Build strength' },
+                  { label: 'Improve fitness', value: 'Improve fitness' },
+                ]}
+              />
+            </View>
+            <AppButton
+              title="Save Changes"
+              onPress={() => void saveProfile()}
+              loading={savingProfile}
+              disabled={savingProfile}
+              style={styles.saveButton}
             />
           </View>
-          <AppButton
-            title="Save Changes"
-            onPress={() => void saveProfile()}
-            loading={savingProfile}
-            disabled={savingProfile}
-            style={styles.saveButton}
-          />
-        </View>
-      </ScrollView>}
+        </ScrollView>
+      )}
       <Modal
         visible={isCalendarVisible}
         transparent
@@ -326,7 +345,9 @@ const EditProfileScreen: React.FC<{ navigation: ProfileScreenNavigation }> = ({
             onPress={() => setIsCalendarVisible(false)}
             accessibilityLabel="Close date picker"
           />
-          <View style={[styles.calendarCard, { backgroundColor: colors.surface }]}>
+          <View
+            style={[styles.calendarCard, { backgroundColor: colors.surface }]}
+          >
             <AppText variant="h3" style={styles.calendarTitle}>
               Date of Birth
             </AppText>

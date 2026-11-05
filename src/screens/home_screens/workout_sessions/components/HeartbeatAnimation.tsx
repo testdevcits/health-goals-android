@@ -10,10 +10,7 @@ interface Props {
 
 const AnimatedView = Animated.View;
 
-const HeartbeatAnimation: React.FC<Props> = ({
-  isRunning,
-  color,
-}) => {
+const HeartbeatAnimation: React.FC<Props> = ({ isRunning, color }) => {
   const { theme } = useTheme();
   const strokeColor = color ?? theme.colors.white;
   const translateX = useRef(new Animated.Value(0)).current;

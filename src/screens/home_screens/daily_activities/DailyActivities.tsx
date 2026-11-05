@@ -1,7 +1,14 @@
 import React from 'react';
 import { ScrollView, StatusBar, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { AppButton, AppEmptyState, AppErrorView, AppHeader, AppLoader, AppText } from '../../../components';
+import {
+  AppButton,
+  AppEmptyState,
+  AppErrorView,
+  AppHeader,
+  AppLoader,
+  AppText,
+} from '../../../components';
 import { useTheme } from '../../../theme/useTheme';
 import { createDailyActivityStyles } from './styles.DailyActivities';
 import ActivityChart from './components/ActivityChart';
@@ -34,7 +41,11 @@ const DailyActivities: React.FC<{ navigation: DailyActivityNavigation }> = ({
       );
       setRefreshToken(value => value + 1);
     } catch (cause) {
-      setSyncMessage(cause instanceof Error ? cause.message : 'Could not sync with the backend. Try again.');
+      setSyncMessage(
+        cause instanceof Error
+          ? cause.message
+          : 'Could not sync with the backend. Try again.',
+      );
     } finally {
       setSyncing(false);
     }
@@ -84,12 +95,36 @@ const DailyActivities: React.FC<{ navigation: DailyActivityNavigation }> = ({
           { paddingBottom: insets.bottom + 28 },
         ]}
       >
-        <View style={{ paddingHorizontal: theme.spacing.base, marginBottom: theme.spacing.md }}>
-          <AppButton title="Sync latest data" onPress={() => { void syncNow(); }} loading={syncing} />
-          {syncMessage ? <AppText variant="caption" secondary style={{ marginTop: theme.spacing.xs }}>{syncMessage}</AppText> : null}
+        <View
+          style={{
+            paddingHorizontal: theme.spacing.base,
+            marginBottom: theme.spacing.md,
+          }}
+        >
+          <AppButton
+            title="Sync latest data"
+            onPress={() => {
+              void syncNow();
+            }}
+            loading={syncing}
+          />
+          {syncMessage ? (
+            <AppText
+              variant="caption"
+              secondary
+              style={{ marginTop: theme.spacing.xs }}
+            >
+              {syncMessage}
+            </AppText>
+          ) : null}
         </View>
-        {loading ? <AppLoader message="Loading today’s activity…" /> : error ? (
-          <AppErrorView message={error} onRefresh={() => setRefreshToken(value => value + 1)} />
+        {loading ? (
+          <AppLoader message="Loading today’s activity…" />
+        ) : error ? (
+          <AppErrorView
+            message={error}
+            onRefresh={() => setRefreshToken(value => value + 1)}
+          />
         ) : data?.status === 'permission-required' ? (
           <AppEmptyState
             title="Health access needed"
@@ -105,90 +140,96 @@ const DailyActivities: React.FC<{ navigation: DailyActivityNavigation }> = ({
             title="Android only"
             description="Health Connect activity sync is currently available on Android."
           />
-        ) : !data || [data.steps, data.distanceMeters, data.calories, data.exerciseMinutes].every(value => value === null) ? (
+        ) : !data ||
+          [
+            data.steps,
+            data.distanceMeters,
+            data.calories,
+            data.exerciseMinutes,
+          ].every(value => value === null) ? (
           <AppEmptyState
             title="No activity recorded today"
             description="Your steps, workouts, distance, and calories will appear here after Health Connect records them."
           />
         ) : (
           <>
-        <ActivityRings
-          rings={[
-            {
-              radius: 66,
-              progress: Math.min(steps / 6000, 1),
-              color: theme.colors.primary,
-            },
-            {
-              radius: 52,
-              progress: Math.min(exerciseMinutes / 90, 1),
-              color: theme.colors.coral,
-            },
-            {
-              radius: 38,
-              progress: Math.min(calories / 500, 1),
-              color: theme.colors.warning,
-            },
-          ]}
-        />
-        <ActivityMetrics
-          metrics={[
-            {
-              title: 'Steps',
-              value: data?.steps?.toLocaleString('en-US') ?? '—',
-              goal: '/ 6,000',
-              color: theme.colors.primary,
-            },
-            {
-              title: 'Exercise time',
-              value: data?.exerciseMinutes
-                ? String(Math.round(data.exerciseMinutes))
-                : data?.exerciseMinutes === 0
-                ? '0'
-                : '—',
-              unit: 'mins',
-              goal: '/ 90',
-              color: theme.colors.coral,
-            },
-            {
-              title: 'Calories',
-              value: data?.calories?.toLocaleString('en-US') ?? '—',
-              unit: 'kcal',
-              goal: '/ 500',
-              color: theme.colors.warning,
-            },
-          ]}
-        />
-        <DailyTotals
-          totals={[
-            {
-              label: 'Distance',
-              value:
-                data?.distanceMeters === null ||
-                data?.distanceMeters === undefined
-                  ? '—'
-                  : `${(data.distanceMeters / 1000).toFixed(2)} km`,
-            },
-          ]}
-        />
-        <ActivityChart
-          title="Steps"
-          activePeriod={formatMostActiveHour(hourlySteps)}
-          color={theme.colors.primary}
-          values={hourlySteps}
-        />
-        <ActivityChart
-          title="Exercise time"
-          activePeriod={formatMostActiveHour(hourlyExerciseMinutes)}
-          color={theme.colors.coral}
-          values={hourlyExerciseMinutes}
-        />
-        <ActivityChart
-          title="Calories"
-          activePeriod={formatMostActiveHour(hourlyCalories)}
-          color={theme.colors.warning}
-          values={hourlyCalories}
-        />
+            <ActivityRings
+              rings={[
+                {
+                  radius: 66,
+                  progress: Math.min(steps / 6000, 1),
+                  color: theme.colors.primary,
+                },
+                {
+                  radius: 52,
+                  progress: Math.min(exerciseMinutes / 90, 1),
+                  color: theme.colors.coral,
+                },
+                {
+                  radius: 38,
+                  progress: Math.min(calories / 500, 1),
+                  color: theme.colors.warning,
+                },
+              ]}
+            />
+            <ActivityMetrics
+              metrics={[
+                {
+                  title: 'Steps',
+                  value: data?.steps?.toLocaleString('en-US') ?? '—',
+                  goal: '/ 6,000',
+                  color: theme.colors.primary,
+                },
+                {
+                  title: 'Exercise time',
+                  value: data?.exerciseMinutes
+                    ? String(Math.round(data.exerciseMinutes))
+                    : data?.exerciseMinutes === 0
+                    ? '0'
+                    : '—',
+                  unit: 'mins',
+                  goal: '/ 90',
+                  color: theme.colors.coral,
+                },
+                {
+                  title: 'Calories',
+                  value: data?.calories?.toLocaleString('en-US') ?? '—',
+                  unit: 'kcal',
+                  goal: '/ 500',
+                  color: theme.colors.warning,
+                },
+              ]}
+            />
+            <DailyTotals
+              totals={[
+                {
+                  label: 'Distance',
+                  value:
+                    data?.distanceMeters === null ||
+                    data?.distanceMeters === undefined
+                      ? '—'
+                      : `${(data.distanceMeters / 1000).toFixed(2)} km`,
+                },
+              ]}
+            />
+            <ActivityChart
+              title="Steps"
+              activePeriod={formatMostActiveHour(hourlySteps)}
+              color={theme.colors.primary}
+              values={hourlySteps}
+            />
+            <ActivityChart
+              title="Exercise time"
+              activePeriod={formatMostActiveHour(hourlyExerciseMinutes)}
+              color={theme.colors.coral}
+              values={hourlyExerciseMinutes}
+            />
+            <ActivityChart
+              title="Calories"
+              activePeriod={formatMostActiveHour(hourlyCalories)}
+              color={theme.colors.warning}
+              values={hourlyCalories}
+            />
           </>
         )}
       </ScrollView>

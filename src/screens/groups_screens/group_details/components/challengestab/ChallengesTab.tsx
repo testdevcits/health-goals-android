@@ -41,19 +41,21 @@ const ChallengesTab: React.FC<ChallengesTabProps> = ({
           title="No group challenges yet"
           description="Create a challenge to help your group stay motivated."
         />
-      ) : challenges.map((challenge: ChallengeItem) => (
-        <ChallengeCard
-          key={challenge.id}
-          challenge={{
-            ...challenge,
-            category: 'All',
-            emoji: challenge.emoji ?? '🏆',
-          }}
-          colors={colors}
-          spacing={spacing}
-          radius={radius}
-        />
-      ))}
+      ) : (
+        challenges.map((challenge: ChallengeItem) => (
+          <ChallengeCard
+            key={challenge.id}
+            challenge={{
+              ...challenge,
+              category: 'All',
+              emoji: challenge.emoji ?? '🏆',
+            }}
+            colors={colors}
+            spacing={spacing}
+            radius={radius}
+          />
+        ))
+      )}
 
       <Pressable
         accessibilityRole="button"

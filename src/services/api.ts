@@ -1,7 +1,4 @@
-
-import axios, {
-  type InternalAxiosRequestConfig,
-} from 'axios';
+import axios, { type InternalAxiosRequestConfig } from 'axios';
 import { NativeModules } from 'react-native';
 
 // ============================================
@@ -19,7 +16,9 @@ const configuredApiOrigin = String(
   .replace(/\/+$/, '')
   .replace(/\/api\/v1$/i, '');
 
-export const API_BASE_URL = `${configuredApiOrigin || DEFAULT_API_ORIGIN}${API_PATH}`;
+export const API_BASE_URL = `${
+  configuredApiOrigin || DEFAULT_API_ORIGIN
+}${API_PATH}`;
 
 if (__DEV__) {
   console.info('[API] Resolved base URL:', API_BASE_URL);
@@ -45,10 +44,7 @@ function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null;
 }
 
-function sanitizeValue(
-  value: unknown,
-  seen = new WeakSet<object>(),
-): unknown {
+function sanitizeValue(value: unknown, seen = new WeakSet<object>()): unknown {
   if (value === null || typeof value !== 'object') {
     return value;
   }
@@ -125,23 +121,17 @@ function sanitizeUrl(url: string): string {
       const equalsIndex = parameter.indexOf('=');
 
       const key =
-        equalsIndex >= 0
-          ? parameter.slice(0, equalsIndex)
-          : parameter;
+        equalsIndex >= 0 ? parameter.slice(0, equalsIndex) : parameter;
 
       let decodedKey = key;
 
       try {
-        decodedKey = decodeURIComponent(
-          key.replace(/\+/g, ' '),
-        );
+        decodedKey = decodeURIComponent(key.replace(/\+/g, ' '));
       } catch {
         // Keep malformed query keys unchanged.
       }
 
-      return SENSITIVE_FIELD.test(decodedKey)
-        ? `${key}=[REDACTED]`
-        : parameter;
+      return SENSITIVE_FIELD.test(decodedKey) ? `${key}=[REDACTED]` : parameter;
     })
     .join('&');
 
@@ -211,8 +201,9 @@ if (__DEV__) {
         ['STATUS', `${response.status} ${response.statusText || 'OK'}`],
         [
           'DURATION',
-          `${Date.now() -
-            (requestStartedAt.get(response.config) ?? Date.now())}ms`,
+          `${
+            Date.now() - (requestStartedAt.get(response.config) ?? Date.now())
+          }ms`,
         ],
         ['BODY', sanitizeValue(response.data)],
       ]);
@@ -232,8 +223,7 @@ if (__DEV__) {
         if (config) {
           entries.push([
             'DURATION',
-            `${Date.now() -
-              (requestStartedAt.get(config) ?? Date.now())}ms`,
+            `${Date.now() - (requestStartedAt.get(config) ?? Date.now())}ms`,
           ]);
         }
 
@@ -241,11 +231,15 @@ if (__DEV__) {
           entries.push(['RESPONSE BODY', sanitizeValue(error.response.data)]);
         }
 
-        console.error('╔══════════════════ ❌ HTTP ERROR RESPONSE ═══════════╗');
+        console.error(
+          '╔══════════════════ ❌ HTTP ERROR RESPONSE ═══════════╗',
+        );
         entries.forEach(([label, value]) => {
           console.error(`║ ${label}:`, value);
         });
-        console.error('╚═════════════════════════════════════════════════════╝');
+        console.error(
+          '╚═════════════════════════════════════════════════════╝',
+        );
       } else {
         console.error('[API] Request failed', {
           code: 'UNKNOWN_ERROR',
@@ -275,32 +269,22 @@ function getApiErrorMessage(data: unknown): string | undefined {
 
   const nestedError = data.error;
 
-  if (
-    isRecord(nestedError) &&
-    typeof nestedError.message === 'string'
-  ) {
+  if (isRecord(nestedError) && typeof nestedError.message === 'string') {
     return nestedError.message;
   }
 
-  return typeof data.message === 'string'
-    ? data.message
-    : undefined;
+  return typeof data.message === 'string' ? data.message : undefined;
 }
 
 export function apiErrorMessage(error: unknown): string {
   if (axios.isAxiosError<ApiErrorResponse>(error)) {
-    const responseMessage = getApiErrorMessage(
-      error.response?.data,
-    );
+    const responseMessage = getApiErrorMessage(error.response?.data);
 
     if (responseMessage) {
       return responseMessage;
     }
 
-    if (
-      error.code === 'ECONNABORTED' ||
-      error.code === 'ETIMEDOUT'
-    ) {
+    if (error.code === 'ECONNABORTED' || error.code === 'ETIMEDOUT') {
       return 'Server response timed out. Please try again.';
     }
 

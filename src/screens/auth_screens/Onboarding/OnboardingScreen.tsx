@@ -1,5 +1,5 @@
 import React, { useMemo, useState } from 'react';
-import { ScrollView, StyleSheet, TouchableOpacity, View } from 'react-native';
+import { ScrollView, TouchableOpacity, View } from 'react-native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '../../../navigations/AppNavigation';
 import {
@@ -12,9 +12,6 @@ import { useTheme } from '../../../theme/useTheme';
 import { createOnboardingStyles } from './styles.Onboarding';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Onboarding'>;
-
- 
- 
 
 const OnboardingScreen: React.FC<Props> = ({ navigation }) => {
   const { theme } = useTheme();

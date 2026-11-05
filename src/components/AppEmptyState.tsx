@@ -1,10 +1,5 @@
 import React, { memo } from 'react';
-import {
-  StyleProp,
-  StyleSheet,
-  View,
-  ViewStyle,
-} from 'react-native';
+import { StyleProp, StyleSheet, View, ViewStyle } from 'react-native';
 import { Inbox } from 'lucide-react-native';
 import { useTheme } from '../theme/useTheme';
 import AppButton from './AppButton';

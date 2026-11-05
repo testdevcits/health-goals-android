@@ -34,15 +34,17 @@ export const GroupLeaderboard: React.FC<Props> = memo(({ members }) => {
               title="No leaderboard data yet"
               description="Member activity will appear here after it syncs."
             />
-          ) : members.map((m, i) => (
-            <MemberRow
-              key={m.id}
-              member={m}
-              index={i}
-              colors={colors}
-              styles={overviewStyles}
-            />
-          ))}
+          ) : (
+            members.map((m, i) => (
+              <MemberRow
+                key={m.id}
+                member={m}
+                index={i}
+                colors={colors}
+                styles={overviewStyles}
+              />
+            ))
+          )}
         </View>
       </View>
     </>

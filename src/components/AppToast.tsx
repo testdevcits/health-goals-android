@@ -1,9 +1,5 @@
 import React, { memo } from 'react';
-import {
-  Pressable,
-  StyleSheet,
-  View,
-} from 'react-native';
+import { Pressable, StyleSheet, View } from 'react-native';
 import {
   AlertCircle,
   CheckCircle2,

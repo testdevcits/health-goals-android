@@ -44,11 +44,7 @@ const RecommandedCard = ({
           </AppText>
 
           <View style={[styles.tag, { backgroundColor: colors.primaryLight }]}>
-            <AppText
-              variant="caption"
-              style={{ color: colors.primary }}
-              bold
-            >
+            <AppText variant="caption" style={{ color: colors.primary }} bold>
               {item?.tag}
             </AppText>
           </View>

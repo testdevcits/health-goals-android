@@ -1,11 +1,7 @@
 import React, { memo } from 'react';
 import { View, Pressable, Alert } from 'react-native';
 import { AppText } from '../../../../../components';
-import {
-  Member,
-  GroupChallenge,
-  formatSteps,
-} from '../../constants';
+import { Member, GroupChallenge, formatSteps } from '../../constants';
 import { useTheme } from '../../../../../theme/useTheme';
 import createGroupOverviewStyles from './styles.GroupOverview';
 
@@ -15,66 +11,88 @@ interface Props {
   onNewChallenge: () => void;
 }
 
-const GoalCard: React.FC<{ styles: any; members: Member[] }> = memo(({ styles, members }) => {
-  const total = members.reduce((sum, member) => sum + member.steps, 0);
-  const target = members.length * 10000;
-  const percent = target ? Math.min(100, Math.round(total / target * 100)) : 0;
-  return (
-  <View style={styles.goalCard}>
-    <View style={styles.goalRing}>
-      <View style={styles.goalRingInner}>
-        <AppText variant="h3" center>
-          {percent}%
-        </AppText>
-        <AppText variant="caption" secondary center>
-          OF GOAL
-        </AppText>
-      </View>
-    </View>
-    <View style={styles.goalInfo}>
-      <AppText variant="caption" secondary>
-        WEEKLY GROUP GOAL
-      </AppText>
-      <View style={styles.goalNumbers}>
-        <AppText variant="h2">{formatSteps(total)}</AppText>
-        <AppText variant="caption" secondary>
-          {` / ${formatSteps(target)} steps`}
-        </AppText>
-      </View>
-      <AppText variant="caption" success bold>
-        {members.length ? `${members.length} members · last 7 days` : 'No synced steps this week'}
-      </AppText>
-    </View>
-  </View>
-  );
-});
-
-const WeeklyChart: React.FC<{ styles: any; members: Member[] }> = memo(({ styles, members }) => (
-  <View style={styles.section}>
-    <View style={styles.sectionHeading}>
-      <AppText variant="subtitle1">Member Steps · Last 7 Days</AppText>
-      <View style={styles.weekBadge}>
-        <AppText variant="caption" primary bold>
-          This week
-        </AppText>
-      </View>
-    </View>
-    <View style={styles.chartCard}>
-      <View style={styles.chartBars}>
-        {members.slice(0, 7).map((item, index) => (
-          <View key={item.id} style={styles.chartColumn}>
-            <View
-              style={[styles.chartBar, { height: `${Math.max(4, item.steps / Math.max(...members.map(m=>m.steps), 1) * 100)}%` as any }]}
-            />
-            <AppText variant="caption" secondary center style={styles.chartDay}>
-              {String(index + 1)}
+const GoalCard: React.FC<{ styles: any; members: Member[] }> = memo(
+  ({ styles, members }) => {
+    const total = members.reduce((sum, member) => sum + member.steps, 0);
+    const target = members.length * 10000;
+    const percent = target
+      ? Math.min(100, Math.round((total / target) * 100))
+      : 0;
+    return (
+      <View style={styles.goalCard}>
+        <View style={styles.goalRing}>
+          <View style={styles.goalRingInner}>
+            <AppText variant="h3" center>
+              {percent}%
+            </AppText>
+            <AppText variant="caption" secondary center>
+              OF GOAL
             </AppText>
           </View>
-        ))}
+        </View>
+        <View style={styles.goalInfo}>
+          <AppText variant="caption" secondary>
+            WEEKLY GROUP GOAL
+          </AppText>
+          <View style={styles.goalNumbers}>
+            <AppText variant="h2">{formatSteps(total)}</AppText>
+            <AppText variant="caption" secondary>
+              {` / ${formatSteps(target)} steps`}
+            </AppText>
+          </View>
+          <AppText variant="caption" success bold>
+            {members.length
+              ? `${members.length} members · last 7 days`
+              : 'No synced steps this week'}
+          </AppText>
+        </View>
+      </View>
+    );
+  },
+);
+
+const WeeklyChart: React.FC<{ styles: any; members: Member[] }> = memo(
+  ({ styles, members }) => (
+    <View style={styles.section}>
+      <View style={styles.sectionHeading}>
+        <AppText variant="subtitle1">Member Steps · Last 7 Days</AppText>
+        <View style={styles.weekBadge}>
+          <AppText variant="caption" primary bold>
+            This week
+          </AppText>
+        </View>
+      </View>
+      <View style={styles.chartCard}>
+        <View style={styles.chartBars}>
+          {members.slice(0, 7).map((item, index) => (
+            <View key={item.id} style={styles.chartColumn}>
+              <View
+                style={[
+                  styles.chartBar,
+                  {
+                    height: `${Math.max(
+                      4,
+                      (item.steps / Math.max(...members.map(m => m.steps), 1)) *
+                        100,
+                    )}%` as any,
+                  },
+                ]}
+              />
+              <AppText
+                variant="caption"
+                secondary
+                center
+                style={styles.chartDay}
+              >
+                {String(index + 1)}
+              </AppText>
+            </View>
+          ))}
+        </View>
       </View>
     </View>
-  </View>
-));
+  ),
+);
 
 const MemberRow: React.FC<{
   member: Member;
@@ -89,7 +107,9 @@ const MemberRow: React.FC<{
       onPress={() =>
         Alert.alert(
           member.name,
-          `${formatSteps(member.steps)} steps · ${member.streak} active days this week`,
+          `${formatSteps(member.steps)} steps · ${
+            member.streak
+          } active days this week`,
         )
       }
       style={[styles.memberRow, isCurrentUser && styles.currentMemberRow]}

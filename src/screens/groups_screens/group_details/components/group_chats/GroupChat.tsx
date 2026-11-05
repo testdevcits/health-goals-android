@@ -32,65 +32,70 @@ export const GroupChat: React.FC<Props> = memo(
               title="Start the conversation"
               description="Send the first message to your group."
             />
-          ) : messages.map(message => (
-            <View
-              key={message.id}
-              style={[styles.messageRow, message.mine && styles.myMessageRow]}
-            >
-              {!message.mine && (
-                <View
-                  style={[styles.chatAvatar, { backgroundColor: message.color }]}
-                >
-                  <AppText variant="caption" color="white" bold>
-                    {message.initials}
-                  </AppText>
-                </View>
-              )}
-
+          ) : (
+            messages.map(message => (
               <View
-                style={[
-                  styles.messageBubble,
-                  message.mine
-                    ? styles.myMessageBubble
-                    : styles.otherMessageBubble,
-                ]}
+                key={message.id}
+                style={[styles.messageRow, message.mine && styles.myMessageRow]}
               >
                 {!message.mine && (
-                  <AppText
-                    variant="caption"
-                    primary
-                    bold
-                    style={styles.messageAuthor}
+                  <View
+                    style={[
+                      styles.chatAvatar,
+                      { backgroundColor: message.color },
+                    ]}
                   >
-                    {message.name}
-                  </AppText>
+                    <AppText variant="caption" color="white" bold>
+                      {message.initials}
+                    </AppText>
+                  </View>
                 )}
 
-                <AppText
-                  variant="body2"
-                  style={
-                    message.mine
-                      ? styles.myMessageText
-                      : styles.otherMessageText
-                  }
-                >
-                  {message.message}
-                </AppText>
-
-                <AppText
-                  variant="caption"
+                <View
                   style={[
+                    styles.messageBubble,
                     message.mine
-                      ? styles.myMessageTime
-                      : styles.otherMessageTime,
-                    styles.messageTime,
+                      ? styles.myMessageBubble
+                      : styles.otherMessageBubble,
                   ]}
                 >
-                  {message.time}
-                </AppText>
+                  {!message.mine && (
+                    <AppText
+                      variant="caption"
+                      primary
+                      bold
+                      style={styles.messageAuthor}
+                    >
+                      {message.name}
+                    </AppText>
+                  )}
+
+                  <AppText
+                    variant="body2"
+                    style={
+                      message.mine
+                        ? styles.myMessageText
+                        : styles.otherMessageText
+                    }
+                  >
+                    {message.message}
+                  </AppText>
+
+                  <AppText
+                    variant="caption"
+                    style={[
+                      message.mine
+                        ? styles.myMessageTime
+                        : styles.otherMessageTime,
+                      styles.messageTime,
+                    ]}
+                  >
+                    {message.time}
+                  </AppText>
+                </View>
               </View>
-            </View>
-          ))}
+            ))
+          )}
         </ScrollView>
 
         <View style={styles.chatComposer}>

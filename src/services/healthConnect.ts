@@ -174,10 +174,20 @@ export const readTodayHealthData = async (
   const hasSleep = hasReadPermission(grantedPermissions, 'SleepSession');
   const hasWeight = hasReadPermission(grantedPermissions, 'Weight');
   const hasOxygen = hasReadPermission(grantedPermissions, 'OxygenSaturation');
-  const hasBloodPressure = hasReadPermission(grantedPermissions, 'BloodPressure');
+  const hasBloodPressure = hasReadPermission(
+    grantedPermissions,
+    'BloodPressure',
+  );
   const hasAnyPermission =
-    hasSteps || hasDistance || hasCalories || hasExercise || hasHeartRate ||
-    hasSleep || hasWeight || hasOxygen || hasBloodPressure;
+    hasSteps ||
+    hasDistance ||
+    hasCalories ||
+    hasExercise ||
+    hasHeartRate ||
+    hasSleep ||
+    hasWeight ||
+    hasOxygen ||
+    hasBloodPressure;
 
   if (!hasAnyPermission) {
     return createEmptyData('permission-required');
@@ -304,8 +314,12 @@ export const readStepsHistory = async (days = 7): Promise<DailyStepTotal[]> => {
   const today = istDateKey(new Date());
   const firstDay = shiftDateKey(today, -(days - 1));
   const dayAfterToday = shiftDateKey(today, 1);
-  const start = new Date(Date.parse(`${firstDay}T00:00:00.000Z`) - IST_OFFSET_MS);
-  const end = new Date(Date.parse(`${dayAfterToday}T00:00:00.000Z`) - IST_OFFSET_MS);
+  const start = new Date(
+    Date.parse(`${firstDay}T00:00:00.000Z`) - IST_OFFSET_MS,
+  );
+  const end = new Date(
+    Date.parse(`${dayAfterToday}T00:00:00.000Z`) - IST_OFFSET_MS,
+  );
 
   const grouped = await aggregateGroupByDuration({
     recordType: 'Steps',
@@ -326,6 +340,11 @@ export const readStepsHistory = async (days = 7): Promise<DailyStepTotal[]> => {
 
   return Array.from({ length: days }, (_, index) => {
     const key = shiftDateKey(firstDay, index);
-    return { date: key, value: totals.get(key) || 0, count: 0, unit: 'steps' as const };
+    return {
+      date: key,
+      value: totals.get(key) || 0,
+      count: 0,
+      unit: 'steps' as const,
+    };
   });
 };

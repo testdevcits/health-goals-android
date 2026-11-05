@@ -5,7 +5,13 @@ import { useFocusEffect } from '@react-navigation/native';
 import { Dumbbell } from 'lucide-react-native';
 
 import { useTheme } from '../../../theme/useTheme';
-import { AppEmptyState, AppErrorView, AppHeader, AppLoader, AppText } from '../../../components';
+import {
+  AppEmptyState,
+  AppErrorView,
+  AppHeader,
+  AppLoader,
+  AppText,
+} from '../../../components';
 import { createCardStyles, createStyles } from './styles.AllChallenges';
 import { authenticatedRequest } from '../../../services/authenticatedApi';
 import { apiErrorMessage } from '../../../services/api';
@@ -49,8 +55,42 @@ const AllChallengesScreen: React.FC<AllChallengesScreenProps> = ({
     setLoading(true);
     setLoadError('');
     try {
-      const result = await authenticatedRequest<{ challenges: Array<{ id: string; title: string; description: string; metricType: string; targetValue: number; status: string; joined: boolean }> }>('GET', '/community/challenges');
-      setChallenges((result.challenges || []).map(item => ({ id: item.id, title: item.title, description: item.description || `${item.targetValue} ${item.metricType}`, category: item.metricType === 'steps' ? 'Steps' : item.metricType === 'workout' ? 'Strength' : 'Mind', status: item.status, progress: 0, progressLabel: `${item.targetValue.toLocaleString()} target`, color: '#00C6A2', emoji: item.metricType === 'steps' ? '👟' : item.metricType === 'workout' ? '💪' : '🧘', joined: item.joined })));
+      const result = await authenticatedRequest<{
+        challenges: Array<{
+          id: string;
+          title: string;
+          description: string;
+          metricType: string;
+          targetValue: number;
+          status: string;
+          joined: boolean;
+        }>;
+      }>('GET', '/community/challenges');
+      setChallenges(
+        (result.challenges || []).map(item => ({
+          id: item.id,
+          title: item.title,
+          description:
+            item.description || `${item.targetValue} ${item.metricType}`,
+          category:
+            item.metricType === 'steps'
+              ? 'Steps'
+              : item.metricType === 'workout'
+              ? 'Strength'
+              : 'Mind',
+          status: item.status,
+          progress: 0,
+          progressLabel: `${item.targetValue.toLocaleString()} target`,
+          color: '#00C6A2',
+          emoji:
+            item.metricType === 'steps'
+              ? '👟'
+              : item.metricType === 'workout'
+              ? '💪'
+              : '🧘',
+          joined: item.joined,
+        })),
+      );
     } catch (error) {
       const message = apiErrorMessage(error);
       setLoadError(message);
@@ -59,10 +99,21 @@ const AllChallengesScreen: React.FC<AllChallengesScreenProps> = ({
       setLoading(false);
     }
   }, []);
-  useFocusEffect(useCallback(() => { void refresh(); }, [refresh]));
+  useFocusEffect(
+    useCallback(() => {
+      void refresh();
+    }, [refresh]),
+  );
   const joinChallenge = async (challengeId: string) => {
-    try { await authenticatedRequest('POST', `/community/challenges/${encodeURIComponent(challengeId)}/join`); await refresh(); }
-    catch (error) { showAppToast('error', 'Could not join challenge', apiErrorMessage(error)); }
+    try {
+      await authenticatedRequest(
+        'POST',
+        `/community/challenges/${encodeURIComponent(challengeId)}/join`,
+      );
+      await refresh();
+    } catch (error) {
+      showAppToast('error', 'Could not join challenge', apiErrorMessage(error));
+    }
   };
 
   const filteredChallenges = challenges.filter(
@@ -87,49 +138,61 @@ const AllChallengesScreen: React.FC<AllChallengesScreenProps> = ({
         showsVerticalScrollIndicator={false}
         contentContainerStyle={styles.scrollContent}
       >
-        {!loading && !loadError ? <View style={styles.categoryContainer}>
-          {categories.map(category => {
-            const isSelected = selectedCategory === category;
+        {!loading && !loadError ? (
+          <View style={styles.categoryContainer}>
+            {categories.map(category => {
+              const isSelected = selectedCategory === category;
 
-            return (
-              <Pressable
-                key={category}
-                onPress={() => setSelectedCategory(category)}
-                accessibilityRole="tab"
-                accessibilityState={{
-                  selected: isSelected,
-                }}
-                style={[
-                  styles.categoryTab,
-                  isSelected && styles.selectedCategoryTab,
-                ]}
-              >
-                <AppText
-                  variant="label"
-                  center
-                  style={{
-                    color: isSelected
-                      ? colors.textPrimary
-                      : colors.textSecondary,
+              return (
+                <Pressable
+                  key={category}
+                  onPress={() => setSelectedCategory(category)}
+                  accessibilityRole="tab"
+                  accessibilityState={{
+                    selected: isSelected,
                   }}
-                  medium={isSelected}
+                  style={[
+                    styles.categoryTab,
+                    isSelected && styles.selectedCategoryTab,
+                  ]}
                 >
-                  {category}
-                </AppText>
-              </Pressable>
-            );
-          })}
-        </View> : null}
+                  <AppText
+                    variant="label"
+                    center
+                    style={{
+                      color: isSelected
+                        ? colors.textPrimary
+                        : colors.textSecondary,
+                    }}
+                    medium={isSelected}
+                  >
+                    {category}
+                  </AppText>
+                </Pressable>
+              );
+            })}
+          </View>
+        ) : null}
 
         <View style={styles.challengeList}>
-          {loading ? <AppLoader message="Loading challenges…" /> : loadError ? (
-            <AppErrorView message={loadError} onRefresh={() => { refresh(); }} />
+          {loading ? (
+            <AppLoader message="Loading challenges…" />
+          ) : loadError ? (
+            <AppErrorView
+              message={loadError}
+              onRefresh={() => {
+                refresh();
+              }}
+            />
           ) : filteredChallenges.length ? (
             filteredChallenges.map(challenge => (
               <ChallengeCard
                 key={challenge.id}
                 challenge={challenge}
-                onContinue={id => { if (onContinue) onContinue(id); else void joinChallenge(id); }}
+                onContinue={id => {
+                  if (onContinue) onContinue(id);
+                  else void joinChallenge(id);
+                }}
                 colors={colors}
                 spacing={spacing}
                 radius={radius}
@@ -138,10 +201,22 @@ const AllChallengesScreen: React.FC<AllChallengesScreenProps> = ({
           ) : (
             <AppEmptyState
               title="No challenges found"
-              description={selectedCategory === 'All' ? 'New challenges will appear here when available.' : `There are no ${selectedCategory.toLowerCase()} challenges right now.`}
-              icon={<Dumbbell size={28} color={colors.primary} strokeWidth={1.8} />}
-              actionLabel={selectedCategory !== 'All' ? 'Show all challenges' : undefined}
-              onAction={selectedCategory !== 'All' ? () => setSelectedCategory('All') : undefined}
+              description={
+                selectedCategory === 'All'
+                  ? 'New challenges will appear here when available.'
+                  : `There are no ${selectedCategory.toLowerCase()} challenges right now.`
+              }
+              icon={
+                <Dumbbell size={28} color={colors.primary} strokeWidth={1.8} />
+              }
+              actionLabel={
+                selectedCategory !== 'All' ? 'Show all challenges' : undefined
+              }
+              onAction={
+                selectedCategory !== 'All'
+                  ? () => setSelectedCategory('All')
+                  : undefined
+              }
             />
           )}
         </View>

@@ -317,33 +317,66 @@ const WorkoutSessionScreen: React.FC<Props> = ({ navigation, route }) => {
           onPress: async () => {
             try {
               const finishedAt = Date.now();
-              const durationMs = getElapsedMilliseconds(workoutSession, finishedAt);
+              const durationMs = getElapsedMilliseconds(
+                workoutSession,
+                finishedAt,
+              );
               const startMs = finishedAt - durationMs;
               const activityTypes: Record<string, string> = {
-                running: 'running', walking: 'walking', cycling: 'cycling',
-                strength: 'strength', yoga: 'yoga', hiit: 'other',
-                swimming: 'swimming', stretch: 'other', hiking: 'hiking', machines: 'strength',
+                running: 'running',
+                walking: 'walking',
+                cycling: 'cycling',
+                strength: 'strength',
+                yoga: 'yoga',
+                hiit: 'other',
+                swimming: 'swimming',
+                stretch: 'other',
+                hiking: 'hiking',
+                machines: 'strength',
               };
-              const activityType = activityTypes[workoutSession.activityId] || 'other';
+              const activityType =
+                activityTypes[workoutSession.activityId] || 'other';
               const sourceRecordId = `android-workout:${workoutSession.sessionId}`;
               const offsetMs = 330 * 60 * 1000;
               let cursor = startMs;
               const records: Array<Record<string, unknown>> = [];
               while (cursor < finishedAt) {
-                const day = new Date(cursor + offsetMs).toISOString().slice(0, 10);
-                const nextMidnight = Date.parse(`${day}T00:00:00.000Z`) + 86400000 - offsetMs;
+                const day = new Date(cursor + offsetMs)
+                  .toISOString()
+                  .slice(0, 10);
+                const nextMidnight =
+                  Date.parse(`${day}T00:00:00.000Z`) + 86400000 - offsetMs;
                 const end = Math.min(finishedAt, nextMidnight);
                 records.push({
-                  metricType: 'workout', value: (end - cursor) / 60000, unit: 'min',
-                  recordedAt: new Date(cursor).toISOString(), startTime: new Date(cursor).toISOString(),
-                  endTime: new Date(end).toISOString(), source: 'app',
-                  sourceRecordId: `${sourceRecordId}:${day}`, sourceVersion: 1, activityType,
-                  metadata: { estimatedCalories: Math.floor(((end - cursor) / 60000) * currentActivity.caloriesPerMinute), estimatedDistanceKm: Number((currentActivity.speedKmh * (end - cursor) / 3600000).toFixed(2)) },
+                  metricType: 'workout',
+                  value: (end - cursor) / 60000,
+                  unit: 'min',
+                  recordedAt: new Date(cursor).toISOString(),
+                  startTime: new Date(cursor).toISOString(),
+                  endTime: new Date(end).toISOString(),
+                  source: 'app',
+                  sourceRecordId: `${sourceRecordId}:${day}`,
+                  sourceVersion: 1,
+                  activityType,
+                  metadata: {
+                    estimatedCalories: Math.floor(
+                      ((end - cursor) / 60000) *
+                        currentActivity.caloriesPerMinute,
+                    ),
+                    estimatedDistanceKm: Number(
+                      (
+                        (currentActivity.speedKmh * (end - cursor)) /
+                        3600000
+                      ).toFixed(2),
+                    ),
+                  },
                 });
                 cursor = end;
               }
               for (let offset = 0; offset < records.length; offset += 100) {
-                await authenticatedRequest('POST', '/health/sync', { records: records.slice(offset, offset + 100) });
+                await authenticatedRequest('POST', '/health/sync', {
+                  records: records.slice(offset, offset + 100),
+                });
               }
               await clearWorkoutSession();
               returnToPreviousScreen();

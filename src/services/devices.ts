@@ -14,27 +14,40 @@ type RegisteredDevice = {
 };
 
 function createInstallId() {
-  return 'android-' + Array.from({ length: 4 }, () =>
-    Math.floor(Math.random() * 0x100000000).toString(16).padStart(8, '0'),
-  ).join('-');
+  return (
+    'android-' +
+    Array.from({ length: 4 }, () =>
+      Math.floor(Math.random() * 0x100000000)
+        .toString(16)
+        .padStart(8, '0'),
+    ).join('-')
+  );
 }
 
 async function getInstallId() {
-  const stored = await Keychain.getGenericPassword({ service: INSTALL_ID_SERVICE });
+  const stored = await Keychain.getGenericPassword({
+    service: INSTALL_ID_SERVICE,
+  });
   if (stored) return stored.password;
   const id = createInstallId();
-  await Keychain.setGenericPassword('device', id, { service: INSTALL_ID_SERVICE });
+  await Keychain.setGenericPassword('device', id, {
+    service: INSTALL_ID_SERVICE,
+  });
   return id;
 }
 
 export async function syncPhoneProfile(): Promise<string> {
   const session = await readSession();
-  if (!session?.user?.id) throw new Error('Please sign in to save phone details.');
+  if (!session?.user?.id)
+    throw new Error('Please sign in to save phone details.');
   if (profileSync?.userId === session.user.id) return profileSync.promise;
   const promise = (async () => {
     const deviceIdentifier = await getInstallId();
     const constants = Platform.constants as typeof Platform.constants & {
-      Manufacturer?: string; Brand?: string; Model?: string; Release?: string;
+      Manufacturer?: string;
+      Brand?: string;
+      Model?: string;
+      Release?: string;
     };
     const phone = {
       deviceIdentifier,
@@ -42,31 +55,37 @@ export async function syncPhoneProfile(): Promise<string> {
       brand: constants.Brand || constants.Manufacturer || 'Unknown',
       model: constants.Model || 'Unknown Android model',
       platform: 'android',
-      osVersion: `Android ${constants.Release || Platform.Version} (API ${Platform.Version})`,
+      osVersion: `Android ${constants.Release || Platform.Version} (API ${
+        Platform.Version
+      })`,
       appVersion: '1.0',
     };
     await authenticatedRequest('POST', '/auth/me/device', phone);
     return deviceIdentifier;
   })();
   profileSync = { userId: session.user.id, promise };
-  promise.catch(() => { if (profileSync?.promise === promise) profileSync = null; });
+  promise.catch(() => {
+    if (profileSync?.promise === promise) profileSync = null;
+  });
   return promise;
 }
 
 export async function ensureHealthConnectDevice(): Promise<string> {
   const session = await readSession();
-  if (!session?.user?.id) throw new Error('Please sign in to sync health data.');
+  if (!session?.user?.id)
+    throw new Error('Please sign in to sync health data.');
   const registrationKey = session.user.id;
   if (!registration || registrationUserId !== registrationKey) {
     const task = (async (): Promise<string> => {
       const deviceIdentifier = await syncPhoneProfile();
       const constants = Platform.constants as typeof Platform.constants & {
-        Manufacturer?: string; Brand?: string; Model?: string;
+        Manufacturer?: string;
+        Brand?: string;
+        Model?: string;
       };
-      const result = await authenticatedRequest<{ devices: RegisteredDevice[] }>(
-        'GET',
-        '/devices',
-      );
+      const result = await authenticatedRequest<{
+        devices: RegisteredDevice[];
+      }>('GET', '/devices');
       const existingDevice = result.devices.find(
         device => device.deviceIdentifier === deviceIdentifier,
       );
@@ -93,7 +112,9 @@ export async function ensureHealthConnectDevice(): Promise<string> {
     })();
     registration = task;
     registrationUserId = registrationKey;
-    task.catch(() => { if (registration === task) registration = null; });
+    task.catch(() => {
+      if (registration === task) registration = null;
+    });
   }
   return registration;
 }

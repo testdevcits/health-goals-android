@@ -70,7 +70,11 @@ const VerifyEmailScreen: React.FC<Props> = ({ route, navigation }) => {
 
         <View style={styles.content}>
           <View style={styles.iconContainer}>
-            <MailCheck size={32} color={theme.colors.primary} strokeWidth={1.8} />
+            <MailCheck
+              size={32}
+              color={theme.colors.primary}
+              strokeWidth={1.8}
+            />
           </View>
 
           <AppText variant="h2" center mb={10}>

@@ -41,7 +41,14 @@ const MyGroups = ({
         <Pressable
           key={group?.id}
           accessibilityRole="button"
-          onPress={() => navigation.navigate('GroupDetails', { groupId: group.id, name: group.name, description: group.description, members: group.members })}
+          onPress={() =>
+            navigation.navigate('GroupDetails', {
+              groupId: group.id,
+              name: group.name,
+              description: group.description,
+              members: group.members,
+            })
+          }
           style={styles.groupCard}
         >
           <View
@@ -71,24 +78,21 @@ const MyGroups = ({
             </AppText>
 
             <View style={styles.memberAvatars}>
-              {(group?.avatars || [])
-                .slice(0, 4)
-                .map((avatar, i: number) => (
-                  <View
-                    key={`${group?.id}-${i}`}
-                    style={[
-                      styles.memberAvatar,
-                      {
-                        backgroundColor:
-                          avatarPalette[i % avatarPalette.length],
-                      },
-                    ]}
-                  >
-                    <AppText style={styles.memberAvatarText} bold>
-                      {typeof avatar === 'string' ? avatar : avatar.initial}
-                    </AppText>
-                  </View>
-                ))}
+              {(group?.avatars || []).slice(0, 4).map((avatar, i: number) => (
+                <View
+                  key={`${group?.id}-${i}`}
+                  style={[
+                    styles.memberAvatar,
+                    {
+                      backgroundColor: avatarPalette[i % avatarPalette.length],
+                    },
+                  ]}
+                >
+                  <AppText style={styles.memberAvatarText} bold>
+                    {typeof avatar === 'string' ? avatar : avatar.initial}
+                  </AppText>
+                </View>
+              ))}
 
               {group?.members > 4 && (
                 <View style={styles.moreMembers}>
@@ -100,7 +104,18 @@ const MyGroups = ({
             </View>
           </View>
 
-          {discover && !group?.joined ? <Pressable onPress={() => onJoinGroup?.(group.id)} style={{ padding: 8 }}><AppText variant="caption" primary bold>Join</AppText></Pressable> : <ChevronRight size={19} color={colors.textTertiary} />}
+          {discover && !group?.joined ? (
+            <Pressable
+              onPress={() => onJoinGroup?.(group.id)}
+              style={{ padding: 8 }}
+            >
+              <AppText variant="caption" primary bold>
+                Join
+              </AppText>
+            </Pressable>
+          ) : (
+            <ChevronRight size={19} color={colors.textTertiary} />
+          )}
         </Pressable>
       ))}
 
@@ -119,5 +134,3 @@ const MyGroups = ({
 };
 
 export default memo(MyGroups);
-
- 

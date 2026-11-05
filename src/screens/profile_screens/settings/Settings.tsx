@@ -81,7 +81,11 @@ const Settings = ({ navigation }: { navigation: SettingsNavigation }) => {
   const [activeGroup, setActiveGroup] = useState<SettingsGroup | null>(null);
   const [modalVisible, setModalVisible] = React.useState(false);
   const handleSignOut = async () => {
-    try { await logout(); } catch { /* Clear the local session even while offline. */ }
+    try {
+      await logout();
+    } catch {
+      /* Clear the local session even while offline. */
+    }
     dispatch(clearProfile());
     setModalVisible(false);
     navigationRef.resetRoot({ index: 0, routes: [{ name: 'Login' }] });
@@ -285,7 +289,10 @@ const Settings = ({ navigation }: { navigation: SettingsNavigation }) => {
                 try {
                   openHealthConnectSettings();
                 } catch (error) {
-                  console.error('Unable to open Health Connect settings:', error);
+                  console.error(
+                    'Unable to open Health Connect settings:',
+                    error,
+                  );
                   Alert.alert(
                     'Could not open Health Connect',
                     'Open Health Connect from your device settings to manage Vitality’s access.',
@@ -370,8 +377,8 @@ const Settings = ({ navigation }: { navigation: SettingsNavigation }) => {
       themeMode === 'system'
         ? 'System'
         : themeMode === 'dark'
-          ? 'Dark'
-          : 'Light',
+        ? 'Dark'
+        : 'Light',
   };
 
   const selectValue = (group: SettingsGroup, value: string) => {
@@ -483,8 +490,8 @@ const Settings = ({ navigation }: { navigation: SettingsNavigation }) => {
                 backgroundHealthSyncLoading
                   ? 'Checking background access…'
                   : backgroundHealthSync
-                    ? 'Periodically sync approved Health Connect data'
-                    : 'Sync approved health data while the app is closed'
+                  ? 'Periodically sync approved Health Connect data'
+                  : 'Sync approved health data while the app is closed'
               }
               switchValue={backgroundHealthSync}
               onSwitchChange={handleBackgroundHealthSyncChange}
@@ -536,7 +543,7 @@ const Settings = ({ navigation }: { navigation: SettingsNavigation }) => {
                 paddingBottom: Math.max(insets.bottom, spacing.xl),
               },
             ]}
-            onPress={() => { }}
+            onPress={() => {}}
           >
             <View style={[styles.handle, { backgroundColor: colors.border }]} />
             <View style={styles.sheetHeader}>
@@ -559,29 +566,29 @@ const Settings = ({ navigation }: { navigation: SettingsNavigation }) => {
             </View>
             {activeGroup
               ? groupOptions[activeGroup].map((option, index) => {
-                const selected = selectedValues[activeGroup] === option;
-                return (
-                  <Pressable
-                    key={option}
-                    onPress={() => selectValue(activeGroup, option)}
-                    style={[
-                      styles.option,
-                      { borderBottomColor: colors.border },
-                      index === groupOptions[activeGroup].length - 1 &&
-                      styles.lastOption,
-                    ]}
-                    accessibilityRole="button"
-                    accessibilityState={{ selected }}
-                  >
-                    <AppText variant="body2" bold={selected}>
-                      {option}
-                    </AppText>
-                    {selected ? (
-                      <Check size={18} color={colors.primary} />
-                    ) : null}
-                  </Pressable>
-                );
-              })
+                  const selected = selectedValues[activeGroup] === option;
+                  return (
+                    <Pressable
+                      key={option}
+                      onPress={() => selectValue(activeGroup, option)}
+                      style={[
+                        styles.option,
+                        { borderBottomColor: colors.border },
+                        index === groupOptions[activeGroup].length - 1 &&
+                          styles.lastOption,
+                      ]}
+                      accessibilityRole="button"
+                      accessibilityState={{ selected }}
+                    >
+                      <AppText variant="body2" bold={selected}>
+                        {option}
+                      </AppText>
+                      {selected ? (
+                        <Check size={18} color={colors.primary} />
+                      ) : null}
+                    </Pressable>
+                  );
+                })
               : null}
           </Pressable>
         </Pressable>

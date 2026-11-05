@@ -82,41 +82,107 @@ const EnergyCard: React.FC = () => {
   const [loading, setLoading] = React.useState(true);
   const [loadError, setLoadError] = React.useState(false);
   const [hasActivity, setHasActivity] = React.useState(false);
-  useFocusEffect(React.useCallback(() => {
-    let active = true;
-    setLoading(true);
-    setLoadError(false);
-    Promise.all([
-      authenticatedRequest<{ totals?: { steps?: number; workoutMinutes?: number; meditationMinutes?: number }; creditedCoins?: number }>('GET', '/activity/today'),
-      getCurrentUser(),
-      authenticatedRequest<{ items: Array<{ day: string; creditedCoins?: number; totals?: { steps?: number; workoutMinutes?: number; meditationMinutes?: number } }> }>('GET', '/activity/history?limit=30'),
-    ]).then(([day, profile, history]) => {
-      if (!active) return;
-      const target = profile.healthGoals?.steps || 10000;
-      // Health Connect's aggregate is the device's deduplicated daily total.
-      // Prefer it over the backend settlement total, which can lag until sync
-      // and points processing finish.
-      const steps = todayHealthData?.steps ?? day.totals?.steps ?? 0;
-      setHasActivity(
-        steps > 0 ||
-        Boolean(day.totals?.workoutMinutes) ||
-        Boolean(day.totals?.meditationMinutes) ||
-        (history.items || []).some(item =>
-          Boolean(item.totals?.steps || item.totals?.workoutMinutes || item.totals?.meditationMinutes),
-        ),
-      );
-      setStepsTarget(target);
-      setEnergy(Math.min(100, Math.round(steps / target * 100)));
-      const activeDays = new Set((history.items || []).filter(item => (item.creditedCoins || 0) > 0 || Boolean(item.totals?.steps || item.totals?.workoutMinutes || item.totals?.meditationMinutes)).map(item => item.day));
-      const today = new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Kolkata' }).format(new Date());
-      if ((day.creditedCoins || 0) > 0 || day.totals?.steps || history.items?.some(item => item.day === today && (item.totals?.steps || item.totals?.workoutMinutes || item.totals?.meditationMinutes))) activeDays.add(today);
-      let streak = 0; const cursor = new Date();
-      while (activeDays.has(new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Kolkata' }).format(cursor))) { streak += 1; cursor.setUTCDate(cursor.getUTCDate() - 1); }
-      setStreakPeriod(streak);
-    }).catch(() => { if (active) setLoadError(true); })
-      .finally(() => { if (active) setLoading(false); });
-    return () => { active = false; };
-  }, [todayHealthData?.steps]));
+  useFocusEffect(
+    React.useCallback(() => {
+      let active = true;
+      setLoading(true);
+      setLoadError(false);
+      Promise.all([
+        authenticatedRequest<{
+          totals?: {
+            steps?: number;
+            workoutMinutes?: number;
+            meditationMinutes?: number;
+          };
+          creditedCoins?: number;
+        }>('GET', '/activity/today'),
+        getCurrentUser(),
+        authenticatedRequest<{
+          items: Array<{
+            day: string;
+            creditedCoins?: number;
+            totals?: {
+              steps?: number;
+              workoutMinutes?: number;
+              meditationMinutes?: number;
+            };
+          }>;
+        }>('GET', '/activity/history?limit=30'),
+      ])
+        .then(([day, profile, history]) => {
+          if (!active) return;
+          const target = profile.healthGoals?.steps || 10000;
+          // Health Connect's aggregate is the device's deduplicated daily total.
+          // Prefer it over the backend settlement total, which can lag until sync
+          // and points processing finish.
+          const steps = todayHealthData?.steps ?? day.totals?.steps ?? 0;
+          setHasActivity(
+            steps > 0 ||
+              Boolean(day.totals?.workoutMinutes) ||
+              Boolean(day.totals?.meditationMinutes) ||
+              (history.items || []).some(item =>
+                Boolean(
+                  item.totals?.steps ||
+                    item.totals?.workoutMinutes ||
+                    item.totals?.meditationMinutes,
+                ),
+              ),
+          );
+          setStepsTarget(target);
+          setEnergy(Math.min(100, Math.round((steps / target) * 100)));
+          const activeDays = new Set(
+            (history.items || [])
+              .filter(
+                item =>
+                  (item.creditedCoins || 0) > 0 ||
+                  Boolean(
+                    item.totals?.steps ||
+                      item.totals?.workoutMinutes ||
+                      item.totals?.meditationMinutes,
+                  ),
+              )
+              .map(item => item.day),
+          );
+          const today = new Intl.DateTimeFormat('en-CA', {
+            timeZone: 'Asia/Kolkata',
+          }).format(new Date());
+          if (
+            (day.creditedCoins || 0) > 0 ||
+            day.totals?.steps ||
+            history.items?.some(
+              item =>
+                item.day === today &&
+                (item.totals?.steps ||
+                  item.totals?.workoutMinutes ||
+                  item.totals?.meditationMinutes),
+            )
+          )
+            activeDays.add(today);
+          let streak = 0;
+          const cursor = new Date();
+          while (
+            activeDays.has(
+              new Intl.DateTimeFormat('en-CA', {
+                timeZone: 'Asia/Kolkata',
+              }).format(cursor),
+            )
+          ) {
+            streak += 1;
+            cursor.setUTCDate(cursor.getUTCDate() - 1);
+          }
+          setStreakPeriod(streak);
+        })
+        .catch(() => {
+          if (active) setLoadError(true);
+        })
+        .finally(() => {
+          if (active) setLoading(false);
+        });
+      return () => {
+        active = false;
+      };
+    }, [todayHealthData?.steps]),
+  );
   const { theme } = useTheme();
   const { colors } = theme;
   const styles = createHomeStyles(theme);
@@ -126,61 +192,72 @@ const EnergyCard: React.FC = () => {
       {loading ? (
         <View style={styles.energyStatus}>
           <ActivityIndicator size="small" color={colors.white} />
-          <AppText variant="caption" color="textInverse">Loading today’s progress…</AppText>
+          <AppText variant="caption" color="textInverse">
+            Loading today’s progress…
+          </AppText>
         </View>
       ) : loadError ? (
         <View style={styles.energyStatus}>
-          <AppText variant="subtitle1" bold color="textInverse">Progress unavailable</AppText>
-          <AppText variant="caption" color="textInverse">Reopen Home to try again.</AppText>
+          <AppText variant="subtitle1" bold color="textInverse">
+            Progress unavailable
+          </AppText>
+          <AppText variant="caption" color="textInverse">
+            Reopen Home to try again.
+          </AppText>
         </View>
       ) : !hasActivity ? (
         <View style={styles.energyStatus}>
-          <AppText variant="subtitle1" bold color="textInverse">No activity yet</AppText>
-          <AppText variant="caption" color="textInverse">Your steps and streak will appear here after activity syncs.</AppText>
+          <AppText variant="subtitle1" bold color="textInverse">
+            No activity yet
+          </AppText>
+          <AppText variant="caption" color="textInverse">
+            Your steps and streak will appear here after activity syncs.
+          </AppText>
         </View>
       ) : (
-      <>
-      <EnergyCircle energy={energy} />
+        <>
+          <EnergyCircle energy={energy} />
 
-      {/* Right side with a subtle circular gray background */}
-      <View style={styles.energyRight}>
-        <View
-          pointerEvents="none"
-          style={{
-            position: 'absolute',
-            width: 190,
-            height: 190,
-            borderRadius: 95,
-            backgroundColor: colors.white,
-            opacity: 0.1,
-            right: -95,
-            top: -65,
-          }}
-        />
+          {/* Right side with a subtle circular gray background */}
+          <View style={styles.energyRight}>
+            <View
+              pointerEvents="none"
+              style={{
+                position: 'absolute',
+                width: 190,
+                height: 190,
+                borderRadius: 95,
+                backgroundColor: colors.white,
+                opacity: 0.1,
+                right: -95,
+                top: -65,
+              }}
+            />
 
-        <AppText variant="subtitle1" bold color="textInverse" mb={4}>
-          You're doing great! 🎯
-        </AppText>
+            <AppText variant="subtitle1" bold color="textInverse" mb={4}>
+              You're doing great! 🎯
+            </AppText>
 
-        <AppText
-          variant="caption"
-          color="textInverse"
-          style={styles.energyDescription}
-        >
-          Today’s synced steps goal is {stepsTarget.toLocaleString()}. Your progress is{' '}
-          <AppText variant="caption" bold color="textInverse">
-            {energy}%.
-          </AppText>
-        </AppText>
+            <AppText
+              variant="caption"
+              color="textInverse"
+              style={styles.energyDescription}
+            >
+              Today’s synced steps goal is {stepsTarget.toLocaleString()}. Your
+              progress is{' '}
+              <AppText variant="caption" bold color="textInverse">
+                {energy}%.
+              </AppText>
+            </AppText>
 
-        <View style={styles.streakPill}>
-          <Text style={styles.streakEmoji}>🔥</Text>
-          <AppText variant="caption" bold color="textInverse">
-            {streakPeriod}-day streak
-          </AppText>
-        </View>
-      </View>
-      </>
+            <View style={styles.streakPill}>
+              <Text style={styles.streakEmoji}>🔥</Text>
+              <AppText variant="caption" bold color="textInverse">
+                {streakPeriod}-day streak
+              </AppText>
+            </View>
+          </View>
+        </>
       )}
     </View>
   );

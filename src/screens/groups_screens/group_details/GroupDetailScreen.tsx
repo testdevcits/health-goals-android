@@ -30,14 +30,25 @@ import type { Member } from './constants';
 import { createAuthenticatedChatSocket } from '../../../services/chatSocket';
 import type { Socket } from 'socket.io-client';
 
-const mergeChatMessages = (current: any[], incoming: any[], userId: string, color: string) => {
+const mergeChatMessages = (
+  current: any[],
+  incoming: any[],
+  userId: string,
+  color: string,
+) => {
   const messages = new Map(current.map(item => [item.id, item]));
-  incoming.forEach(item => messages.set(item.id, {
-    ...item,
-    color: item.color || color,
-    mine: item.senderId ? item.senderId === userId : Boolean(item.mine),
-  }));
-  return [...messages.values()].sort((a, b) => new Date(a.createdAt || 0).getTime() - new Date(b.createdAt || 0).getTime());
+  incoming.forEach(item =>
+    messages.set(item.id, {
+      ...item,
+      color: item.color || color,
+      mine: item.senderId ? item.senderId === userId : Boolean(item.mine),
+    }),
+  );
+  return [...messages.values()].sort(
+    (a, b) =>
+      new Date(a.createdAt || 0).getTime() -
+      new Date(b.createdAt || 0).getTime(),
+  );
 };
 
 // ─── Screen props ─────────────────────────────────────────────────────────────
@@ -71,9 +82,15 @@ const GroupDetailScreen: React.FC<GroupDetailScreenProps> = ({
   const [activeTab, setActiveTab] = useState<DetailTab>('Overview');
 
   // ─── Challenges ─────────────────────────────────────────────────────────────
-  const [groupName, setGroupName] = useState(route.params?.name || initialGroupName);
-  const [groupDescription, setGroupDescription] = useState(route.params?.description || initialGroupDescription);
-  const [memberCount, setMemberCount] = useState(route.params?.members || initialMemberCount);
+  const [groupName, setGroupName] = useState(
+    route.params?.name || initialGroupName,
+  );
+  const [groupDescription, setGroupDescription] = useState(
+    route.params?.description || initialGroupDescription,
+  );
+  const [memberCount, setMemberCount] = useState(
+    route.params?.members || initialMemberCount,
+  );
   const [challenges, setChallenges] = useState<GroupChallenge[]>([]);
   const [members, setMembers] = useState<Member[]>([]);
   const [messages, setMessages] = useState<any[]>([]);
@@ -93,16 +110,72 @@ const GroupDetailScreen: React.FC<GroupDetailScreenProps> = ({
     setLoading(true);
     setLoadError('');
     try {
-      const [groupResult, challengeResult, messageResult, leaderboardResult] = await Promise.all([
-        authenticatedRequest<{ group: { name: string; description: string; members: number } }>('GET', `/community/groups/${encodeURIComponent(groupId)}`),
-        authenticatedRequest<{ challenges: Array<{ id: string; title: string; description: string; status: string; participants: number }> }>('GET', `/community/groups/${encodeURIComponent(groupId)}/challenges`),
-        authenticatedRequest<{ messages: any[] }>('GET', `/community/groups/${encodeURIComponent(groupId)}/messages`),
-        authenticatedRequest<{ leaderboard: Array<{ id: string; rank: number; name: string; steps: number; initials: string; streak: string; color: string }> }>('GET', `/community/groups/${encodeURIComponent(groupId)}/leaderboard`),
-      ]);
-      setGroupName(groupResult.group.name); setGroupDescription(groupResult.group.description); setMemberCount(groupResult.group.members);
-      setChallenges(challengeResult.challenges.map(item => ({ id: item.id, title: item.title, description: item.description, status: item.status, progress: 0, progressLabel: `${item.participants} participants`, color: colors.primary })));
-      setMessages((messageResult.messages || []).map((item: any) => ({ ...item, color: colors.primary })));
-      setMembers((leaderboardResult.leaderboard || []).map(item => ({ id: item.id, name: item.name, initials: item.initials, steps: item.steps, streak: Number.parseInt(item.streak, 10) || 0, color: item.color })));
+      const [groupResult, challengeResult, messageResult, leaderboardResult] =
+        await Promise.all([
+          authenticatedRequest<{
+            group: { name: string; description: string; members: number };
+          }>('GET', `/community/groups/${encodeURIComponent(groupId)}`),
+          authenticatedRequest<{
+            challenges: Array<{
+              id: string;
+              title: string;
+              description: string;
+              status: string;
+              participants: number;
+            }>;
+          }>(
+            'GET',
+            `/community/groups/${encodeURIComponent(groupId)}/challenges`,
+          ),
+          authenticatedRequest<{ messages: any[] }>(
+            'GET',
+            `/community/groups/${encodeURIComponent(groupId)}/messages`,
+          ),
+          authenticatedRequest<{
+            leaderboard: Array<{
+              id: string;
+              rank: number;
+              name: string;
+              steps: number;
+              initials: string;
+              streak: string;
+              color: string;
+            }>;
+          }>(
+            'GET',
+            `/community/groups/${encodeURIComponent(groupId)}/leaderboard`,
+          ),
+        ]);
+      setGroupName(groupResult.group.name);
+      setGroupDescription(groupResult.group.description);
+      setMemberCount(groupResult.group.members);
+      setChallenges(
+        challengeResult.challenges.map(item => ({
+          id: item.id,
+          title: item.title,
+          description: item.description,
+          status: item.status,
+          progress: 0,
+          progressLabel: `${item.participants} participants`,
+          color: colors.primary,
+        })),
+      );
+      setMessages(
+        (messageResult.messages || []).map((item: any) => ({
+          ...item,
+          color: colors.primary,
+        })),
+      );
+      setMembers(
+        (leaderboardResult.leaderboard || []).map(item => ({
+          id: item.id,
+          name: item.name,
+          initials: item.initials,
+          steps: item.steps,
+          streak: Number.parseInt(item.streak, 10) || 0,
+          color: item.color,
+        })),
+      );
     } catch (error) {
       const message = apiErrorMessage(error);
       setLoadError(message);
@@ -111,33 +184,60 @@ const GroupDetailScreen: React.FC<GroupDetailScreenProps> = ({
       setLoading(false);
     }
   }, [groupId, colors.primary]);
-  React.useEffect(() => { void refreshGroup(); }, [refreshGroup]);
+  React.useEffect(() => {
+    void refreshGroup();
+  }, [refreshGroup]);
 
   React.useEffect(() => {
     if (activeTab !== 'Chat' || !groupId) return;
     let active = true;
     let socket: Socket | null = null;
-    void createAuthenticatedChatSocket().then(connection => {
-      if (!active) {
-        connection.socket.disconnect();
-        return;
-      }
-      socket = connection.socket;
-      chatSocketRef.current = socket;
-      chatUserIdRef.current = connection.userId;
-      socket.on('group:message', (message: any) => {
-        if (active) setMessages(current => mergeChatMessages(current, [message], chatUserIdRef.current, colors.primary));
-      });
-      socket.on('connect', () => {
-        socket?.emit('group:join', { groupId }, (result: any) => {
-          if (!active || !result?.ok) return;
-          void authenticatedRequest<{ messages: any[] }>('GET', `/community/groups/${encodeURIComponent(groupId)}/messages`)
-            .then(result => { if (active) setMessages(current => mergeChatMessages(current, result.messages || [], chatUserIdRef.current, colors.primary)); })
-            .catch(() => {});
+    void createAuthenticatedChatSocket()
+      .then(connection => {
+        if (!active) {
+          connection.socket.disconnect();
+          return;
+        }
+        socket = connection.socket;
+        chatSocketRef.current = socket;
+        chatUserIdRef.current = connection.userId;
+        socket.on('group:message', (message: any) => {
+          if (active)
+            setMessages(current =>
+              mergeChatMessages(
+                current,
+                [message],
+                chatUserIdRef.current,
+                colors.primary,
+              ),
+            );
         });
-      });
-      socket.connect();
-    }).catch(error => console.warn('Realtime group chat is unavailable:', error));
+        socket.on('connect', () => {
+          socket?.emit('group:join', { groupId }, (result: any) => {
+            if (!active || !result?.ok) return;
+            void authenticatedRequest<{ messages: any[] }>(
+              'GET',
+              `/community/groups/${encodeURIComponent(groupId)}/messages`,
+            )
+              .then(result => {
+                if (active)
+                  setMessages(current =>
+                    mergeChatMessages(
+                      current,
+                      result.messages || [],
+                      chatUserIdRef.current,
+                      colors.primary,
+                    ),
+                  );
+              })
+              .catch(() => {});
+          });
+        });
+        socket.connect();
+      })
+      .catch(error =>
+        console.warn('Realtime group chat is unavailable:', error),
+      );
 
     return () => {
       active = false;
@@ -174,34 +274,90 @@ const GroupDetailScreen: React.FC<GroupDetailScreenProps> = ({
 
     try {
       const targetValue = Number(challengeGoal.replace(/[^0-9.]/g, ''));
-      if (!Number.isSafeInteger(targetValue) || targetValue < 1) throw new Error('Enter a whole number for the target.');
-      const endsAt = new Date(Date.now() + Number.parseInt(duration, 10) * 86400000).toISOString();
-      await authenticatedRequest('POST', `/community/groups/${encodeURIComponent(groupId)}/challenges`, { title: challengeName.trim(), description: challengeGoal.trim(), metricType: 'steps', targetValue, startsAt: new Date().toISOString(), endsAt, rewardPoints: Number.parseInt(reward, 10) || 0 });
-      await refreshGroup(); setCreateChallengeVisible(false); setChallengeName(''); setChallengeGoal(''); setDuration(DURATION_OPTIONS[0]); setReward(REWARD_OPTIONS[1]); setActiveTab('Challenges');
-      showAppToast('success', 'Challenge created', 'Your group challenge is ready.');
-    } catch (error) { showAppToast('error', 'Could not create challenge', apiErrorMessage(error)); }
+      if (!Number.isSafeInteger(targetValue) || targetValue < 1)
+        throw new Error('Enter a whole number for the target.');
+      const endsAt = new Date(
+        Date.now() + Number.parseInt(duration, 10) * 86400000,
+      ).toISOString();
+      await authenticatedRequest(
+        'POST',
+        `/community/groups/${encodeURIComponent(groupId)}/challenges`,
+        {
+          title: challengeName.trim(),
+          description: challengeGoal.trim(),
+          metricType: 'steps',
+          targetValue,
+          startsAt: new Date().toISOString(),
+          endsAt,
+          rewardPoints: Number.parseInt(reward, 10) || 0,
+        },
+      );
+      await refreshGroup();
+      setCreateChallengeVisible(false);
+      setChallengeName('');
+      setChallengeGoal('');
+      setDuration(DURATION_OPTIONS[0]);
+      setReward(REWARD_OPTIONS[1]);
+      setActiveTab('Challenges');
+      showAppToast(
+        'success',
+        'Challenge created',
+        'Your group challenge is ready.',
+      );
+    } catch (error) {
+      showAppToast(
+        'error',
+        'Could not create challenge',
+        apiErrorMessage(error),
+      );
+    }
   }, [challengeName, challengeGoal, duration, reward, groupId, refreshGroup]);
 
   const sendMessage = useCallback(async () => {
-    const message = messageDraft.trim(); if (!message) return;
+    const message = messageDraft.trim();
+    if (!message) return;
     try {
       const socket = chatSocketRef.current;
       if (socket?.connected) {
         const result = await new Promise<any>((resolve, reject) => {
-          const timeout = setTimeout(() => reject(new Error('Chat server did not respond. Try again.')), 12000);
+          const timeout = setTimeout(
+            () => reject(new Error('Chat server did not respond. Try again.')),
+            12000,
+          );
           socket.emit('group:send', { groupId, message }, (response: any) => {
             clearTimeout(timeout);
-            response?.ok ? resolve(response) : reject(new Error(response?.error || 'Could not send message.'));
+            response?.ok
+              ? resolve(response)
+              : reject(new Error(response?.error || 'Could not send message.'));
           });
         });
-        setMessages(current => mergeChatMessages(current, [result.message], chatUserIdRef.current, colors.primary));
+        setMessages(current =>
+          mergeChatMessages(
+            current,
+            [result.message],
+            chatUserIdRef.current,
+            colors.primary,
+          ),
+        );
       } else {
-        const result = await authenticatedRequest<{ message: any }>('POST', `/community/groups/${encodeURIComponent(groupId)}/messages`, { message });
-        setMessages(current => mergeChatMessages(current, [result.message], chatUserIdRef.current, colors.primary));
+        const result = await authenticatedRequest<{ message: any }>(
+          'POST',
+          `/community/groups/${encodeURIComponent(groupId)}/messages`,
+          { message },
+        );
+        setMessages(current =>
+          mergeChatMessages(
+            current,
+            [result.message],
+            chatUserIdRef.current,
+            colors.primary,
+          ),
+        );
       }
       setMessageDraft('');
+    } catch (error) {
+      showAppToast('error', 'Could not send message', apiErrorMessage(error));
     }
-    catch (error) { showAppToast('error', 'Could not send message', apiErrorMessage(error)); }
   }, [groupId, messageDraft, colors.primary]);
 
   // ─── Render ─────────────────────────────────────────────────────────────────
@@ -221,42 +377,49 @@ const GroupDetailScreen: React.FC<GroupDetailScreenProps> = ({
         {loading ? (
           <AppLoader message="Loading group details…" />
         ) : loadError ? (
-          <AppErrorView message={loadError} onRefresh={() => { refreshGroup(); }} />
+          <AppErrorView
+            message={loadError}
+            onRefresh={() => {
+              refreshGroup();
+            }}
+          />
         ) : (
           <>
-        <GroupBanner
-          groupName={groupName}
-          groupDescription={groupDescription}
-          memberCount={memberCount}
-          members={members}
-        />
+            <GroupBanner
+              groupName={groupName}
+              groupDescription={groupDescription}
+              memberCount={memberCount}
+              members={members}
+            />
 
-        <GroupTabs
-          activeTab={activeTab}
-          onTabChange={setActiveTab}
-        />
+            <GroupTabs activeTab={activeTab} onTabChange={setActiveTab} />
 
-        {activeTab === 'Overview' && (
-          <GroupOverview
-            members={members}
-            challenges={challenges}
-            onNewChallenge={() => setCreateChallengeVisible(true)}
-          />
-        )}
+            {activeTab === 'Overview' && (
+              <GroupOverview
+                members={members}
+                challenges={challenges}
+                onNewChallenge={() => setCreateChallengeVisible(true)}
+              />
+            )}
 
-        {activeTab === 'Leaderboard' && (
-          <GroupLeaderboard
-            members={members}
-          />
-        )}
+            {activeTab === 'Leaderboard' && (
+              <GroupLeaderboard members={members} />
+            )}
 
-        {activeTab === 'Challenges' && (
-          <ChallengesTab
-            onNewChallenge={() => setCreateChallengeVisible(true)}
-            challenges={challenges}
-          />
-        )}
-        {activeTab === 'Chat' && <GroupChat messages={messages} messageDraft={messageDraft} onChangeDraft={setMessageDraft} onSend={() => void sendMessage()} />}
+            {activeTab === 'Challenges' && (
+              <ChallengesTab
+                onNewChallenge={() => setCreateChallengeVisible(true)}
+                challenges={challenges}
+              />
+            )}
+            {activeTab === 'Chat' && (
+              <GroupChat
+                messages={messages}
+                messageDraft={messageDraft}
+                onChangeDraft={setMessageDraft}
+                onSend={() => void sendMessage()}
+              />
+            )}
           </>
         )}
       </ScrollView>

@@ -1,12 +1,6 @@
 import React, { useState } from 'react';
 import { Alert, StyleSheet, View } from 'react-native';
-import {
-  AppButton,
-  AppHeader,
-  AppInput,
-  AppText,
-   
-} from '../../../components';
+import { AppButton, AppHeader, AppInput, AppText } from '../../../components';
 import { ProfileScreenNavigation } from '../components/ProfileScreenLayout';
 import { useTheme } from '../../../theme/useTheme';
 

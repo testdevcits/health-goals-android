@@ -42,7 +42,9 @@ export async function getCurrentUser(): Promise<UserProfile> {
   );
 
   if (!response.user) {
-    throw new Error('The current-user response did not include a user profile.');
+    throw new Error(
+      'The current-user response did not include a user profile.',
+    );
   }
 
   return response.user;

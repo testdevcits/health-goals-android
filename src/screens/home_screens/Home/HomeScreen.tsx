@@ -65,9 +65,7 @@ const HomeScreen: React.FC<Props> = ({ navigation }) => {
         showsVerticalScrollIndicator={false}
       >
         {notificationsEnabled === false ? (
-          <NotificationBanner
-            onDismiss={() => setNotificationsEnabled(true)}
-          />
+          <NotificationBanner onDismiss={() => setNotificationsEnabled(true)} />
         ) : null}
         <EnergyCard />
         <DailySummary

@@ -1,4 +1,4 @@
-import { StyleSheet } from "react-native";
+import { StyleSheet } from 'react-native';
 const createStyles = (colors: any, spacing: any, radius: any) =>
   StyleSheet.create({
     groupList: {
@@ -94,4 +94,4 @@ const createStyles = (colors: any, spacing: any, radius: any) =>
     },
   });
 
-  export default createStyles
+export default createStyles;

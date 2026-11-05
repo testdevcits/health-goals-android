@@ -102,7 +102,13 @@ const RegisterScreen: React.FC<Props> = ({ navigation }) => {
     if (!validate()) return;
     setLoading(true);
     try {
-      const challenge = await requestRegistration(fullName, email, password, companyCode, goal);
+      const challenge = await requestRegistration(
+        fullName,
+        email,
+        password,
+        companyCode,
+        goal,
+      );
       navigation.navigate('VerifyEmail', {
         challengeId: challenge.challengeId,
         email,
@@ -111,7 +117,9 @@ const RegisterScreen: React.FC<Props> = ({ navigation }) => {
       });
     } catch (error) {
       showAppToast('error', 'Account creation failed', apiErrorMessage(error));
-    } finally { setLoading(false); }
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (

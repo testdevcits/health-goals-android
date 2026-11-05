@@ -16,13 +16,19 @@ const HomeHeader: React.FC = () => {
   const profile = useAppSelector(state => state.profile.user);
   const fullName = profile?.name ?? '';
   const name = fullName.split(' ')[0] || '';
-  useFocusEffect(useCallback(() => {
-    let active = true;
-    getCurrentUser()
-      .then(user => { if (active) dispatch(setProfile(user)); })
-      .catch(() => {});
-    return () => { active = false; };
-  }, [dispatch]));
+  useFocusEffect(
+    useCallback(() => {
+      let active = true;
+      getCurrentUser()
+        .then(user => {
+          if (active) dispatch(setProfile(user));
+        })
+        .catch(() => {});
+      return () => {
+        active = false;
+      };
+    }, [dispatch]),
+  );
   const { theme } = useTheme();
   const styles = createHomeStyles(theme);
   const navigation = useNavigation();
@@ -30,7 +36,10 @@ const HomeHeader: React.FC = () => {
   return (
     <View style={styles.header}>
       <View style={styles.headerLeft}>
-        <AppText variant="h3">{getGreeting()}{name ? `, ${name}` : ''} 👋</AppText>
+        <AppText variant="h3">
+          {getGreeting()}
+          {name ? `, ${name}` : ''} 👋
+        </AppText>
         <AppText variant="caption" secondary mt={2}>
           {getFormattedDate()} · Let's crush your goals
         </AppText>
@@ -57,7 +66,12 @@ const HomeHeader: React.FC = () => {
           style={styles.avatar}
         >
           <AppText variant="label" bold color="textInverse">
-            {fullName.split(' ').map(part => part[0]).join('').slice(0, 2).toUpperCase() || 'U'}
+            {fullName
+              .split(' ')
+              .map(part => part[0])
+              .join('')
+              .slice(0, 2)
+              .toUpperCase() || 'U'}
           </AppText>
         </Pressable>
       </View>

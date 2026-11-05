@@ -82,7 +82,17 @@ const ChallengesTab: React.FC<ChallengesTabProps> = ({
                 {challenge.progress}%
               </AppText>
             </View>
-            {onJoin && challenge.joinable ? <Pressable accessibilityRole="button" onPress={() => !challenge.joined && onJoin(challenge.id)} style={[styles.browseButton, { marginTop: 12 }]}><AppText variant="buttonSm" primary>{challenge.joined ? 'Joined' : 'Join challenge'}</AppText></Pressable> : null}
+            {onJoin && challenge.joinable ? (
+              <Pressable
+                accessibilityRole="button"
+                onPress={() => !challenge.joined && onJoin(challenge.id)}
+                style={[styles.browseButton, { marginTop: 12 }]}
+              >
+                <AppText variant="buttonSm" primary>
+                  {challenge.joined ? 'Joined' : 'Join challenge'}
+                </AppText>
+              </Pressable>
+            ) : null}
           </View>
         );
       })}
