@@ -11,7 +11,7 @@ export async function authenticatedRequest<T = unknown>(
   method: AuthenticatedRequestMethod,
   path: string,
   body?: unknown,
-  timeout = 15_000,
+  timeout = 30_000,
 ): Promise<T> {
   const { readSession, refreshSession } = await import('./auth');
   let session = await readSession();

@@ -26,7 +26,7 @@ const DailyActivities: React.FC<{ navigation: DailyActivityNavigation }> = ({
     setSyncing(true);
     setSyncMessage('');
     try {
-      const result = await syncRecentHealthData(true);
+      const result = await syncRecentHealthData();
       setSyncMessage(
         result.synced === 0
           ? 'No recent Health Connect records were available to sync.'

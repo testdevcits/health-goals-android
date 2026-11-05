@@ -1,7 +1,6 @@
 import { Platform } from 'react-native';
 import {
   aggregateGroupByDuration,
-  aggregateGroupByPeriod,
   aggregateRecord,
   getGrantedPermissions,
   getSdkStatus,
@@ -69,6 +68,16 @@ const EXERCISE_NAMES = new Map<number, string>([
 ]);
 
 const EMPTY_HOURS = () => Array.from({ length: 24 }, () => 0);
+const IST_OFFSET_MS = 330 * 60 * 1000;
+
+const istDateKey = (time: string | Date) =>
+  new Date(new Date(time).getTime() + IST_OFFSET_MS).toISOString().slice(0, 10);
+
+const shiftDateKey = (key: string, amount: number) => {
+  const date = new Date(`${key}T00:00:00.000Z`);
+  date.setUTCDate(date.getUTCDate() + amount);
+  return date.toISOString().slice(0, 10);
+};
 
 let initializationPromise: Promise<boolean> | null = null;
 
@@ -292,32 +301,31 @@ export const readStepsHistory = async (days = 7): Promise<DailyStepTotal[]> => {
   );
   if (!hasReadPermission(granted, 'Steps')) return [];
 
-  const end = new Date();
-  end.setHours(0, 0, 0, 0);
-  end.setDate(end.getDate() + 1);
-  const start = new Date(end);
-  start.setDate(start.getDate() - days);
+  const today = istDateKey(new Date());
+  const firstDay = shiftDateKey(today, -(days - 1));
+  const dayAfterToday = shiftDateKey(today, 1);
+  const start = new Date(Date.parse(`${firstDay}T00:00:00.000Z`) - IST_OFFSET_MS);
+  const end = new Date(Date.parse(`${dayAfterToday}T00:00:00.000Z`) - IST_OFFSET_MS);
 
-  const grouped = await aggregateGroupByPeriod({
+  const grouped = await aggregateGroupByDuration({
     recordType: 'Steps',
     timeRangeFilter: {
       operator: 'between',
       startTime: start.toISOString(),
       endTime: end.toISOString(),
     },
-    timeRangeSlicer: { period: 'DAYS', length: 1 },
+    // Anchor fixed 24-hour buckets at IST midnight; period buckets otherwise
+    // follow the handset timezone and can disagree with the backend's day key.
+    timeRangeSlicer: { duration: 'DAYS', length: 1 },
   });
   const totals = new Map<string, number>();
   grouped.forEach(group => {
-    const date = new Date(group.startTime);
-    const key = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+    const key = istDateKey(group.startTime);
     totals.set(key, (totals.get(key) || 0) + group.result.COUNT_TOTAL);
   });
 
   return Array.from({ length: days }, (_, index) => {
-    const date = new Date(start);
-    date.setDate(start.getDate() + index);
-    const key = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+    const key = shiftDateKey(firstDay, index);
     return { date: key, value: totals.get(key) || 0, count: 0, unit: 'steps' as const };
   });
 };

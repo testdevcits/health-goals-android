@@ -10,9 +10,7 @@ import { NativeModules } from 'react-native';
 
 const API_PATH = '/api/v1';
 
-const DEFAULT_API_ORIGIN = __DEV__
-  ? 'https://health-goals-backend.vercel.app'
-  : 'https://release-api-not-configured.invalid';
+const DEFAULT_API_ORIGIN = 'https://health-goals-backend.vercel.app';
 
 const configuredApiOrigin = String(
   NativeModules.HealthAppConfig?.apiBaseUrl ?? '',
@@ -23,13 +21,17 @@ const configuredApiOrigin = String(
 
 export const API_BASE_URL = `${configuredApiOrigin || DEFAULT_API_ORIGIN}${API_PATH}`;
 
+if (__DEV__) {
+  console.info('[API] Resolved base URL:', API_BASE_URL);
+}
+
 // ============================================
 // AXIOS INSTANCE
 // ============================================
 
 export const api = axios.create({
   baseURL: API_BASE_URL,
-  timeout: 15000,
+  timeout: 30000,
   headers: {
     Accept: 'application/json',
     'Content-Type': 'application/json',
