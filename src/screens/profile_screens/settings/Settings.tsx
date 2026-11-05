@@ -1,4 +1,4 @@
-import React, { useCallback, useState } from 'react';
+import React, { Suspense, useCallback, useState } from 'react';
 import {
   Alert,
   Linking,
@@ -12,13 +12,7 @@ import { useFocusEffect } from '@react-navigation/native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Check, X } from 'lucide-react-native';
 import BackgroundGeolocation from 'react-native-background-geolocation';
-import {
-  AppHeader,
-  AppSettingsRow,
-  AppText,
-  ConfirmationModal,
-} from '../../../components';
-import type { AppColors } from '../../../theme/colors';
+import { AppHeader, AppSettingsRow, AppText } from '../../../components';
 import { useTheme } from '../../../theme/useTheme';
 import type { ThemeMode } from '../../../theme/ThemeProvider';
 import {
@@ -34,11 +28,11 @@ import {
 } from '../../../services/backgroundHealthSync';
 import { openHealthConnectSettings } from 'react-native-health-connect';
 import createStyles from './styles.Setting';
-import LogoutModal from './components/LogoutModal';
 import { logout } from '../../../services/auth';
 import { navigationRef } from '../../../navigations/AppNavigation';
 import { useAppDispatch } from '../../../store/hooks';
 import { clearProfile } from '../../../store/profileSlice';
+import SettingsSection from './components/SettingsSection';
 
 type SettingsGroup = 'units' | 'language' | 'appearance';
 type SettingsNavigation = {
@@ -67,6 +61,12 @@ const Settings = ({ navigation }: { navigation: SettingsNavigation }) => {
   const { colors, spacing, radius } = theme;
   const styles = createStyles(colors);
   const insets = useSafeAreaInsets();
+  const LogoutModal = React.lazy(
+    () => import('../../../components/LogoutModal'),
+  );
+  const ConfirmationModal = React.lazy(
+    () => import('../../../components/ConfirmationModal'),
+  );
   const [pushNotifications, setPushNotifications] = useState(false);
   const [notificationsLoading, setNotificationsLoading] = useState(true);
   const [emailDigests, setEmailDigests] = useState(true);
@@ -594,62 +594,43 @@ const Settings = ({ navigation }: { navigation: SettingsNavigation }) => {
         </Pressable>
       </Modal>
 
-      <LogoutModal
-        visible={modalVisible}
-        onClose={() => setModalVisible(false)}
-        onSignOut={handleSignOut}
-      />
+      <Suspense fallback={null}>
+        <LogoutModal
+          visible={modalVisible}
+          onClose={() => setModalVisible(false)}
+          onSignOut={handleSignOut}
+        />
+      </Suspense>
 
-      <ConfirmationModal
-        visible={showLocationConfirmation}
-        onClose={() => setShowLocationConfirmation(false)}
-        title="Enable continuous location tracking?"
-        message="Vitality will record your location in the background, including when the app is closed, until you turn this off. Location data currently stays on this device."
-        position="center"
-        closeOnBackdropPress={false}
-        showCloseButton
-      >
-        <View style={{ flexDirection: 'row', gap: 12 }}>
-          <Pressable
-            onPress={() => setShowLocationConfirmation(false)}
-            style={styles.cancelButton}
-            accessibilityRole="button"
-          >
-            <AppText>Cancel</AppText>
-          </Pressable>
+      <Suspense fallback={null}>
+        <ConfirmationModal
+          visible={showLocationConfirmation}
+          onClose={() => setShowLocationConfirmation(false)}
+          title="Enable continuous location tracking?"
+          message="Vitality will record your location in the background, including when the app is closed, until you turn this off. Location data currently stays on this device."
+          position="center"
+          closeOnBackdropPress={false}
+          showCloseButton
+        >
+          <View style={{ flexDirection: 'row', gap: 12 }}>
+            <Pressable
+              onPress={() => setShowLocationConfirmation(false)}
+              style={styles.cancelButton}
+              accessibilityRole="button"
+            >
+              <AppText>Cancel</AppText>
+            </Pressable>
 
-          <Pressable
-            onPress={handleStartLocationTracking}
-            style={styles.continueButton}
-            accessibilityRole="button"
-          >
-            <AppText style={{ color: colors.white }}>Continue</AppText>
-          </Pressable>
-        </View>
-      </ConfirmationModal>
-    </View>
-  );
-};
-
-const SettingsSection = ({
-  title,
-  colors,
-  styles,
-  children,
-}: {
-  title: string;
-  colors: AppColors;
-  styles: ReturnType<typeof createStyles>;
-  children: React.ReactNode;
-}) => {
-  return (
-    <View style={styles.section}>
-      <AppText variant="label" color="textTertiary" style={styles.sectionTitle}>
-        {title?.toUpperCase()}
-      </AppText>
-      <View style={[styles.card, { backgroundColor: colors.surface }]}>
-        {children}
-      </View>
+            <Pressable
+              onPress={handleStartLocationTracking}
+              style={styles.continueButton}
+              accessibilityRole="button"
+            >
+              <AppText style={{ color: colors.white }}>Continue</AppText>
+            </Pressable>
+          </View>
+        </ConfirmationModal>
+      </Suspense>
     </View>
   );
 };

@@ -20,6 +20,7 @@
     "@react-navigation/native-stack": "^7.21.0",
     "@reduxjs/toolkit": "^2.13.0",
     "axios": "^1.20.0",
+    "depcheck": "^1.4.7",
     "knip": "^6.43.0",
     "lucide-react-native": "^1.61.0",
     "react": "19.2.3",

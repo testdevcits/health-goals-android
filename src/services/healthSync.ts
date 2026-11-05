@@ -28,6 +28,8 @@ type SnapshotRecord = {
   startTime: string;
   endTime: string;
   source: string;
+  dataOrigin: string;
+  recordingMethod: 'automatic';
   sourceRecordId: string;
   sourceVersion: number;
   deviceId: string;
@@ -38,6 +40,14 @@ type HealthSyncResult = {
   synced: number;
   created: number;
   duplicates: number;
+};
+
+type DailyStepsUpload = {
+  date: string;
+  steps: number;
+  dataOrigin: string;
+  recordingMethod: 'automatic';
+  deviceId: string;
 };
 
 type SnapshotVersion = {
@@ -145,6 +155,7 @@ function makeDailySnapshots(
       metricType: string;
       value: number;
       unit: string;
+      dataOrigin: string;
       metadata?: Record<string, unknown>;
     }
   >();
@@ -157,15 +168,19 @@ function makeDailySnapshots(
     places: number,
     metadata?: Record<string, unknown>,
     idMetric = metricType,
+    dataOrigin = 'com.vitality',
   ) => {
     if (!Number.isFinite(value) || value < 0) return;
     dailyValues.set(keyOf(date, idMetric), {
       metricType,
       value: roundValue(value, places),
       unit,
+      dataOrigin,
       ...(metadata ? { metadata } : {}),
     });
   };
+  const originForGroup = (row?: AggregationGroup) =>
+    [...(row?.result.dataOrigins || [])].sort()[0] || 'com.vitality';
   const groupByDate = (rows: AggregationGroup[]) => {
     const map = new Map<string, AggregationGroup>();
     rows.forEach(row => map.set(istDay(row.startTime), row));
@@ -225,6 +240,9 @@ function makeDailySnapshots(
         row ? metric.value(row) : 0,
         metric.unit,
         metric.places,
+        undefined,
+        metric.metricType,
+        originForGroup(row),
       );
     });
   });
@@ -234,9 +252,18 @@ function makeDailySnapshots(
     dates.forEach(date => {
       const row = rows.get(date);
       if (row && row.result.MEASUREMENTS_COUNT > 0) {
-        put(date, 'heart_rate', row.result.BPM_AVG, 'bpm', 1, {
-          aggregation: 'daily_average',
-        });
+        put(
+          date,
+          'heart_rate',
+          row.result.BPM_AVG,
+          'bpm',
+          1,
+          {
+            aggregation: 'daily_average',
+          },
+          'heart_rate',
+          originForGroup(row),
+        );
       }
     });
   }
@@ -246,9 +273,18 @@ function makeDailySnapshots(
     dates.forEach(date => {
       const row = rows.get(date);
       if (row)
-        put(date, 'weight', row.result.WEIGHT_AVG.inKilograms, 'kg', 3, {
-          aggregation: 'daily_average',
-        });
+        put(
+          date,
+          'weight',
+          row.result.WEIGHT_AVG.inKilograms,
+          'kg',
+          3,
+          {
+            aggregation: 'daily_average',
+          },
+          'weight',
+          originForGroup(row),
+        );
     });
   }
 
@@ -265,6 +301,7 @@ function makeDailySnapshots(
         1,
         { aggregation: 'daily_average', component: 'systolic' },
         'blood_pressure_systolic',
+        originForGroup(row),
       );
       put(
         date,
@@ -274,25 +311,45 @@ function makeDailySnapshots(
         1,
         { aggregation: 'daily_average', component: 'diastolic' },
         'blood_pressure_diastolic',
+        originForGroup(row),
       );
     });
   }
 
-  const oxygenByDate = new Map<string, { total: number; count: number }>();
+  const oxygenByDate = new Map<
+    string,
+    { total: number; count: number; dataOrigins: Set<string> }
+  >();
   oxygenRecords.forEach(record => {
     const date = istDay(record.time);
     const value = Number(record.percentage);
     if (!dates.includes(date) || !Number.isFinite(value) || value < 0) return;
     const normalized = value <= 1 ? value * 100 : value;
-    const current = oxygenByDate.get(date) || { total: 0, count: 0 };
+    const current = oxygenByDate.get(date) || {
+      total: 0,
+      count: 0,
+      dataOrigins: new Set<string>(),
+    };
     current.total += normalized;
     current.count += 1;
+    if (typeof record.metadata?.dataOrigin === 'string') {
+      current.dataOrigins.add(record.metadata.dataOrigin);
+    }
     oxygenByDate.set(date, current);
   });
   oxygenByDate.forEach((entry, date) => {
-    put(date, 'oxygen_saturation', entry.total / entry.count, '%', 1, {
-      aggregation: 'daily_average',
-    });
+    put(
+      date,
+      'oxygen_saturation',
+      entry.total / entry.count,
+      '%',
+      1,
+      {
+        aggregation: 'daily_average',
+      },
+      'oxygen_saturation',
+      [...entry.dataOrigins].sort()[0] || 'com.vitality',
+    );
   });
 
   return Array.from(dailyValues.entries()).map(([key, daily]) => {
@@ -307,6 +364,8 @@ function makeDailySnapshots(
       startTime: new Date(start).toISOString(),
       endTime: new Date(start + DAY_MS).toISOString(),
       source: SOURCE,
+      dataOrigin: daily.dataOrigin,
+      recordingMethod: 'automatic',
       sourceRecordId: `health_connect:${metricId}:ist:${date}`,
       sourceVersion: 1,
       deviceId,
@@ -314,6 +373,7 @@ function makeDailySnapshots(
         aggregation: 'daily',
         timezone: 'Asia/Kolkata',
         ...(daily.metadata || {}),
+        origin: daily.dataOrigin,
       },
     } satisfies SnapshotRecord;
   });
@@ -351,6 +411,8 @@ async function applySnapshotVersions(records: SnapshotRecord[]) {
       metricType: record.metricType,
       value: record.value,
       unit: record.unit,
+      dataOrigin: record.dataOrigin,
+      recordingMethod: record.recordingMethod,
       recordedAt: record.recordedAt,
       metadata: record.metadata,
     });
@@ -402,9 +464,30 @@ async function collectDailySnapshots(deviceId: string) {
   const groups = Object.fromEntries(
     aggregateTypes.map((type, index) => [type, aggregateResults[index]]),
   ) as Record<string, AggregationGroup[]>;
-  return applySnapshotVersions(
+  const records = await applySnapshotVersions(
     makeDailySnapshots(deviceId, range.dates, granted, groups, oxygenRecords),
   );
+  const stepsByDate = new Map(
+    (groups.Steps || []).map(group => [istDay(group.startTime), group]),
+  );
+  const dailySteps = hasReadPermission(granted, 'Steps')
+    ? range.dates.map(date => {
+        const group = stepsByDate.get(date);
+        const steps = Number(group?.result.COUNT_TOTAL ?? 0);
+        if (!Number.isSafeInteger(steps) || steps < 0) {
+          throw new Error(`Invalid Health Connect step total for ${date}.`);
+        }
+        const dataOrigins = group?.result.dataOrigins || [];
+        return {
+          date,
+          steps,
+          dataOrigin: [...dataOrigins].sort()[0] || 'com.vitality',
+          recordingMethod: 'automatic' as const,
+          deviceId,
+        };
+      })
+    : [];
+  return { records, dailySteps };
 }
 
 async function uploadHealthBatch(batch: SnapshotRecord[]) {
@@ -425,12 +508,18 @@ async function uploadHealthBatch(batch: SnapshotRecord[]) {
   }
 }
 
+async function uploadDailySteps(records: DailyStepsUpload[]) {
+  for (const record of records) {
+    await authenticatedRequest('POST', '/health/steps/daily', record);
+  }
+}
+
 export function syncRecentHealthData(): Promise<HealthSyncResult> {
   if (activeSync) return activeSync;
   activeSync = (async () => {
     if (!(await ensureHealthConnectInitialized())) return emptySyncResult();
     const deviceId = await ensureHealthConnectDevice();
-    const records = await collectDailySnapshots(deviceId);
+    const { records, dailySteps } = await collectDailySnapshots(deviceId);
     let synced = 0;
     let created = 0;
     let duplicates = 0;
@@ -441,6 +530,7 @@ export function syncRecentHealthData(): Promise<HealthSyncResult> {
       created += Number(result.created) || 0;
       duplicates += Number(result.duplicates) || 0;
     }
+    await uploadDailySteps(dailySteps);
     return { synced, created, duplicates };
   })().finally(() => {
     activeSync = null;

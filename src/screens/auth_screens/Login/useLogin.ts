@@ -1,5 +1,5 @@
 import { TextInput, Alert } from 'react-native';
-import React, { useRef, useState } from 'react';
+import { useRef, useState } from 'react';
 import { GOOGLE_WEB_CLIENT_ID } from '../../../services/googleConfig';
 import { apiErrorMessage } from '../../../services/api';
 import { showAppToast } from '../../../utils/appToast';
@@ -56,8 +56,8 @@ const useLogin = ({ navigation }: any) => {
   const handleGoogleSignIn = async () => {
     if (!GOOGLE_WEB_CLIENT_ID) {
       Alert.alert(
-        'Google sign-in setup needed',
-        'Add the Google Web OAuth client ID in src/services/googleConfig.ts and GOOGLE_CLIENT_ID in the backend environment.',
+        'Google sign-in unavailable',
+        'Google sign-in is not configured for this build.',
       );
       return;
     }

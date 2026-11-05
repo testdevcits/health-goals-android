@@ -1,5 +1,5 @@
 // src/screens/ForgotPassword/ForgotPasswordScreen.tsx
-import React, { useState } from 'react';
+import React from 'react';
 import {
   View,
   Text,
@@ -7,93 +7,42 @@ import {
   TouchableOpacity,
   KeyboardAvoidingView,
   Platform,
-  Alert,
 } from 'react-native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../../../navigations/AppNavigation';
 import { useTheme } from '../../../theme/useTheme';
 import { AppText, AppInput, AppButton } from '../../../components';
 import { createForgotPasswordStyles } from './styles.ForgotPassword';
-import { requestPasswordReset, resetPassword } from '../../../services/auth';
-import { apiErrorMessage } from '../../../services/api';
+
+import useForgotPassword from './useForgotPassword';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'ForgotPassword'>;
-
-const validateEmail = (v: string): string => {
-  if (!v.trim()) return 'Email is required';
-  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v.trim()))
-    return 'Enter a valid email address';
-  return '';
-};
 
 const ForgotPasswordScreen: React.FC<Props> = ({ navigation }) => {
   const { theme } = useTheme();
   const styles = createForgotPasswordStyles(theme);
 
-  const [email, setEmail] = useState('');
-  const [error, setError] = useState('');
-  const [loading, setLoading] = useState(false);
-  const [sent, setSent] = useState(false);
-  const [challengeId, setChallengeId] = useState('');
-  const [developmentCode, setDevelopmentCode] = useState(false);
-  const [otp, setOtp] = useState('');
-  const [password, setPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
+  const {
+    email,
+    setEmail,
+    error,
+    setError,
+    loading,
 
-  const handleSend = async () => {
-    const err = validateEmail(email);
-    setError(err);
-    if (err) return;
+    sent,
 
-    setLoading(true);
-    try {
-      const challenge = await requestPasswordReset(email);
-      setChallengeId(challenge.challengeId || '');
-      setDevelopmentCode(challenge.deliveryMode === 'development');
-      setSent(true);
-    } catch (e) {
-      Alert.alert('Could not request reset', apiErrorMessage(e));
-    } finally {
-      setLoading(false);
-    }
-  };
+    developmentCode,
 
-  const handleReset = async () => {
-    if (!/^\d{6}$/.test(otp)) {
-      Alert.alert(
-        'Check the code',
-        'Enter the 6-digit reset code from your email.',
-      );
-      return;
-    }
-    if (password.length < 8) {
-      Alert.alert(
-        'Choose a stronger password',
-        'Password must be at least 8 characters.',
-      );
-      return;
-    }
-    if (password !== confirmPassword) {
-      Alert.alert(
-        'Passwords do not match',
-        'Re-enter the same password in both fields.',
-      );
-      return;
-    }
-    setLoading(true);
-    try {
-      await resetPassword(challengeId, otp, password);
-      Alert.alert(
-        'Password updated',
-        'You can now sign in with your new password.',
-        [{ text: 'Sign in', onPress: () => navigation.navigate('Login') }],
-      );
-    } catch (e) {
-      Alert.alert('Password reset failed', apiErrorMessage(e));
-    } finally {
-      setLoading(false);
-    }
-  };
+    otp,
+    setOtp,
+    password,
+    setPassword,
+    confirmPassword,
+    setConfirmPassword,
+    handleSend,
+    handleReset,
+    validateEmail,
+  } = useForgotPassword({ navigation });
 
   return (
     <KeyboardAvoidingView

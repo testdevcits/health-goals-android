@@ -1,12 +1,12 @@
-import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
+import { Pressable, ScrollView, View } from 'react-native';
 import React from 'react';
 import { Program } from '../discover/const';
 import { AppHeader, AppText } from '../../../components';
 import { spacing } from '../../../theme/spacing';
 import { Check } from 'lucide-react-native';
-import { radius } from '../../../theme/radius';
 import { useTheme } from '../../../theme/useTheme';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import styles from './styles.ProgramDetails';
 
 const ProgramDetail = ({
   program,
@@ -26,8 +26,8 @@ const ProgramDetail = ({
   return (
     <>
       <AppHeader
-        title={program.title}
-        subtitle={`${program.duration}-day starter`}
+        title={program?.title}
+        subtitle={`${program?.duration}-day starter`}
         onBackPress={() => setSelectedProgram(null)}
       />
 
@@ -38,25 +38,25 @@ const ProgramDetail = ({
           { paddingBottom: insets.bottom + spacing.xl },
         ]}
       >
-        <View style={[styles.detailHero, { backgroundColor: program.color }]}>
+        <View style={[styles.detailHero, { backgroundColor: program?.color }]}>
           <AppText variant="display" color="white">
-            {program.emoji}
+            {program?.emoji}
           </AppText>
 
           <AppText variant="h2" color="white">
-            {program.title}
+            {program?.title}
           </AppText>
 
           <AppText variant="body2" color="white">
-            {program.description}
+            {program?.description}
           </AppText>
         </View>
 
         <View style={styles.statsRow}>
           {[
-            { value: program.duration, label: 'Days' },
-            { value: program.daily, label: 'Per Day' },
-            { value: program.level, label: 'Level' },
+            { value: program?.duration, label: 'Days' },
+            { value: program?.daily, label: 'Per Day' },
+            { value: program?.level, label: 'Level' },
           ].map(stat => (
             <View
               key={stat.label}
@@ -85,7 +85,7 @@ const ProgramDetail = ({
             What is included
           </AppText>
 
-          {program.included.map(item => (
+          {program?.included.map(item => (
             <View key={item} style={styles.includedRow}>
               <Check size={17} color={colors.primary} />
               <AppText variant="body2" style={styles.includedText}>
@@ -101,7 +101,7 @@ const ProgramDetail = ({
           accessibilityRole="button"
         >
           <AppText variant="button" color="white" center>
-            {startedPrograms.includes(program.id)
+            {startedPrograms.includes(program?.id)
               ? 'Continue Program'
               : 'Start Program'}
           </AppText>
@@ -122,63 +122,3 @@ const ProgramDetail = ({
 };
 
 export default ProgramDetail;
-
-const styles = StyleSheet.create({
-  detailContent: {
-    padding: spacing.base,
-  },
-
-  detailHero: {
-    borderRadius: radius.xl,
-    padding: spacing.xl,
-    minHeight: 180,
-    justifyContent: 'center',
-    gap: spacing.xs,
-  },
-  statsRow: {
-    flexDirection: 'row',
-    gap: spacing.sm,
-    marginVertical: spacing.md,
-  },
-
-  statCard: {
-    flex: 1,
-    paddingVertical: spacing.md,
-    borderRadius: radius.md,
-    alignItems: 'center',
-  },
-  includedCard: {
-    padding: spacing.base,
-    borderRadius: radius.lg,
-    marginBottom: spacing.xl,
-    elevation: 2,
-    shadowOpacity: 0.04,
-    shadowRadius: 8,
-    shadowOffset: { width: 0, height: 3 },
-  },
-
-  includedRow: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-    gap: spacing.sm,
-    marginBottom: spacing.md,
-  },
-
-  includedText: {
-    flex: 1,
-  },
-
-  startButton: {
-    minHeight: 48,
-    borderRadius: radius.md,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-
-  laterButton: {
-    minHeight: 48,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginTop: spacing.sm,
-  },
-});

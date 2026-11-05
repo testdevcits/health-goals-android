@@ -10,6 +10,7 @@ import {
 } from '../../../components';
 import { useTheme } from '../../../theme/useTheme';
 import { createOnboardingStyles } from './styles.Onboarding';
+import { featureList, goals, workoutStyles } from './const';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Onboarding'>;
 

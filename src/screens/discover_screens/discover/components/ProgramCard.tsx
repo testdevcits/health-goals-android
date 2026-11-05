@@ -16,14 +16,14 @@ const ProgramCard = ({
   const { colors } = theme;
   return (
     <Pressable
-      key={program.id}
+      key={program?.id}
       onPress={() => openProgram(program)}
-      style={[styles.programCard, { backgroundColor: program.color }]}
+      style={[styles.programCard, { backgroundColor: program?.color }]}
       accessibilityRole="button"
-      accessibilityLabel={`Open ${program.title}`}
+      accessibilityLabel={`Open ${program?.title}`}
     >
       <AppText variant="subtitle1" color="white" bold>
-        {program.emoji} {program.title}
+        {program?.emoji} {program?.title}
       </AppText>
 
       <AppText
@@ -31,12 +31,12 @@ const ProgramCard = ({
         color="white"
         style={styles.programDescription}
       >
-        {program.subtitle}
+        {program?.subtitle}
       </AppText>
 
       <View style={[styles.programButton, { backgroundColor: colors.surface }]}>
         <AppText variant="buttonSm" style={{ color: colors.textPrimary }}>
-          {program.button}
+          {program?.button}
         </AppText>
       </View>
     </Pressable>

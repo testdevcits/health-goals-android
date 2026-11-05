@@ -55,6 +55,11 @@ export const createHomeStyles = (theme: AppTheme) => {
       backgroundColor: colors.primary,
       alignItems: 'center',
       justifyContent: 'center',
+      overflow: 'hidden',
+    },
+    avatarImage: {
+      width: '100%',
+      height: '100%',
     },
 
     // ── Notification Banner ───────────────────────

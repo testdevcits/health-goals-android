@@ -1,7 +1,12 @@
-const goals = ['Lose weight', 'Build muscle', 'Improve stamina', 'Stay active'];
-const workoutStyles = ['Home workout', 'Gym', 'Outdoor', 'Yoga'];
+export const goals = [
+  'Lose weight',
+  'Build muscle',
+  'Improve stamina',
+  'Stay active',
+];
+export const workoutStyles = ['Home workout', 'Gym', 'Outdoor', 'Yoga'];
 
-const featureList = [
+export const featureList = [
   {
     icon: '📈',
     title: 'Track progress',

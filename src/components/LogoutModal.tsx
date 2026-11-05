@@ -3,9 +3,9 @@ import { Modal, Pressable, StyleSheet, View } from 'react-native';
 import { CircleAlert } from 'lucide-react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { AppText } from '../../../../components';
-import type { AppTheme } from '../../../../theme';
-import { useTheme } from '../../../../theme/useTheme';
+import { AppText } from '.';
+import type { AppTheme } from '../theme';
+import { useTheme } from '../theme/useTheme';
 
 type LogoutModalProps = {
   visible: boolean;

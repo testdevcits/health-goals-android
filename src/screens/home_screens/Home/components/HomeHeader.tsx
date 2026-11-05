@@ -1,5 +1,5 @@
-import React from 'react';
-import { Pressable, TouchableOpacity, View } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { Image, Pressable, TouchableOpacity, View } from 'react-native';
 import { AppText } from '../../../../components';
 import { useTheme } from '../../../../theme/useTheme';
 import { getFormattedDate, getGreeting } from '../const';
@@ -16,6 +16,11 @@ const HomeHeader: React.FC = () => {
   const profile = useAppSelector(state => state.profile.user);
   const fullName = profile?.name ?? '';
   const name = fullName.split(' ')[0] || '';
+  const [avatarLoadFailed, setAvatarLoadFailed] = useState(false);
+  useEffect(() => {
+    setAvatarLoadFailed(false);
+  }, [profile?.profileImageUrl]);
+
   useFocusEffect(
     useCallback(() => {
       let active = true;
@@ -64,15 +69,27 @@ const HomeHeader: React.FC = () => {
         <Pressable
           onPress={() => navigation.navigate('Profile' as never)}
           style={styles.avatar}
+          accessibilityRole="button"
+          accessibilityLabel={`Profile${fullName ? ` for ${fullName}` : ''}`}
         >
-          <AppText variant="label" bold color="textInverse">
-            {fullName
-              .split(' ')
-              .map(part => part[0])
-              .join('')
-              .slice(0, 2)
-              .toUpperCase() || 'U'}
-          </AppText>
+          {profile?.profileImageUrl && !avatarLoadFailed ? (
+            <Image
+              source={{ uri: profile.profileImageUrl }}
+              style={styles.avatarImage}
+              resizeMode="cover"
+              accessibilityIgnoresInvertColors
+              onError={() => setAvatarLoadFailed(true)}
+            />
+          ) : (
+            <AppText variant="label" bold color="textInverse">
+              {fullName
+                .split(' ')
+                .map(part => part[0])
+                .join('')
+                .slice(0, 2)
+                .toUpperCase() || 'U'}
+            </AppText>
+          )}
         </Pressable>
       </View>
     </View>

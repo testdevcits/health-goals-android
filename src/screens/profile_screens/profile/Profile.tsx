@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { Suspense, useMemo, useState } from 'react';
 import {
   Image,
   View,
@@ -11,7 +11,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Bell, ChevronRight } from 'lucide-react-native';
 
 import { useTheme } from '../../../theme/useTheme';
-import { AppText } from '../../../components';
+import { AppSettingsRow, AppText } from '../../../components';
 import { spacing } from '../../../theme/spacing';
 import createStyles from './styles.Profile';
 import { getProfileMenuItems } from './conts';
@@ -22,8 +22,10 @@ import { useIsFocused } from '@react-navigation/native';
 import { authenticatedRequest } from '../../../services/authenticatedApi';
 import { getCurrentUser } from '../../../services/profile';
 import { useAppDispatch, useAppSelector } from '../../../store/hooks';
-import { setProfile } from '../../../store/profileSlice';
+import { clearProfile, setProfile } from '../../../store/profileSlice';
 import { AppEmptyState, AppErrorView, AppLoader } from '../../../components';
+import { navigationRef } from '../../../navigations/AppNavigation';
+import { logout } from '../../../services/auth';
 
 type ProfileNavigationProp = NativeStackNavigationProp<RootStackParamList>;
 
@@ -32,6 +34,10 @@ const ProfileScreen: React.FC = () => {
   const { colors } = theme;
   const styles = createStyles(colors);
   const insets = useSafeAreaInsets();
+  const LogoutModal = React.lazy(
+    () => import('../../../components/LogoutModal'),
+  );
+
   const navigation = useNavigation<ProfileNavigationProp>();
   const menuItems = useMemo(() => getProfileMenuItems(colors), [colors]);
   const dispatch = useAppDispatch();
@@ -119,6 +125,17 @@ const ProfileScreen: React.FC = () => {
         navigation.navigate('HelpSupport');
         break;
     }
+  };
+  const [modalVisible, setModalVisible] = React.useState(false);
+  const handleSignOut = async () => {
+    try {
+      await logout();
+    } catch {
+      /* Clear the local session even while offline. */
+    }
+    dispatch(clearProfile());
+    setModalVisible(false);
+    navigationRef.resetRoot({ index: 0, routes: [{ name: 'Login' }] });
   };
 
   return (
@@ -291,9 +308,23 @@ const ProfileScreen: React.FC = () => {
                 </Pressable>
               ))}
             </View>
+            <AppSettingsRow
+              icon="🚪"
+              title="Sign Out"
+              value=""
+              onPress={() => setModalVisible(true)}
+              showDivider={false}
+            />
           </>
         )}
       </ScrollView>
+      <Suspense fallback={null}>
+        <LogoutModal
+          visible={modalVisible}
+          onClose={() => setModalVisible(false)}
+          onSignOut={handleSignOut}
+        />
+      </Suspense>
     </View>
   );
 };

@@ -17,8 +17,7 @@ class HealthAppConfigModule(context: ReactApplicationContext) : ReactContextBase
   override fun getName() = "HealthAppConfig"
   override fun getConstants(): MutableMap<String, Any> = hashMapOf(
     "apiBaseUrl" to BuildConfig.HEALTH_API_BASE_URL,
-    "chatSocketUrl" to BuildConfig.HEALTH_CHAT_SOCKET_URL,
-    "googleWebClientId" to BuildConfig.GOOGLE_WEB_CLIENT_ID
+    "chatSocketUrl" to BuildConfig.HEALTH_CHAT_SOCKET_URL
   )
 
   @ReactMethod

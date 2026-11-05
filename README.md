@@ -13,15 +13,9 @@ cd android
 
 The backend listens on port `8000`; allow inbound connections to that port on the computer firewall if needed. The app appends `/api/v1` to the supplied origin.
 
-Group chat uses Socket.IO. Local debug builds use the same origin as the API by default. Release builds require the HTTPS URL of the long-running chat server with `-PHEALTH_CHAT_SOCKET_URL=https://your-chat-service-host`.
+Group chat uses Socket.IO. Local debug builds use the same origin as the API by default. Release builds can be built without chat configuration; group chat will be unavailable until a Socket.IO server is configured with `-PHEALTH_CHAT_SOCKET_URL=https://your-chat-service-host`.
 
-Google sign-in setup:
-
-1. Create OAuth credentials in Google Cloud for the Android app (`com.vitality`) using the debug/release signing SHA-1 fingerprints, and create a Web application OAuth client ID.
-2. Set the Web client ID as `GOOGLE_CLIENT_ID` in the backend environment and pass it as `-PGOOGLE_WEB_CLIENT_ID=<web-client-id>` to Gradle.
-3. Build a release with `./gradlew assembleRelease -PHEALTH_API_BASE_URL=https://<deployed-api-host> -PHEALTH_CHAT_SOCKET_URL=https://<long-running-chat-host> -PGOOGLE_WEB_CLIENT_ID=<web-client-id>`.
-
-Release builds require HTTPS API and chat server origins plus a Google Web client ID. The admin dashboard continues to use its existing email OTP flow.
+Google sign-in is currently unavailable because OAuth client configuration has been removed. Email/password sign-in remains available.
 
 ## Health Connect and background sync
 
@@ -129,11 +123,11 @@ To learn more about React Native, take a look at the following resources:
 
 # Android production configuration
 
-Debug builds use `http://10.0.2.2:8000` for the local Android emulator. Build a release with the deployed HTTPS API origin and Google OAuth web client ID supplied as Gradle properties:
+Debug builds use `http://10.0.2.2:8000` for the local Android emulator. Build a release:
 
 ```sh
 cd android
-./gradlew assembleRelease -PHEALTH_API_BASE_URL=https://api.example.com -PGOOGLE_WEB_CLIENT_ID=your-web-client-id
+./gradlew assembleRelease
 ```
 
-The same Google OAuth web client ID must be set as `GOOGLE_CLIENT_ID` in backend `.env`. Release builds fail if the HTTPS API origin or OAuth client ID is missing. Do not place Cloudinary credentials in Android configuration.
+The API origin defaults to `https://health-goals-backend.vercel.app`; use `-PHEALTH_API_BASE_URL=https://api.example.com` to override it. To enable group chat, also supply `-PHEALTH_CHAT_SOCKET_URL=https://your-chat-service-host`. Do not place Cloudinary credentials in Android configuration.

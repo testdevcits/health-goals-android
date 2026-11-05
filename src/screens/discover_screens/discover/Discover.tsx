@@ -22,7 +22,7 @@ const DiscoverScreen: React.FC = () => {
 
   const startProgram = (program: Program) => {
     setStartedPrograms(previous =>
-      previous.includes(program.id) ? previous : [...previous, program.id],
+      previous.includes(program?.id) ? previous : [...previous, program?.id],
     );
     setSelectedProgram(null);
   };
@@ -53,7 +53,7 @@ const DiscoverScreen: React.FC = () => {
 
         {programs.map(program => (
           <ProgramCard
-            key={program.id}
+            key={program?.id}
             program={program}
             openProgram={openProgram}
           />
