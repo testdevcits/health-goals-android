@@ -20,6 +20,16 @@ const LAST_SYNC_STORE_SERVICE = 'com.vitality.health-sync-watermark';
 const MAX_BATCH_SIZE = 100;
 const SNAPSHOT_WINDOW_DAYS = 7;
 const MIN_SYNC_INTERVAL_MS = 5 * 60 * 1000;
+const METRIC_BOUNDS: Record<string, { min: number; max: number }> = {
+  distance: { min: 0, max: 500 },
+  calories: { min: 0, max: 50_000 },
+  sleep: { min: 0, max: 1440 },
+  heart_rate: { min: 20, max: 250 },
+  weight: { min: 1, max: 700 },
+  blood_pressure: { min: 1, max: 400 },
+  oxygen_saturation: { min: 50, max: 100 },
+  workout: { min: 0, max: 1440 },
+};
 
 let activeSync: Promise<HealthSyncResult> | null = null;
 
@@ -252,9 +262,12 @@ function makeDailySnapshots(
     dataOrigin = 'com.vitality',
   ) => {
     if (!Number.isFinite(value) || value < 0) return;
+    const normalizedValue = roundValue(value, places);
+    const bounds = METRIC_BOUNDS[metricType];
+    if (bounds && (normalizedValue < bounds.min || normalizedValue > bounds.max)) return;
     dailyValues.set(keyOf(date, idMetric), {
       metricType,
-      value: roundValue(value, places),
+      value: normalizedValue,
       unit,
       dataOrigin,
       ...(metadata ? { metadata } : {}),
@@ -544,7 +557,7 @@ async function collectDailySnapshots(deviceId: string) {
     ? range.dates.map(date => {
         const group = stepsByDate.get(date);
         const steps = Number(group?.result.COUNT_TOTAL ?? 0);
-        if (!Number.isSafeInteger(steps) || steps < 0) {
+        if (!Number.isSafeInteger(steps) || steps < 0 || steps > 200_000) {
           throw new Error(`Invalid Health Connect step total for ${date}.`);
         }
         const dataOrigins = group?.result.dataOrigins || [];
@@ -603,7 +616,7 @@ async function uploadHealthBatch(batch: SnapshotRecord[]) {
       return await authenticatedRequest<{
         created?: number;
         duplicates?: number;
-      }>('POST', '/health/sync', { records: batch }, 60_000);
+      }>('POST', '/health/sync', { records: batch, includeRecords: false }, 60_000);
     } catch (error) {
       if (attempt > 0 || !isRetryableNetworkFailure(error)) throw error;
       await new Promise<void>(resolve => setTimeout(resolve, 1000));
