@@ -3,6 +3,7 @@ import { api } from './api';
 import type { UserProfile } from './profile';
 
 const KEYCHAIN_SERVICE = 'com.vitality.auth';
+let refreshInFlight: Promise<AuthTokens | null> | null = null;
 
 export type AuthTokens = {
   accessToken: string;
@@ -129,6 +130,15 @@ export async function restoreSession(): Promise<AuthTokens | null> {
 }
 
 export async function refreshSession(): Promise<AuthTokens | null> {
+  if (refreshInFlight) return refreshInFlight;
+
+  refreshInFlight = refreshSessionOnce().finally(() => {
+    refreshInFlight = null;
+  });
+  return refreshInFlight;
+}
+
+async function refreshSessionOnce(): Promise<AuthTokens | null> {
   const session = await readSession();
   if (!session?.refreshToken) return null;
   try {

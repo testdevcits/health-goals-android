@@ -126,6 +126,8 @@ The Android app requests read permissions for these Health Connect record types 
 
 Current sync aggregates the recent 7 IST dates. Daily steps go to `POST /health/steps/daily` as compact objects. Other daily summaries and actual workout sessions go to `/health/sync` in chunks of at most 100 records. Unchanged snapshots are skipped, and successful sync runs are throttled to one every five minutes per user:
 
+An explicit tap on **Sync latest data** bypasses that five-minute throttle so the user can request an immediate upload. Automatic/background sync keeps the throttle. If automatic upload fails, Daily Activity shows the failure; inspect the HTTP log to identify whether `POST /auth/me/device`, `POST /devices`, `POST /health/steps/daily`, or `POST /health/sync` returned the error. Device registration happens before health uploads, so a device-registration failure prevents the health POSTs from being attempted. Protected requests refresh the access token on `401`; concurrent requests share one refresh operation to avoid racing the rotating refresh token.
+
 ```http
 POST /api/v1/health/sync
 Authorization: Bearer <accessToken>
@@ -167,6 +169,8 @@ Other health reads:
 For clients that aggregate Health Connect steps by day, the backend also accepts one compact object via `POST /health/steps/daily` (Bearer auth). Example: `{"date":"2026-11-05","steps":6420,"dataOrigin":"com.example.health","recordingMethod":"automatic","deviceId":"android-install-id"}`. The backend replaces the same user's date/origin total on repeat calls. Android must call this endpoint instead of `/health/sync` for daily aggregated steps; detailed sync remains available for other metrics. The backend cannot read or aggregate Health Connect records by itself; Android must calculate the total and send it.
 
 The app fingerprints snapshots locally and uploads only newly added or changed records. It still reads and aggregates a rolling 7-day window to detect corrections. The backend does not currently expose a Health Connect change-token endpoint.
+
+Admin reads synced records with `GET /admin/users/:id/steps` for date-wise step totals, `GET /admin/records?userId=<userId>&metricType=workout` for the user's raw workout records, and `GET /admin/users/:id/record-chart?metricType=workout` for a daily chart summary. Use `/admin/records` for detailed entries such as activity type, interval, source and values. These endpoints require an admin bearer token. A health upload succeeding means the record was stored; daily points are settled separately.
 | `GET /health/history?metricType=steps&from=2026-11-01&to=2026-11-03` | Daily metric history; both dates required, interpreted using India Standard Time. |
 | `GET /health/summary` | Aggregate values for available records. |
 | `GET /health/dashboard` | Dashboard-shaped health data. |

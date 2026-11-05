@@ -10,6 +10,7 @@ type HealthDataState = {
   loading: boolean;
   data: TodayHealthData | null;
   error: string | null;
+  syncError: string | null;
   syncVersion: number;
 };
 
@@ -22,13 +23,14 @@ export const useTodayHealthData = (
     loading: true,
     data: null,
     error: null,
+    syncError: null,
     syncVersion: 0,
   });
 
   useEffect(() => {
     if (!isFocused) return;
     let isActive = true;
-    setState(previous => ({ ...previous, loading: true, error: null }));
+    setState(previous => ({ ...previous, loading: true, error: null, syncError: null }));
 
     readTodayHealthData(includeHourlyData)
       .then(data => {
@@ -44,6 +46,15 @@ export const useTodayHealthData = (
             })
             .catch(error => {
               console.warn('Could not sync Health Connect data:', error);
+              if (isActive) {
+                setState(previous => ({
+                  ...previous,
+                  syncError:
+                    error instanceof Error
+                      ? error.message
+                      : 'Could not send health data to the server.',
+                }));
+              }
             });
         }
         if (isActive) {

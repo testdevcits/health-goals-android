@@ -28,12 +28,12 @@ const DailyActivities: React.FC<{ navigation: DailyActivityNavigation }> = ({
   const [refreshKey, setRefreshKey] = React.useState(0);
   const [syncing, setSyncing] = React.useState(false);
   const [syncMessage, setSyncMessage] = React.useState('');
-  const { data, error, loading } = useTodayHealthData(true, refreshKey);
+  const { data, error, loading, syncError } = useTodayHealthData(true, refreshKey);
   const syncNow = async () => {
     setSyncing(true);
     setSyncMessage('');
     try {
-      const result = await syncRecentHealthData();
+      const result = await syncRecentHealthData({ force: true });
       setSyncMessage(
         result.throttled
           ? 'Health data was synced recently. Try again in a few minutes.'
@@ -110,13 +110,13 @@ const DailyActivities: React.FC<{ navigation: DailyActivityNavigation }> = ({
             }}
             loading={syncing}
           />
-          {syncMessage ? (
+          {syncMessage || syncError ? (
             <AppText
               variant="caption"
               secondary
               style={{ marginTop: theme.spacing.xs }}
             >
-              {syncMessage}
+              {syncMessage || `Automatic sync failed: ${syncError}`}
             </AppText>
           ) : null}
         </View>

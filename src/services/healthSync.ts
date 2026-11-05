@@ -32,6 +32,7 @@ const METRIC_BOUNDS: Record<string, { min: number; max: number }> = {
 };
 
 let activeSync: Promise<HealthSyncResult> | null = null;
+let activeSyncForced = false;
 
 type SnapshotRecord = {
   metricType: string;
@@ -651,14 +652,20 @@ async function uploadDailySteps(records: DailyStepsUpload[]) {
   return result;
 }
 
-export function syncRecentHealthData(): Promise<HealthSyncResult> {
-  if (activeSync) return activeSync;
+export function syncRecentHealthData(options: { force?: boolean } = {}): Promise<HealthSyncResult> {
+  if (activeSync) {
+    if (options.force && !activeSyncForced) {
+      return activeSync.then(() => syncRecentHealthData(options));
+    }
+    return activeSync;
+  }
+  activeSyncForced = Boolean(options.force);
   activeSync = (async () => {
     if (!(await ensureHealthConnectInitialized())) return emptySyncResult();
     const session = await readSession();
     const userId = session?.user?.id;
     if (!userId) throw new Error('Please sign in to sync health data.');
-    if (Date.now() - await lastSuccessfulSyncAt(userId) < MIN_SYNC_INTERVAL_MS) {
+    if (!options.force && Date.now() - await lastSuccessfulSyncAt(userId) < MIN_SYNC_INTERVAL_MS) {
       return { ...emptySyncResult(), throttled: true };
     }
     const deviceId = await ensureHealthConnectDevice();
@@ -682,6 +689,7 @@ export function syncRecentHealthData(): Promise<HealthSyncResult> {
     return { synced, created, duplicates };
   })().finally(() => {
     activeSync = null;
+    activeSyncForced = false;
   });
   return activeSync;
 }
