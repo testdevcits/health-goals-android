@@ -191,13 +191,6 @@ function makeDailySnapshots(
   ) as Record<string, Map<string, AggregationGroup>>;
   const dailyTotalMetrics = [
     {
-      recordType: 'Steps',
-      metricType: 'steps',
-      unit: 'count',
-      places: 0,
-      value: (row: AggregationGroup) => row.result.COUNT_TOTAL,
-    },
-    {
       recordType: 'Distance',
       metricType: 'distance',
       unit: 'km',
