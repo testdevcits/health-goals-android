@@ -121,10 +121,11 @@ const hasReadPermission = (permissions: Permission[], recordType: string) =>
   );
 
 const getTodayRange = () => {
-  const start = new Date();
-  start.setHours(0, 0, 0, 0);
-  const end = new Date(start);
-  end.setDate(end.getDate() + 1);
+  const today = istDateKey(new Date());
+  const start = new Date(
+    Date.parse(`${today}T00:00:00.000Z`) - IST_OFFSET_MS,
+  );
+  const end = new Date(start.getTime() + 24 * 60 * 60 * 1000);
 
   return {
     operator: 'between' as const,

@@ -25,10 +25,10 @@ const DailyActivities: React.FC<{ navigation: DailyActivityNavigation }> = ({
   const { theme } = useTheme();
   const insets = useSafeAreaInsets();
   const styles = createDailyActivityStyles(theme);
-  const [refreshToken, setRefreshToken] = React.useState(0);
+  const [refreshKey, setRefreshKey] = React.useState(0);
   const [syncing, setSyncing] = React.useState(false);
   const [syncMessage, setSyncMessage] = React.useState('');
-  const { data, error, loading } = useTodayHealthData(true, refreshToken);
+  const { data, error, loading } = useTodayHealthData(true, refreshKey);
   const syncNow = async () => {
     setSyncing(true);
     setSyncMessage('');
@@ -41,7 +41,7 @@ const DailyActivities: React.FC<{ navigation: DailyActivityNavigation }> = ({
           ? 'No recent Health Connect records were available to sync.'
           : `Sent ${result.synced} records · ${result.created} new · ${result.duplicates} already synced.`,
       );
-      setRefreshToken(value => value + 1);
+      setRefreshKey(value => value + 1);
     } catch (cause) {
       setSyncMessage(
         cause instanceof Error
@@ -125,7 +125,7 @@ const DailyActivities: React.FC<{ navigation: DailyActivityNavigation }> = ({
         ) : error ? (
           <AppErrorView
             message={error}
-            onRefresh={() => setRefreshToken(value => value + 1)}
+            onRefresh={() => setRefreshKey(value => value + 1)}
           />
         ) : data?.status === 'permission-required' ? (
           <AppEmptyState

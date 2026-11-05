@@ -1,5 +1,5 @@
-import { useCallback, useState } from 'react';
-import { useFocusEffect } from '@react-navigation/native';
+import { useEffect, useState } from 'react';
+import { useIsFocused } from '@react-navigation/native';
 import {
   readTodayHealthData,
   type TodayHealthData,
@@ -10,52 +10,64 @@ type HealthDataState = {
   loading: boolean;
   data: TodayHealthData | null;
   error: string | null;
+  syncVersion: number;
 };
 
 export const useTodayHealthData = (
   includeHourlyData = false,
-  refreshToken = 0,
+  refreshKey = 0,
 ) => {
+  const isFocused = useIsFocused();
   const [state, setState] = useState<HealthDataState>({
     loading: true,
     data: null,
     error: null,
+    syncVersion: 0,
   });
 
-  useFocusEffect(
-    useCallback(() => {
-      let isActive = true;
-      setState(previous => ({ ...previous, loading: true, error: null }));
+  useEffect(() => {
+    if (!isFocused) return;
+    let isActive = true;
+    setState(previous => ({ ...previous, loading: true, error: null }));
 
-      readTodayHealthData(includeHourlyData)
-        .then(data => {
-          if (data.status === 'ready') {
-            void syncRecentHealthData().catch(error => {
+    readTodayHealthData(includeHourlyData)
+      .then(data => {
+        if (data.status === 'ready') {
+          void syncRecentHealthData()
+            .then(() => {
+              if (isActive) {
+                setState(previous => ({
+                  ...previous,
+                  syncVersion: previous.syncVersion + 1,
+                }));
+              }
+            })
+            .catch(error => {
               console.warn('Could not sync Health Connect data:', error);
             });
-          }
-          if (isActive) {
-            setState({ loading: false, data, error: null });
-          }
-        })
-        .catch(error => {
-          if (isActive) {
-            setState({
-              loading: false,
-              data: null,
-              error:
-                error instanceof Error
-                  ? error.message
-                  : 'Could not read health data from Health Connect.',
-            });
-          }
-        });
+        }
+        if (isActive) {
+          setState(previous => ({ ...previous, loading: false, data, error: null }));
+        }
+      })
+      .catch(error => {
+        if (isActive) {
+          setState(previous => ({
+            ...previous,
+            loading: false,
+            data: null,
+            error:
+              error instanceof Error
+                ? error.message
+                : 'Could not read health data from Health Connect.',
+          }));
+        }
+      });
 
-      return () => {
-        isActive = false;
-      };
-    }, [includeHourlyData, refreshToken]),
-  );
+    return () => {
+      isActive = false;
+    };
+  }, [isFocused, includeHourlyData, refreshKey]);
 
   return state;
 };

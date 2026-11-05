@@ -5,7 +5,7 @@ import Svg, { Circle } from 'react-native-svg';
 import { AppText } from '../../../../components';
 import { useTheme } from '../../../../theme/useTheme';
 import { createHomeStyles } from '../styles.Home';
-import { useFocusEffect } from '@react-navigation/native';
+import { useIsFocused } from '@react-navigation/native';
 import { authenticatedRequest } from '../../../../services/authenticatedApi';
 import { useTodayHealthData } from '../../../../hooks/useTodayHealthData';
 import { getCurrentUser } from '../../../../services/profile';
@@ -75,15 +75,16 @@ const EnergyCircle: React.FC<{ energy: number }> = ({ energy }) => {
 };
 
 const EnergyCard: React.FC = () => {
-  const { data: todayHealthData } = useTodayHealthData();
+  const { data: todayHealthData, syncVersion } = useTodayHealthData();
+  const isFocused = useIsFocused();
   const [energy, setEnergy] = React.useState(0);
   const [streakPeriod, setStreakPeriod] = React.useState(0);
   const [stepsTarget, setStepsTarget] = React.useState(10000);
   const [loading, setLoading] = React.useState(true);
   const [loadError, setLoadError] = React.useState(false);
   const [hasActivity, setHasActivity] = React.useState(false);
-  useFocusEffect(
-    React.useCallback(() => {
+  React.useEffect(() => {
+      if (!isFocused) return;
       let active = true;
       setLoading(true);
       setLoadError(false);
@@ -181,8 +182,7 @@ const EnergyCard: React.FC = () => {
       return () => {
         active = false;
       };
-    }, [todayHealthData?.steps]),
-  );
+  }, [isFocused, todayHealthData?.steps, syncVersion]);
   const { theme } = useTheme();
   const { colors } = theme;
   const styles = createHomeStyles(theme);
