@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { memo } from 'react';
 import { Pressable, View } from 'react-native';
 import { AppText } from '../../../../components';
 import type { AppTheme } from '../../../../theme';
@@ -48,4 +48,4 @@ const ChallengeTabs: React.FC<ChallengeTabsProps> = ({
   </View>
 );
 
-export default ChallengeTabs;
+export default memo(ChallengeTabs);

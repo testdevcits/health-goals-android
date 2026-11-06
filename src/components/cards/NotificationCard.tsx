@@ -1,5 +1,5 @@
 import { StyleSheet, TouchableOpacity, View } from 'react-native';
-import React, { useCallback } from 'react';
+import React from 'react';
 import { NotificationItem } from '../../screens/common_screens/notifications/const';
 import AppText from '../AppText';
 import { spacing } from '../../theme/spacing';
@@ -8,27 +8,15 @@ import { radius } from '../../theme/radius';
 
 const NotificationCard = ({
   item,
-  setNotifications,
+  onRead,
 }: {
   item: NotificationItem;
-  setNotifications: React.Dispatch<React.SetStateAction<NotificationItem[]>>;
+  onRead: (id: string) => void;
 }) => {
   const { theme } = useTheme();
 
   const { colors } = theme;
 
-  const markAsRead = useCallback(
-    (id: string) => {
-      setNotifications(previous =>
-        previous.map(notification =>
-          notification?.id === id
-            ? { ...notification, unread: false }
-            : notification,
-        ),
-      );
-    },
-    [setNotifications],
-  );
   return (
     <TouchableOpacity
       activeOpacity={0.75}
@@ -44,7 +32,7 @@ const NotificationCard = ({
           borderRadius: radius.lg,
         },
       ]}
-      onPress={() => markAsRead(item?.id)}
+      onPress={() => item?.unread && onRead(item.id)}
     >
       {/* Notification Icon */}
       <View

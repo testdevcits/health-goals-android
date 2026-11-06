@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { memo } from 'react';
 import { Pressable, View } from 'react-native';
 import { AppText } from '../../../../components';
 import { useTheme } from '../../../../theme/useTheme';
@@ -58,30 +58,66 @@ const ChallengesTab: React.FC<ChallengesTabProps> = ({
               {challenge.description}
             </AppText>
 
-            <View style={styles.progressTrack}>
-              <View
-                style={[
-                  styles.progressFill,
-                  {
-                    width: `${challenge.progress}%`,
-                    backgroundColor: challenge.color,
-                  },
-                ]}
-              />
-            </View>
+            {(challenge.metricLabel || challenge.targetLabel || challenge.dateLabel) && (
+              <AppText variant="caption" secondary>
+                {[
+                  challenge.metricLabel,
+                  challenge.targetLabel ? `Target ${challenge.targetLabel}` : undefined,
+                  challenge.dateLabel,
+                ]
+                  .filter(Boolean)
+                  .join(' · ')}
+              </AppText>
+            )}
 
-            <View style={styles.progressFooter}>
+            {challenge.joined ? (
+              <>
+                <View style={styles.progressTrack}>
+                  <View
+                    style={[
+                      styles.progressFill,
+                      {
+                        width: `${Math.min(100, Math.max(0, challenge.progress))}%`,
+                        backgroundColor: challenge.color,
+                      },
+                    ]}
+                  />
+                </View>
+
+                <View style={styles.progressFooter}>
+                  <AppText variant="caption" secondary>
+                    {challenge.progressLabel}
+                  </AppText>
+                  <AppText
+                    variant="caption"
+                    style={{ color: challenge.color }}
+                    bold
+                  >
+                    {challenge.progress}%
+                  </AppText>
+                </View>
+              </>
+            ) : (
               <AppText variant="caption" secondary>
                 {challenge.progressLabel}
               </AppText>
-              <AppText
-                variant="caption"
-                style={{ color: challenge.color }}
-                bold
-              >
-                {challenge.progress}%
-              </AppText>
-            </View>
+            )}
+
+            {challenge.leaderboard?.length ? (
+              <View>
+                {challenge.leaderboard.map(entry => (
+                  <View key={entry.id} style={styles.progressFooter}>
+                    <AppText variant="caption" secondary>
+                      #{entry.rank} {entry.name}
+                      {entry.winner ? ' · Winner' : ''}
+                    </AppText>
+                    <AppText variant="caption" secondary>
+                      {entry.value.toLocaleString()} {challenge.metricLabel}
+                    </AppText>
+                  </View>
+                ))}
+              </View>
+            ) : null}
             {onJoin && challenge.joinable ? (
               <Pressable
                 accessibilityRole="button"
@@ -112,4 +148,4 @@ const ChallengesTab: React.FC<ChallengesTabProps> = ({
   );
 };
 
-export default ChallengesTab;
+export default memo(ChallengesTab);

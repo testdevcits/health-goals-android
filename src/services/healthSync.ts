@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { DeviceEventEmitter } from 'react-native';
 import * as Keychain from 'react-native-keychain';
 import {
   ExerciseType,
@@ -919,6 +920,7 @@ export function syncRecentHealthData(
       throw new Error('Account changed. Please retry health sync.');
     await saveVersions();
     if (!failedMetrics.length) await saveSuccessfulSyncAt(userId);
+    DeviceEventEmitter.emit('activitySyncCompleted');
     return {
       synced,
       created,

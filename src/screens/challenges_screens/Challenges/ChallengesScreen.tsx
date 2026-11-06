@@ -1,5 +1,5 @@
-import React from 'react';
-import { ScrollView, View } from 'react-native';
+import React, { useCallback, useMemo } from 'react';
+import { RefreshControl, ScrollView, View } from 'react-native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import {
   AppEmptyState,
@@ -20,7 +20,7 @@ type Props = NativeStackScreenProps<ChallengesStackParamList, 'Challenges'>;
 
 const ChallengesScreen: React.FC<Props> = ({ navigation }) => {
   const { theme } = useTheme();
-  const styles = createStyles(theme);
+  const styles = useMemo(() => createStyles(theme), [theme]);
   const {
     activeTab,
     setActiveTab,
@@ -30,9 +30,19 @@ const ChallengesScreen: React.FC<Props> = ({ navigation }) => {
     competitions,
     loading,
     loadError,
+    walletPoints,
+    unreadNotifications,
     refresh,
     joinChallenge,
   } = useChallenges();
+  const visibleChallenges = useMemo(
+    () => [...challenges, ...ruleChallenges],
+    [challenges, ruleChallenges],
+  );
+  const browseAllChallenges = useCallback(
+    () => navigation.navigate('AllChallenges'),
+    [navigation],
+  );
 
   return (
     <View style={styles.container}>
@@ -43,6 +53,9 @@ const ChallengesScreen: React.FC<Props> = ({ navigation }) => {
       />
 
       <ScrollView
+        refreshControl={
+          <RefreshControl refreshing={loading} onRefresh={refresh} />
+        }
         contentContainerStyle={[
           styles.scrollContent,
           { paddingBottom: theme.spacing.xl },
@@ -55,6 +68,13 @@ const ChallengesScreen: React.FC<Props> = ({ navigation }) => {
           styles={styles}
           theme={theme}
         />
+
+        <View style={styles.competitionEntry}>
+          <AppText variant="caption" secondary>
+            Available points: {walletPoints === null ? '—' : walletPoints.toLocaleString()}
+            {unreadNotifications > 0 ? ` · ${unreadNotifications} unread notifications` : ''}
+          </AppText>
+        </View>
 
         <View style={styles.content}>
           {loading ? (
@@ -128,9 +148,9 @@ const ChallengesScreen: React.FC<Props> = ({ navigation }) => {
           {!loading && !loadError && activeTab === 'Challenges' ? (
             challenges.length || ruleChallenges.length ? (
               <ChallengesTab
-                challenges={[...challenges, ...ruleChallenges]}
+                challenges={visibleChallenges}
                 onJoin={joinChallenge}
-                onBrowseAll={() => navigation.navigate('AllChallenges')}
+                onBrowseAll={browseAllChallenges}
                 styles={styles}
               />
             ) : (

@@ -35,6 +35,7 @@ export const createHomeStyles = (theme: AppTheme) => {
       gap: spacing.md,
     },
     bellButton: {
+      position: 'relative',
       width: 40,
       height: 40,
       borderRadius: radius.full,

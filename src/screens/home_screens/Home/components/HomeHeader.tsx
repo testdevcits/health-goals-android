@@ -10,6 +10,7 @@ import { useCallback } from 'react';
 import { getCurrentUser } from '../../../../services/profile';
 import { useAppDispatch, useAppSelector } from '../../../../store/hooks';
 import { setProfile } from '../../../../store/profileSlice';
+import { authenticatedRequest } from '../../../../services/authenticatedApi';
 
 const HomeHeader: React.FC = () => {
   const dispatch = useAppDispatch();
@@ -17,6 +18,7 @@ const HomeHeader: React.FC = () => {
   const fullName = profile?.name ?? '';
   const name = fullName.split(' ')[0] || '';
   const [avatarLoadFailed, setAvatarLoadFailed] = useState(false);
+  const [unreadNotifications, setUnreadNotifications] = useState(0);
   useEffect(() => {
     setAvatarLoadFailed(false);
   }, [profile?.profileImageUrl]);
@@ -27,6 +29,18 @@ const HomeHeader: React.FC = () => {
       getCurrentUser()
         .then(user => {
           if (active) dispatch(setProfile(user));
+        })
+        .catch(() => {});
+      authenticatedRequest<{ unread?: number; items?: Array<{ read: boolean }> }>(
+        'GET',
+        '/notifications?page=1&limit=50',
+      )
+        .then(result => {
+          if (active) {
+            setUnreadNotifications(
+              result.unread ?? (result.items || []).filter(item => !item.read).length,
+            );
+          }
         })
         .catch(() => {});
       return () => {
@@ -54,7 +68,7 @@ const HomeHeader: React.FC = () => {
           style={styles.bellButton}
           activeOpacity={0.8}
           accessibilityRole="button"
-          accessibilityLabel="Notifications"
+          accessibilityLabel={`Notifications${unreadNotifications ? `, ${unreadNotifications} unread` : ''}`}
           onPress={() => navigation.navigate('Notifications' as never)}
         >
           {/* <Bell size={20} color={theme.colors.textSecondary} /> */}
@@ -65,6 +79,26 @@ const HomeHeader: React.FC = () => {
           >
             🔔
           </AppText>
+          {unreadNotifications > 0 ? (
+            <View
+              style={{
+                position: 'absolute',
+                top: -3,
+                right: -3,
+                minWidth: 17,
+                height: 17,
+                paddingHorizontal: 3,
+                borderRadius: 9,
+                alignItems: 'center',
+                justifyContent: 'center',
+                backgroundColor: theme.colors.error,
+              }}
+            >
+              <AppText variant="caption" color="textInverse" bold>
+                {unreadNotifications > 99 ? '99+' : unreadNotifications}
+              </AppText>
+            </View>
+          ) : null}
         </TouchableOpacity>
         <Pressable
           onPress={() => navigation.navigate('Profile' as never)}

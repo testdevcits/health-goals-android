@@ -1,4 +1,4 @@
-import React, { useCallback, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { AppState, ScrollView, View } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
@@ -14,6 +14,7 @@ import NotificationBanner from './components/NotificationBanner';
 import WorkoutCategories from './components/WorkoutCategories';
 import { createHomeStyles } from './styles.Home';
 import QuickActions from './components/QuickActions';
+import { storageService } from '../../../storage/storageService';
 
 type Props = NativeStackScreenProps<HomeStackParamList, 'Home'>;
 
@@ -23,7 +24,7 @@ const HomeScreen: React.FC<Props> = ({ navigation }) => {
   const [notificationsEnabled, setNotificationsEnabled] = useState<
     boolean | null
   >(null);
-  const [onboardingVisible, setOnboardingVisible] = useState(true);
+  const [onboardingVisible, setOnboardingVisible] = useState(false);
 
   useFocusEffect(
     useCallback(() => {
@@ -55,6 +56,13 @@ const HomeScreen: React.FC<Props> = ({ navigation }) => {
       };
     }, []),
   );
+
+  useEffect(() => {
+    if (storageService.getString('isFirstTime') === undefined) {
+      setOnboardingVisible(true);
+    }
+    storageService.setString('isFirstTime', 'true');
+  }, []);
 
   return (
     <View style={[styles.container, {}]}>

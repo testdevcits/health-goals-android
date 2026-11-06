@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { memo } from 'react';
 import { FlatList, View, useWindowDimensions } from 'react-native';
 import { AppText } from '../../../../components';
 import { useTheme } from '../../../../theme/useTheme';
@@ -69,4 +69,4 @@ const BadgesTab: React.FC<BadgesTabProps> = ({ badges, styles }) => {
   );
 };
 
-export default BadgesTab;
+export default memo(BadgesTab);

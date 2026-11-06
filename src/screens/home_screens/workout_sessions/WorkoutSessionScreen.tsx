@@ -598,6 +598,7 @@
 
 import React, { useEffect, useRef, useState } from 'react';
 import {
+  DeviceEventEmitter,
   Alert,
   AppState,
   Pressable,
@@ -1002,6 +1003,7 @@ const WorkoutSessionScreen: React.FC<Props> = ({ navigation, route }) => {
                   60_000,
                 );
               }
+              DeviceEventEmitter.emit('activitySyncCompleted');
               await clearWorkoutSession();
               pendingWorkoutUpload.current = null;
               returnToPreviousScreen();

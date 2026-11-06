@@ -14,6 +14,16 @@ export interface Challenge {
   icon: LucideIcon;
   joined?: boolean;
   joinable?: boolean;
+  metricLabel?: string;
+  targetLabel?: string;
+  dateLabel?: string;
+  leaderboard?: Array<{
+    id: string;
+    name: string;
+    value: number;
+    rank: number;
+    winner?: boolean;
+  }>;
 }
 
 export interface Badge {
