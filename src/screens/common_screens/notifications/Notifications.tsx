@@ -34,7 +34,8 @@ type NotificationPage = {
 };
 
 const iconForType = (type: string): NotificationItem['bgColor'] => {
-  if (/challenge|achievement|reward|competition/i.test(type)) return 'warningLight';
+  if (/challenge|achievement|reward|competition/i.test(type))
+    return 'warningLight';
   if (/group|invite|community/i.test(type)) return 'infoLight';
   return 'purpleLight';
 };
@@ -80,13 +81,13 @@ const Notifications = () => {
       );
       const items = result.items || [];
       const mappedItems = items.map(item => ({
-          id: item.id,
-          emoji: emojiForType(item.type),
-          title: item.body ? `${item.title} · ${item.body}` : item.title,
-          time: displayTime(item.createdAt),
-          unread: !item.read,
-          bgColor: iconForType(item.type),
-        }));
+        id: item.id,
+        emoji: emojiForType(item.type),
+        title: item.body ? `${item.title} · ${item.body}` : item.title,
+        time: displayTime(item.createdAt),
+        unread: !item.read,
+        bgColor: iconForType(item.type),
+      }));
       notificationsRef.current = mappedItems;
       setNotifications(mappedItems);
       setUnreadCount(result.unread ?? items.filter(item => !item.read).length);
@@ -103,32 +104,35 @@ const Notifications = () => {
     }, [refresh]),
   );
 
-  const markAsRead = useCallback(async (id: string) => {
-    const wasUnread = notificationsRef.current.some(
-      item => item.id === id && item.unread,
-    );
-    if (!wasUnread) return;
+  const markAsRead = useCallback(
+    async (id: string) => {
+      const wasUnread = notificationsRef.current.some(
+        item => item.id === id && item.unread,
+      );
+      if (!wasUnread) return;
 
-    const updatedItems = notificationsRef.current.map(item =>
-      item.id === id ? { ...item, unread: false } : item,
-    );
-    notificationsRef.current = updatedItems;
-    setNotifications(updatedItems);
-    setUnreadCount(count => Math.max(0, count - 1));
-    try {
-      await authenticatedRequest(
-        'PATCH',
-        `/notifications/${encodeURIComponent(id)}/read`,
+      const updatedItems = notificationsRef.current.map(item =>
+        item.id === id ? { ...item, unread: false } : item,
       );
-    } catch (error) {
-      await refresh();
-      showAppToast(
-        'error',
-        'Could not update notification',
-        apiErrorMessage(error),
-      );
-    }
-  }, [refresh]);
+      notificationsRef.current = updatedItems;
+      setNotifications(updatedItems);
+      setUnreadCount(count => Math.max(0, count - 1));
+      try {
+        await authenticatedRequest(
+          'PATCH',
+          `/notifications/${encodeURIComponent(id)}/read`,
+        );
+      } catch (error) {
+        await refresh();
+        showAppToast(
+          'error',
+          'Could not update notification',
+          apiErrorMessage(error),
+        );
+      }
+    },
+    [refresh],
+  );
 
   const markAllAsRead = useCallback(async () => {
     const updatedItems = notificationsRef.current.map(item => ({
@@ -142,7 +146,11 @@ const Notifications = () => {
       await authenticatedRequest('PATCH', '/notifications/read-all');
     } catch (error) {
       await refresh();
-      showAppToast('error', 'Could not update notifications', apiErrorMessage(error));
+      showAppToast(
+        'error',
+        'Could not update notifications',
+        apiErrorMessage(error),
+      );
     }
   }, [refresh]);
 
@@ -161,7 +169,11 @@ const Notifications = () => {
         {/* Screen Header */}
         <AppHeader
           title="Notifications"
-          subtitle={loading ? 'Loading notifications…' : `${unreadCount} unread notifications`}
+          subtitle={
+            loading
+              ? 'Loading notifications…'
+              : `${unreadCount} unread notifications`
+          }
           onBackPress={() => {
             navigation.goBack();
           }}
@@ -211,9 +223,7 @@ const Notifications = () => {
           ListEmptyComponent={
             loading ? (
               <AppLoader message="Loading notifications…" />
-            ) : loadError ? (
-              null
-            ) : (
+            ) : loadError ? null : (
               <View style={styles.emptyContainer}>
                 <AppText variant="display" center>
                   🔔

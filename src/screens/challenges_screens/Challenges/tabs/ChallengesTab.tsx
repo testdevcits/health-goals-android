@@ -58,11 +58,15 @@ const ChallengesTab: React.FC<ChallengesTabProps> = ({
               {challenge.description}
             </AppText>
 
-            {(challenge.metricLabel || challenge.targetLabel || challenge.dateLabel) && (
+            {(challenge.metricLabel ||
+              challenge.targetLabel ||
+              challenge.dateLabel) && (
               <AppText variant="caption" secondary>
                 {[
                   challenge.metricLabel,
-                  challenge.targetLabel ? `Target ${challenge.targetLabel}` : undefined,
+                  challenge.targetLabel
+                    ? `Target ${challenge.targetLabel}`
+                    : undefined,
                   challenge.dateLabel,
                 ]
                   .filter(Boolean)
@@ -77,7 +81,10 @@ const ChallengesTab: React.FC<ChallengesTabProps> = ({
                     style={[
                       styles.progressFill,
                       {
-                        width: `${Math.min(100, Math.max(0, challenge.progress))}%`,
+                        width: `${Math.min(
+                          100,
+                          Math.max(0, challenge.progress),
+                        )}%`,
                         backgroundColor: challenge.color,
                       },
                     ]}

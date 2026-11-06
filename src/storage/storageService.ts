@@ -1,6 +1,5 @@
-import storage from "./mmkv";
+import storage from './mmkv';
 
- 
 export const storageService = {
   // Save string
   setString: (key: string, value: string) => {

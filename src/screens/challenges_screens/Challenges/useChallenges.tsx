@@ -87,88 +87,85 @@ const useChallenges = () => {
         competitionResult,
         notificationResult,
         walletResult,
-      ] =
-        await Promise.allSettled([
-          authenticatedRequest<{
-            challenges?: CommunityChallenge[];
-            items?: CommunityChallenge[];
-          }>('GET', '/community/challenges'),
-          authenticatedRequest<{ badges: Badge[] }>('GET', '/community/badges'),
-          authenticatedRequest<{
-            competitions: Competition[];
-            achievements: Achievement[];
-          }>('GET', '/rewards/competitions'),
-          authenticatedRequest<{
-            items?: Array<{ read: boolean }>;
-            unread?: number;
-          }>(
-            'GET',
-            '/notifications?page=1&limit=50',
-          ),
-          authenticatedRequest<{ wallet?: { availablePoints?: number; balance?: number } }>(
-            'GET',
-            '/wallet',
-          ),
-        ]);
+      ] = await Promise.allSettled([
+        authenticatedRequest<{
+          challenges?: CommunityChallenge[];
+          items?: CommunityChallenge[];
+        }>('GET', '/community/challenges'),
+        authenticatedRequest<{ badges: Badge[] }>('GET', '/community/badges'),
+        authenticatedRequest<{
+          competitions: Competition[];
+          achievements: Achievement[];
+        }>('GET', '/rewards/competitions'),
+        authenticatedRequest<{
+          items?: Array<{ read: boolean }>;
+          unread?: number;
+        }>('GET', '/notifications?page=1&limit=50'),
+        authenticatedRequest<{
+          wallet?: { availablePoints?: number; balance?: number };
+        }>('GET', '/wallet'),
+      ]);
 
       if (challengeResult.status === 'fulfilled') {
         setChallenges(
-          (challengeResult.value.challenges || challengeResult.value.items || []).map(
-            item => {
-              const metric = item.metric || item.metricType || 'steps';
-              const currentValue = Number(item.currentValue || 0);
-              const targetValue = Number(item.targetValue || 0);
-              const progress = Number(item.progress ?? 0);
-              const startsInFuture =
-                !!item.startsAt && Date.parse(item.startsAt) > Date.now();
-              const status = item.status.toUpperCase();
-              const metricLabel = metric.replace(/_/g, ' ');
-              const dateLabel = item.month
-                ? item.month
-                : item.startsAt && item.endsAt
-                ? `${new Date(item.startsAt).toLocaleDateString()} – ${new Date(
-                    item.endsAt,
-                  ).toLocaleDateString()}`
-                : undefined;
+          (
+            challengeResult.value.challenges ||
+            challengeResult.value.items ||
+            []
+          ).map(item => {
+            const metric = item.metric || item.metricType || 'steps';
+            const currentValue = Number(item.currentValue || 0);
+            const targetValue = Number(item.targetValue || 0);
+            const progress = Number(item.progress ?? 0);
+            const startsInFuture =
+              !!item.startsAt && Date.parse(item.startsAt) > Date.now();
+            const status = item.status.toUpperCase();
+            const metricLabel = metric.replace(/_/g, ' ');
+            const dateLabel = item.month
+              ? item.month
+              : item.startsAt && item.endsAt
+              ? `${new Date(item.startsAt).toLocaleDateString()} – ${new Date(
+                  item.endsAt,
+                ).toLocaleDateString()}`
+              : undefined;
 
-              return {
-                id: item.id,
-                title: item.title,
-                description: item.description || `${targetValue} ${metric}`,
-                progress: Math.max(0, progress),
-                progressLabel: item.joined
-                  ? `Joined · ${currentValue.toLocaleString()} / ${targetValue.toLocaleString()} · ${
-                      item.participantCount ?? item.participants ?? 0
-                    } participants`
-                  : `Not joined · ${
-                      item.participantCount ?? item.participants ?? 0
-                    } participants`,
-                metricLabel,
-                targetLabel: targetValue.toLocaleString(),
-                dateLabel,
-                leaderboard: (item.leaderboard || []).map(entry => ({
-                  id: entry.id,
-                  name: entry.name,
-                  value: Number(entry.value) || 0,
-                  rank: Number(entry.rank) || 0,
-                  winner: entry.winner ?? entry.isWinner,
-                })),
-                status: startsInFuture
-                  ? 'UPCOMING'
-                  : status === 'ACTIVE' || status === 'PUBLISHED'
-                  ? 'LIVE'
-                  : status,
-                color: '#00C6A2',
-                icon: metric.toLowerCase().includes('step')
-                  ? Footprints
-                  : metric.toLowerCase().includes('workout')
-                  ? Dumbbell
-                  : Sunrise,
-                joined: item.joined,
-                joinable: !!item.joinable,
-              };
-            },
-          ),
+            return {
+              id: item.id,
+              title: item.title,
+              description: item.description || `${targetValue} ${metric}`,
+              progress: Math.max(0, progress),
+              progressLabel: item.joined
+                ? `Joined · ${currentValue.toLocaleString()} / ${targetValue.toLocaleString()} · ${
+                    item.participantCount ?? item.participants ?? 0
+                  } participants`
+                : `Not joined · ${
+                    item.participantCount ?? item.participants ?? 0
+                  } participants`,
+              metricLabel,
+              targetLabel: targetValue.toLocaleString(),
+              dateLabel,
+              leaderboard: (item.leaderboard || []).map(entry => ({
+                id: entry.id,
+                name: entry.name,
+                value: Number(entry.value) || 0,
+                rank: Number(entry.rank) || 0,
+                winner: entry.winner ?? entry.isWinner,
+              })),
+              status: startsInFuture
+                ? 'UPCOMING'
+                : status === 'ACTIVE' || status === 'PUBLISHED'
+                ? 'LIVE'
+                : status,
+              color: '#00C6A2',
+              icon: metric.toLowerCase().includes('step')
+                ? Footprints
+                : metric.toLowerCase().includes('workout')
+                ? Dumbbell
+                : Sunrise,
+              joined: item.joined,
+              joinable: !!item.joinable,
+            };
+          }),
         );
       }
 
@@ -230,12 +227,11 @@ const useChallenges = () => {
               progressLabel: progressSummary,
               status: startsInFuture ? 'UPCOMING' : competition.status,
               color: '#8175F5',
-              icon:
-                competition.metric.toLowerCase().includes('step')
-                  ? Footprints
-                  : competition.metric.toLowerCase().includes('workout')
-                  ? Dumbbell
-                  : Sunrise,
+              icon: competition.metric.toLowerCase().includes('step')
+                ? Footprints
+                : competition.metric.toLowerCase().includes('workout')
+                ? Dumbbell
+                : Sunrise,
               joined: true,
               joinable: false,
             };
@@ -311,17 +307,24 @@ const useChallenges = () => {
     return () => subscription.remove();
   }, [refresh]);
 
-  const joinChallenge = useCallback(async (id: string) => {
-    try {
-      await authenticatedRequest(
-        'POST',
-        `/community/challenges/${encodeURIComponent(id)}/join`,
-      );
-      await refresh();
-    } catch (error) {
-      showAppToast('error', 'Could not join challenge', apiErrorMessage(error));
-    }
-  }, [refresh]);
+  const joinChallenge = useCallback(
+    async (id: string) => {
+      try {
+        await authenticatedRequest(
+          'POST',
+          `/community/challenges/${encodeURIComponent(id)}/join`,
+        );
+        await refresh();
+      } catch (error) {
+        showAppToast(
+          'error',
+          'Could not join challenge',
+          apiErrorMessage(error),
+        );
+      }
+    },
+    [refresh],
+  );
 
   return {
     activeTab,

@@ -71,8 +71,11 @@ const ChallengesScreen: React.FC<Props> = ({ navigation }) => {
 
         <View style={styles.competitionEntry}>
           <AppText variant="caption" secondary>
-            Available points: {walletPoints === null ? '—' : walletPoints.toLocaleString()}
-            {unreadNotifications > 0 ? ` · ${unreadNotifications} unread notifications` : ''}
+            Available points:{' '}
+            {walletPoints === null ? '—' : walletPoints.toLocaleString()}
+            {unreadNotifications > 0
+              ? ` · ${unreadNotifications} unread notifications`
+              : ''}
           </AppText>
         </View>
 
