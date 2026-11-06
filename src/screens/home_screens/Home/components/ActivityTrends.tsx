@@ -9,9 +9,10 @@ import {
   SectionHeader,
 } from '../../../../components';
 import { useTheme } from '../../../../theme/useTheme';
-import { DAYS, TREND_DATA, TREND_TABS, TrendTab } from '../const';
+import { TREND_DATA, TREND_TABS, TrendTab } from '../const';
 import { createHomeStyles } from '../styles.Home';
 import { authenticatedRequest } from '../../../../services/authenticatedApi';
+import { istDateKey, recentIstDates, recentHealthDayLabels } from '../../../../utils/healthDates';
 import { readStepsHistory } from '../../../../services/healthConnect';
 
 const BAR_MAX_HEIGHT = 100;
@@ -27,9 +28,9 @@ const BarChart: React.FC<{ data: number[]; color: string }> = ({
   return (
     <View style={styles.chartArea}>
       {data.map((value, index) => {
-        const height = Math.max(8, (value / maxValue) * BAR_MAX_HEIGHT);
+        const height = value > 0 ? Math.max(2, (value / maxValue) * BAR_MAX_HEIGHT) : 0;
         return (
-          <View key={DAYS[index]} style={styles.barWrapper}>
+          <View key={recentHealthDayLabels()[index]} style={styles.barWrapper}>
             <View
               style={[
                 styles.bar,
@@ -41,7 +42,7 @@ const BarChart: React.FC<{ data: number[]; color: string }> = ({
               ]}
             />
             <AppText variant="caption" secondary>
-              {DAYS[index]}
+              {recentHealthDayLabels()[index]}
             </AppText>
           </View>
         );
@@ -71,11 +72,7 @@ const ActivityTrends: React.FC<{ onPressDetails: () => void }> = ({
     const load = async () => {
       const end = new Date();
       const start = new Date(Date.now() - 6 * 86400000);
-      const key = (date: Date) =>
-        `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(
-          2,
-          '0',
-        )}-${String(date.getDate()).padStart(2, '0')}`;
+      const key = istDateKey;
       const metricType =
         activeTab === 'Steps'
           ? 'steps'
@@ -100,7 +97,8 @@ const ActivityTrends: React.FC<{ onPressDetails: () => void }> = ({
         setLoading(false);
         return;
       }
-      const values = history.slice(-7).map(row => row.value);
+      const byDate = new Map(history.map(row => [row.date, row.value]));
+      const values = recentIstDates().map(date => byDate.get(date) || 0);
       const sum = values.reduce((total, value) => total + value, 0);
       const average = Math.round(sum / values.length);
       setTrendData(current => ({
@@ -134,7 +132,7 @@ const ActivityTrends: React.FC<{ onPressDetails: () => void }> = ({
                     .filter(value => value >= 10000)
                     .length.toString(),
                 }
-              : stat,
+              : { ...stat, value: '—' },
           ),
         },
       }));

@@ -29,6 +29,7 @@ const METRIC_BOUNDS: Record<string, { min: number; max: number }> = {
   blood_pressure: { min: 1, max: 400 },
   oxygen_saturation: { min: 50, max: 100 },
   workout: { min: 0, max: 1440 },
+  active_minutes: { min: 0, max: 1440 },
 };
 
 let activeSync: Promise<HealthSyncResult> | null = null;
@@ -49,6 +50,7 @@ type SnapshotRecord = {
   deviceId: string;
   metadata: Record<string, unknown>;
   activityType?: string;
+  deleted?: boolean;
 };
 
 type HealthSyncResult = {
@@ -56,14 +58,7 @@ type HealthSyncResult = {
   created: number;
   duplicates: number;
   throttled?: boolean;
-};
-
-type DailyStepsUpload = {
-  date: string;
-  steps: number;
-  dataOrigin: string;
-  recordingMethod: 'automatic';
-  deviceId: string;
+  failedMetrics?: string[];
 };
 
 type SnapshotVersion = {
@@ -72,7 +67,7 @@ type SnapshotVersion = {
   updatedAt: number;
 };
 
-type SyncWatermark = { lastSuccessAt: number };
+type SyncWatermark = { lastSuccessAt: number; schemaVersion: 3 };
 
 type AggregationGroup = {
   startTime: string;
@@ -198,9 +193,9 @@ function makeWorkoutSnapshots(deviceId: string, workouts: HealthConnectWorkout[]
   workouts.forEach(workout => {
     const start = Date.parse(workout.startTime);
     const end = Math.min(Date.parse(workout.endTime), Date.now());
-    const id = workout.metadata?.clientRecordId || workout.metadata?.id;
+    const id = workout.metadata?.id || workout.metadata?.clientRecordId;
     const origin = workout.metadata?.dataOrigin;
-    if (!id || !origin || !Number.isFinite(start) || !Number.isFinite(end) || end <= start) return;
+    if (!id || !origin || !Number.isFinite(start) || !Number.isFinite(end) || end <= start) throw new Error('Invalid workout record.');
     let cursor = start;
     while (cursor < end) {
       const date = istDay(new Date(cursor));
@@ -262,10 +257,10 @@ function makeDailySnapshots(
     idMetric = metricType,
     dataOrigin = 'com.vitality',
   ) => {
-    if (!Number.isFinite(value) || value < 0) return;
+    if (!Number.isFinite(value) || value < 0) throw new Error('Invalid Health Connect reading.');
     const normalizedValue = roundValue(value, places);
     const bounds = METRIC_BOUNDS[metricType];
-    if (bounds && (normalizedValue < bounds.min || normalizedValue > bounds.max)) return;
+    if (bounds && (normalizedValue < bounds.min || normalizedValue > bounds.max)) throw new Error('Health Connect reading is outside the supported range.');
     dailyValues.set(keyOf(date, idMetric), {
       metricType,
       value: normalizedValue,
@@ -339,7 +334,7 @@ function makeDailySnapshots(
           'bpm',
           1,
           {
-            aggregation: 'daily_average',
+            aggregation: 'daily_average', sampleCount: row.result.MEASUREMENTS_COUNT,
           },
           'heart_rate',
           originForGroup(row),
@@ -403,8 +398,10 @@ function makeDailySnapshots(
   oxygenRecords.forEach(record => {
     const date = istDay(record.time);
     const value = Number(record.percentage);
-    if (!dates.includes(date) || !Number.isFinite(value) || value < 0) return;
+    if (!dates.includes(date)) return;
+    if (!Number.isFinite(value) || value < 0) throw new Error('Invalid oxygen reading.');
     const normalized = value <= 1 ? value * 100 : value;
+    if (normalized < 50 || normalized > 100) throw new Error('Invalid oxygen reading.');
     const current = oxygenByDate.get(date) || {
       total: 0,
       count: 0,
@@ -425,7 +422,7 @@ function makeDailySnapshots(
       '%',
       1,
       {
-        aggregation: 'daily_average',
+        aggregation: 'daily_average', sampleCount: entry.count,
       },
       'oxygen_saturation',
       [...entry.dataOrigins].sort()[0] || 'com.vitality',
@@ -462,10 +459,9 @@ function makeDailySnapshots(
     });
 }
 
-async function applySnapshotVersions(records: SnapshotRecord[]) {
+async function applySnapshotVersions(records: SnapshotRecord[], userId: string, deviceId: string, dates: string[], readableMetrics: Set<string>) {
   const session = await readSession();
-  const userId = session?.user?.id;
-  if (!userId) throw new Error('Please sign in to sync health data.');
+  if (session?.user?.id !== userId) throw new Error('Account changed. Please retry health sync.');
 
   const credentials = await Keychain.getGenericPassword({
     service: VERSION_STORE_SERVICE,
@@ -473,10 +469,14 @@ async function applySnapshotVersions(records: SnapshotRecord[]) {
   let versions: Record<string, SnapshotVersion> = {};
   if (credentials && credentials.username === userId) {
     try {
-      versions = JSON.parse(credentials.password) as Record<
-        string,
-        SnapshotVersion
-      >;
+      const parsed: unknown = JSON.parse(credentials.password);
+      if (parsed && typeof parsed === 'object' && !Array.isArray(parsed)) {
+        versions = Object.fromEntries(Object.entries(parsed).filter(([, entry]) =>
+          entry && typeof entry === 'object' && typeof entry.fingerprint === 'string' &&
+          Number.isSafeInteger(entry.sourceVersion) && entry.sourceVersion > 0 &&
+          Number.isFinite(entry.updatedAt),
+        ));
+      }
     } catch {
       versions = {};
     }
@@ -485,13 +485,28 @@ async function applySnapshotVersions(records: SnapshotRecord[]) {
   const now = Date.now();
   const nextVersions: Record<string, SnapshotVersion> = Object.fromEntries(
     Object.entries(versions).filter(
-      ([, entry]) => now - entry.updatedAt <= 14 * DAY_MS,
+      ([, entry]) => now - entry.updatedAt <= 35 * DAY_MS,
     ),
   );
 
+  // Absence is a deletion only after a complete, successful read with permission.
+  // Failed/revoked reads and dates outside the current read window preserve history.
+  const present = new Set(records.map(record => record.sourceRecordId));
+  for (const [id, previous] of Object.entries(versions)) {
+    if (present.has(id)) continue;
+    try {
+      const old = JSON.parse(previous.fingerprint) as SnapshotRecord;
+      if (old.deleted || !readableMetrics.has(old.metricType) || !dates.includes(istDay(old.recordedAt))) continue;
+      // Daily totals have explicit zero snapshots; missing vital/session snapshots use tombstones.
+      if (!['heart_rate', 'weight', 'blood_pressure', 'oxygen_saturation', 'workout'].includes(old.metricType)) continue;
+      records.push({ ...old, source: SOURCE, sourceRecordId: id, sourceVersion: previous.sourceVersion, deviceId, deleted: true });
+    } catch { /* Ignore an invalid local cache entry; never infer a deletion from it. */ }
+  }
   const changedRecords: SnapshotRecord[] = [];
   records.forEach(record => {
     const fingerprint = JSON.stringify({
+      deviceId: record.deviceId,
+      deleted: record.deleted || false,
       metricType: record.metricType,
       value: record.value,
       unit: record.unit,
@@ -499,13 +514,14 @@ async function applySnapshotVersions(records: SnapshotRecord[]) {
       recordingMethod: record.recordingMethod,
       recordedAt: record.recordedAt,
       startTime: record.startTime,
-      endTime: record.endTime,
+      // Cumulative steps change only when their count or origin changes.
+      endTime: record.metricType === 'steps' ? undefined : record.endTime,
       activityType: record.activityType,
       metadata: record.metadata,
     });
     const previous = versions[record.sourceRecordId];
     if (previous?.fingerprint === fingerprint) return;
-    const sourceVersion = previous ? previous.sourceVersion + 1 : now;
+    const sourceVersion = Math.max(now, (previous?.sourceVersion || 0) + 1);
     record.sourceVersion = sourceVersion;
     changedRecords.push(record);
     nextVersions[record.sourceRecordId] = {
@@ -524,12 +540,15 @@ async function applySnapshotVersions(records: SnapshotRecord[]) {
   };
 }
 
-async function collectDailySnapshots(deviceId: string) {
+async function collectDailySnapshots(deviceId: string, days: number, userId: string) {
   const granted = (await getGrantedPermissions()).filter(
     (permission): permission is Permission =>
       'accessType' in permission && 'recordType' in permission,
   );
-  const range = getIstSnapshotRange(SNAPSHOT_WINDOW_DAYS);
+  if (!granted.some(permission => permission.accessType === 'read')) {
+    throw new Error('Allow Health Connect read permissions to sync your health data.');
+  }
+  const range = getIstSnapshotRange(days);
   const aggregateTypes = [
     'Steps',
     'Distance',
@@ -539,59 +558,97 @@ async function collectDailySnapshots(deviceId: string) {
     'Weight',
     'BloodPressure',
   ];
-  const [aggregateResults, oxygenRecords, workoutRecords] = await Promise.all([
-    Promise.all(
-      aggregateTypes.map(type =>
-        aggregateDaily(type, granted, range.timeRangeFilter),
-      ),
-    ),
+  // Keep successful metrics even when an optional provider cannot read one type.
+  const reads = await Promise.allSettled([
+    ...aggregateTypes.map(type => aggregateDaily(type, granted, range.timeRangeFilter)),
     readOxygenRecords(granted, range.timeRangeFilter),
     readWorkoutRecords(granted, range.timeRangeFilter),
   ]);
+  const readTypes = [...aggregateTypes, 'OxygenSaturation', 'ExerciseSession'];
+  const failedMetrics = reads.flatMap((result, index) =>
+    result.status === 'rejected' ? [readTypes[index]] : [],
+  );
+  const successfulPermissions = granted.filter(permission => !failedMetrics.includes(permission.recordType));
+  const values = reads.map(result => result.status === 'fulfilled' ? result.value : []);
+  const aggregateResults = values.slice(0, aggregateTypes.length) as AggregationGroup[][];
+  const oxygenRecords = values[aggregateTypes.length];
+  const workoutRecords = values[aggregateTypes.length + 1] as HealthConnectWorkout[];
   const groups = Object.fromEntries(
     aggregateTypes.map((type, index) => [type, aggregateResults[index]]),
   ) as Record<string, AggregationGroup[]>;
   const stepsByDate = new Map(
     (groups.Steps || []).map(group => [istDay(group.startTime), group]),
   );
-  const rawDailySteps = hasReadPermission(granted, 'Steps')
-    ? range.dates.map(date => {
-        const group = stepsByDate.get(date);
-        const steps = Number(group?.result.COUNT_TOTAL ?? 0);
-        if (!Number.isSafeInteger(steps) || steps < 0 || steps > 200_000) {
-          throw new Error(`Invalid Health Connect step total for ${date}.`);
-        }
-        const dataOrigins = group?.result.dataOrigins || [];
-        return {
-          date,
-          steps,
-          dataOrigin: [...dataOrigins].sort()[0] || 'com.vitality',
-          recordingMethod: 'automatic' as const,
-          deviceId,
-        };
-      })
-    : [];
-  const stepSnapshots: SnapshotRecord[] = rawDailySteps.map(record => {
-    const start = Date.parse(`${record.date}T00:00:00.000Z`) - IST_OFFSET_MS;
-    return {
-      metricType: 'steps', value: record.steps, unit: 'count',
-      recordedAt: new Date(start).toISOString(), startTime: new Date(start).toISOString(),
-      endTime: new Date(start + 1).toISOString(), source: SOURCE,
-      dataOrigin: record.dataOrigin, recordingMethod: 'automatic',
-      sourceRecordId: `health_connect:steps:ist:${record.date}:${record.dataOrigin}`.slice(0, 256),
-      sourceVersion: 1, deviceId, metadata: { aggregation: 'daily', timezone: 'Asia/Kolkata' },
-    };
-  });
+  let stepSnapshots: SnapshotRecord[] = [];
+  try {
+    const rawDailySteps = hasReadPermission(successfulPermissions, 'Steps')
+      ? range.dates.map(date => {
+          const group = stepsByDate.get(date);
+          const steps = Number(group?.result.COUNT_TOTAL ?? 0);
+          if (!Number.isSafeInteger(steps) || steps < 0 || steps > 200_000) {
+            throw new Error(`Invalid Health Connect step total for ${date}.`);
+          }
+          const dataOrigins = group?.result.dataOrigins || [];
+          return {
+            date,
+            steps,
+            dataOrigin: [...dataOrigins].sort()[0] || 'com.vitality',
+            recordingMethod: 'automatic' as const,
+            deviceId,
+          };
+        })
+      : [];
+    stepSnapshots = rawDailySteps.map(record => {
+      const start = Date.parse(`${record.date}T00:00:00.000Z`) - IST_OFFSET_MS;
+      return {
+        metricType: 'steps', value: record.steps, unit: 'count',
+        recordedAt: new Date(start).toISOString(), startTime: new Date(start).toISOString(),
+        endTime: new Date(Math.max(start + 1, Math.min(start + DAY_MS, Date.now()))).toISOString(), source: SOURCE,
+        dataOrigin: 'com.vitality.aggregate', recordingMethod: 'automatic',
+        sourceRecordId: `daily-steps:${record.date}:aggregate`.slice(0, 256),
+        sourceVersion: 1, deviceId, metadata: { aggregation: 'daily_total', aggregationScope: 'health_connect', timezone: 'Asia/Kolkata' },
+      };
+    });
+  } catch {
+    stepSnapshots = [];
+    if (!failedMetrics.includes('Steps')) failedMetrics.push('Steps');
+  }
+  const metricTypes: Record<string, string> = { Steps: 'steps', Distance: 'distance', TotalCaloriesBurned: 'calories', SleepSession: 'sleep', HeartRate: 'heart_rate', Weight: 'weight', BloodPressure: 'blood_pressure', OxygenSaturation: 'oxygen_saturation', ExerciseSession: 'workout' };
+  const dailySnapshots: SnapshotRecord[] = [];
+  for (const type of readTypes.filter(type => !['Steps', 'ExerciseSession'].includes(type))) {
+    try {
+      dailySnapshots.push(...makeDailySnapshots(deviceId, range.dates, successfulPermissions.filter(permission => permission.recordType === type), groups, type === 'OxygenSaturation' ? oxygenRecords : []));
+    } catch {
+      if (!failedMetrics.includes(type)) failedMetrics.push(type);
+    }
+  }
+  let workoutSnapshots: SnapshotRecord[] = [];
+  try { workoutSnapshots = makeWorkoutSnapshots(deviceId, workoutRecords).filter(record => range.dates.includes(istDay(record.recordedAt))); }
+  catch { if (!failedMetrics.includes('ExerciseSession')) failedMetrics.push('ExerciseSession'); }
+  const activeMinuteSnapshots: SnapshotRecord[] = [];
+  if (hasReadPermission(successfulPermissions, 'ExerciseSession') && !failedMetrics.includes('ExerciseSession')) {
+    for (const date of range.dates) {
+      const sessions = workoutSnapshots.filter(record => istDay(record.recordedAt) === date).sort((a,b) => Date.parse(a.startTime) - Date.parse(b.startTime));
+      let coveredUntil = 0, duration = 0;
+      for (const session of sessions) {
+        const start = Date.parse(session.startTime), end = Date.parse(session.endTime);
+        duration += Math.max(0, end - Math.max(start, coveredUntil));
+        coveredUntil = Math.max(coveredUntil, end);
+      }
+      const start = Date.parse(`${date}T00:00:00+05:30`);
+      activeMinuteSnapshots.push({ metricType: 'active_minutes', value: roundValue(duration / 60000, 2), unit: 'min', recordedAt: new Date(start).toISOString(), startTime: new Date(start).toISOString(), endTime: new Date(start + 1).toISOString(), source: SOURCE, dataOrigin: 'com.vitality.aggregate', recordingMethod: 'automatic', sourceRecordId: `health_connect:active:minutes:ist:${date}`, sourceVersion: 1, deviceId, metadata: { aggregation: 'daily', timezone: 'Asia/Kolkata' } });
+    }
+  }
+  const readableMetrics = new Set(successfulPermissions.filter(permission => !failedMetrics.includes(permission.recordType)).filter(permission => permission.accessType === 'read').map(permission => metricTypes[permission.recordType]).filter(Boolean));
   const versioned = await applySnapshotVersions([
-    ...makeDailySnapshots(deviceId, range.dates, granted, groups, oxygenRecords),
-    ...makeWorkoutSnapshots(deviceId, workoutRecords),
+    ...dailySnapshots,
+    ...activeMinuteSnapshots,
+    ...workoutSnapshots,
     ...stepSnapshots,
-  ]);
-  const changedStepIds = new Set(versioned.changedRecords.filter(record => record.metricType === 'steps').map(record => record.sourceRecordId));
-  const dailySteps = rawDailySteps.filter(record => changedStepIds.has(`health_connect:steps:ist:${record.date}:${record.dataOrigin}`.slice(0, 256)));
+  ], userId, deviceId, range.dates, readableMetrics);
   return {
-    records: versioned.changedRecords.filter(record => record.metricType !== 'steps'),
-    dailySteps,
+    records: versioned.changedRecords,
+    failedMetrics,
     saveVersions: versioned.save,
   };
 }
@@ -599,25 +656,28 @@ async function collectDailySnapshots(deviceId: string) {
 async function lastSuccessfulSyncAt(userId: string) {
   const credentials = await Keychain.getGenericPassword({ service: LAST_SYNC_STORE_SERVICE });
   if (!credentials || credentials.username !== userId) return 0;
-  try { return (JSON.parse(credentials.password) as SyncWatermark).lastSuccessAt || 0; }
+  try {
+    const watermark = JSON.parse(credentials.password) as SyncWatermark;
+    return watermark.schemaVersion === 3 && Number.isFinite(watermark.lastSuccessAt) && watermark.lastSuccessAt > 0 && watermark.lastSuccessAt <= Date.now() ? watermark.lastSuccessAt : 0;
+  }
   catch { return 0; }
 }
 
 async function saveSuccessfulSyncAt(userId: string) {
-  const watermark: SyncWatermark = { lastSuccessAt: Date.now() };
+  const watermark: SyncWatermark = { lastSuccessAt: Date.now(), schemaVersion: 3 };
   await Keychain.setGenericPassword(userId, JSON.stringify(watermark), {
     service: LAST_SYNC_STORE_SERVICE,
     accessible: Keychain.ACCESSIBLE.AFTER_FIRST_UNLOCK,
   });
 }
 
-async function uploadHealthBatch(batch: SnapshotRecord[]) {
+async function uploadHealthBatch(batch: SnapshotRecord[], userId: string) {
   for (let attempt = 0; ; attempt += 1) {
     try {
       return await authenticatedRequest<{
         created?: number;
         duplicates?: number;
-      }>('POST', '/health/sync', { records: batch, includeRecords: false }, 60_000);
+      }>('POST', '/health/sync', { records: batch, includeRecords: false }, 60_000, userId);
     } catch (error) {
       if (attempt > 0 || !isRetryableNetworkFailure(error)) throw error;
       await new Promise<void>(resolve => setTimeout(resolve, 1000));
@@ -630,32 +690,10 @@ function isRetryableNetworkFailure(error: unknown) {
     ['ERR_NETWORK', 'ECONNABORTED', 'ETIMEDOUT'].includes(error.code || '');
 }
 
-async function uploadDailySteps(records: DailyStepsUpload[]) {
-  const result = { created: 0, duplicates: 0 };
-  for (const record of records) {
-    let response;
-    for (let attempt = 0; ; attempt += 1) {
-      try {
-        response = await authenticatedRequest<{
-          duplicate?: boolean;
-          updated?: boolean;
-        }>('POST', '/health/steps/daily', record);
-        break;
-      } catch (error) {
-        if (attempt > 0 || !isRetryableNetworkFailure(error)) throw error;
-        await new Promise<void>(resolve => setTimeout(resolve, 1000));
-      }
-    }
-    if (response.duplicate) result.duplicates += 1;
-    else if (!response.updated) result.created += 1;
-  }
-  return result;
-}
-
 export function syncRecentHealthData(options: { force?: boolean } = {}): Promise<HealthSyncResult> {
   if (activeSync) {
     if (options.force && !activeSyncForced) {
-      return activeSync.then(() => syncRecentHealthData(options));
+      return activeSync.then(() => syncRecentHealthData(options), () => syncRecentHealthData(options));
     }
     return activeSync;
   }
@@ -669,24 +707,25 @@ export function syncRecentHealthData(options: { force?: boolean } = {}): Promise
       return { ...emptySyncResult(), throttled: true };
     }
     const deviceId = await ensureHealthConnectDevice();
-    const { records, dailySteps, saveVersions } = await collectDailySnapshots(deviceId);
+    const lastSync = await lastSuccessfulSyncAt(userId);
+    // Backfill up to 30 days on first sync or after a gap; reread seven days for corrections.
+    const days = Math.min(30, Math.max(SNAPSHOT_WINDOW_DAYS,
+      lastSync ? Math.ceil((Date.now() - lastSync) / DAY_MS) + 1 : 30));
+    const { records, failedMetrics, saveVersions } = await collectDailySnapshots(deviceId, days, userId);
     let synced = 0;
     let created = 0;
     let duplicates = 0;
     for (let offset = 0; offset < records.length; offset += MAX_BATCH_SIZE) {
       const batch = records.slice(offset, offset + MAX_BATCH_SIZE);
-      const result = await uploadHealthBatch(batch);
+      const result = await uploadHealthBatch(batch, userId);
       synced += batch.length;
       created += Number(result.created) || 0;
       duplicates += Number(result.duplicates) || 0;
     }
-    const stepResult = await uploadDailySteps(dailySteps);
-    created += stepResult.created;
-    duplicates += stepResult.duplicates;
+    if ((await readSession())?.user?.id !== userId) throw new Error('Account changed. Please retry health sync.');
     await saveVersions();
-    await saveSuccessfulSyncAt(userId);
-    synced += dailySteps.length;
-    return { synced, created, duplicates };
+    if (!failedMetrics.length) await saveSuccessfulSyncAt(userId);
+    return { synced, created, duplicates, ...(failedMetrics.length ? { failedMetrics } : {}) };
   })().finally(() => {
     activeSync = null;
     activeSyncForced = false;

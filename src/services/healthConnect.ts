@@ -24,6 +24,7 @@ export const HEALTH_PERMISSIONS: Permission[] = [
 ];
 
 export interface TodayHealthData {
+  failedMetrics?: string[];
   status: 'ready' | 'permission-required' | 'unavailable' | 'unsupported';
   steps: number | null;
   distanceMeters: number | null;
@@ -200,51 +201,29 @@ export const readTodayHealthData = async (
     timeRangeSlicer: { duration: 'HOURS' as const, length: 1 },
   };
 
-  const [
-    stepsResult,
-    distanceResult,
-    caloriesResult,
-    exerciseResult,
-    hourlyStepsResult,
-    hourlyCaloriesResult,
-    hourlyExerciseResult,
-    workoutRecords,
-  ] = await Promise.all([
-    hasSteps ? aggregateRecord({ recordType: 'Steps', timeRangeFilter }) : null,
-    hasDistance
-      ? aggregateRecord({ recordType: 'Distance', timeRangeFilter })
-      : null,
-    hasCalories
-      ? aggregateRecord({ recordType: 'TotalCaloriesBurned', timeRangeFilter })
-      : null,
-    hasExercise
-      ? aggregateRecord({ recordType: 'ExerciseSession', timeRangeFilter })
-      : null,
-    includeHourlyData && hasSteps
-      ? aggregateGroupByDuration({
-          recordType: 'Steps',
-          ...hourlyFilter,
-        })
-      : null,
-    includeHourlyData && hasCalories
-      ? aggregateGroupByDuration({
-          recordType: 'TotalCaloriesBurned',
-          ...hourlyFilter,
-        })
-      : null,
-    includeHourlyData && hasExercise
-      ? aggregateGroupByDuration({
-          recordType: 'ExerciseSession',
-          ...hourlyFilter,
-        })
-      : null,
-    hasExercise
-      ? readRecords('ExerciseSession', {
-          timeRangeFilter,
-          ascendingOrder: true,
-          pageSize: 1000,
-        })
-      : null,
+  const failedMetrics: string[] = [];
+  const safeRead = async <T>(type: string, read: () => Promise<T>): Promise<T | null> => {
+    try { return await read(); }
+    catch { if (!failedMetrics.includes(type)) failedMetrics.push(type); return null; }
+  };
+  const readWorkouts = async () => {
+    const records: Awaited<ReturnType<typeof readRecords<'ExerciseSession'>>>['records'] = [];
+    let pageToken: string | undefined;
+    do {
+      const page = await readRecords('ExerciseSession', { timeRangeFilter, ascendingOrder: true, pageSize: 1000, ...(pageToken ? {pageToken} : {}) });
+      records.push(...page.records); pageToken = page.pageToken || undefined;
+    } while (pageToken);
+    return { records };
+  };
+  const [stepsResult, distanceResult, caloriesResult, exerciseResult, hourlyStepsResult, hourlyCaloriesResult, hourlyExerciseResult, workoutRecords] = await Promise.all([
+    hasSteps ? safeRead('Steps', () => aggregateRecord({ recordType: 'Steps', timeRangeFilter })) : null,
+    hasDistance ? safeRead('Distance', () => aggregateRecord({ recordType: 'Distance', timeRangeFilter })) : null,
+    hasCalories ? safeRead('TotalCaloriesBurned', () => aggregateRecord({ recordType: 'TotalCaloriesBurned', timeRangeFilter })) : null,
+    hasExercise ? safeRead('ExerciseSession', () => aggregateRecord({ recordType: 'ExerciseSession', timeRangeFilter })) : null,
+    includeHourlyData && hasSteps ? safeRead('Steps', () => aggregateGroupByDuration({ recordType: 'Steps', ...hourlyFilter })) : null,
+    includeHourlyData && hasCalories ? safeRead('TotalCaloriesBurned', () => aggregateGroupByDuration({ recordType: 'TotalCaloriesBurned', ...hourlyFilter })) : null,
+    includeHourlyData && hasExercise ? safeRead('ExerciseSession', () => aggregateGroupByDuration({ recordType: 'ExerciseSession', ...hourlyFilter })) : null,
+    hasExercise ? safeRead('ExerciseSession', readWorkouts) : null,
   ]);
 
   const toHourlyValues = <T extends { startTime: string }>(
@@ -257,13 +236,14 @@ export const readTodayHealthData = async (
 
     const values = EMPTY_HOURS();
     results.forEach(result => {
-      values[new Date(result.startTime).getHours()] += valueFor(result);
+      values[new Date(Date.parse(result.startTime) + IST_OFFSET_MS).getUTCHours()] += valueFor(result);
     });
     return values;
   };
 
   return {
     status: 'ready',
+    ...(failedMetrics.length ? { failedMetrics } : {}),
     steps: stepsResult?.COUNT_TOTAL ?? null,
     distanceMeters: distanceResult?.DISTANCE.inMeters ?? null,
     calories: caloriesResult?.ENERGY_TOTAL.inKilocalories ?? null,

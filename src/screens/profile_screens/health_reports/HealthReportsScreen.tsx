@@ -22,6 +22,7 @@ import { ProfileScreenNavigation } from '../components/ProfileScreenLayout';
 import createStyles from './styles.HealthReport';
 import { authenticatedRequest } from '../../../services/authenticatedApi';
 import { apiErrorMessage } from '../../../services/api';
+import { istDateKey } from '../../../utils/healthDates';
 import { readStepsHistory } from '../../../services/healthConnect';
 
 const METRICS = {
@@ -56,11 +57,7 @@ const HealthReportsScreen: React.FC<{
   const [weekStepTotal, setWeekStepTotal] = useState(0);
   const to = new Date();
   const from = new Date(Date.now() - 6 * 86400000);
-  const dateKey = (date: Date) =>
-    `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(
-      2,
-      '0',
-    )}-${String(date.getDate()).padStart(2, '0')}`;
+  const dateKey = istDateKey;
   const isFocused = useIsFocused();
   React.useEffect(() => {
     if (!isFocused) return;

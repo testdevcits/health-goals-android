@@ -32,31 +32,25 @@ export const useTodayHealthData = (
     let isActive = true;
     setState(previous => ({ ...previous, loading: true, error: null, syncError: null }));
 
+    // Server sync must not depend on every optional dashboard read succeeding.
+    void syncRecentHealthData()
+      .then(result => {
+        if (isActive) setState(previous => ({
+          ...previous,
+          syncVersion: previous.syncVersion + 1,
+          syncError: result.failedMetrics?.length
+            ? `Could not read ${result.failedMetrics.join(', ')}. Retry sync.` : null,
+        }));
+      })
+      .catch(error => {
+        if (isActive) setState(previous => ({
+          ...previous,
+          syncError: error instanceof Error ? error.message : 'Could not send health data to the server.',
+        }));
+      });
+
     readTodayHealthData(includeHourlyData)
       .then(data => {
-        if (data.status === 'ready') {
-          void syncRecentHealthData()
-            .then(() => {
-              if (isActive) {
-                setState(previous => ({
-                  ...previous,
-                  syncVersion: previous.syncVersion + 1,
-                }));
-              }
-            })
-            .catch(error => {
-              console.warn('Could not sync Health Connect data:', error);
-              if (isActive) {
-                setState(previous => ({
-                  ...previous,
-                  syncError:
-                    error instanceof Error
-                      ? error.message
-                      : 'Could not send health data to the server.',
-                }));
-              }
-            });
-        }
         if (isActive) {
           setState(previous => ({ ...previous, loading: false, data, error: null }));
         }

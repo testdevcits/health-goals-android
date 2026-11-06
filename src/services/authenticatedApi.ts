@@ -1,5 +1,6 @@
 import axios from 'axios';
 import { api } from './api';
+import { readSession, refreshSession } from './auth';
 
 type ApiResponse<T> = {
   data: T;
@@ -12,10 +13,11 @@ export async function authenticatedRequest<T = unknown>(
   path: string,
   body?: unknown,
   timeout = 30_000,
+  expectedUserId?: string,
 ): Promise<T> {
-  const { readSession, refreshSession } = await import('./auth');
   let session = await readSession();
 
+  if (expectedUserId && session?.user?.id !== expectedUserId) throw new Error('Account changed. Please retry health sync.');
   if (!session?.accessToken) {
     throw new Error('Please sign in to continue.');
   }
@@ -40,6 +42,7 @@ export async function authenticatedRequest<T = unknown>(
     }
 
     session = await refreshSession();
+    if (expectedUserId && session?.user?.id !== expectedUserId) throw new Error('Account changed. Please retry health sync.');
     if (!session?.accessToken) {
       throw error;
     }

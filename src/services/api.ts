@@ -177,7 +177,7 @@ if (__DEV__) {
       }
 
       if (config.data !== undefined) {
-        entries.push(['PAYLOAD', sanitizeRequestPayload(config.data)]);
+        entries.push(['PAYLOAD', /\/health(?:\/|\?|$)/.test(config.url || '') ? '[Health payload omitted]' : sanitizeRequestPayload(config.data)]);
       } else {
         entries.push(['PAYLOAD', 'None']);
       }
@@ -205,7 +205,7 @@ if (__DEV__) {
             Date.now() - (requestStartedAt.get(response.config) ?? Date.now())
           }ms`,
         ],
-        ['BODY', sanitizeValue(response.data)],
+        ['BODY', /\/health(?:\/|\?|$)/.test(response.config.url || '') ? '[Health response omitted]' : sanitizeValue(response.data)],
       ]);
 
       return response;
@@ -228,7 +228,7 @@ if (__DEV__) {
         }
 
         if (error.response?.data !== undefined) {
-          entries.push(['RESPONSE BODY', sanitizeValue(error.response.data)]);
+          entries.push(['RESPONSE BODY', /\/health(?:\/|\?|$)/.test(config?.url || '') ? '[Health response omitted]' : sanitizeValue(error.response.data)]);
         }
 
         console.error(

@@ -31,6 +31,7 @@ import { authenticatedRequest } from '../../../services/authenticatedApi';
 import { getCurrentUser } from '../../../services/profile';
 import { apiErrorMessage } from '../../../services/api';
 import { showAppToast } from '../../../utils/appToast';
+import { istDateKey, recentIstDates } from '../../../utils/healthDates';
 import { readStepsHistory } from '../../../services/healthConnect';
 
 const metricTypes = {
@@ -79,20 +80,13 @@ const DailyActivityTrends: React.FC<{
                   metricType: 'steps',
                   value: item.value,
                   unit: item.unit,
-                  recordedAt: `${item.date}T12:00:00`,
+                  recordedAt: `${item.date}T12:00:00+05:30`,
                 })),
               }))
-            : authenticatedRequest<{
-                records: Array<{
-                  metricType: string;
-                  value: number;
-                  unit: string;
-                  recordedAt: string;
-                }>;
-              }>(
-                'GET',
-                `/health/records?metricType=${metricTypes[activeMetric]}`,
-              ),
+            : activeMetric === 'Stress' ? Promise.reject(new Error('Stress readings are not available from the connected health sources.'))
+            : authenticatedRequest<{history:Array<{date:string;value:number;unit:string}>}>(
+                'GET', `/health/history?metricType=${metricTypes[activeMetric]}&from=${recentIstDates()[0]}&to=${istDateKey(new Date())}`,
+              ).then(result => ({records:result.history.map(row=>({metricType:metricTypes[activeMetric],value:row.value,unit:row.unit,recordedAt:`${row.date}T12:00:00+05:30`}))})),
           getCurrentUser(),
         ]);
         if (!active) return;
@@ -115,12 +109,7 @@ const DailyActivityTrends: React.FC<{
           recordsResult.status === 'fulfilled' &&
           recordsResult.value.records?.length
         ) {
-          const records = recordsResult.value.records
-            .filter(
-              row =>
-                new Date(row.recordedAt) >= new Date(Date.now() - 7 * 86400000),
-            )
-            .reverse();
+          const records = [...recordsResult.value.records].sort((a,b)=>Date.parse(a.recordedAt)-Date.parse(b.recordedAt));
           if (records.length) {
             const values = records.map(row => Number(row.value));
             const average = Math.round(
@@ -136,14 +125,8 @@ const DailyActivityTrends: React.FC<{
                 savedGoal ||
                   goalValuesRef.current[activeMetric].replace(/,/g, ''),
               ) * (activeMetric === 'Sleep' && !savedGoal ? 60 : 1);
-            const bars = [
-              ...Array(Math.max(0, 7 - values.length)).fill(0),
-              ...values.slice(-7),
-            ].map(value =>
-              goal
-                ? Math.max(0, Math.min(100, Math.round((value / goal) * 100)))
-                : 50,
-            );
+            const byDate = new Map(records.map(row=>[istDateKey(row.recordedAt),Number(row.value)]));
+            const bars = recentIstDates().map(date=>byDate.get(date)||0).map(value=>goal?Math.max(0,Math.min(100,Math.round(value/goal*100))):0);
             const averageLabel =
               activeMetric === 'Sleep'
                 ? `${Math.floor(average / 60)}h ${Math.round(average % 60)}m`
@@ -153,28 +136,25 @@ const DailyActivityTrends: React.FC<{
               [activeMetric]: {
                 ...current[activeMetric],
                 bars,
-                stats: current[activeMetric].stats.map((stat, index) =>
-                  index === 0
-                    ? {
-                        ...stat,
-                        value:
-                          activeMetric === 'Steps'
-                            ? total.toLocaleString()
-                            : averageLabel,
-                      }
-                    : index === 1
-                    ? {
-                        ...stat,
-                        value:
-                          activeMetric === 'Sleep'
-                            ? `${(average / 60).toFixed(1)}h`
-                            : String(average),
-                      }
-                    : stat,
-                ),
+                stats: activeMetric === 'Steps' ? [
+                  {value:total.toLocaleString(),label:'Last 7 days'},
+                  {value:String(average),label:'Daily avg'},
+                  {value:String(values.filter(value=>value>=10000).length),label:'Days ≥10K'},
+                  {value:goal?`${Math.round(values.filter(value=>value>=goal).length/7*100)}%`:'—',label:'Goal met'},
+                ] : activeMetric === 'Sleep' ? [
+                  {value:averageLabel,label:'Daily avg'},
+                  {value:`${(Math.max(...values)/60).toFixed(1)}h`,label:'Longest day'},
+                  {value:`${(Math.min(...values)/60).toFixed(1)}h`,label:'Shortest day'},
+                  {value:String(records.length),label:'Days synced'},
+                ] : [
+                  {value:averageLabel,label:'Daily avg'},
+                  {value:String(Math.max(...values)),label:'Highest daily avg'},
+                  {value:String(Math.min(...values)),label:'Lowest daily avg'},
+                  {value:String(records.length),label:'Days synced'},
+                ],
                 insight: `${
                   records.length
-                } synced ${activeMetric.toLowerCase()} readings in the last 7 days. Your average is ${averageLabel}.`,
+                } synced ${activeMetric.toLowerCase()} daily records in the last 7 days. Your average is ${averageLabel}.`,
               },
             }));
             setHasData(true);

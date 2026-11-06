@@ -5,13 +5,14 @@ import { useTheme } from '../../../../theme/useTheme';
 import { createTrendStyles } from '../styles.DailyActivityTrends';
 import { TrendMetric } from '../trendData';
 
-const DAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+import { recentHealthDayLabels } from '../../../../utils/healthDates';
 
 const TrendChart: React.FC<{
   metric: TrendMetric;
   data: { color: string; bars: number[] };
 }> = ({ metric, data }) => {
   const { theme } = useTheme();
+  const days = recentHealthDayLabels();
   const styles = createTrendStyles(theme);
   const maxValue = Math.max(...data.bars, 1);
 
@@ -28,18 +29,18 @@ const TrendChart: React.FC<{
           ]}
         >
           <AppText variant="caption" primary bold>
-            This week
+            Last 7 days
           </AppText>
         </View>
       </View>
       <View style={[styles.chart, { borderBottomColor: theme.colors.border }]}>
         {data.bars.map((value, index) => (
-          <View key={DAYS[index]} style={styles.chartColumn}>
+          <View key={days[index]} style={styles.chartColumn}>
             <View
               style={[
                 styles.chartBar,
                 {
-                  height: Math.max(12, (value / maxValue) * 110),
+                  height: value > 0 ? Math.max(2, (value / maxValue) * 110) : 0,
                   backgroundColor: data.color,
                 },
               ]}
@@ -48,7 +49,7 @@ const TrendChart: React.FC<{
         ))}
       </View>
       <View style={styles.dayLabels}>
-        {DAYS.map(day => (
+        {days.map(day => (
           <AppText
             key={day}
             variant="caption"
