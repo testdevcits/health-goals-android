@@ -123,9 +123,7 @@ const hasReadPermission = (permissions: Permission[], recordType: string) =>
 
 const getTodayRange = () => {
   const today = istDateKey(new Date());
-  const start = new Date(
-    Date.parse(`${today}T00:00:00.000Z`) - IST_OFFSET_MS,
-  );
+  const start = new Date(Date.parse(`${today}T00:00:00.000Z`) - IST_OFFSET_MS);
   const end = new Date(start.getTime() + 24 * 60 * 60 * 1000);
 
   return {
@@ -202,27 +200,88 @@ export const readTodayHealthData = async (
   };
 
   const failedMetrics: string[] = [];
-  const safeRead = async <T>(type: string, read: () => Promise<T>): Promise<T | null> => {
-    try { return await read(); }
-    catch { if (!failedMetrics.includes(type)) failedMetrics.push(type); return null; }
+  const safeRead = async <T>(
+    type: string,
+    read: () => Promise<T>,
+  ): Promise<T | null> => {
+    try {
+      return await read();
+    } catch {
+      if (!failedMetrics.includes(type)) failedMetrics.push(type);
+      return null;
+    }
   };
   const readWorkouts = async () => {
-    const records: Awaited<ReturnType<typeof readRecords<'ExerciseSession'>>>['records'] = [];
+    const records: Awaited<
+      ReturnType<typeof readRecords<'ExerciseSession'>>
+    >['records'] = [];
     let pageToken: string | undefined;
     do {
-      const page = await readRecords('ExerciseSession', { timeRangeFilter, ascendingOrder: true, pageSize: 1000, ...(pageToken ? {pageToken} : {}) });
-      records.push(...page.records); pageToken = page.pageToken || undefined;
+      const page = await readRecords('ExerciseSession', {
+        timeRangeFilter,
+        ascendingOrder: true,
+        pageSize: 1000,
+        ...(pageToken ? { pageToken } : {}),
+      });
+      records.push(...page.records);
+      pageToken = page.pageToken || undefined;
     } while (pageToken);
     return { records };
   };
-  const [stepsResult, distanceResult, caloriesResult, exerciseResult, hourlyStepsResult, hourlyCaloriesResult, hourlyExerciseResult, workoutRecords] = await Promise.all([
-    hasSteps ? safeRead('Steps', () => aggregateRecord({ recordType: 'Steps', timeRangeFilter })) : null,
-    hasDistance ? safeRead('Distance', () => aggregateRecord({ recordType: 'Distance', timeRangeFilter })) : null,
-    hasCalories ? safeRead('TotalCaloriesBurned', () => aggregateRecord({ recordType: 'TotalCaloriesBurned', timeRangeFilter })) : null,
-    hasExercise ? safeRead('ExerciseSession', () => aggregateRecord({ recordType: 'ExerciseSession', timeRangeFilter })) : null,
-    includeHourlyData && hasSteps ? safeRead('Steps', () => aggregateGroupByDuration({ recordType: 'Steps', ...hourlyFilter })) : null,
-    includeHourlyData && hasCalories ? safeRead('TotalCaloriesBurned', () => aggregateGroupByDuration({ recordType: 'TotalCaloriesBurned', ...hourlyFilter })) : null,
-    includeHourlyData && hasExercise ? safeRead('ExerciseSession', () => aggregateGroupByDuration({ recordType: 'ExerciseSession', ...hourlyFilter })) : null,
+  const [
+    stepsResult,
+    distanceResult,
+    caloriesResult,
+    exerciseResult,
+    hourlyStepsResult,
+    hourlyCaloriesResult,
+    hourlyExerciseResult,
+    workoutRecords,
+  ] = await Promise.all([
+    hasSteps
+      ? safeRead('Steps', () =>
+          aggregateRecord({ recordType: 'Steps', timeRangeFilter }),
+        )
+      : null,
+    hasDistance
+      ? safeRead('Distance', () =>
+          aggregateRecord({ recordType: 'Distance', timeRangeFilter }),
+        )
+      : null,
+    hasCalories
+      ? safeRead('TotalCaloriesBurned', () =>
+          aggregateRecord({
+            recordType: 'TotalCaloriesBurned',
+            timeRangeFilter,
+          }),
+        )
+      : null,
+    hasExercise
+      ? safeRead('ExerciseSession', () =>
+          aggregateRecord({ recordType: 'ExerciseSession', timeRangeFilter }),
+        )
+      : null,
+    includeHourlyData && hasSteps
+      ? safeRead('Steps', () =>
+          aggregateGroupByDuration({ recordType: 'Steps', ...hourlyFilter }),
+        )
+      : null,
+    includeHourlyData && hasCalories
+      ? safeRead('TotalCaloriesBurned', () =>
+          aggregateGroupByDuration({
+            recordType: 'TotalCaloriesBurned',
+            ...hourlyFilter,
+          }),
+        )
+      : null,
+    includeHourlyData && hasExercise
+      ? safeRead('ExerciseSession', () =>
+          aggregateGroupByDuration({
+            recordType: 'ExerciseSession',
+            ...hourlyFilter,
+          }),
+        )
+      : null,
     hasExercise ? safeRead('ExerciseSession', readWorkouts) : null,
   ]);
 
@@ -236,7 +295,9 @@ export const readTodayHealthData = async (
 
     const values = EMPTY_HOURS();
     results.forEach(result => {
-      values[new Date(Date.parse(result.startTime) + IST_OFFSET_MS).getUTCHours()] += valueFor(result);
+      values[
+        new Date(Date.parse(result.startTime) + IST_OFFSET_MS).getUTCHours()
+      ] += valueFor(result);
     });
     return values;
   };

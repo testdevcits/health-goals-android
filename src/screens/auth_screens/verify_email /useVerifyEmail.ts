@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { apiErrorMessage } from '../../../services/api';
 import { verifyEmailCode } from '../../../services/auth';
 import { CommonActions } from '@react-navigation/native';

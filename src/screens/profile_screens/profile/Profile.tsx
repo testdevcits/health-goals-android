@@ -1,4 +1,4 @@
-import React, { Suspense, useMemo, useState } from 'react';
+import React, { Suspense } from 'react';
 import {
   Image,
   View,
@@ -14,18 +14,11 @@ import { useTheme } from '../../../theme/useTheme';
 import { AppSettingsRow, AppText } from '../../../components';
 import { spacing } from '../../../theme/spacing';
 import createStyles from './styles.Profile';
-import { getProfileMenuItems } from './conts';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '../../../navigations/ProfileStack';
-import { useIsFocused } from '@react-navigation/native';
-import { authenticatedRequest } from '../../../services/authenticatedApi';
-import { getCurrentUser } from '../../../services/profile';
-import { useAppDispatch, useAppSelector } from '../../../store/hooks';
-import { clearProfile, setProfile } from '../../../store/profileSlice';
 import { AppEmptyState, AppErrorView, AppLoader } from '../../../components';
-import { navigationRef } from '../../../navigations/AppNavigation';
-import { logout } from '../../../services/auth';
+import useProfile from './useProfile';
 
 type ProfileNavigationProp = NativeStackNavigationProp<RootStackParamList>;
 
@@ -39,104 +32,23 @@ const ProfileScreen: React.FC = () => {
   );
 
   const navigation = useNavigation<ProfileNavigationProp>();
-  const menuItems = useMemo(() => getProfileMenuItems(colors), [colors]);
-  const dispatch = useAppDispatch();
-  const user = useAppSelector(state => state.profile.user);
-  const [points, setPoints] = useState(0);
-  const [walletLoading, setWalletLoading] = useState(true);
-  const [profileLoading, setProfileLoading] = useState(!user);
-  const [profileError, setProfileError] = useState('');
-  const [reloadKey, setReloadKey] = useState(0);
-  const isFocused = useIsFocused();
-  React.useEffect(() => {
-    if (!isFocused) return;
-    let active = true;
-    setProfileLoading(true);
-    setProfileError('');
-    Promise.allSettled([
-      getCurrentUser(),
-      authenticatedRequest<{
-        wallet?: { availablePoints?: number; balance?: number };
-      }>('GET', '/wallet'),
-    ])
-      .then(([userResult, walletResult]) => {
-        if (!active) return;
-        const fetchedUser =
-          userResult.status === 'fulfilled' ? userResult.value : null;
-        const wallet =
-          walletResult.status === 'fulfilled'
-            ? walletResult.value.wallet
-            : undefined;
-        if (fetchedUser) dispatch(setProfile(fetchedUser));
-        else if (userResult.status === 'rejected')
-          setProfileError(
-            'We could not load your profile. Check your connection and try again.',
-          );
-        setPoints(Number(wallet?.availablePoints ?? wallet?.balance ?? 0));
-        setWalletLoading(false);
-      })
-      .finally(() => {
-        if (active) setProfileLoading(false);
-      });
-    return () => {
-      active = false;
-    };
-  }, [dispatch, isFocused, reloadKey]);
-  const name = user?.name ?? '';
-  const profileImageUrl = user?.profileImageUrl ?? '';
-  const device = user?.deviceProfile;
-  const phone = device
-    ? [device.brand || device.manufacturer, device.model]
-        .filter(Boolean)
-        .join(' ')
-    : '';
-  const initials =
-    name
-      .split(/\s+/)
-      .filter(Boolean)
-      .map(part => part[0])
-      .join('')
-      .slice(0, 2)
-      .toUpperCase() || 'U';
-
-  const handleMenuPress = (id: string) => {
-    switch (id) {
-      case 'settings':
-        navigation.navigate('Settings');
-        break;
-
-      case 'devices':
-        navigation.navigate('ConnectedDevices');
-        break;
-
-      case 'rewards':
-        navigation.navigate('Rewards');
-        break;
-
-      case 'privacy':
-        navigation.navigate('Privacy');
-        break;
-
-      case 'reports':
-        navigation.navigate('HealthReports');
-        break;
-
-      case 'support':
-        navigation.navigate('HelpSupport');
-        break;
-    }
-  };
-  const [modalVisible, setModalVisible] = React.useState(false);
-  const handleSignOut = async () => {
-    try {
-      await logout();
-    } catch {
-      /* Clear the local session even while offline. */
-    }
-    dispatch(clearProfile());
-    setModalVisible(false);
-    navigationRef.resetRoot({ index: 0, routes: [{ name: 'Login' }] });
-  };
+  const {
+    menuItems,
+    user,
+    points,
+    walletLoading,
+    profileLoading,
+    profileError,
+    refreshProfile,
+    modalVisible,
+    setModalVisible,
+    handleMenuPress,
+    handleSignOut,
+    name,
+    profileImageUrl,
+    phone,
+    initials,
+  } = useProfile(navigation, colors);
 
   return (
     <View
@@ -192,10 +104,7 @@ const ProfileScreen: React.FC = () => {
         {!user && profileLoading ? (
           <AppLoader message="Loading your profile…" />
         ) : !user && profileError ? (
-          <AppErrorView
-            message={profileError}
-            onRefresh={() => setReloadKey(value => value + 1)}
-          />
+          <AppErrorView message={profileError} onRefresh={refreshProfile} />
         ) : !user ? (
           <AppEmptyState
             title="Profile unavailable"

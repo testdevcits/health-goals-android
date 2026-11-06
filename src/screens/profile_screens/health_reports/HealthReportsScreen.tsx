@@ -1,12 +1,5 @@
-import React, { useState } from 'react';
-import {
-  Alert,
-  NativeModules,
-  Pressable,
-  ScrollView,
-  View,
-} from 'react-native';
-import { useIsFocused } from '@react-navigation/native';
+import React from 'react';
+import { Alert, Pressable, ScrollView, View } from 'react-native';
 import {
   AppButton,
   AppEmptyState,
@@ -20,17 +13,7 @@ import {
 import { useTheme } from '../../../theme/useTheme';
 import { ProfileScreenNavigation } from '../components/ProfileScreenLayout';
 import createStyles from './styles.HealthReport';
-import { authenticatedRequest } from '../../../services/authenticatedApi';
-import { apiErrorMessage } from '../../../services/api';
-import { istDateKey } from '../../../utils/healthDates';
-import { readStepsHistory } from '../../../services/healthConnect';
-
-const METRICS = {
-  Steps: 'steps',
-  Sleep: 'sleep',
-  Workouts: 'workout',
-} as const;
-type DailyValue = { date: string; value: number; count: number; unit: string };
+import useHealthReports, { type HealthReportTab } from './useHealthReports';
 
 const HealthReportsScreen: React.FC<{
   navigation: ProfileScreenNavigation;
@@ -38,110 +21,20 @@ const HealthReportsScreen: React.FC<{
   const { theme } = useTheme();
   const { colors } = theme;
   const styles = createStyles(colors);
-  const [activeTab, setActiveTab] = useState('Steps');
-  const [history, setHistory] = useState<DailyValue[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
-  const [reloadKey, setReloadKey] = useState(0);
-  const [dailyCoins, setDailyCoins] = useState<
-    Array<{
-      day: string;
-      totals?: {
-        steps?: number;
-        workoutMinutes?: number;
-        sleepMinutes?: number;
-      };
-      creditedCoins?: number;
-    }>
-  >([]);
-  const [weekStepTotal, setWeekStepTotal] = useState(0);
-  const to = new Date();
-  const from = new Date(Date.now() - 6 * 86400000);
-  const dateKey = istDateKey;
-  const isFocused = useIsFocused();
-  React.useEffect(() => {
-    if (!isFocused) return;
-    let active = true;
-    setLoading(true);
-    setError('');
-    const requestTo = new Date();
-    const requestFrom = new Date(requestTo.getTime() - 6 * 86400000);
-    const metricType =
-      activeTab === 'Workouts'
-        ? 'workout'
-        : METRICS[activeTab as keyof typeof METRICS];
-    Promise.all([
-      activeTab === 'Steps'
-        ? readStepsHistory(7)
-        : authenticatedRequest<{ history: DailyValue[] }>(
-            'GET',
-            `/health/history?metricType=${metricType}&from=${dateKey(
-              requestFrom,
-            )}&to=${dateKey(requestTo)}`,
-          ).then(result => result.history),
-      authenticatedRequest<{
-        items: Array<{
-          day: string;
-          totals?: {
-            steps?: number;
-            workoutMinutes?: number;
-            sleepMinutes?: number;
-          };
-          creditedCoins?: number;
-        }>;
-      }>(
-        'GET',
-        `/activity/history?from=${dateKey(requestFrom)}&to=${dateKey(
-          requestTo,
-        )}&limit=7`,
-      ),
-      readStepsHistory(7),
-    ])
-      .then(([reportHistory, coins, stepHistory]) => {
-        if (active) {
-          setHistory(reportHistory || []);
-          setDailyCoins(coins.items || []);
-          setWeekStepTotal(
-            stepHistory.reduce((sum, item) => sum + item.value, 0),
-          );
-        }
-      })
-      .catch(cause => {
-        if (active) setError(apiErrorMessage(cause));
-      })
-      .finally(() => {
-        if (active) setLoading(false);
-      });
-    return () => {
-      active = false;
-    };
-  }, [activeTab, isFocused, reloadKey]);
-  const shareReport = (title: string) => {
-    const total = history.reduce((sum, item) => sum + item.value, 0);
-    const content = [
-      `Report period: ${from.toLocaleDateString()} – ${to.toLocaleDateString()}`,
-      `Selected metric: ${activeTab}`,
-      `Synced total: ${total.toLocaleString()} ${history[0]?.unit || ''}`,
-      `Daily average: ${
-        history.length ? Math.round(total / history.length).toLocaleString() : 0
-      }`,
-      `Coins credited: ${dailyCoins.reduce(
-        (sum, item) => sum + (item.creditedCoins || 0),
-        0,
-      )}`,
-      `Days with activity: ${dailyCoins.length}`,
-      `Data points: ${history.length}`,
-    ].join('\n');
-    const sharePdf = NativeModules.HealthAppConfig?.sharePdf;
-    if (typeof sharePdf !== 'function') {
-      Alert.alert(
-        'Report export unavailable',
-        'Update the Android app build to enable PDF sharing.',
-      );
-      return;
-    }
-    sharePdf(title, content);
-  };
+  const {
+    activeTab,
+    setActiveTab,
+    history,
+    loading,
+    error,
+    refresh,
+    dailyCoins,
+    weekStepTotal,
+    from,
+    to,
+    shareReport,
+    totalCoins,
+  } = useHealthReports();
 
   return (
     <View style={{ flex: 1, backgroundColor: colors.backgroundSecondary }}>
@@ -171,7 +64,7 @@ const HealthReportsScreen: React.FC<{
             {['Steps', 'Sleep', 'Workouts'].map(tab => (
               <Pressable
                 key={tab}
-                onPress={() => setActiveTab(tab)}
+                onPress={() => setActiveTab(tab as HealthReportTab)}
                 style={[
                   styles.tab,
                   activeTab === tab && {
@@ -192,10 +85,7 @@ const HealthReportsScreen: React.FC<{
           {loading ? (
             <AppLoader message="Loading your health report…" />
           ) : error ? (
-            <AppErrorView
-              message={error}
-              onRefresh={() => setReloadKey(value => value + 1)}
-            />
+            <AppErrorView message={error} onRefresh={refresh} />
           ) : history.length === 0 ? (
             <AppEmptyState
               title="No health data for this week"
@@ -296,12 +186,7 @@ const HealthReportsScreen: React.FC<{
                       'Avg Sleep',
                     ],
                     [history.length.toString(), 'Days Recorded'],
-                    [
-                      dailyCoins
-                        .reduce((sum, day) => sum + (day.creditedCoins || 0), 0)
-                        .toString(),
-                      'Coins Earned',
-                    ],
+                    [totalCoins.toString(), 'Coins Earned'],
                   ]
                 : [
                     [
@@ -316,12 +201,7 @@ const HealthReportsScreen: React.FC<{
                         .toLocaleString(),
                       'Total Minutes',
                     ],
-                    [
-                      dailyCoins
-                        .reduce((sum, day) => sum + (day.creditedCoins || 0), 0)
-                        .toString(),
-                      'Coins Earned',
-                    ],
+                    [totalCoins.toString(), 'Coins Earned'],
                   ]
               ).map(([value, label]) => (
                 <ProfileMetric key={label} value={value} label={label} />
@@ -358,10 +238,7 @@ const HealthReportsScreen: React.FC<{
           {loading ? (
             <AppLoader message="Loading activity settlement…" />
           ) : error ? (
-            <AppErrorView
-              message={error}
-              onRefresh={() => setReloadKey(value => value + 1)}
-            />
+            <AppErrorView message={error} onRefresh={refresh} />
           ) : dailyCoins.length === 0 ? (
             <AppEmptyState
               title="No activity settlement yet"
@@ -370,9 +247,7 @@ const HealthReportsScreen: React.FC<{
           ) : (
             <View style={styles.metricsRow}>
               <ProfileMetric
-                value={dailyCoins
-                  .reduce((sum, day) => sum + (day.creditedCoins || 0), 0)
-                  .toLocaleString()}
+                value={totalCoins.toLocaleString()}
                 label="Coins Earned"
               />
               <ProfileMetric

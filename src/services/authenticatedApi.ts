@@ -17,7 +17,8 @@ export async function authenticatedRequest<T = unknown>(
 ): Promise<T> {
   let session = await readSession();
 
-  if (expectedUserId && session?.user?.id !== expectedUserId) throw new Error('Account changed. Please retry health sync.');
+  if (expectedUserId && session?.user?.id !== expectedUserId)
+    throw new Error('Account changed. Please retry health sync.');
   if (!session?.accessToken) {
     throw new Error('Please sign in to continue.');
   }
@@ -42,7 +43,8 @@ export async function authenticatedRequest<T = unknown>(
     }
 
     session = await refreshSession();
-    if (expectedUserId && session?.user?.id !== expectedUserId) throw new Error('Account changed. Please retry health sync.');
+    if (expectedUserId && session?.user?.id !== expectedUserId)
+      throw new Error('Account changed. Please retry health sync.');
     if (!session?.accessToken) {
       throw error;
     }

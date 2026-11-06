@@ -6,11 +6,11 @@ This is the canonical, Android-specific integration guide. It documents the app'
 
 All app API routes use the `/api/v1` prefix.
 
-| Environment | Base URL example |
-| --- | --- |
-| Android emulator + local backend | `http://10.0.2.2:8000/api/v1` |
-| Physical phone + local backend | `http://<computer-LAN-IP>:8000/api/v1` |
-| Deployed backend | `https://health-goals-backend.vercel.app/api/v1` |
+| Environment                      | Base URL example                                 |
+| -------------------------------- | ------------------------------------------------ |
+| Android emulator + local backend | `http://10.0.2.2:8000/api/v1`                    |
+| Physical phone + local backend   | `http://<computer-LAN-IP>:8000/api/v1`           |
+| Deployed backend                 | `https://health-goals-backend.vercel.app/api/v1` |
 
 For a local emulator, `10.0.2.2` points to the development computer. A physical phone must use the computer's LAN IP and both devices must be on the same network. The backend must listen on port `8000` and allow the phone/web origin where applicable.
 
@@ -79,21 +79,21 @@ The app stores session tokens in Android Keychain/Keystore-backed storage. Acces
 
 All paths in this table are relative to `/api/v1`.
 
-| Method and path | Auth | Purpose / body |
-| --- | --- | --- |
-| `POST /auth/register` | No | `{ "name", "email", "password", "companyCode?", "goal?" }`. Returns `202` and an OTP `challengeId`; it does not return an authenticated session yet. |
-| `POST /auth/login` | No | `{ "identifier": "email or public user ID", "password" }`. Returns `202`, OTP challenge and masked email. Login is OTP-verified. |
-| `POST /auth/verify-otp` | No | `{ "challengeId", "otp" }`. Completes registration/login and returns `{ user, accessToken, refreshToken, ... }`. The legacy `token` field may also be present. |
-| `POST /auth/google` | No | `{ "idToken" }` from Google Identity. Returns the user and tokens when Google sign-in is configured on the backend. |
-| `POST /auth/password/forgot` | No | `{ "email" }`. Requests a reset OTP; response avoids confirming whether the email exists. |
-| `POST /auth/password/reset` | No | `{ "challengeId", "otp", "password" }`. New password must be at least 8 characters. |
-| `POST /auth/refresh` | Refresh token in body | `{ "refreshToken" }`. Returns rotated access/refresh tokens. Refresh tokens are single-use; persist the new pair before making another refresh request. |
-| `POST /auth/logout` | Yes | Invalidates the current server session. The Android app clears local tokens immediately. |
-| `GET /auth/me` | Yes | Returns `{ "user": ... }` for the signed-in user. |
-| `PATCH /auth/me` | Yes | Update permitted profile fields: `name`, `goal`, `heightCm`, `weightKg`, `birthDate`, and optional contact `phone` (10–15 digits; encrypted at rest). |
-| `PATCH /auth/me/goals` | Yes | `{ "metricType": "steps", "targetValue": 8000 }`; goal metrics currently supported by backend: `steps`, `sleep`, `heart_rate`, `stress`. |
-| `POST /auth/me/device` | Yes | Save phone profile: `deviceIdentifier`, `manufacturer`, `brand`, `model`, `platform: "android"`, `osVersion`, `appVersion`. |
-| `POST /auth/me/profile-image` | Yes | `{ "image": "<data URI/base64 image>" }`; server stores the image in configured Cloudinary and returns updated user. |
+| Method and path               | Auth                  | Purpose / body                                                                                                                                                 |
+| ----------------------------- | --------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `POST /auth/register`         | No                    | `{ "name", "email", "password", "companyCode?", "goal?" }`. Returns `202` and an OTP `challengeId`; it does not return an authenticated session yet.           |
+| `POST /auth/login`            | No                    | `{ "identifier": "email or public user ID", "password" }`. Returns `202`, OTP challenge and masked email. Login is OTP-verified.                               |
+| `POST /auth/verify-otp`       | No                    | `{ "challengeId", "otp" }`. Completes registration/login and returns `{ user, accessToken, refreshToken, ... }`. The legacy `token` field may also be present. |
+| `POST /auth/google`           | No                    | `{ "idToken" }` from Google Identity. Returns the user and tokens when Google sign-in is configured on the backend.                                            |
+| `POST /auth/password/forgot`  | No                    | `{ "email" }`. Requests a reset OTP; response avoids confirming whether the email exists.                                                                      |
+| `POST /auth/password/reset`   | No                    | `{ "challengeId", "otp", "password" }`. New password must be at least 8 characters.                                                                            |
+| `POST /auth/refresh`          | Refresh token in body | `{ "refreshToken" }`. Returns rotated access/refresh tokens. Refresh tokens are single-use; persist the new pair before making another refresh request.        |
+| `POST /auth/logout`           | Yes                   | Invalidates the current server session. The Android app clears local tokens immediately.                                                                       |
+| `GET /auth/me`                | Yes                   | Returns `{ "user": ... }` for the signed-in user.                                                                                                              |
+| `PATCH /auth/me`              | Yes                   | Update permitted profile fields: `name`, `goal`, `heightCm`, `weightKg`, `birthDate`, and optional contact `phone` (10–15 digits; encrypted at rest).          |
+| `PATCH /auth/me/goals`        | Yes                   | `{ "metricType": "steps", "targetValue": 8000 }`; goal metrics currently supported by backend: `steps`, `sleep`, `heart_rate`, `stress`.                       |
+| `POST /auth/me/device`        | Yes                   | Save phone profile: `deviceIdentifier`, `manufacturer`, `brand`, `model`, `platform: "android"`, `osVersion`, `appVersion`.                                    |
+| `POST /auth/me/profile-image` | Yes                   | `{ "image": "<data URI/base64 image>" }`; server stores the image in configured Cloudinary and returns updated user.                                           |
 
 Registration and password login require OTP verification. OTPs expire and have an attempt limit; if that limit is reached, start a new registration/login/reset challenge rather than retrying the old one.
 
@@ -154,7 +154,7 @@ Content-Type: application/json
 }
 ```
 
-Required fields are `metricType`, numeric `value`, `unit`, ISO-compatible `recordedAt`, `source` and stable `sourceRecordId`. `metadata` must be an object of at most 16 KB if supplied. Units must match the metric: `count`, `km`, `kcal`, `min`, `bpm`, `kg`, `mmHg`, `%` or `checkin` as appropriate. Optional `sampleCount` must be a positive integer; BP components must be `systolic` or `diastolic`. Device selectors must be strings referencing the authenticated user’s active device. The backend currently accepts metric types `steps`, `workout`, `meditation`, `water_checkin`, `sleep_checkin`, `running`, `walking`, `heart_rate`, `sleep`, `oxygen_saturation`, `weight`, `blood_pressure`, `calories`, `distance`, and `active_minutes`, each with server-side value bounds. It rejects timestamps more than 5 minutes in the future. Send a stable unique source ID and increase `sourceVersion` for corrections or deletions. A source identity cannot change metric or IST day. Duplicate identities within one batch are rejected before writes; Mongo batches commit atomically. Upload retries are idempotent. The server derives user identity from authentication, and Android refuses to upload/retry captured health data after switching accounts. Health payloads and responses are omitted from development HTTP logs.
+Required fields are `metricType`, numeric `value`, `unit`, ISO-compatible `recordedAt`, `source` and stable `sourceRecordId`. `metadata` must be an object of at most 16 KB if supplied. Units must match the metric: `count`, `km`, `kcal`, `min`, `bpm`, `kg`, `mmHg`, `%` or `checkin` as appropriate. Optional `sampleCount` must be a positive integer; BP components must be `systolic` or `diastolic`. Device selectors must be strings referencing the authenticated user’s active device. The backend currently accepts metric types `steps`, `workout`, `meditation`, `water_checkin`, `sleep_checkin`, `running`, `walking`, `heart_rate`, `sleep`, `oxygen_saturation`, `weight`, `blood_pressure`, `calories`, `distance`, and `active_minutes`, each with server-side value bounds. It rejects timestamps more than 5 minutes in the future. Send a stable unique source ID and increase `sourceVersion` for corrections or deletions. A source identity cannot change metric or IST day. Duplicate identities within one batch are rejected before writes; Mongo batches commit atomically. Upload retries are idempotent. The server derives user identity from authentication, and Android refuses to upload/retry captured health data after switching accounts. Development HTTP logs include health payloads and responses; credential fields such as passwords, tokens and authorization headers remain redacted, while other fields are shown. Treat the logs as sensitive and do not share them publicly.
 
 The Android Health Connect mapper currently uploads daily step totals, daily distance (km), calories (kcal), sleep duration (min), heart rate (bpm), weight (kg), oxygen saturation (%) and systolic/diastolic blood pressure (mmHg), plus actual workout sessions with their activity intervals, if permissions and source records exist. It preserves interval/start-end and Health Connect origin metadata where available. Workout sessions require a stable source ID and origin. Invalid or failed types are reported without blocking successful types. Active minutes are derived from the union of workout intervals, avoiding duplicate time across overlapping sessions. No walking/running distance, stress score, water check-in or meditation session is invented from unrelated readings.
 
@@ -162,8 +162,8 @@ Successful batch response data contains `total`, `created`, `updated`, `duplicat
 
 Other health reads:
 
-| Method and path | Purpose |
-| --- | --- |
+| Method and path                                                                       | Purpose                                                                                                                                                                                  |
+| ------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `GET /health/records?metricType=steps&page=1&limit=100&from=2026-11-01&to=2026-11-06` | Current user's non-deleted records, stable date/id sort, strict IST date filters; returns `records`, `page`, `limit`, `hasMore`, `nextPage`. Follow `nextPage` to read complete history. |
 
 For clients that aggregate Health Connect steps by day, the backend also accepts one compact object via `POST /health/steps/daily` (Bearer auth). Example: `{"date":"2026-11-05","steps":6420,"dataOrigin":"com.example.health","recordingMethod":"automatic","deviceId":"android-install-id"}`. The backend replaces the same user's date/origin total on repeat calls. This endpoint remains for older clients. The current Android build sends canonical aggregated steps through `/health/sync` using `daily-steps:YYYY-MM-DD:aggregate`; do not upload the same day through both contracts. The backend cannot read or aggregate Health Connect records by itself; Android must calculate the total and send it.
@@ -180,13 +180,13 @@ Admin reads synced records with `GET /admin/users/:id/steps` for date-wise step 
 
 The phone sends observed health data; the backend determines qualifying activity and point awards. The client must not add points based on a local step counter. Settlement is server-side, may happen after the activity day, and the progress response distinguishes pending from already credited points.
 
-| Method and path | Purpose |
-| --- | --- |
-| `GET /activity/today` | Today's activity totals and points settlement status. Optional `day=YYYY-MM-DD`. |
-| `GET /activity/history?page=1&limit=20&from=...&to=...` | Daily activity/points history. |
-| `GET /activity/records?page=1&limit=20` | Paginated health/activity records for the current user. |
-| `GET /activity/transactions?page=1&limit=20` | Points ledger entries. |
-| `GET /wallet` | Wallet, transactions and current daily activity progress. |
+| Method and path                                         | Purpose                                                                          |
+| ------------------------------------------------------- | -------------------------------------------------------------------------------- |
+| `GET /activity/today`                                   | Today's activity totals and points settlement status. Optional `day=YYYY-MM-DD`. |
+| `GET /activity/history?page=1&limit=20&from=...&to=...` | Daily activity/points history.                                                   |
+| `GET /activity/records?page=1&limit=20`                 | Paginated health/activity records for the current user.                          |
+| `GET /activity/transactions?page=1&limit=20`            | Points ledger entries.                                                           |
+| `GET /wallet`                                           | Wallet, transactions and current daily activity progress.                        |
 
 Wallet data has `wallet.availablePoints`, `wallet.lifetimeEarned`, and `wallet.lifetimeRedeemed`, plus transaction history and `dailyActivity`. Use `availablePoints` as the spendable balance. Refresh wallet/activity after health sync and after reward redemption; a successful upload does not necessarily mean that day's points are already settled. The `health/sync` response currently returns `total`, `created`, `duplicates`, `rewards` (legacy field; currently empty because sync queues settlement), and `records`. Do not expect an immediate points award from this response.
 
@@ -269,41 +269,41 @@ For the backend-owned partner API, requests use `X-Partner-Key` and live under `
 
 These routes are authenticated and use the same success envelope. They are not required for the coupon flow but are part of the app's wider user experience.
 
-| Method and path | Purpose |
-| --- | --- |
-| `GET /community/feed` | Feed posts. |
-| `GET /community/groups` | Groups the user belongs to. |
-| `GET /community/groups/discover` | Discoverable groups. |
-| `POST /community/groups` | Create group with `name`, optional `description`, `emoji`, `private`. Group capacity is fixed at 10 including its creator; `maxMembers` is ignored/not configurable. |
-| `POST /community/groups/{id}/join` | Join a group. The API rejects joins with HTTP 409 when the configured member limit is full. |
-| `GET /community/groups/{id}` | Group detail. |
-| `GET /community/groups/leaderboard?day=YYYY-MM-DD` | Public groups' daily step rankings. |
-| `GET /community/groups/{id}/activity?day=YYYY-MM-DD` | Group/member daily activity (membership required). |
-| `GET /community/groups/{id}/leaderboard` | Member leaderboard over recent seven days. |
-| `POST /community/groups/{id}/members` | GL adds an active user by `{ "publicId": "USR-..." }`. |
-| `POST /community/groups/{id}/leave` | Leave group; if GL leaves, leadership transfers or an empty group is deleted. |
-| `GET /community/groups/{id}/messages` / `POST` | Read/send group messages. |
-| `GET /community/groups/{id}/challenges` / `POST` | Read/create group challenges. |
-| `GET /community/challenges` | Challenges list/progress. |
-| `POST /community/challenges/{id}/join` | Join challenge. |
-| `GET /community/badges` | User badges. |
+| Method and path                                      | Purpose                                                                                                                                                              |
+| ---------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `GET /community/feed`                                | Feed posts.                                                                                                                                                          |
+| `GET /community/groups`                              | Groups the user belongs to.                                                                                                                                          |
+| `GET /community/groups/discover`                     | Discoverable groups.                                                                                                                                                 |
+| `POST /community/groups`                             | Create group with `name`, optional `description`, `emoji`, `private`. Group capacity is fixed at 10 including its creator; `maxMembers` is ignored/not configurable. |
+| `POST /community/groups/{id}/join`                   | Join a group. The API rejects joins with HTTP 409 when the configured member limit is full.                                                                          |
+| `GET /community/groups/{id}`                         | Group detail.                                                                                                                                                        |
+| `GET /community/groups/leaderboard?day=YYYY-MM-DD`   | Public groups' daily step rankings.                                                                                                                                  |
+| `GET /community/groups/{id}/activity?day=YYYY-MM-DD` | Group/member daily activity (membership required).                                                                                                                   |
+| `GET /community/groups/{id}/leaderboard`             | Member leaderboard over recent seven days.                                                                                                                           |
+| `POST /community/groups/{id}/members`                | GL adds an active user by `{ "publicId": "USR-..." }`.                                                                                                               |
+| `POST /community/groups/{id}/leave`                  | Leave group; if GL leaves, leadership transfers or an empty group is deleted.                                                                                        |
+| `GET /community/groups/{id}/messages` / `POST`       | Read/send group messages.                                                                                                                                            |
+| `GET /community/groups/{id}/challenges` / `POST`     | Read/create group challenges.                                                                                                                                        |
+| `GET /community/challenges`                          | Challenges list/progress.                                                                                                                                            |
+| `POST /community/challenges/{id}/join`               | Join challenge.                                                                                                                                                      |
+| `GET /community/badges`                              | User badges.                                                                                                                                                         |
 
 The backend also attaches a Socket.IO chat gateway for group messages. The Android socket client should authenticate with the current user session; do not use partner API credentials for sockets. For exact socket event names/payloads, inspect `backend/src/socket/chat.gateway.js` alongside `android/src/services/chatSocket.ts` before changing chat behavior.
 
 ## 11. Recommended Android screen/API mapping
 
-| Android screen/feature | Backend calls |
-| --- | --- |
-| Sign up / sign in | `POST /auth/register` or `/auth/login`, then `/auth/verify-otp`; Google: `/auth/google`. |
-| App restore / profile | `/auth/refresh`, `GET /auth/me`, `POST /auth/me/device`, `GET /wallet`. |
-| Edit profile | `GET /auth/me`, `PATCH /auth/me`, optional `/auth/me/profile-image`. |
-| Health permissions and sync | Health Connect on device, `GET/POST /devices`, then `POST /health/sync`. |
-| Home and health charts | `GET /auth/me`, `/health/dashboard`, `/health/history`, `/activity/today`, `/activity/history`, `/wallet`. |
-| Rewards | `GET /wallet`, `GET /rewards`, `GET /redemptions`. |
-| Redeem reward | `POST /rewards/{rewardId}/redeem`, then refresh wallet/rewards/redemptions. |
-| My coupons | `GET /redemptions`; use `GET /redemptions/{id}` to refresh one redemption. |
-| Groups/challenges | `/community/...` routes listed above. |
-| Rule leaderboard, goal progress and earned badges | `GET /rewards/competitions`; refresh `GET /wallet` after a new bonus. |
+| Android screen/feature                            | Backend calls                                                                                              |
+| ------------------------------------------------- | ---------------------------------------------------------------------------------------------------------- |
+| Sign up / sign in                                 | `POST /auth/register` or `/auth/login`, then `/auth/verify-otp`; Google: `/auth/google`.                   |
+| App restore / profile                             | `/auth/refresh`, `GET /auth/me`, `POST /auth/me/device`, `GET /wallet`.                                    |
+| Edit profile                                      | `GET /auth/me`, `PATCH /auth/me`, optional `/auth/me/profile-image`.                                       |
+| Health permissions and sync                       | Health Connect on device, `GET/POST /devices`, then `POST /health/sync`.                                   |
+| Home and health charts                            | `GET /auth/me`, `/health/dashboard`, `/health/history`, `/activity/today`, `/activity/history`, `/wallet`. |
+| Rewards                                           | `GET /wallet`, `GET /rewards`, `GET /redemptions`.                                                         |
+| Redeem reward                                     | `POST /rewards/{rewardId}/redeem`, then refresh wallet/rewards/redemptions.                                |
+| My coupons                                        | `GET /redemptions`; use `GET /redemptions/{id}` to refresh one redemption.                                 |
+| Groups/challenges                                 | `/community/...` routes listed above.                                                                      |
+| Rule leaderboard, goal progress and earned badges | `GET /rewards/competitions`; refresh `GET /wallet` after a new bonus.                                      |
 
 ## 12. Implementation and safety checklist
 
@@ -358,12 +358,12 @@ not part of this API contract.
 
 No claim endpoint or manual claim step is required for rule achievements.
 
-| Rule type | Award trigger | User receives |
-| --- | --- | --- |
-| Badge goal (`BADGE`) | Enrolled participant reaches the target within the period. | One achievement and the configured bonus points. |
-| Timed challenge (`CHALLENGE`) | Target reached during the challenge date window. | One achievement and the configured bonus points. |
-| Leaderboard (`LEADERBOARD`) | Period ends, target is reached, and final rank is within `winnersCount`. | One achievement and the configured bonus points per qualifying winner. |
-| Group audience (`GROUP`) | The group's combined activity meets the rule's award conditions. | Each member in the saved enrollment receives the badge and configured points individually. |
+| Rule type                     | Award trigger                                                            | User receives                                                                              |
+| ----------------------------- | ------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------ |
+| Badge goal (`BADGE`)          | Enrolled participant reaches the target within the period.               | One achievement and the configured bonus points.                                           |
+| Timed challenge (`CHALLENGE`) | Target reached during the challenge date window.                         | One achievement and the configured bonus points.                                           |
+| Leaderboard (`LEADERBOARD`)   | Period ends, target is reached, and final rank is within `winnersCount`. | One achievement and the configured bonus points per qualifying winner.                     |
+| Group audience (`GROUP`)      | The group's combined activity meets the rule's award conditions.         | Each member in the saved enrollment receives the badge and configured points individually. |
 
 For example, a monthly badge goal with a 100,000-step target and 50 bonus points
 awards the achievement plus 50 wallet points once the enrolled user reaches the
@@ -418,14 +418,14 @@ From `health-app/backend`, run:
 npm run db:seed:reward-rules
 ```
 
-| Audience | Default rule | Target | Period |
-| --- | --- | --- | --- |
-| Individual | Monthly Steps Challenge (leaderboard, top 3) | 100,000 steps | Monthly |
-| Individual | Monthly Steps Badge Goal | 100,000 steps | Monthly |
-| Individual | 7-Day Steps Challenge | 50,000 steps | 7 days |
-| Each existing group | Monthly Group Steps Leaderboard (top 3) | 1,000,000 combined steps | Monthly |
-| Each existing group | Monthly Group Steps Badge Goal | 1,000,000 combined steps | Monthly |
-| Each existing group | 7-Day Group Steps Challenge | 250,000 combined steps | 7 days |
+| Audience            | Default rule                                 | Target                   | Period  |
+| ------------------- | -------------------------------------------- | ------------------------ | ------- |
+| Individual          | Monthly Steps Challenge (leaderboard, top 3) | 100,000 steps            | Monthly |
+| Individual          | Monthly Steps Badge Goal                     | 100,000 steps            | Monthly |
+| Individual          | 7-Day Steps Challenge                        | 50,000 steps             | 7 days  |
+| Each existing group | Monthly Group Steps Leaderboard (top 3)      | 1,000,000 combined steps | Monthly |
+| Each existing group | Monthly Group Steps Badge Goal               | 1,000,000 combined steps | Monthly |
+| Each existing group | 7-Day Group Steps Challenge                  | 250,000 combined steps   | 7 days  |
 
 All defaults have zero bonus points. Re-running the seed updates the same seeded
 rules by stable seed identity, including after renaming; custom rules are preserved.
@@ -435,15 +435,15 @@ or restart an already-created timed challenge.
 
 Admin rule endpoints (relative to the same API base URL):
 
-| Endpoint | Purpose |
-| --- | --- |
-| `GET /admin/reward-rules` | List configured rules. |
-| `GET /admin/reward-rules/options` | Available members and groups. |
-| `POST /admin/reward-rules` | Create a rule; duplicate configurations return 409. |
-| `PATCH /admin/reward-rules/{id}` | Edit or pause/resume a rule. |
-| `DELETE /admin/reward-rules/{id}` | Delete configuration; preserve enrolled history and earned achievements. |
-| `GET /admin/reward-rules/{id}/analytics` | Current-settings activity preview, not the immutable award ledger. |
-| `PATCH /admin/groups/{id}/member-limit` | Body: `{ "maxMembers": 50 }`; allowed range 2–500, never below current member count. |
+| Endpoint                                 | Purpose                                                                              |
+| ---------------------------------------- | ------------------------------------------------------------------------------------ |
+| `GET /admin/reward-rules`                | List configured rules.                                                               |
+| `GET /admin/reward-rules/options`        | Available members and groups.                                                        |
+| `POST /admin/reward-rules`               | Create a rule; duplicate configurations return 409.                                  |
+| `PATCH /admin/reward-rules/{id}`         | Edit or pause/resume a rule.                                                         |
+| `DELETE /admin/reward-rules/{id}`        | Delete configuration; preserve enrolled history and earned achievements.             |
+| `GET /admin/reward-rules/{id}/analytics` | Current-settings activity preview, not the immutable award ledger.                   |
+| `PATCH /admin/groups/{id}/member-limit`  | Body: `{ "maxMembers": 50 }`; allowed range 2–500, never below current member count. |
 
 Changing group capacity does not change the already-enrolled participant snapshot.
 Changes to rule settings affect a new period enrollment; they do not rewrite an

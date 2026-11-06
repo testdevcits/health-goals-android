@@ -18,6 +18,7 @@ import DailyTotals from './components/DailyTotals';
 import type { DailyActivityNavigation } from './types';
 import { useTodayHealthData } from '../../../hooks/useTodayHealthData';
 import { syncRecentHealthData } from '../../../services/healthSync';
+import { apiErrorMessage } from '../../../services/api';
 
 const DailyActivities: React.FC<{ navigation: DailyActivityNavigation }> = ({
   navigation,
@@ -28,7 +29,10 @@ const DailyActivities: React.FC<{ navigation: DailyActivityNavigation }> = ({
   const [refreshKey, setRefreshKey] = React.useState(0);
   const [syncing, setSyncing] = React.useState(false);
   const [syncMessage, setSyncMessage] = React.useState('');
-  const { data, error, loading, syncError } = useTodayHealthData(true, refreshKey);
+  const { data, error, loading, syncError } = useTodayHealthData(
+    true,
+    refreshKey,
+  );
   const syncNow = async () => {
     setSyncing(true);
     setSyncMessage('');
@@ -36,7 +40,11 @@ const DailyActivities: React.FC<{ navigation: DailyActivityNavigation }> = ({
       const result = await syncRecentHealthData({ force: true });
       setSyncMessage(
         result.failedMetrics?.length
-          ? `Sent ${result.synced} records. Could not read ${result.failedMetrics.join(', ')}; please retry sync.`
+          ? `Sent ${
+              result.synced
+            } records. Could not read ${result.failedMetrics.join(
+              ', ',
+            )}; please retry sync.`
           : result.throttled
           ? 'Health data was synced recently. Try again in a few minutes.'
           : result.synced === 0
@@ -45,11 +53,7 @@ const DailyActivities: React.FC<{ navigation: DailyActivityNavigation }> = ({
       );
       setRefreshKey(value => value + 1);
     } catch (cause) {
-      setSyncMessage(
-        cause instanceof Error
-          ? cause.message
-          : 'Could not sync with the backend. Try again.',
-      );
+      setSyncMessage(apiErrorMessage(cause));
     } finally {
       setSyncing(false);
     }

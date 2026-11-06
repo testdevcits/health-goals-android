@@ -1,13 +1,12 @@
 import axios, { type InternalAxiosRequestConfig } from 'axios';
 import { NativeModules } from 'react-native';
+import { DEFAULT_API_ORIGIN } from '../constants/Baseurl';
 
 // ============================================
 // API CONFIGURATION
 // ============================================
 
 const API_PATH = '/api/v1';
-
-const DEFAULT_API_ORIGIN = 'https://health-goals-backend.vercel.app';
 
 const configuredApiOrigin = String(
   NativeModules.HealthAppConfig?.apiBaseUrl ?? '',
@@ -37,8 +36,8 @@ export const api = axios.create({
   },
 });
 
-const SENSITIVE_FIELD =
-  /password|passcode|otp|token|secret|authorization|cookie|api.?key|credential|email|phone|identifier|user.?id|query|search|redemption.?code|coupon|voucher|ticket.?number|ticket.?image|booking.?reference|profile.?image|image|base64|data.?uri/i;
+const SECRET_FIELD =
+  /password|passcode|otp|token|secret|authorization|cookie|api.?key|credential/i;
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null;
@@ -66,16 +65,22 @@ function sanitizeValue(value: unknown, seen = new WeakSet<object>()): unknown {
   return Object.fromEntries(
     Object.entries(value).map(([key, nestedValue]) => [
       key,
-      SENSITIVE_FIELD.test(key)
-        ? '[REDACTED]'
-        : sanitizeValue(nestedValue, seen),
+      SECRET_FIELD.test(key) ? '[REDACTED]' : sanitizeValue(nestedValue, seen),
     ]),
   );
 }
 
 function sanitizeRequestPayload(value: unknown): unknown {
   if (typeof FormData !== 'undefined' && value instanceof FormData) {
-    return '[FormData omitted]';
+    return value.getParts().map(part => {
+      const fieldName =
+        part.headers['content-disposition']?.match(
+          /(?:^|;)\s*name="([^"]*)"/i,
+        )?.[1] ?? '';
+      return SECRET_FIELD.test(fieldName)
+        ? { field: fieldName, value: '[REDACTED]' }
+        : sanitizeValue(part);
+    });
   }
 
   if (typeof value === 'string') {
@@ -95,7 +100,11 @@ function logHttpBlock(
 ): void {
   console.info(`╔══════════════════ ${title} ══════════════════╗`);
   entries.forEach(([label, value]) => {
-    console.info(`║ ${label}:`, value);
+    const formattedValue =
+      value !== null && typeof value === 'object'
+        ? JSON.stringify(value, null, 2)
+        : String(value);
+    console.info(`║ ${label}: ${formattedValue}`);
   });
   console.info('╚═════════════════════════════════════════════════════╝');
 }
@@ -131,7 +140,7 @@ function sanitizeUrl(url: string): string {
         // Keep malformed query keys unchanged.
       }
 
-      return SENSITIVE_FIELD.test(decodedKey) ? `${key}=[REDACTED]` : parameter;
+      return SECRET_FIELD.test(decodedKey) ? `${key}=[REDACTED]` : parameter;
     })
     .join('&');
 
@@ -177,7 +186,7 @@ if (__DEV__) {
       }
 
       if (config.data !== undefined) {
-        entries.push(['PAYLOAD', /\/health(?:\/|\?|$)/.test(config.url || '') ? '[Health payload omitted]' : sanitizeRequestPayload(config.data)]);
+        entries.push(['PAYLOAD', sanitizeRequestPayload(config.data)]);
       } else {
         entries.push(['PAYLOAD', 'None']);
       }
@@ -205,7 +214,7 @@ if (__DEV__) {
             Date.now() - (requestStartedAt.get(response.config) ?? Date.now())
           }ms`,
         ],
-        ['BODY', /\/health(?:\/|\?|$)/.test(response.config.url || '') ? '[Health response omitted]' : sanitizeValue(response.data)],
+        ['BODY', sanitizeValue(response.data)],
       ]);
 
       return response;
@@ -225,21 +234,20 @@ if (__DEV__) {
             'DURATION',
             `${Date.now() - (requestStartedAt.get(config) ?? Date.now())}ms`,
           ]);
+          if (config.data !== undefined) {
+            entries.push(['REQUEST BODY', sanitizeRequestPayload(config.data)]);
+          }
         }
 
         if (error.response?.data !== undefined) {
-          entries.push(['RESPONSE BODY', /\/health(?:\/|\?|$)/.test(config?.url || '') ? '[Health response omitted]' : sanitizeValue(error.response.data)]);
+          entries.push([
+            'SERVER MESSAGE',
+            getApiErrorMessage(error.response.data) ?? 'Not provided',
+          ]);
+          entries.push(['RESPONSE BODY', sanitizeValue(error.response.data)]);
         }
 
-        console.error(
-          '╔══════════════════ ❌ HTTP ERROR RESPONSE ═══════════╗',
-        );
-        entries.forEach(([label, value]) => {
-          console.error(`║ ${label}:`, value);
-        });
-        console.error(
-          '╚═════════════════════════════════════════════════════╝',
-        );
+        logHttpBlock('❌ HTTP ERROR RESPONSE', entries);
       } else {
         console.error('[API] Request failed', {
           code: 'UNKNOWN_ERROR',

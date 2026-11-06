@@ -5,6 +5,7 @@ import {
   type TodayHealthData,
 } from '../services/healthConnect';
 import { syncRecentHealthData } from '../services/healthSync';
+import { apiErrorMessage } from '../services/api';
 
 type HealthDataState = {
   loading: boolean;
@@ -30,29 +31,42 @@ export const useTodayHealthData = (
   useEffect(() => {
     if (!isFocused) return;
     let isActive = true;
-    setState(previous => ({ ...previous, loading: true, error: null, syncError: null }));
+    setState(previous => ({
+      ...previous,
+      loading: true,
+      error: null,
+      syncError: null,
+    }));
 
     // Server sync must not depend on every optional dashboard read succeeding.
     void syncRecentHealthData()
       .then(result => {
-        if (isActive) setState(previous => ({
-          ...previous,
-          syncVersion: previous.syncVersion + 1,
-          syncError: result.failedMetrics?.length
-            ? `Could not read ${result.failedMetrics.join(', ')}. Retry sync.` : null,
-        }));
+        if (isActive)
+          setState(previous => ({
+            ...previous,
+            syncVersion: previous.syncVersion + 1,
+            syncError: result.failedMetrics?.length
+              ? `Could not read ${result.failedMetrics.join(', ')}. Retry sync.`
+              : null,
+          }));
       })
       .catch(error => {
-        if (isActive) setState(previous => ({
-          ...previous,
-          syncError: error instanceof Error ? error.message : 'Could not send health data to the server.',
-        }));
+        if (isActive)
+          setState(previous => ({
+            ...previous,
+            syncError: apiErrorMessage(error),
+          }));
       });
 
     readTodayHealthData(includeHourlyData)
       .then(data => {
         if (isActive) {
-          setState(previous => ({ ...previous, loading: false, data, error: null }));
+          setState(previous => ({
+            ...previous,
+            loading: false,
+            data,
+            error: null,
+          }));
         }
       })
       .catch(error => {

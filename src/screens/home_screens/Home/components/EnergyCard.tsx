@@ -84,104 +84,104 @@ const EnergyCard: React.FC = () => {
   const [loadError, setLoadError] = React.useState(false);
   const [hasActivity, setHasActivity] = React.useState(false);
   React.useEffect(() => {
-      if (!isFocused) return;
-      let active = true;
-      setLoading(true);
-      setLoadError(false);
-      Promise.all([
-        authenticatedRequest<{
+    if (!isFocused) return;
+    let active = true;
+    setLoading(true);
+    setLoadError(false);
+    Promise.all([
+      authenticatedRequest<{
+        totals?: {
+          steps?: number;
+          workoutMinutes?: number;
+          meditationMinutes?: number;
+        };
+        creditedCoins?: number;
+      }>('GET', '/activity/today'),
+      getCurrentUser(),
+      authenticatedRequest<{
+        items: Array<{
+          day: string;
+          creditedCoins?: number;
           totals?: {
             steps?: number;
             workoutMinutes?: number;
             meditationMinutes?: number;
           };
-          creditedCoins?: number;
-        }>('GET', '/activity/today'),
-        getCurrentUser(),
-        authenticatedRequest<{
-          items: Array<{
-            day: string;
-            creditedCoins?: number;
-            totals?: {
-              steps?: number;
-              workoutMinutes?: number;
-              meditationMinutes?: number;
-            };
-          }>;
-        }>('GET', '/activity/history?limit=30'),
-      ])
-        .then(([day, profile, history]) => {
-          if (!active) return;
-          const target = profile.healthGoals?.steps || 10000;
-          // Health Connect's aggregate is the device's deduplicated daily total.
-          // Prefer it over the backend settlement total, which can lag until sync
-          // and points processing finish.
-          const steps = todayHealthData?.steps ?? day.totals?.steps ?? 0;
-          setHasActivity(
-            steps > 0 ||
-              Boolean(day.totals?.workoutMinutes) ||
-              Boolean(day.totals?.meditationMinutes) ||
-              (history.items || []).some(item =>
+        }>;
+      }>('GET', '/activity/history?limit=30'),
+    ])
+      .then(([day, profile, history]) => {
+        if (!active) return;
+        const target = profile.healthGoals?.steps || 10000;
+        // Health Connect's aggregate is the device's deduplicated daily total.
+        // Prefer it over the backend settlement total, which can lag until sync
+        // and points processing finish.
+        const steps = todayHealthData?.steps ?? day.totals?.steps ?? 0;
+        setHasActivity(
+          steps > 0 ||
+            Boolean(day.totals?.workoutMinutes) ||
+            Boolean(day.totals?.meditationMinutes) ||
+            (history.items || []).some(item =>
+              Boolean(
+                item.totals?.steps ||
+                  item.totals?.workoutMinutes ||
+                  item.totals?.meditationMinutes,
+              ),
+            ),
+        );
+        setStepsTarget(target);
+        setEnergy(Math.min(100, Math.round((steps / target) * 100)));
+        const activeDays = new Set(
+          (history.items || [])
+            .filter(
+              item =>
+                (item.creditedCoins || 0) > 0 ||
                 Boolean(
                   item.totals?.steps ||
                     item.totals?.workoutMinutes ||
                     item.totals?.meditationMinutes,
                 ),
-              ),
-          );
-          setStepsTarget(target);
-          setEnergy(Math.min(100, Math.round((steps / target) * 100)));
-          const activeDays = new Set(
-            (history.items || [])
-              .filter(
-                item =>
-                  (item.creditedCoins || 0) > 0 ||
-                  Boolean(
-                    item.totals?.steps ||
-                      item.totals?.workoutMinutes ||
-                      item.totals?.meditationMinutes,
-                  ),
-              )
-              .map(item => item.day),
-          );
-          const today = new Intl.DateTimeFormat('en-CA', {
-            timeZone: 'Asia/Kolkata',
-          }).format(new Date());
-          if (
-            (day.creditedCoins || 0) > 0 ||
-            day.totals?.steps ||
-            history.items?.some(
-              item =>
-                item.day === today &&
-                (item.totals?.steps ||
-                  item.totals?.workoutMinutes ||
-                  item.totals?.meditationMinutes),
             )
+            .map(item => item.day),
+        );
+        const today = new Intl.DateTimeFormat('en-CA', {
+          timeZone: 'Asia/Kolkata',
+        }).format(new Date());
+        if (
+          (day.creditedCoins || 0) > 0 ||
+          day.totals?.steps ||
+          history.items?.some(
+            item =>
+              item.day === today &&
+              (item.totals?.steps ||
+                item.totals?.workoutMinutes ||
+                item.totals?.meditationMinutes),
           )
-            activeDays.add(today);
-          let streak = 0;
-          const cursor = new Date();
-          while (
-            activeDays.has(
-              new Intl.DateTimeFormat('en-CA', {
-                timeZone: 'Asia/Kolkata',
-              }).format(cursor),
-            )
-          ) {
-            streak += 1;
-            cursor.setUTCDate(cursor.getUTCDate() - 1);
-          }
-          setStreakPeriod(streak);
-        })
-        .catch(() => {
-          if (active) setLoadError(true);
-        })
-        .finally(() => {
-          if (active) setLoading(false);
-        });
-      return () => {
-        active = false;
-      };
+        )
+          activeDays.add(today);
+        let streak = 0;
+        const cursor = new Date();
+        while (
+          activeDays.has(
+            new Intl.DateTimeFormat('en-CA', {
+              timeZone: 'Asia/Kolkata',
+            }).format(cursor),
+          )
+        ) {
+          streak += 1;
+          cursor.setUTCDate(cursor.getUTCDate() - 1);
+        }
+        setStreakPeriod(streak);
+      })
+      .catch(() => {
+        if (active) setLoadError(true);
+      })
+      .finally(() => {
+        if (active) setLoading(false);
+      });
+    return () => {
+      active = false;
+    };
   }, [isFocused, todayHealthData?.steps, syncVersion]);
   const { theme } = useTheme();
   const { colors } = theme;

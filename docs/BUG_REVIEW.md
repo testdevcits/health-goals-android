@@ -4,15 +4,15 @@ Reviewed Android collection/versioning, API ingestion, user scoping, legacy dail
 
 ## Confirmed and fixed
 
-| Impact | Trigger | Correction |
-| --- | --- | --- |
-| Valid metrics blocked | Steps aggregate contains an invalid count | Isolate Steps as a failed type and continue uploading successful types; do not send substitute zeros. |
-| Android sync crash | Snapshot credentials contain valid JSON with an invalid shape, such as `null` | Validate the cache container and version entries before using them. |
-| Silent data loss | A source identity is reused for another metric/day with an older source version | Check metric/day identity before treating a version as a duplicate. |
-| Partial local batch | A later item conflicts with an existing source identity | Preflight all existing identities before any batch write. Production Mongo batches also retain transactional rollback. |
-| Step totals increase incorrectly | An older app resends a superseded per-origin daily snapshot | Canonical daily snapshots take precedence, including tombstones. The legacy endpoint returns the authoritative total and `superseded: true`. |
-| Automatic sync suppressed | Device clock changes and the saved success timestamp lies in the future | Discard invalid/future watermarks and perform a normal sync. |
-| Manual retry lost | User taps sync while an automatic sync that subsequently fails is running | Run the queued forced sync after either success or failure of the automatic run. |
+| Impact                           | Trigger                                                                         | Correction                                                                                                                                   |
+| -------------------------------- | ------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------- |
+| Valid metrics blocked            | Steps aggregate contains an invalid count                                       | Isolate Steps as a failed type and continue uploading successful types; do not send substitute zeros.                                        |
+| Android sync crash               | Snapshot credentials contain valid JSON with an invalid shape, such as `null`   | Validate the cache container and version entries before using them.                                                                          |
+| Silent data loss                 | A source identity is reused for another metric/day with an older source version | Check metric/day identity before treating a version as a duplicate.                                                                          |
+| Partial local batch              | A later item conflicts with an existing source identity                         | Preflight all existing identities before any batch write. Production Mongo batches also retain transactional rollback.                       |
+| Step totals increase incorrectly | An older app resends a superseded per-origin daily snapshot                     | Canonical daily snapshots take precedence, including tombstones. The legacy endpoint returns the authoritative total and `superseded: true`. |
+| Automatic sync suppressed        | Device clock changes and the saved success timestamp lies in the future         | Discard invalid/future watermarks and perform a normal sync.                                                                                 |
+| Manual retry lost                | User taps sync while an automatic sync that subsequently fails is running       | Run the queued forced sync after either success or failure of the automatic run.                                                             |
 
 Regressions cover these triggers. The Mongo integration also checks that legacy uploads cannot revive superseded records.
 

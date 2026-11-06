@@ -12,7 +12,11 @@ import { useTheme } from '../../../../theme/useTheme';
 import { TREND_DATA, TREND_TABS, TrendTab } from '../const';
 import { createHomeStyles } from '../styles.Home';
 import { authenticatedRequest } from '../../../../services/authenticatedApi';
-import { istDateKey, recentIstDates, recentHealthDayLabels } from '../../../../utils/healthDates';
+import {
+  istDateKey,
+  recentIstDates,
+  recentHealthDayLabels,
+} from '../../../../utils/healthDates';
 import { readStepsHistory } from '../../../../services/healthConnect';
 
 const BAR_MAX_HEIGHT = 100;
@@ -28,7 +32,8 @@ const BarChart: React.FC<{ data: number[]; color: string }> = ({
   return (
     <View style={styles.chartArea}>
       {data.map((value, index) => {
-        const height = value > 0 ? Math.max(2, (value / maxValue) * BAR_MAX_HEIGHT) : 0;
+        const height =
+          value > 0 ? Math.max(2, (value / maxValue) * BAR_MAX_HEIGHT) : 0;
         return (
           <View key={recentHealthDayLabels()[index]} style={styles.barWrapper}>
             <View

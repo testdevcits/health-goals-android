@@ -28,7 +28,6 @@ const HomeScreen: React.FC<Props> = ({ navigation }) => {
   useFocusEffect(
     useCallback(() => {
       let active = true;
-
       const refreshNotificationPermission = async () => {
         try {
           const enabled = await getNotificationPermission();
@@ -72,6 +71,7 @@ const HomeScreen: React.FC<Props> = ({ navigation }) => {
           onViewDetails={() => navigation.navigate('DailyActivities')}
           navigation={navigation}
         />
+
         <WorkoutCategories
           onViewAllPress={() => navigation.navigate('Categories')}
         />

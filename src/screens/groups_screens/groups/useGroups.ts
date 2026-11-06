@@ -1,5 +1,5 @@
 import { Alert } from 'react-native';
-import React, { useCallback, useState } from 'react';
+import { useCallback, useState } from 'react';
 import { authenticatedRequest } from '../../../services/authenticatedApi';
 import { apiErrorMessage } from '../../../services/api';
 import { showAppToast } from '../../../utils/appToast';
