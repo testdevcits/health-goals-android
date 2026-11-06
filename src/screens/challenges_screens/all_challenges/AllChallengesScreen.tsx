@@ -1,7 +1,6 @@
 import React from 'react';
 import { View, ScrollView, Pressable } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
-import { Dumbbell } from 'lucide-react-native';
 
 import { useTheme } from '../../../theme/useTheme';
 import {
@@ -16,6 +15,7 @@ import useAllChallenges, {
   challengeCategories,
   type Challenge,
 } from './useAllChallenges';
+import AppIcon from '../../../assets/appicon/AppIcon';
 
 interface AllChallengesScreenProps {
   onContinue?: (challengeId: string) => void;
@@ -125,7 +125,12 @@ const AllChallengesScreen: React.FC<AllChallengesScreenProps> = ({
                   : `There are no ${selectedCategory.toLowerCase()} challenges right now.`
               }
               icon={
-                <Dumbbell size={28} color={colors.primary} strokeWidth={1.8} />
+                <AppIcon
+                  name="Dumbbell"
+                  size={28}
+                  color={colors.primary}
+                  strokeWidth={1.8}
+                />
               }
               actionLabel={
                 selectedCategory !== 'All' ? 'Show all challenges' : undefined

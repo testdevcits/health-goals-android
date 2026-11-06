@@ -8,9 +8,9 @@ import {
   TextInputProps,
   ViewStyle,
 } from 'react-native';
-import { Eye, EyeOff } from 'lucide-react-native';
 import { useTheme } from '../theme/useTheme';
 import AppText from './AppText';
+import AppIcon from '../assets/appicon/AppIcon';
 
 interface AppInputProps extends TextInputProps {
   label?: string;
@@ -92,9 +92,9 @@ const AppInput = forwardRef<TextInput, AppInputProps>(
               hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
             >
               {secureVisible ? (
-                <Eye size={20} color={colors.textTertiary} />
+                <AppIcon name="Eye" size={20} color={colors.textTertiary} />
               ) : (
-                <EyeOff size={20} color={colors.textTertiary} />
+                <AppIcon name="EyeOff" size={20} color={colors.textTertiary} />
               )}
             </TouchableOpacity>
           ) : rightIcon ? (

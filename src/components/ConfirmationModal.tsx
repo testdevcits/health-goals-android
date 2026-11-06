@@ -6,12 +6,12 @@ import {
   View,
   type ViewStyle,
 } from 'react-native';
-import { X } from 'lucide-react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import type { AppTheme } from '../theme';
 import { useTheme } from '../theme/useTheme';
 import AppText from './AppText';
+import AppIcon from '../assets/appicon/AppIcon';
 
 export interface ConfirmationModalProps {
   visible: boolean;
@@ -102,7 +102,7 @@ const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
                   accessibilityLabel="Close modal"
                   style={styles.closeButton}
                 >
-                  <X size={20} color={colors.textSecondary} />
+                  <AppIcon name="X" size={20} color={colors.textSecondary} />
                 </Pressable>
               )}
             </View>

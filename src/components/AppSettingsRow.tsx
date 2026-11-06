@@ -1,9 +1,9 @@
 import React, { memo } from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
-import { ChevronRight } from 'lucide-react-native';
 import { useTheme } from '../theme/useTheme';
 import AppText from './AppText';
 import CustomSwitch from './CustomSwitch';
+import AppIcon from '../assets/appicon/AppIcon';
 
 interface AppSettingsRowProps {
   icon: string;
@@ -73,7 +73,11 @@ const AppSettingsRow: React.FC<AppSettingsRowProps> = ({
             {value}
           </AppText>
           {isInteractive ? (
-            <ChevronRight size={17} color={colors.textTertiary} />
+            <AppIcon
+              name="ChevronRight"
+              size={17}
+              color={colors.textTertiary}
+            />
           ) : null}
         </View>
       ) : null}

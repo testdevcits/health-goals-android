@@ -86,7 +86,6 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
-import { Heart, Play, Footprints, Pause } from 'lucide-react-native';
 
 import { AppText, SectionHeader } from '../../../../components';
 import { useTheme } from '../../../../theme/useTheme';
@@ -98,6 +97,7 @@ import {
 } from '../../workout_sessions/workoutSessionStore';
 import { getWorkoutActivity } from '../../workout_sessions/workoutActivities';
 import { useTodayHealthData } from '../../../../hooks/useTodayHealthData';
+import AppIcon from '../../../../assets/appicon/AppIcon';
 
 const DailySummary: React.FC<{
   onViewDetails: () => void;
@@ -268,7 +268,12 @@ const DailySummary: React.FC<{
           </AppText>
 
           <View style={styles.bottomIcon}>
-            <Heart size={20} color={colors.coral} fill={colors.coral} />
+            <AppIcon
+              name="Heart"
+              size={20}
+              color={colors.coral}
+              fill={colors.coral}
+            />
           </View>
         </TouchableOpacity>
 
@@ -289,7 +294,7 @@ const DailySummary: React.FC<{
             {workoutStatus === 'In progress' ? (
               <ActivityIndicator size={'small'} />
             ) : (
-              <Footprints size={16} color={colors.warning} />
+              <AppIcon name="Footprints" size={16} color={colors.warning} />
             )}
           </View>
 
@@ -311,9 +316,19 @@ const DailySummary: React.FC<{
 
           <View style={styles.playButton} accessible={false}>
             {workoutStatus === 'In progress' ? (
-              <Pause size={14} color={colors.white} fill={colors.white} />
+              <AppIcon
+                name="Pause"
+                size={14}
+                color={colors.white}
+                fill={colors.white}
+              />
             ) : (
-              <Play size={14} color={colors.white} fill={colors.white} />
+              <AppIcon
+                name="Play"
+                size={14}
+                color={colors.white}
+                fill={colors.white}
+              />
             )}
           </View>
         </TouchableOpacity>

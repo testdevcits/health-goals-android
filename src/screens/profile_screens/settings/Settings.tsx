@@ -1,7 +1,6 @@
 import React, { Suspense } from 'react';
 import { Modal, Pressable, Platform, ScrollView, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Check, X } from 'lucide-react-native';
 import { AppHeader, AppSettingsRow, AppText } from '../../../components';
 import { useTheme } from '../../../theme/useTheme';
 import createStyles from './styles.Setting';
@@ -10,6 +9,7 @@ import useSettings, {
   groupOptions,
   type SettingsNavigation,
 } from './useSettings';
+import AppIcon from '../../../assets/appicon/AppIcon';
 
 const LogoutModal = React.lazy(() => import('../../../components/LogoutModal'));
 const ConfirmationModal = React.lazy(
@@ -209,7 +209,7 @@ const Settings = ({ navigation }: { navigation: SettingsNavigation }) => {
                 accessibilityRole="button"
                 accessibilityLabel="Close options"
               >
-                <X size={18} color={colors.textSecondary} />
+                <AppIcon name="X" size={18} color={colors.textSecondary} />
               </Pressable>
             </View>
             {activeGroup
@@ -232,7 +232,11 @@ const Settings = ({ navigation }: { navigation: SettingsNavigation }) => {
                         {option}
                       </AppText>
                       {selected ? (
-                        <Check size={18} color={colors.primary} />
+                        <AppIcon
+                          name="Check"
+                          size={18}
+                          color={colors.primary}
+                        />
                       ) : null}
                     </Pressable>
                   );

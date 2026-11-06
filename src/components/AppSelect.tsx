@@ -9,9 +9,9 @@ import {
   ViewStyle,
   Pressable,
 } from 'react-native';
-import { ChevronDown, Check } from 'lucide-react-native';
 import { useTheme } from '../theme/useTheme';
 import AppText from './AppText';
+import AppIcon from '../assets/appicon/AppIcon';
 
 export interface SelectOption {
   label: string;
@@ -78,7 +78,7 @@ const AppSelect: React.FC<AppSelectProps> = ({
         >
           {selectedLabel ?? placeholder}
         </AppText>
-        <ChevronDown size={18} color={colors.textSecondary} />
+        <AppIcon name="ChevronDown" size={18} color={colors.textSecondary} />
       </TouchableOpacity>
 
       {error ? (
@@ -156,7 +156,7 @@ const AppSelect: React.FC<AppSelectProps> = ({
                       {item?.label}
                     </AppText>
                     {isSelected ? (
-                      <Check size={18} color={colors.primary} />
+                      <AppIcon name="Check" size={18} color={colors.primary} />
                     ) : null}
                   </TouchableOpacity>
                 );

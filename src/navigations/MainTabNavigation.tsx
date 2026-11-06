@@ -1,13 +1,7 @@
 import React from 'react';
 import { StyleSheet } from 'react-native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import {
-  Trophy,
-  House,
-  UsersRound,
-  Compass,
-  UserRound,
-} from 'lucide-react-native';
+
 import HomeStack from './HomeStack';
 import ChallengesStack from './ChallengesStack';
 import GroupsStack from './GroupsStack';
@@ -15,6 +9,7 @@ import DiscoverStack from './DiscoverStack';
 import ProfileStack from './ProfileStack';
 import { fonts } from '../theme/fonts';
 import { useTheme } from '../theme/useTheme';
+import AppIcon from '../assets/appicon/AppIcon';
 
 type MainTabParamList = {
   Home: undefined;
@@ -29,19 +24,19 @@ const Tab = createBottomTabNavigator<MainTabParamList>();
 type TabIconProps = { color: string; size: number };
 
 const HomeTabIcon = ({ color, size }: TabIconProps) => (
-  <House color={color} size={size} />
+  <AppIcon name="House" color={color} size={size} />
 );
 const ChallengesTabIcon = ({ color, size }: TabIconProps) => (
-  <Trophy color={color} size={size} />
+  <AppIcon name="Trophy" color={color} size={size} />
 );
 const GroupsTabIcon = ({ color, size }: TabIconProps) => (
-  <UsersRound color={color} size={size} />
+  <AppIcon name="UsersRound" color={color} size={size} />
 );
 const DiscoverTabIcon = ({ color, size }: TabIconProps) => (
-  <Compass color={color} size={size} />
+  <AppIcon name="Compass" color={color} size={size} />
 );
 const ProfileTabIcon = ({ color, size }: TabIconProps) => (
-  <UserRound color={color} size={size} />
+  <AppIcon name="UserRound" color={color} size={size} />
 );
 
 const MainTabNavigation = () => {

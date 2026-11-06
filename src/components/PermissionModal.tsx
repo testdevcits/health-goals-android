@@ -1,9 +1,10 @@
 import React, { memo } from 'react';
 import { Modal, StyleSheet, TouchableOpacity, View } from 'react-native';
-import { Bell, CircleAlert, Settings, X } from 'lucide-react-native';
+import { Bell, CircleAlert, Settings } from 'lucide-react-native';
 import { useTheme } from '../theme/useTheme';
 import AppButton from './AppButton';
 import AppText from './AppText';
+import AppIcon from '../assets/appicon/AppIcon';
 
 interface PermissionModalProps {
   visible: boolean;
@@ -68,7 +69,7 @@ const PermissionModal: React.FC<PermissionModalProps> = ({
               },
             ]}
           >
-            <X color={colors.textSecondary} size={18} />
+            <AppIcon name="X" color={colors.textSecondary} size={18} />
           </TouchableOpacity>
 
           <View

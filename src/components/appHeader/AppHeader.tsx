@@ -1,12 +1,12 @@
 import React, { memo } from 'react';
 import { Image, Pressable, View } from 'react-native';
-import { Bell, ChevronLeft } from 'lucide-react-native';
 
 import AppText from '../AppText';
 import { useTheme } from '../../theme/useTheme';
 import { styles as createStyles } from './AppHeader.styles';
 import { NavigationProp, useNavigation } from '@react-navigation/native';
 import { useAppSelector } from '../../store/hooks';
+import AppIcon from '../../assets/appicon/AppIcon';
 
 type AppHeaderNavigationParamList = {
   Notifications: undefined;
@@ -63,7 +63,7 @@ const AppHeader: React.FC<AppHeaderProps> = ({
             accessibilityLabel="Go back"
             hitSlop={8}
           >
-            <ChevronLeft size={20} color={colors.textPrimary} />
+            <AppIcon name="ChevronLeft" size={20} color={colors.textPrimary} />
           </Pressable>
         )}
 
@@ -94,7 +94,7 @@ const AppHeader: React.FC<AppHeaderProps> = ({
             accessibilityLabel="Notifications"
             hitSlop={8}
           >
-            <Bell size={19} color={colors.warning} />
+            <AppIcon name="Bell" size={19} color={colors.warning} />
           </Pressable>
         )}
 

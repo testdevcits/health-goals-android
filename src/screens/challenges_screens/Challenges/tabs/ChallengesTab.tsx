@@ -1,10 +1,10 @@
 import React from 'react';
 import { Pressable, View } from 'react-native';
-import { ChevronRight } from 'lucide-react-native';
 import { AppText } from '../../../../components';
 import { useTheme } from '../../../../theme/useTheme';
 import type { Challenge } from '../data/challengesData';
 import type { ChallengesStyles } from '../styles.Challenges';
+import AppIcon from '../../../../assets/appicon/AppIcon';
 
 interface ChallengesTabProps {
   challenges: Challenge[];
@@ -106,7 +106,7 @@ const ChallengesTab: React.FC<ChallengesTabProps> = ({
         <AppText variant="buttonSm" primary>
           + Browse all challenges
         </AppText>
-        <ChevronRight size={18} color={theme.colors.primary} />
+        <AppIcon name="ChevronRight" size={18} color={theme.colors.primary} />
       </Pressable>
     </View>
   );

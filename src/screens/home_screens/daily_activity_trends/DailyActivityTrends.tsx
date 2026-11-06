@@ -8,7 +8,6 @@ import {
   View,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { X } from 'lucide-react-native';
 import {
   AppButton,
   AppEmptyState,
@@ -25,6 +24,7 @@ import TrendStats from './components/TrendStats';
 import TrendTabs from './components/TrendTabs';
 import type { DailyActivityTrendsNavigation } from './types';
 import useDailyActivityTrends from './useDailyActivityTrends';
+import AppIcon from '../../../assets/appicon/AppIcon';
 
 const DailyActivityTrends: React.FC<{
   navigation: DailyActivityTrendsNavigation;
@@ -125,7 +125,11 @@ const DailyActivityTrends: React.FC<{
                 accessibilityRole="button"
                 accessibilityLabel="Close goal editor"
               >
-                <X size={18} color={theme.colors.textSecondary} />
+                <AppIcon
+                  name="X"
+                  size={18}
+                  color={theme.colors.textSecondary}
+                />
               </Pressable>
             </View>
             <AppText variant="caption" secondary style={styles.goalHelp}>

@@ -1,13 +1,11 @@
 // src/navigations/AppNavigation.tsx
 import React, { useEffect, useRef, useState } from 'react';
 import { Animated, Easing, StyleSheet, View } from 'react-native';
-import { HeartPulse } from 'lucide-react-native';
 import {
   createNavigationContainerRef,
   NavigationContainer,
 } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
-
 import AppText from '../components/AppText';
 import LoginScreen from '../screens/auth_screens/Login/LoginScreen';
 import MainTabNavigation from './MainTabNavigation';
@@ -18,6 +16,7 @@ import Notifications from '../screens/common_screens/notifications/Notifications
 import VerifyEmailScreen from '../screens/auth_screens/verify_email /VerifyEmailScreen';
 import { restoreSession } from '../services/auth';
 import { useTheme } from '../theme/useTheme';
+import AppIcon from '../assets/appicon/AppIcon';
 
 export type RootStackParamList = {
   Splash: undefined;
@@ -103,7 +102,12 @@ const AppNavigation = () => {
             },
           ]}
         >
-          <HeartPulse size={40} color={theme.colors.primary} strokeWidth={2} />
+          <AppIcon
+            name="HeartPulse"
+            size={40}
+            color={theme.colors.primary}
+            strokeWidth={2}
+          />
         </Animated.View>
         <AppText
           variant="body2"

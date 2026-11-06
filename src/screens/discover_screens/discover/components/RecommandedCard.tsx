@@ -1,11 +1,11 @@
 import { Pressable, StyleSheet, View } from 'react-native';
 import React, { memo } from 'react';
 import { AppText } from '../../../../components';
-import { ArrowRight } from 'lucide-react-native';
 import { spacing } from '../../../../theme/spacing';
 import { radius } from '../../../../theme/radius';
 import { useTheme } from '../../../../theme/useTheme';
 import { programs } from '../const';
+import AppIcon from '../../../../assets/appicon/AppIcon';
 
 const RecommandedCard = ({
   openProgram,
@@ -58,7 +58,7 @@ const RecommandedCard = ({
           <AppText variant="buttonSm" primary>
             Explore
           </AppText>
-          <ArrowRight size={16} color={colors.primary} />
+          <AppIcon name="ArrowRight" size={16} color={colors.primary} />
         </View>
       </View>
     </Pressable>

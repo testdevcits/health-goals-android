@@ -7,12 +7,13 @@ import {
   StyleSheet,
   View,
 } from 'react-native';
-import { X, LockKeyhole } from 'lucide-react-native';
+
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { AppInput, AppText, CustomSwitch } from '../../../../components';
 import { useTheme } from '../../../../theme/useTheme';
 import createStyles from './styles.CreateGroupMOdal';
+import AppIcon from '../../../../assets/appicon/AppIcon';
 
 // const groupIcons = ['🚶', '🏃', '🚴', '💪', '🧘', '🏆', '🌳', '❤️'];
 
@@ -120,7 +121,7 @@ const CreateGroupModal: React.FC<CreateGroupModalProps> = ({
                 onPress={() => setCreateModalVisible(false)}
                 style={styles.closeButton}
               >
-                <X size={19} color={colors.textPrimary} />
+                <AppIcon name="X" size={19} color={colors.textPrimary} />
               </Pressable>
             </View>
 
@@ -172,7 +173,11 @@ const CreateGroupModal: React.FC<CreateGroupModalProps> = ({
 
             <View style={styles.privateRow}>
               <View style={styles.lockIcon}>
-                <LockKeyhole size={17} color={colors.primaryDark} />
+                <AppIcon
+                  name="LockKeyhole"
+                  size={17}
+                  color={colors.primaryDark}
+                />
               </View>
 
               <View style={styles.privateText}>

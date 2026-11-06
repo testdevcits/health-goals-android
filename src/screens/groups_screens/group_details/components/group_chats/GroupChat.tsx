@@ -1,10 +1,10 @@
 import React, { memo } from 'react';
 import { View, ScrollView, TextInput, Pressable } from 'react-native';
-import { Send } from 'lucide-react-native';
 import { AppEmptyState, AppText } from '../../../../../components';
 import { GroupMessage } from '../../constants';
 import { useTheme } from '../../../../../theme/useTheme';
 import createGroupChatStyles from './styles.GroupChat';
+import AppIcon from '../../../../../assets/appicon/AppIcon';
 
 interface Props {
   messages: GroupMessage[];
@@ -114,7 +114,7 @@ export const GroupChat: React.FC<Props> = memo(
             onPress={onSend}
             style={styles.sendButton}
           >
-            <Send size={18} color="white" />
+            <AppIcon name="Send" size={18} color="white" />
           </Pressable>
         </View>
       </View>

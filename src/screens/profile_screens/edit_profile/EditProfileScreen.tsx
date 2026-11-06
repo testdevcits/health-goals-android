@@ -19,13 +19,13 @@ import {
 } from '../../../components';
 import { ProfileScreenNavigation } from '../components/ProfileScreenLayout';
 import { radius } from '../../../theme/radius';
-import { Camera } from 'lucide-react-native';
 import { useTheme } from '../../../theme/useTheme';
 import createStyles from './styles.EditProfile';
 import useEditProfile, {
   calendarStringToBirthDate,
   getTodayCalendarString,
 } from './useEditProfile';
+import AppIcon from '../../../assets/appicon/AppIcon';
 
 const EditProfileScreen: React.FC<{ navigation: ProfileScreenNavigation }> = ({
   navigation,
@@ -97,7 +97,12 @@ const EditProfileScreen: React.FC<{ navigation: ProfileScreenNavigation }> = ({
                 disabled={imageBusy}
                 accessibilityState={{ busy: imageBusy }}
               >
-                <Camera size={16} color={colors.textPrimary} strokeWidth={2} />
+                <AppIcon
+                  name="Camera"
+                  size={16}
+                  color={colors.textPrimary}
+                  strokeWidth={2}
+                />
               </Pressable>
             </View>
             <AppInput label="Full Name" value={name} onChangeText={setName} />

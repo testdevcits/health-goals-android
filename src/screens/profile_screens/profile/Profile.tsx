@@ -8,7 +8,6 @@ import {
   StatusBar,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Bell, ChevronRight } from 'lucide-react-native';
 
 import { useTheme } from '../../../theme/useTheme';
 import { AppSettingsRow, AppText } from '../../../components';
@@ -19,6 +18,7 @@ import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '../../../navigations/ProfileStack';
 import { AppEmptyState, AppErrorView, AppLoader } from '../../../components';
 import useProfile from './useProfile';
+import AppIcon from '../../../assets/appicon/AppIcon';
 
 type ProfileNavigationProp = NativeStackNavigationProp<RootStackParamList>;
 
@@ -76,7 +76,7 @@ const ProfileScreen: React.FC = () => {
             accessibilityRole="button"
             accessibilityLabel="Notifications"
           >
-            <Bell size={19} color={colors.warning} />
+            <AppIcon name="Bell" size={19} color={colors.warning} />
           </Pressable>
 
           <View style={styles.smallAvatar}>
@@ -213,7 +213,11 @@ const ProfileScreen: React.FC = () => {
                     {item?.title}
                   </AppText>
 
-                  <ChevronRight size={18} color={colors.textTertiary} />
+                  <AppIcon
+                    name="ChevronRight"
+                    size={18}
+                    color={colors.textTertiary}
+                  />
                 </Pressable>
               ))}
             </View>

@@ -3,10 +3,10 @@ import React from 'react';
 import { Program } from '../discover/const';
 import { AppHeader, AppText } from '../../../components';
 import { spacing } from '../../../theme/spacing';
-import { Check } from 'lucide-react-native';
 import { useTheme } from '../../../theme/useTheme';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import styles from './styles.ProgramDetails';
+import AppIcon from '../../../assets/appicon/AppIcon';
 
 const ProgramDetail = ({
   program,
@@ -87,7 +87,7 @@ const ProgramDetail = ({
 
           {program?.included.map(item => (
             <View key={item} style={styles.includedRow}>
-              <Check size={17} color={colors.primary} />
+              <AppIcon name="Check" size={17} color={colors.primary} />
               <AppText variant="body2" style={styles.includedText}>
                 {item}
               </AppText>

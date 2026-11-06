@@ -1,13 +1,13 @@
 import { Pressable, View } from 'react-native';
 import React, { memo } from 'react';
 import { AppText } from '../../../../components';
-import { ChevronRight } from 'lucide-react-native';
 import { useTheme } from '../../../../theme/useTheme';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '../../../../navigations/GroupsStack';
 import createStyles from './styles.MyGroups';
 import type { Group } from '../data';
+import AppIcon from '../../../../assets/appicon/AppIcon';
 
 type GroupsNavigationProp = NativeStackNavigationProp<RootStackParamList>;
 
@@ -114,7 +114,11 @@ const MyGroups = ({
               </AppText>
             </Pressable>
           ) : (
-            <ChevronRight size={19} color={colors.textTertiary} />
+            <AppIcon
+              name="ChevronRight"
+              size={19}
+              color={colors.textTertiary}
+            />
           )}
         </Pressable>
       ))}

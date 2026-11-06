@@ -1,9 +1,9 @@
 import React, { memo } from 'react';
 import { StyleProp, StyleSheet, View, ViewStyle } from 'react-native';
-import { Inbox } from 'lucide-react-native';
 import { useTheme } from '../theme/useTheme';
 import AppButton from './AppButton';
 import AppText from './AppText';
+import AppIcon from '../assets/appicon/AppIcon';
 
 interface AppEmptyStateProps {
   title: string;
@@ -37,7 +37,14 @@ const AppEmptyState: React.FC<AppEmptyStateProps> = ({
           },
         ]}
       >
-        {icon ?? <Inbox size={28} color={colors.primary} strokeWidth={1.8} />}
+        {icon ?? (
+          <AppIcon
+            name="Inbox"
+            size={28}
+            color={colors.primary}
+            strokeWidth={1.8}
+          />
+        )}
       </View>
       <AppText variant="h3" center bold mb={spacing.xs}>
         {title}

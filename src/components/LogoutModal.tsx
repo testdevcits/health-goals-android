@@ -1,11 +1,11 @@
 import React from 'react';
 import { Modal, Pressable, StyleSheet, View } from 'react-native';
-import { CircleAlert } from 'lucide-react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { AppText } from '.';
 import type { AppTheme } from '../theme';
 import { useTheme } from '../theme/useTheme';
+import AppIcon from '../assets/appicon/AppIcon';
 
 type LogoutModalProps = {
   visible: boolean;
@@ -54,7 +54,7 @@ const LogoutModal: React.FC<LogoutModalProps> = ({
               { backgroundColor: colors.errorLight },
             ]}
           >
-            <CircleAlert size={24} color={colors.textError} />
+            <AppIcon name="CircleAlert" size={24} color={colors.textError} />
           </View>
 
           <AppText variant="h3" center bold mb={spacing.sm}>

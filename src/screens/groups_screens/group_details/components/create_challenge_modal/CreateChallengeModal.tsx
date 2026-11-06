@@ -7,10 +7,10 @@ import {
   Platform,
   Pressable,
 } from 'react-native';
-import { X, ChevronDown } from 'lucide-react-native';
 import { AppInput, AppText } from '../../../../../components';
 import { useTheme } from '../../../../../theme/useTheme';
 import createChallengeModalStyles from './styles.CreateChallengeModal';
+import AppIcon from '../../../../../assets/appicon/AppIcon';
 
 interface Props {
   visible: boolean;
@@ -144,7 +144,7 @@ export const CreateChallengeModal: React.FC<Props> = memo(
                   onPress={handleClose}
                   style={styles.closeButton}
                 >
-                  <X size={18} color={colors.textPrimary} />
+                  <AppIcon name="X" size={18} color={colors.textPrimary} />
                 </Pressable>
               </View>
 
@@ -190,7 +190,11 @@ export const CreateChallengeModal: React.FC<Props> = memo(
                     style={styles.selectOption}
                   >
                     <AppText variant="body2">{duration}</AppText>
-                    <ChevronDown size={17} color={colors.textSecondary} />
+                    <AppIcon
+                      name="ChevronDown"
+                      size={17}
+                      color={colors.textSecondary}
+                    />
                   </Pressable>
                 </View>
 
@@ -203,7 +207,11 @@ export const CreateChallengeModal: React.FC<Props> = memo(
                     style={styles.selectOption}
                   >
                     <AppText variant="body2">{reward}</AppText>
-                    <ChevronDown size={17} color={colors.textSecondary} />
+                    <AppIcon
+                      name="ChevronDown"
+                      size={17}
+                      color={colors.textSecondary}
+                    />
                   </Pressable>
                 </View>
               </View>

@@ -1,9 +1,9 @@
 // src/components/AppCheckbox.tsx
 import React, { memo } from 'react';
 import { TouchableOpacity, View, StyleSheet, ViewStyle } from 'react-native';
-import { Check } from 'lucide-react-native';
 import { useTheme } from '../theme/useTheme';
 import AppText from './AppText';
+import AppIcon from '../assets/appicon/AppIcon';
 
 interface AppCheckboxProps {
   checked: boolean;
@@ -47,7 +47,12 @@ const AppCheckbox: React.FC<AppCheckboxProps> = ({
           ]}
         >
           {checked ? (
-            <Check size={12} color={colors.white} strokeWidth={3} />
+            <AppIcon
+              name="Check"
+              size={12}
+              color={colors.white}
+              strokeWidth={3}
+            />
           ) : null}
         </View>
 

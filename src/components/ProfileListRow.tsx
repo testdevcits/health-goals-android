@@ -2,7 +2,7 @@ import { Pressable, StyleSheet, View } from 'react-native';
 import React, { memo } from 'react';
 import { useTheme } from '../theme/useTheme';
 import AppText from './AppText';
-import { ChevronRight } from 'lucide-react-native';
+import AppIcon from '../assets/appicon/AppIcon';
 
 const ProfileListRow: React.FC<{
   icon: string;
@@ -50,7 +50,7 @@ const ProfileListRow: React.FC<{
           {action}
         </AppText>
       ) : onPress ? (
-        <ChevronRight size={17} color={colors.textTertiary} />
+        <AppIcon name="ChevronRight" size={17} color={colors.textTertiary} />
       ) : null}
     </Pressable>
   );

@@ -1,6 +1,5 @@
 import React, { useMemo, useState } from 'react';
 import { Pressable, ScrollView, TextInput, View } from 'react-native';
-import { ChevronDown, Search } from 'lucide-react-native';
 import {
   AppHeader,
   AppText,
@@ -12,6 +11,7 @@ import { ProfileSectionLabel } from '../components/ProfileScreenLayout';
 import createStyles from './styles.HelpSupport';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '../../../navigations/ProfileStack';
+import AppIcon from '../../../assets/appicon/AppIcon';
 
 const faqs = [
   {
@@ -69,7 +69,7 @@ const HelpSupportScreen: React.FC<Props> = ({ navigation }) => {
         <View
           style={[styles.searchBox, { backgroundColor: theme.colors.surface }]}
         >
-          <Search size={18} color={theme.colors.textTertiary} />
+          <AppIcon name="Search" size={18} color={theme.colors.textTertiary} />
           <TextInput
             value={query}
             onChangeText={setQuery}
@@ -129,7 +129,8 @@ const HelpSupportScreen: React.FC<Props> = ({ navigation }) => {
                   <AppText variant="subtitle2" bold style={styles.faqText}>
                     {item?.question}
                   </AppText>
-                  <ChevronDown
+                  <AppIcon
+                    name="ChevronDown"
                     size={16}
                     color={theme.colors.textTertiary}
                     style={expanded ? styles.chevronExpanded : undefined}

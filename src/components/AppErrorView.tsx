@@ -1,9 +1,9 @@
 import React, { memo } from 'react';
 import { StyleProp, StyleSheet, View, ViewStyle } from 'react-native';
-import { CircleAlert, RefreshCw } from 'lucide-react-native';
 import { useTheme } from '../theme/useTheme';
 import AppButton from './AppButton';
 import AppText from './AppText';
+import AppIcon from '../assets/appicon/AppIcon';
 
 interface AppErrorViewProps {
   title?: string;
@@ -40,7 +40,12 @@ const AppErrorView: React.FC<AppErrorViewProps> = ({
           },
         ]}
       >
-        <CircleAlert size={28} color={colors.error} strokeWidth={1.8} />
+        <AppIcon
+          name="CircleAlert"
+          size={28}
+          color={colors.error}
+          strokeWidth={1.8}
+        />
       </View>
       <AppText variant="h3" center bold mb={spacing.xs}>
         {title}
@@ -58,7 +63,9 @@ const AppErrorView: React.FC<AppErrorViewProps> = ({
         onPress={onRefresh}
         loading={refreshing}
         disabled={refreshing}
-        leftIcon={<RefreshCw size={17} color={colors.textPrimary} />}
+        leftIcon={
+          <AppIcon name="RefreshCw" size={17} color={colors.textPrimary} />
+        }
         variant="outline"
         style={styles.action}
       />

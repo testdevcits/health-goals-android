@@ -7,13 +7,13 @@ import {
   View,
 } from 'react-native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
-import { ArrowLeft, MailCheck } from 'lucide-react-native';
 import { OtpInput } from 'react-native-otp-entry';
 import type { RootStackParamList } from '../../../navigations/AppNavigation';
 import { AppButton, AppText } from '../../../components';
 import { useTheme } from '../../../theme/useTheme';
 import createStyles from './styles.VerifyEmail';
 import useVerifyEmail from './useVerifyEmail';
+import AppIcon from '../../../assets/appicon/AppIcon';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'VerifyEmail'>;
 
@@ -42,12 +42,17 @@ const VerifyEmailScreen: React.FC<Props> = ({ route, navigation }) => {
           style={styles.backButton}
           activeOpacity={0.7}
         >
-          <ArrowLeft size={20} color={theme.colors.textPrimary} />
+          <AppIcon
+            name="ChevronLeft"
+            size={20}
+            color={theme.colors.textPrimary}
+          />
         </TouchableOpacity>
 
         <View style={styles.content}>
           <View style={styles.iconContainer}>
-            <MailCheck
+            <AppIcon
+              name="MailCheck"
               size={32}
               color={theme.colors.primary}
               strokeWidth={1.8}
