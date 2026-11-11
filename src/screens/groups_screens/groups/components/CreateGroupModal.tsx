@@ -1,9 +1,10 @@
-import React, { useState } from 'react';
+import React, { memo, useState } from 'react';
 import {
   KeyboardAvoidingView,
   Modal,
   Platform,
   Pressable,
+  ScrollView,
   StyleSheet,
   View,
 } from 'react-native';
@@ -101,7 +102,7 @@ const CreateGroupModal: React.FC<CreateGroupModalProps> = ({
         />
 
         <KeyboardAvoidingView
-          behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
           style={styles.modalKeyboardContainer}
         >
           <View
@@ -110,95 +111,105 @@ const CreateGroupModal: React.FC<CreateGroupModalProps> = ({
               { paddingBottom: Math.max(insets.bottom, spacing.base) },
             ]}
           >
-            <View style={styles.sheetHandle} />
+            <ScrollView
+              keyboardShouldPersistTaps="handled"
+              keyboardDismissMode="on-drag"
+              showsVerticalScrollIndicator={false}
+              contentContainerStyle={styles.sheetScrollContent}
+            >
+              <View style={styles.sheetHandle} />
 
-            <View style={styles.sheetHeader}>
-              <AppText variant="h3">Create New Group</AppText>
+              <View style={styles.sheetHeader}>
+                <AppText variant="h3">Create New Group</AppText>
+
+                <Pressable
+                  accessibilityRole="button"
+                  accessibilityLabel="Close"
+                  onPress={() => setCreateModalVisible(false)}
+                  style={styles.closeButton}
+                >
+                  <AppIcon name="X" size={19} color={colors.textPrimary} />
+                </Pressable>
+              </View>
+
+              <AppText variant="label" secondary style={styles.fieldLabel}>
+                Group Name
+              </AppText>
+
+              <AppInput
+                value={groupName}
+                onChangeText={(text: string) => {
+                  setGroupName(text);
+
+                  if (groupNameError) {
+                    validateGroupName(text);
+                  }
+                }}
+                placeholder="e.g. Lunchtime Walkers"
+                placeholderTextColor={colors.inputPlaceholder}
+                maxLength={50}
+                returnKeyType="done"
+                error={groupNameError}
+              />
+
+              <AppText variant="label" secondary style={styles.fieldLabel}>
+                Choose an Icon
+              </AppText>
+
+              <View style={styles.iconGrid}>
+                {groupIcons.map(emoji => {
+                  const selected = selectedIcon === emoji;
+
+                  return (
+                    <Pressable
+                      key={emoji}
+                      accessibilityRole="button"
+                      accessibilityLabel={`Select ${emoji} group icon`}
+                      accessibilityState={{ selected }}
+                      onPress={() => setSelectedIcon(emoji)}
+                      style={[
+                        styles.iconOption,
+                        selected && styles.selectedIconOption,
+                      ]}
+                    >
+                      <AppText style={styles.iconEmoji}>{emoji}</AppText>
+                    </Pressable>
+                  );
+                })}
+              </View>
+
+              <View style={styles.privateRow}>
+                <View style={styles.lockIcon}>
+                  <AppIcon
+                    name="LockKeyhole"
+                    size={17}
+                    color={colors.primaryDark}
+                  />
+                </View>
+
+                <View style={styles.privateText}>
+                  <AppText variant="label">Private Group</AppText>
+                  <AppText variant="caption" secondary>
+                    Only people with an invite can join
+                  </AppText>
+                </View>
+
+                <CustomSwitch value={isPrivate} onValueChange={setIsPrivate} />
+              </View>
+              <AppText variant="caption" secondary style={styles.capacityNote}>
+                Groups can have up to 10 members, including their creator.
+              </AppText>
 
               <Pressable
                 accessibilityRole="button"
-                accessibilityLabel="Close"
-                onPress={() => setCreateModalVisible(false)}
-                style={styles.closeButton}
+                onPress={handleCreateGroupPress}
+                style={styles.submitButton}
               >
-                <AppIcon name="X" size={19} color={colors.textPrimary} />
-              </Pressable>
-            </View>
-
-            <AppText variant="label" secondary style={styles.fieldLabel}>
-              Group Name
-            </AppText>
-
-            <AppInput
-              value={groupName}
-              onChangeText={(text: string) => {
-                setGroupName(text);
-
-                if (groupNameError) {
-                  validateGroupName(text);
-                }
-              }}
-              placeholder="e.g. Lunchtime Walkers"
-              placeholderTextColor={colors.inputPlaceholder}
-              maxLength={50}
-              returnKeyType="done"
-              error={groupNameError}
-            />
-
-            <AppText variant="label" secondary style={styles.fieldLabel}>
-              Choose an Icon
-            </AppText>
-
-            <View style={styles.iconGrid}>
-              {groupIcons.map(emoji => {
-                const selected = selectedIcon === emoji;
-
-                return (
-                  <Pressable
-                    key={emoji}
-                    accessibilityRole="button"
-                    accessibilityLabel={`Select ${emoji} group icon`}
-                    accessibilityState={{ selected }}
-                    onPress={() => setSelectedIcon(emoji)}
-                    style={[
-                      styles.iconOption,
-                      selected && styles.selectedIconOption,
-                    ]}
-                  >
-                    <AppText style={styles.iconEmoji}>{emoji}</AppText>
-                  </Pressable>
-                );
-              })}
-            </View>
-
-            <View style={styles.privateRow}>
-              <View style={styles.lockIcon}>
-                <AppIcon
-                  name="LockKeyhole"
-                  size={17}
-                  color={colors.primaryDark}
-                />
-              </View>
-
-              <View style={styles.privateText}>
-                <AppText variant="label">Private Group</AppText>
-                <AppText variant="caption" secondary>
-                  Only people with an invite can join
+                <AppText variant="button" color="white">
+                  Create Group
                 </AppText>
-              </View>
-
-              <CustomSwitch value={isPrivate} onValueChange={setIsPrivate} />
-            </View>
-
-            <Pressable
-              accessibilityRole="button"
-              onPress={handleCreateGroupPress}
-              style={styles.submitButton}
-            >
-              <AppText variant="button" color="white">
-                Create Group
-              </AppText>
-            </Pressable>
+              </Pressable>
+            </ScrollView>
           </View>
         </KeyboardAvoidingView>
       </View>
@@ -206,4 +217,4 @@ const CreateGroupModal: React.FC<CreateGroupModalProps> = ({
   );
 };
 
-export default CreateGroupModal;
+export default memo(CreateGroupModal);

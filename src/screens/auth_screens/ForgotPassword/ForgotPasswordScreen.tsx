@@ -73,16 +73,7 @@ const ForgotPasswordScreen: React.FC<Props> = ({ navigation }) => {
               <AppText variant="subtitle1" center mb={8}>
                 Check your inbox!
               </AppText>
-              {developmentCode && (
-                <AppText
-                  variant="caption"
-                  secondary
-                  center
-                  style={{ marginTop: 8 }}
-                >
-                  Development code: 123456
-                </AppText>
-              )}
+               
               <AppText variant="body2" secondary center>
                 If an account exists, a reset code was sent to{'\n'}
                 <AppText variant="body2" primary bold>

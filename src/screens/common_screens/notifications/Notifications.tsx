@@ -19,6 +19,8 @@ import { useNavigation } from '@react-navigation/native';
 import { authenticatedRequest } from '../../../services/authenticatedApi';
 import { apiErrorMessage } from '../../../services/api';
 import { showAppToast } from '../../../utils/appToast';
+import notifee, { AndroidImportance } from '@notifee/react-native';
+import { getNotificationPermission } from '../../../utils/AppPermissions';
 
 type ApiNotification = {
   id: string;
@@ -80,6 +82,39 @@ const Notifications = () => {
         '/notifications?page=1&limit=50',
       );
       const items = result.items || [];
+      try {
+        if (await getNotificationPermission()) {
+          const channelId = await notifee.createChannel({
+            id: 'challenge-updates',
+            name: 'Challenge updates',
+            importance: AndroidImportance.DEFAULT,
+          });
+          const challengeItems = items
+            .filter(item => !item.read && /^CHALLENGE_/i.test(item.type))
+            .slice(0, 3);
+          const staleChallengeItems = items.filter(
+            item => item.read && /^CHALLENGE_/i.test(item.type),
+          );
+          await Promise.all([
+            ...staleChallengeItems.map(item =>
+              notifee.cancelNotification(item.id),
+            ),
+            ...challengeItems.map(item =>
+              notifee.displayNotification({
+                id: item.id,
+                title: item.title,
+                body: item.body,
+                android: { channelId, pressAction: { id: 'default' } },
+              }),
+            ),
+          ]);
+        }
+      } catch (notificationError) {
+        console.warn(
+          'Could not display challenge notifications:',
+          notificationError,
+        );
+      }
       const mappedItems = items.map(item => ({
         id: item.id,
         emoji: emojiForType(item.type),
@@ -122,6 +157,7 @@ const Notifications = () => {
           'PATCH',
           `/notifications/${encodeURIComponent(id)}/read`,
         );
+        await notifee.cancelNotification(id);
       } catch (error) {
         await refresh();
         showAppToast(
@@ -144,6 +180,11 @@ const Notifications = () => {
     setUnreadCount(0);
     try {
       await authenticatedRequest('PATCH', '/notifications/read-all');
+      await Promise.all(
+        notificationsRef.current.map(item =>
+          notifee.cancelNotification(item.id),
+        ),
+      );
     } catch (error) {
       await refresh();
       showAppToast(

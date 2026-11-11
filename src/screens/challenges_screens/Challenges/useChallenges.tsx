@@ -10,6 +10,7 @@ import type { Badge, Challenge, ChallengeTab } from './data/challengesData';
 type CompetitionEntry = {
   id: string;
   name: string;
+  profileImageUrl?: string;
   value: number;
   rank: number;
   progress: number;
@@ -36,6 +37,7 @@ type CommunityChallenge = {
   leaderboard?: Array<{
     id: string;
     name: string;
+    profileImageUrl?: string;
     value: number;
     rank: number;
     winner?: boolean;
@@ -66,7 +68,7 @@ type Achievement = {
 };
 
 const useChallenges = () => {
-  const [activeTab, setActiveTab] = useState<ChallengeTab>('Leaderboard');
+  const [activeTab, setActiveTab] = useState<ChallengeTab>('Challenges');
   const [challenges, setChallenges] = useState<Challenge[]>([]);
   const [ruleChallenges, setRuleChallenges] = useState<Challenge[]>([]);
   const [badges, setBadges] = useState<Badge[]>([]);
@@ -119,7 +121,14 @@ const useChallenges = () => {
             const progress = Number(item.progress ?? 0);
             const startsInFuture =
               !!item.startsAt && Date.parse(item.startsAt) > Date.now();
-            const status = item.status.toUpperCase();
+            const status = String(item.status || 'UPCOMING').toUpperCase();
+            const joined = Boolean(item.joined);
+            const joinable = Boolean(
+              item.joinable ??
+                (!joined &&
+                  !startsInFuture &&
+                  ['ACTIVE', 'LIVE', 'PUBLISHED'].includes(status)),
+            );
             const metricLabel = metric.replace(/_/g, ' ');
             const dateLabel = item.month
               ? item.month
@@ -147,6 +156,7 @@ const useChallenges = () => {
               leaderboard: (item.leaderboard || []).map(entry => ({
                 id: entry.id,
                 name: entry.name,
+                profileImageUrl: entry.profileImageUrl,
                 value: Number(entry.value) || 0,
                 rank: Number(entry.rank) || 0,
                 winner: entry.winner ?? entry.isWinner,
@@ -162,8 +172,8 @@ const useChallenges = () => {
                 : metric.toLowerCase().includes('workout')
                 ? Dumbbell
                 : Sunrise,
-              joined: item.joined,
-              joinable: !!item.joinable,
+              joined,
+              joinable,
             };
           }),
         );

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Alert, Pressable, ScrollView, StyleSheet, View } from 'react-native';
+import { Alert, Pressable, ScrollView, View } from 'react-native';
 import {
   ProfileScreenNavigation,
   ProfileSectionLabel,
@@ -98,8 +98,8 @@ const PrivacyScreen: React.FC<{ navigation: ProfileScreenNavigation }> = ({
             last
           />
         </ProfileCard>
-        <ProfileSectionLabel>App Permissions</ProfileSectionLabel>
-        <ProfileCard style={styles.permissionCard}>
+        {/* <ProfileSectionLabel>App Permissions</ProfileSectionLabel> */}
+        {/* <ProfileCard style={styles.permissionCard}>
           <ProfileListRow
             icon="❤️"
             title="Health Data Access"
@@ -112,7 +112,7 @@ const PrivacyScreen: React.FC<{ navigation: ProfileScreenNavigation }> = ({
             action="While Using"
             last
           />
-        </ProfileCard>
+        </ProfileCard> */}
         <AppText
           onPress={() => setDeleteAccount(true)}
           variant="body2"
@@ -164,9 +164,5 @@ const PrivacyScreen: React.FC<{ navigation: ProfileScreenNavigation }> = ({
     </View>
   );
 };
-
-const styles = StyleSheet.create({
-  permissionCard: { marginBottom: 0 },
-});
 
 export default PrivacyScreen;

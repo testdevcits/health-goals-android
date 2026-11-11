@@ -79,7 +79,10 @@ const ProfileScreen: React.FC = () => {
             <AppIcon name="Bell" size={19} color={colors.warning} />
           </Pressable>
 
-          <View style={styles.smallAvatar}>
+          <View
+            style={styles.smallAvatar}
+            
+          >
             {profileImageUrl ? (
               <Image
                 source={{ uri: profileImageUrl }}
@@ -114,7 +117,7 @@ const ProfileScreen: React.FC = () => {
           <>
             {/* Profile information */}
             <View style={styles.profileSection}>
-              <View style={styles.largeAvatar}>
+              <Pressable style={styles.largeAvatar} onPress={() => navigation.navigate('EditProfile')}>
                 {profileImageUrl ? (
                   <Image
                     source={{ uri: profileImageUrl }}
@@ -125,7 +128,10 @@ const ProfileScreen: React.FC = () => {
                     {initials}
                   </AppText>
                 )}
-              </View>
+                <View style={styles.editIconContainer}>
+                  <AppIcon name="Pencil" size={18} color={colors.surface} />
+                </View>
+              </Pressable>
 
               <AppText variant="h3" center mt={spacing.md}>
                 {name || 'Your profile'}
@@ -150,9 +156,9 @@ const ProfileScreen: React.FC = () => {
                   value: walletLoading ? '…' : points.toLocaleString(),
                   label: 'Points',
                 },
-                { value: '—', label: 'Day Streak' },
-                { value: '—', label: 'Badges' },
-                { value: '—', label: 'Rank' },
+                { value: '0', label: 'Day Streak' },
+                { value: '0', label: 'Badges' },
+                { value: '0', label: 'Rank' },
               ].map((stat, index) => (
                 <React.Fragment key={stat.label}>
                   {index > 0 && (
@@ -221,13 +227,17 @@ const ProfileScreen: React.FC = () => {
                 </Pressable>
               ))}
             </View>
-            <AppSettingsRow
-              icon="🚪"
-              title="Sign Out"
-              value=""
-              onPress={() => setModalVisible(true)}
-              showDivider={false}
-            />
+            <View
+              style={[styles.menuCard, { backgroundColor: colors.surface }]}
+            >
+              <AppSettingsRow
+                icon="🚪"
+                title="Sign Out"
+                value=""
+                onPress={() => setModalVisible(true)}
+                showDivider={false}
+              />
+            </View>
           </>
         )}
       </ScrollView>

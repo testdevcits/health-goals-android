@@ -5,8 +5,9 @@ import { authenticatedRequest } from '../../../services/authenticatedApi';
 import { getCurrentUser } from '../../../services/profile';
 import { apiErrorMessage } from '../../../services/api';
 import { showAppToast } from '../../../utils/appToast';
-import { istDateKey, recentIstDates } from '../../../utils/healthDates';
+import { recentIstDates } from '../../../utils/healthDates';
 import { readStepsHistory } from '../../../services/healthConnect';
+import { fetchHealthTrend } from '../../../services/healthTrends';
 import { trendData as initialTrendData } from './trendData';
 import type { TrendMetric } from './trendData';
 
@@ -45,37 +46,23 @@ export default function useDailyActivityTrends() {
     setHasData(false);
     (async () => {
       try {
+        const dates = recentIstDates();
         const [recordsResult, goalResult] = await Promise.allSettled([
           activeMetric === 'Steps'
-            ? readStepsHistory(7).then(history => ({
-                records: history.map(item => ({
-                  metricType: 'steps',
-                  value: item.value,
-                  unit: item.unit,
-                  recordedAt: `${item.date}T12:00:00+05:30`,
-                })),
-              }))
+            ? readStepsHistory(7).then(history =>
+                history.map(item => ({ date: item.date, value: item.value })),
+              )
             : activeMetric === 'Stress'
             ? Promise.reject(
                 new Error(
                   'Stress readings are not available from the connected health sources.',
                 ),
               )
-            : authenticatedRequest<{
-                history: Array<{ date: string; value: number; unit: string }>;
-              }>(
-                'GET',
-                `/health/history?metricType=${metricTypes[activeMetric]}&from=${
-                  recentIstDates()[0]
-                }&to=${istDateKey(new Date())}`,
-              ).then(result => ({
-                records: result.history.map(row => ({
-                  metricType: metricTypes[activeMetric],
-                  value: row.value,
-                  unit: row.unit,
-                  recordedAt: `${row.date}T12:00:00+05:30`,
-                })),
-              })),
+            : fetchHealthTrend(
+                metricTypes[activeMetric],
+                dates[0],
+                dates[dates.length - 1],
+              ).then(result => result.series),
           getCurrentUser(),
         ]);
         if (!active) return;
@@ -95,14 +82,17 @@ export default function useDailyActivityTrends() {
           setLoadError(apiErrorMessage(recordsResult.reason));
           return;
         }
-        if (
-          recordsResult.status === 'fulfilled' &&
-          recordsResult.value.records?.length
-        ) {
-          const records = [...recordsResult.value.records].sort(
-            (a, b) => Date.parse(a.recordedAt) - Date.parse(b.recordedAt),
+        if (recordsResult.status === 'fulfilled') {
+          const byDate = new Map(
+            recordsResult.value.map(row => [row.date, row.value]),
           );
-          const values = records.map(row => Number(row.value));
+          const barsByDate = dates.map(date =>
+            byDate.has(date) ? byDate.get(date) ?? null : null,
+          );
+          const values = barsByDate.filter(
+            (value): value is number => value !== null,
+          );
+          if (!values.length) return;
           const average = Math.round(
             values.reduce((sum, value) => sum + value, 0) / values.length,
           );
@@ -116,16 +106,13 @@ export default function useDailyActivityTrends() {
               savedGoal ||
                 goalValuesRef.current[activeMetric].replace(/,/g, ''),
             ) * (activeMetric === 'Sleep' && !savedGoal ? 60 : 1);
-          const byDate = new Map(
-            records.map(row => [istDateKey(row.recordedAt), Number(row.value)]),
+          const bars = barsByDate.map(value =>
+            value === null
+              ? null
+              : goal
+              ? Math.max(0, Math.min(100, Math.round((value / goal) * 100)))
+              : 0,
           );
-          const bars = recentIstDates()
-            .map(date => byDate.get(date) || 0)
-            .map(value =>
-              goal
-                ? Math.max(0, Math.min(100, Math.round((value / goal) * 100)))
-                : 0,
-            );
           const averageLabel =
             activeMetric === 'Sleep'
               ? `${Math.floor(average / 60)}h ${Math.round(average % 60)}m`
@@ -168,7 +155,7 @@ export default function useDailyActivityTrends() {
                         value: `${(Math.min(...values) / 60).toFixed(1)}h`,
                         label: 'Shortest day',
                       },
-                      { value: String(records.length), label: 'Days synced' },
+                      { value: String(values.length), label: 'Days synced' },
                     ]
                   : [
                       { value: averageLabel, label: 'Daily avg' },
@@ -180,10 +167,10 @@ export default function useDailyActivityTrends() {
                         value: String(Math.min(...values)),
                         label: 'Lowest daily avg',
                       },
-                      { value: String(records.length), label: 'Days synced' },
+                      { value: String(values.length), label: 'Days synced' },
                     ],
               insight: `${
-                records.length
+                values.length
               } synced ${activeMetric.toLowerCase()} daily records in the last 7 days. Your average is ${averageLabel}.`,
             },
           }));

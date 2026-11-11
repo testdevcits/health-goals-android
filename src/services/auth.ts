@@ -4,6 +4,8 @@ import type { UserProfile } from './profile';
 
 const KEYCHAIN_SERVICE = 'com.vitality.auth';
 let refreshInFlight: Promise<AuthTokens | null> | null = null;
+let sessionExpired = false;
+const sessionExpiredListeners = new Set<() => void>();
 
 export type AuthTokens = {
   accessToken: string;
@@ -21,6 +23,7 @@ async function saveTokens(
     service: KEYCHAIN_SERVICE,
     accessible: Keychain.ACCESSIBLE.AFTER_FIRST_UNLOCK,
   });
+  sessionExpired = false;
   if (savePhoneProfile) {
     try {
       const { syncPhoneProfile } = await import('./devices');
@@ -88,6 +91,17 @@ export async function resetPassword(
   await api.post('/auth/password/reset', { challengeId, otp, password });
 }
 
+export async function changePassword(
+  currentPassword: string,
+  newPassword: string,
+): Promise<{ passwordChanged: boolean; requiresSignIn: boolean }> {
+  const { authenticatedRequest } = await import('./authenticatedApi');
+  return authenticatedRequest<{
+    passwordChanged: boolean;
+    requiresSignIn: boolean;
+  }>('PATCH', '/auth/me/password', { currentPassword, newPassword });
+}
+
 export async function signInWithGoogle(idToken: string) {
   const response = await api.post<ApiResult<AuthTokens>>('/auth/google', {
     idToken,
@@ -102,8 +116,9 @@ export async function readSession(): Promise<AuthTokens | null> {
   if (!credentials) return null;
   try {
     return JSON.parse(credentials.password) as AuthTokens;
-  } catch {
+  } catch (error) {
     await clearSession();
+    if (isExpiredTokenResponse(error)) notifySessionExpired();
     return null;
   }
 }
@@ -138,6 +153,67 @@ export async function refreshSession(): Promise<AuthTokens | null> {
   return refreshInFlight;
 }
 
+export const isExpiredTokenResponse = (error: unknown): boolean => {
+  if (
+    typeof error !== 'object' ||
+    error === null ||
+    !('response' in error) ||
+    typeof error.response !== 'object' ||
+    error.response === null ||
+    !('status' in error.response) ||
+    error.response.status !== 401 ||
+    !('data' in error.response)
+  ) {
+    return false;
+  }
+
+  const data = error.response.data;
+  const messages: string[] = [];
+  if (typeof data === 'string') messages.push(data);
+  if (typeof data === 'object' && data !== null) {
+    if ('message' in data && typeof data.message === 'string') {
+      messages.push(data.message);
+    }
+    if ('error' in data && typeof data.error === 'string') {
+      messages.push(data.error);
+    }
+    if ('data' in data && typeof data.data === 'object' && data.data !== null) {
+      if ('message' in data.data && typeof data.data.message === 'string') {
+        messages.push(data.data.message);
+      }
+    }
+  }
+
+  return messages.some(message =>
+    /\b(invalid|expired)\b.*\b(token|jwt|credential)\b|\b(token|jwt|credential)\b.*\b(invalid|expired)\b/i.test(
+      message,
+    ),
+  );
+};
+
+const notifySessionExpired = () => {
+  if (sessionExpired) return;
+  sessionExpired = true;
+  sessionExpiredListeners.forEach(listener => listener());
+};
+
+export const subscribeToSessionExpired = (listener: () => void) => {
+  sessionExpiredListeners.add(listener);
+  return () => {
+    sessionExpiredListeners.delete(listener);
+  };
+};
+
+export async function expireSession() {
+  if (sessionExpired) return;
+  sessionExpired = true;
+  try {
+    await logout();
+  } finally {
+    sessionExpiredListeners.forEach(listener => listener());
+  }
+}
+
 async function refreshSessionOnce(): Promise<AuthTokens | null> {
   const session = await readSession();
   if (!session?.refreshToken) return null;
@@ -146,8 +222,9 @@ async function refreshSessionOnce(): Promise<AuthTokens | null> {
       refreshToken: session.refreshToken,
     });
     return saveTokens({ ...response.data.data, user: session.user });
-  } catch {
+  } catch (error) {
     await clearSession();
+    if (isExpiredTokenResponse(error)) notifySessionExpired();
     return null;
   }
 }

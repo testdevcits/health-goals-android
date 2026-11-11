@@ -1,7 +1,11 @@
 import { Alert } from 'react-native';
-import { useCallback, useState } from 'react';
+import { useCallback, useRef, useState } from 'react';
 import { useFocusEffect } from '@react-navigation/native';
 import { authenticatedRequest } from '../../../services/authenticatedApi';
+import { fetchActivityTransactions } from '../../../services/activityTransactions';
+import type { WalletTransaction } from '../../../services/activityTransactions';
+import { fetchWallet } from '../../../services/wallet';
+import type { DailyActivity, Wallet } from '../../../services/wallet';
 import { apiErrorMessage } from '../../../services/api';
 import { showAppToast } from '../../../utils/appToast';
 
@@ -55,8 +59,14 @@ export const rewardIcon = (title: string) =>
 
 export default function useRewards() {
   const [points, setPoints] = useState(0);
+  const [wallet, setWallet] = useState<Wallet | null>(null);
+  const [dailyActivity, setDailyActivity] = useState<DailyActivity | null>(null);
   const [rewards, setRewards] = useState<Reward[]>([]);
   const [redemptions, setRedemptions] = useState<Redemption[]>([]);
+  const [transactions, setTransactions] = useState<WalletTransaction[]>([]);
+  const [transactionsPage, setTransactionsPage] = useState(1);
+  const [transactionsTotal, setTransactionsTotal] = useState(0);
+  const [loadingMoreTransactions, setLoadingMoreTransactions] = useState(false);
   const [ticketClaims, setTicketClaims] = useState<TicketClaim[]>([]);
   const [revealedCodes, setRevealedCodes] = useState<string[]>([]);
   const [redeemingRewardId, setRedeemingRewardId] = useState<string | null>(
@@ -64,19 +74,19 @@ export default function useRewards() {
   );
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState('');
+  const loadingMoreTransactionsRef = useRef(false);
 
   const refresh = useCallback(async () => {
     setLoading(true);
     setLoadError('');
-    const [walletResult, rewardsResult, redemptionsResult, ticketsResult] =
-      await Promise.allSettled([
-        authenticatedRequest<{
-          wallet?: {
-            availablePoints?: number;
-            lifetimeEarned?: number;
-            lifetimeRedeemed?: number;
-          };
-        }>('GET', '/wallet'),
+    const [
+      walletResult,
+      rewardsResult,
+      redemptionsResult,
+      ticketsResult,
+      transactionsResult,
+    ] = await Promise.allSettled([
+        fetchWallet(),
         authenticatedRequest<{ rewards: Reward[] }>('GET', '/rewards'),
         authenticatedRequest<{ redemptions: Redemption[] }>(
           'GET',
@@ -86,9 +96,12 @@ export default function useRewards() {
           'GET',
           '/rewards/leaderboard-tickets',
         ),
+        fetchActivityTransactions(1),
       ]);
     if (walletResult.status === 'fulfilled') {
-      setPoints(walletResult.value.wallet?.availablePoints ?? 0);
+      setWallet(walletResult.value.wallet);
+      setDailyActivity(walletResult.value.dailyActivity);
+      setPoints(walletResult.value.wallet.availablePoints);
     }
     if (rewardsResult.status === 'fulfilled') {
       setRewards(rewardsResult.value.rewards || []);
@@ -103,11 +116,17 @@ export default function useRewards() {
     if (ticketsResult.status === 'fulfilled') {
       setTicketClaims(ticketsResult.value.items || []);
     }
+    if (transactionsResult.status === 'fulfilled') {
+      setTransactions(transactionsResult.value.items);
+      setTransactionsPage(transactionsResult.value.page);
+      setTransactionsTotal(transactionsResult.value.total);
+    }
     const failure = [
       walletResult,
       rewardsResult,
       redemptionsResult,
       ticketsResult,
+      transactionsResult,
     ].find(result => result.status === 'rejected');
     if (failure?.status === 'rejected') {
       showAppToast(
@@ -117,9 +136,13 @@ export default function useRewards() {
       );
     }
     if (
-      [walletResult, rewardsResult, redemptionsResult, ticketsResult].every(
-        result => result.status === 'rejected',
-      )
+      [
+        walletResult,
+        rewardsResult,
+        redemptionsResult,
+        ticketsResult,
+        transactionsResult,
+      ].every(result => result.status === 'rejected')
     ) {
       setLoadError(
         apiErrorMessage(
@@ -129,6 +152,40 @@ export default function useRewards() {
     }
     setLoading(false);
   }, []);
+
+  const loadMoreTransactions = useCallback(async () => {
+    if (
+      loadingMoreTransactionsRef.current ||
+      transactions.length >= transactionsTotal
+    ) {
+      return;
+    }
+    loadingMoreTransactionsRef.current = true;
+    setLoadingMoreTransactions(true);
+    try {
+      const nextPage = await fetchActivityTransactions(transactionsPage + 1);
+      setTransactions(current => {
+        const existingIds = new Set(current.map(transaction => transaction.id));
+        return [
+          ...current,
+          ...nextPage.items.filter(
+            transaction => !existingIds.has(transaction.id),
+          ),
+        ];
+      });
+      setTransactionsPage(nextPage.page);
+      setTransactionsTotal(nextPage.total);
+    } catch (error) {
+      showAppToast(
+        'error',
+        'Could not load points activity',
+        apiErrorMessage(error),
+      );
+    } finally {
+      loadingMoreTransactionsRef.current = false;
+      setLoadingMoreTransactions(false);
+    }
+  }, [transactions.length, transactionsPage, transactionsTotal]);
 
   useFocusEffect(
     useCallback(() => {
@@ -216,8 +273,14 @@ export default function useRewards() {
 
   return {
     points,
+    wallet,
+    dailyActivity,
     rewards,
     redemptions,
+    transactions,
+    hasMoreTransactions: transactions.length < transactionsTotal,
+    loadingMoreTransactions,
+    loadMoreTransactions,
     ticketClaims,
     revealedCodes,
     redeemingRewardId,

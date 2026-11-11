@@ -9,16 +9,23 @@ const createStyles = (colors: any, spacing: any, radius: any) =>
     },
 
     modalKeyboardContainer: {
+      flex: 1,
       width: '100%',
       justifyContent: 'flex-end',
     },
 
     bottomSheet: {
+      maxHeight: '90%',
       backgroundColor: colors.surface,
       borderTopLeftRadius: radius.xxl,
       borderTopRightRadius: radius.xxl,
       paddingHorizontal: spacing.base,
       paddingTop: spacing.sm,
+    },
+
+    sheetScrollContent: {
+      flexGrow: 1,
+      paddingBottom: spacing.sm,
     },
 
     sheetHandle: {
@@ -83,6 +90,12 @@ const createStyles = (colors: any, spacing: any, radius: any) =>
       gap: spacing.sm,
       marginTop: spacing.xs,
       marginBottom: spacing.md,
+    },
+
+    capacityNote: {
+      marginTop: -spacing.xs,
+      marginBottom: spacing.sm,
+      textAlign: 'center',
     },
 
     lockIcon: {

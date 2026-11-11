@@ -9,6 +9,8 @@ interface Props {
   members: Member[];
   challenges: GroupChallenge[];
   onNewChallenge: () => void;
+  isLeader: boolean;
+  onArchiveGroup: () => void;
 }
 
 const GoalCard: React.FC<{ styles: any; members: Member[] }> = memo(
@@ -52,46 +54,110 @@ const GoalCard: React.FC<{ styles: any; members: Member[] }> = memo(
 );
 
 const WeeklyChart: React.FC<{ styles: any; members: Member[] }> = memo(
-  ({ styles, members }) => (
-    <View style={styles.section}>
-      <View style={styles.sectionHeading}>
-        <AppText variant="subtitle1">Member Steps · Last 7 Days</AppText>
-        <View style={styles.weekBadge}>
-          <AppText variant="caption" primary bold>
-            This week
-          </AppText>
+  ({ styles, members }) => {
+    const topMembers = [...members]
+      .sort((first, second) => second.steps - first.steps)
+      .slice(0, 7);
+    const maxSteps = Math.max(...topMembers.map(member => member.steps), 0);
+    const axisValues = [maxSteps, Math.round(maxSteps / 2), 0];
+    const compactSteps = (steps: number) =>
+      steps >= 1000 ? `${(steps / 1000).toFixed(1)}k` : String(steps);
+
+    return (
+      <View style={styles.section}>
+        <View style={styles.sectionHeading}>
+          <AppText variant="subtitle1">Member steps</AppText>
+          <View style={styles.weekBadge}>
+            <AppText variant="caption" primary bold>
+              Last 7 days
+            </AppText>
+          </View>
         </View>
-      </View>
-      <View style={styles.chartCard}>
-        <View style={styles.chartBars}>
-          {members.slice(0, 7).map((item, index) => (
-            <View key={item.id} style={styles.chartColumn}>
-              <View
-                style={[
-                  styles.chartBar,
-                  {
-                    height: `${Math.max(
-                      4,
-                      (item.steps / Math.max(...members.map(m => m.steps), 1)) *
-                        100,
-                    )}%` as any,
-                  },
-                ]}
-              />
-              <AppText
-                variant="caption"
-                secondary
-                center
-                style={styles.chartDay}
-              >
-                {String(index + 1)}
+        <View style={styles.chartCard}>
+          {topMembers.length ? (
+            <>
+              <AppText variant="caption" secondary style={styles.chartCaption}>
+                Steps by member · top {topMembers.length}
+              </AppText>
+              <View style={styles.chartBody}>
+                <View style={styles.chartYAxis}>
+                  {axisValues.map((value, index) => (
+                    <AppText key={`${value}-${index}`} variant="caption" secondary>
+                      {compactSteps(value)}
+                    </AppText>
+                  ))}
+                </View>
+                <View style={styles.chartPlot}>
+                  <View style={[styles.chartGridLine, { top: '12%' }]} />
+                  <View style={[styles.chartGridLine, { top: '56%' }]} />
+                  <View style={[styles.chartGridLine, { bottom: 0 }]} />
+                  <View style={styles.chartBars}>
+                    {topMembers.map(member => {
+                      const barHeight = maxSteps
+                        ? Math.max(3, (member.steps / maxSteps) * 100)
+                        : 0;
+                      return (
+                        <View
+                          key={member.id}
+                          accessibilityRole="image"
+                          accessibilityLabel={`${member.name}: ${formatSteps(member.steps)} steps in the last 7 days`}
+                          style={styles.chartColumn}
+                        >
+                          <AppText
+                            variant="caption"
+                            primary
+                            bold
+                            center
+                            numberOfLines={1}
+                            style={[
+                              styles.chartValue,
+                              { bottom: `${barHeight}%` },
+                            ]}
+                          >
+                            {compactSteps(member.steps)}
+                          </AppText>
+                          <View
+                            style={[
+                              styles.chartBar,
+                              {
+                                height: `${barHeight}%` as any,
+                                backgroundColor: member.color,
+                              },
+                            ]}
+                          />
+                        </View>
+                      );
+                    })}
+                  </View>
+                </View>
+              </View>
+              <View style={styles.chartLabels}>
+                <View style={styles.chartAxisSpacer} />
+                {topMembers.map(member => (
+                  <AppText
+                    key={member.id}
+                    variant="caption"
+                    secondary
+                    center
+                    numberOfLines={1}
+                    style={styles.chartMemberLabel}
+                  >
+                    {member.name.split(/\s+/)[0]}
+                  </AppText>
+                ))}
+              </View>
+            </>
+          ) : (
+            <View style={styles.chartEmpty}>
+              <AppText variant="body2" secondary center>
+                Member step totals will appear here after activity syncs.
               </AppText>
             </View>
-          ))}
+          )}
         </View>
       </View>
-    </View>
-  ),
+    );
+  },
 );
 
 const MemberRow: React.FC<{
@@ -209,7 +275,7 @@ const ChallengeCard: React.FC<{ challenge: GroupChallenge; styles: any }> =
   ));
 
 export const GroupOverview: React.FC<Props> = memo(
-  ({ members, challenges, onNewChallenge }) => {
+  ({ members, challenges, onNewChallenge, isLeader, onArchiveGroup }) => {
     const { theme } = useTheme();
     const { colors, spacing, radius } = theme;
     const styles = createGroupOverviewStyles(colors, spacing, radius);
@@ -257,6 +323,24 @@ export const GroupOverview: React.FC<Props> = memo(
             </AppText>
           </Pressable>
         </View>
+
+        {isLeader ? (
+          <View style={styles.section}>
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel="Archive group"
+              onPress={onArchiveGroup}
+              style={styles.archiveGroupButton}
+            >
+              <AppText variant="label" error bold>
+                Archive group
+              </AppText>
+              <AppText variant="caption" secondary center>
+                This group will be removed from active groups and cannot be restored in the app.
+              </AppText>
+            </Pressable>
+          </View>
+        ) : null}
       </>
     );
   },

@@ -1,5 +1,10 @@
 const OFFSET_MS = 330 * 60 * 1000;
 const DAY_MS = 86400000;
+export const localDateKey = (date: Date) =>
+  `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(
+    2,
+    '0',
+  )}-${String(date.getDate()).padStart(2, '0')}`;
 export const istDateKey = (date: Date | string) =>
   new Date(new Date(date).getTime() + OFFSET_MS).toISOString().slice(0, 10);
 export const recentIstDates = (days = 7, now = new Date()) => {

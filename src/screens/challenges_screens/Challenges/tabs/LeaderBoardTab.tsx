@@ -1,5 +1,5 @@
 import React from 'react';
-import { View } from 'react-native';
+import { Image, View } from 'react-native';
 import { AppText } from '../../../../components';
 import { useTheme } from '../../../../theme/useTheme';
 import type { LeaderboardPerson } from '../data/challengesData';
@@ -9,20 +9,32 @@ import PodiumCard from '../components/PodiumCard';
 interface LeaderBoardTabProps {
   leaderboard: LeaderboardPerson[];
   styles: ChallengesStyles;
+  title: string;
+  subtitle: string;
 }
 
 const LeaderBoardTab: React.FC<LeaderBoardTabProps> = ({
   leaderboard,
   styles,
+  title,
+  subtitle,
 }) => {
   const { theme } = useTheme();
 
   return (
     <>
+      <View style={styles.leaderboardHeading}>
+        <AppText variant="subtitle1" bold>
+          {title}
+        </AppText>
+        <AppText variant="caption" secondary>
+          {subtitle}
+        </AppText>
+      </View>
       <PodiumCard leaderboard={leaderboard} styles={styles} />
       <View style={styles.leaderboardCard}>
         {leaderboard.slice(3).map((person, index) => {
-          const isCurrentUser = person.rank === 4;
+          const isCurrentUser = Boolean(person.isCurrentUser);
 
           return (
             <View
@@ -42,9 +54,18 @@ const LeaderBoardTab: React.FC<LeaderBoardTabProps> = ({
               <View
                 style={[styles.smallAvatar, { backgroundColor: person.color }]}
               >
-                <AppText variant="label" color="white" bold>
-                  {person.initials}
-                </AppText>
+                {person.profileImageUrl ? (
+                  <Image
+                    source={{ uri: person.profileImageUrl }}
+                    resizeMode="cover"
+                    accessibilityLabel={`${person.name} profile photo`}
+                    style={{ width: '100%', height: '100%', borderRadius: 999 }}
+                  />
+                ) : (
+                  <AppText variant="label" color="white" bold>
+                    {person.initials}
+                  </AppText>
+                )}
               </View>
 
               <View style={styles.leaderboardDetails}>
@@ -62,7 +83,7 @@ const LeaderBoardTab: React.FC<LeaderBoardTabProps> = ({
                   {person.steps}
                 </AppText>
                 <AppText variant="caption" secondary right>
-                  steps
+                  {person.unit || 'points'}
                 </AppText>
               </View>
             </View>
@@ -70,7 +91,7 @@ const LeaderBoardTab: React.FC<LeaderBoardTabProps> = ({
         })}
       </View>
       <AppText variant="caption" secondary center mt={theme.spacing.md}>
-        Friends Leaderboard · resets in 9h 20m
+        Rankings update as challenge activity syncs
       </AppText>
     </>
   );

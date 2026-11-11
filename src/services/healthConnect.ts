@@ -10,6 +10,7 @@ import {
 } from 'react-native-health-connect';
 import { ExerciseType } from 'react-native-health-connect';
 import type { Permission } from 'react-native-health-connect';
+import { localDateKey } from '../utils/healthDates';
 
 export const HEALTH_PERMISSIONS: Permission[] = [
   { accessType: 'read', recordType: 'Steps' },
@@ -342,7 +343,10 @@ export const readTodayHealthData = async (
 
 /** Read daily totals through Health Connect aggregation so overlapping sources
  * follow the same deduplication and app-priority rules as its own step total. */
-export const readStepsHistory = async (days = 7): Promise<DailyStepTotal[]> => {
+export const readStepsHistory = async (
+  days = 7,
+  range?: { from: Date; to: Date },
+): Promise<DailyStepTotal[]> => {
   if (Platform.OS !== 'android' || days < 1) return [];
 
   if (!(await ensureHealthConnectInitialized())) return [];
@@ -354,13 +358,24 @@ export const readStepsHistory = async (days = 7): Promise<DailyStepTotal[]> => {
   if (!hasReadPermission(granted, 'Steps')) return [];
 
   const today = istDateKey(new Date());
-  const firstDay = shiftDateKey(today, -(days - 1));
-  const dayAfterToday = shiftDateKey(today, 1);
+  const firstDay = range
+    ? localDateKey(range.from)
+    : shiftDateKey(today, -(days - 1));
+  const lastDay = range ? localDateKey(range.to) : today;
+  const rangeDays =
+    Math.floor(
+      (Date.parse(`${lastDay}T00:00:00.000Z`) -
+        Date.parse(`${firstDay}T00:00:00.000Z`)) /
+        (24 * 60 * 60 * 1000),
+    ) + 1;
+  if (rangeDays < 1) return [];
   const start = new Date(
     Date.parse(`${firstDay}T00:00:00.000Z`) - IST_OFFSET_MS,
   );
   const end = new Date(
-    Date.parse(`${dayAfterToday}T00:00:00.000Z`) - IST_OFFSET_MS,
+    Date.parse(
+      `${shiftDateKey(lastDay, 1)}T00:00:00.000Z`,
+    ) - IST_OFFSET_MS,
   );
 
   const grouped = await aggregateGroupByDuration({
@@ -380,7 +395,7 @@ export const readStepsHistory = async (days = 7): Promise<DailyStepTotal[]> => {
     totals.set(key, (totals.get(key) || 0) + group.result.COUNT_TOTAL);
   });
 
-  return Array.from({ length: days }, (_, index) => {
+  return Array.from({ length: range ? rangeDays : days }, (_, index) => {
     const key = shiftDateKey(firstDay, index);
     return {
       date: key,

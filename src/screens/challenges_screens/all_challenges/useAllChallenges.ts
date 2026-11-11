@@ -17,6 +17,10 @@ export interface Challenge {
   color: string;
   emoji: string;
   joined?: boolean;
+  joinable?: boolean;
+  currentValue?: number;
+  targetValue?: number;
+  participantCount?: number;
 }
 
 export const challengeCategories: ChallengeCategory[] = [
@@ -38,40 +42,84 @@ export default function useAllChallenges() {
     setLoadError('');
     try {
       const result = await authenticatedRequest<{
-        challenges: Array<{
+        challenges?: Array<{
           id: string;
           title: string;
-          description: string;
-          metricType: string;
+          description?: string;
+          metricType?: string;
+          metric?: string;
           targetValue: number;
           status: string;
           joined: boolean;
+          joinable?: boolean;
+          currentValue?: number;
+          progress?: number;
+          participantCount?: number;
+          participants?: number;
+          startsAt?: string;
+          endsAt?: string;
+        }>;
+        items?: Array<{
+          id: string;
+          title: string;
+          description?: string;
+          metricType?: string;
+          metric?: string;
+          targetValue: number;
+          status: string;
+          joined: boolean;
+          joinable?: boolean;
+          currentValue?: number;
+          progress?: number;
+          participantCount?: number;
+          participants?: number;
+          startsAt?: string;
+          endsAt?: string;
         }>;
       }>('GET', '/community/challenges');
       setChallenges(
-        (result.challenges || []).map(item => ({
-          id: item.id,
-          title: item.title,
-          description:
-            item.description || `${item.targetValue} ${item.metricType}`,
-          category:
-            item.metricType === 'steps'
-              ? 'Steps'
-              : item.metricType === 'workout'
-              ? 'Strength'
-              : 'Mind',
-          status: item.status,
-          progress: 0,
-          progressLabel: `${item.targetValue.toLocaleString()} target`,
-          color: '#00C6A2',
-          emoji:
-            item.metricType === 'steps'
-              ? '👟'
-              : item.metricType === 'workout'
-              ? '💪'
-              : '🧘',
-          joined: item.joined,
-        })),
+        (result.challenges || result.items || []).map(item => {
+          const metric = (item.metricType || item.metric || 'steps').toLowerCase();
+          const currentValue = Number(item.currentValue || 0);
+          const targetValue = Number(item.targetValue || 0);
+          const progress = Number(
+            item.progress ??
+              (targetValue > 0 ? (currentValue / targetValue) * 100 : 0),
+          );
+          const joined = Boolean(item.joined);
+          const status = String(item.status || 'UPCOMING').toUpperCase();
+          const joinable = Boolean(
+            item.joinable ??
+              (!joined && ['ACTIVE', 'LIVE', 'PUBLISHED'].includes(status)),
+          );
+          const category = metric.includes('step')
+            ? 'Steps'
+            : metric.includes('workout')
+            ? 'Strength'
+            : 'Mind';
+          const participants = Number(
+            item.participantCount ?? item.participants ?? 0,
+          );
+
+          return {
+            id: item.id,
+            title: item.title,
+            description: item.description || `${targetValue} ${metric}`,
+            category,
+            status,
+            progress: Math.min(100, Math.max(0, progress)),
+            progressLabel: joined
+              ? `${currentValue.toLocaleString()} / ${targetValue.toLocaleString()} · ${participants} participants`
+              : `Not joined · ${participants} participants`,
+            color: '#00C6A2',
+            emoji: category === 'Steps' ? '👟' : category === 'Strength' ? '💪' : '🧘',
+            joined,
+            joinable,
+            currentValue,
+            targetValue,
+            participantCount: participants,
+          };
+        }),
       );
     } catch (error) {
       const message = apiErrorMessage(error);

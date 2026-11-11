@@ -6,6 +6,7 @@ import {
   KeyboardAvoidingView,
   Platform,
   Pressable,
+  ScrollView,
 } from 'react-native';
 import { AppInput, AppText } from '../../../../../components';
 import { useTheme } from '../../../../../theme/useTheme';
@@ -125,7 +126,7 @@ export const CreateChallengeModal: React.FC<Props> = memo(
           <Pressable style={StyleSheet.absoluteFill} onPress={handleClose} />
 
           <KeyboardAvoidingView
-            behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+            behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
             style={styles.modalKeyboardContainer}
           >
             <View
@@ -134,97 +135,104 @@ export const CreateChallengeModal: React.FC<Props> = memo(
                 { paddingBottom: Math.max(bottomInset, spacing.base) },
               ]}
             >
-              <View style={styles.sheetHandle} />
+              <ScrollView
+                keyboardShouldPersistTaps="handled"
+                keyboardDismissMode="on-drag"
+                showsVerticalScrollIndicator={false}
+                contentContainerStyle={styles.sheetScrollContent}
+              >
+                <View style={styles.sheetHandle} />
 
-              <View style={styles.sheetHeader}>
-                <AppText variant="h3">New Group Challenge</AppText>
+                <View style={styles.sheetHeader}>
+                  <AppText variant="h3">New Group Challenge</AppText>
+                  <Pressable
+                    accessibilityRole="button"
+                    accessibilityLabel="Close"
+                    onPress={handleClose}
+                    style={styles.closeButton}
+                  >
+                    <AppIcon name="X" size={18} color={colors.textPrimary} />
+                  </Pressable>
+                </View>
+
+                <AppText variant="caption" secondary>
+                  Challenge Name
+                </AppText>
+
+                <AppInput
+                  label="Challenge Name"
+                  value={challengeName}
+                  onChangeText={(text: string) => {
+                    onChangeName(text);
+                    if (nameError) validateName(text);
+                  }}
+                  placeholder="e.g. Weekend Step Showdown"
+                  placeholderTextColor={colors.inputPlaceholder}
+                  maxLength={60}
+                  error={nameError}
+                />
+
+                <AppText variant="caption" secondary>
+                  Goal
+                </AppText>
+                <AppInput
+                  value={challengeGoal}
+                  onChangeText={(text: string) => {
+                    onChangeGoal(text);
+                    if (goalError) validateGoal(text);
+                  }}
+                  placeholder="e.g. 10,000 steps/day"
+                  placeholderTextColor={colors.inputPlaceholder}
+                  maxLength={100}
+                  error={goalError}
+                />
+
+                <View style={styles.modalOptionsRow}>
+                  <View style={styles.modalOption}>
+                    <AppText variant="caption" secondary>
+                      Duration
+                    </AppText>
+                    <Pressable
+                      onPress={onCycleDuration}
+                      style={styles.selectOption}
+                    >
+                      <AppText variant="body2">{duration}</AppText>
+                      <AppIcon
+                        name="ChevronDown"
+                        size={17}
+                        color={colors.textSecondary}
+                      />
+                    </Pressable>
+                  </View>
+
+                  <View style={styles.modalOption}>
+                    <AppText variant="caption" secondary>
+                      Reward
+                    </AppText>
+                    <Pressable
+                      onPress={onCycleReward}
+                      style={styles.selectOption}
+                    >
+                      <AppText variant="body2">{reward}</AppText>
+                      <AppIcon
+                        name="ChevronDown"
+                        size={17}
+                        color={colors.textSecondary}
+                      />
+                    </Pressable>
+                  </View>
+                </View>
+
                 <Pressable
                   accessibilityRole="button"
-                  accessibilityLabel="Close"
-                  onPress={handleClose}
-                  style={styles.closeButton}
+                  onPress={handleSubmit}
+                  style={styles.submitChallengeButton}
                 >
-                  <AppIcon name="X" size={18} color={colors.textPrimary} />
+                  <AppText variant="button" color="white">
+                    Create Challenge
+                  </AppText>
                 </Pressable>
-              </View>
-
-              <AppText variant="caption" secondary>
-                Challenge Name
-              </AppText>
-
-              <AppInput
-                label="Challenge Name"
-                value={challengeName}
-                onChangeText={(text: string) => {
-                  onChangeName(text);
-                  if (nameError) validateName(text);
-                }}
-                placeholder="e.g. Weekend Step Showdown"
-                placeholderTextColor={colors.inputPlaceholder}
-                maxLength={60}
-                error={nameError}
-              />
-
-              <AppText variant="caption" secondary>
-                Goal
-              </AppText>
-              <AppInput
-                value={challengeGoal}
-                onChangeText={(text: string) => {
-                  onChangeGoal(text);
-                  if (goalError) validateGoal(text);
-                }}
-                placeholder="e.g. 10,000 steps/day"
-                placeholderTextColor={colors.inputPlaceholder}
-                maxLength={100}
-                error={goalError}
-              />
-
-              <View style={styles.modalOptionsRow}>
-                <View style={styles.modalOption}>
-                  <AppText variant="caption" secondary>
-                    Duration
-                  </AppText>
-                  <Pressable
-                    onPress={onCycleDuration}
-                    style={styles.selectOption}
-                  >
-                    <AppText variant="body2">{duration}</AppText>
-                    <AppIcon
-                      name="ChevronDown"
-                      size={17}
-                      color={colors.textSecondary}
-                    />
-                  </Pressable>
-                </View>
-
-                <View style={styles.modalOption}>
-                  <AppText variant="caption" secondary>
-                    Reward
-                  </AppText>
-                  <Pressable
-                    onPress={onCycleReward}
-                    style={styles.selectOption}
-                  >
-                    <AppText variant="body2">{reward}</AppText>
-                    <AppIcon
-                      name="ChevronDown"
-                      size={17}
-                      color={colors.textSecondary}
-                    />
-                  </Pressable>
-                </View>
-              </View>
-
-              <Pressable
-                accessibilityRole="button"
-                onPress={handleSubmit}
-                style={styles.submitChallengeButton}
-              >
-                <AppText variant="button" color="white">
-                  Create Challenge
-                </AppText>
-              </Pressable>
+              </ScrollView>
             </View>
           </KeyboardAvoidingView>
         </View>

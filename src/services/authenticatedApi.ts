@@ -1,6 +1,11 @@
 import axios from 'axios';
 import { api } from './api';
-import { readSession, refreshSession } from './auth';
+import {
+  expireSession,
+  isExpiredTokenResponse,
+  readSession,
+  refreshSession,
+} from './auth';
 
 type ApiResponse<T> = {
   data: T;
@@ -46,10 +51,16 @@ export async function authenticatedRequest<T = unknown>(
     if (expectedUserId && session?.user?.id !== expectedUserId)
       throw new Error('Account changed. Please retry health sync.');
     if (!session?.accessToken) {
+      if (isExpiredTokenResponse(error)) await expireSession();
       throw error;
     }
 
-    const response = await send(session.accessToken);
-    return response.data.data;
+    try {
+      const response = await send(session.accessToken);
+      return response.data.data;
+    } catch (retryError) {
+      if (isExpiredTokenResponse(retryError)) await expireSession();
+      throw retryError;
+    }
   }
 }

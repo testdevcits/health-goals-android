@@ -45,6 +45,20 @@ const createStyles = (colors: AppColors) =>
       justifyContent: 'center',
     },
 
+     
+    editIconContainer: {
+      position: 'absolute',
+      bottom: -2,
+      right: -2,
+      width: 30,
+      height: 30,
+      borderRadius: radius.full,
+      backgroundColor: colors.primary,
+      alignItems: 'center',
+      justifyContent: 'center',
+      padding: 2,
+    },
+
     scrollContent: {
       paddingHorizontal: spacing.base,
     },

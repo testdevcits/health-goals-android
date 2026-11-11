@@ -16,12 +16,16 @@ export const createForgotPasswordStyles = (theme: AppTheme) => {
     },
     scrollContent: {
       paddingHorizontal: spacing.xl,
+      paddingTop: spacing.lg,
+      alignItems: 'center',
     },
     // ── Header ────────────────────────────────────
     header: {
       alignItems: 'center',
-      paddingTop: spacing.xxxl + spacing.lg,
-      paddingBottom: spacing.xxl,
+      width: '100%',
+      maxWidth: 460,
+      paddingTop: spacing.lg,
+      paddingBottom: spacing.xl,
     },
     iconBox: {
       width: 72,
@@ -41,13 +45,17 @@ export const createForgotPasswordStyles = (theme: AppTheme) => {
     },
     // ── Form ─────────────────────────────────────
     formSection: {
-      paddingTop: spacing.sm,
+      width: '100%',
+      maxWidth: 460,
+      alignSelf: 'center',
+      paddingTop: spacing.xs,
     },
     sendButton: {
       marginTop: spacing.xs,
     },
     // ── Success ───────────────────────────────────
     successBox: {
+      width: '100%',
       padding: spacing.xl,
       alignItems: 'center',
       borderRadius: radius.lg,
@@ -60,7 +68,7 @@ export const createForgotPasswordStyles = (theme: AppTheme) => {
     // ── Footer ───────────────────────────────────
     backRow: {
       alignItems: 'center',
-      marginTop: spacing.xxl,
+      marginTop: spacing.xl,
       paddingBottom: spacing.xl,
     },
   });

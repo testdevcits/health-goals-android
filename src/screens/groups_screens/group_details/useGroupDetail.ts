@@ -12,6 +12,7 @@ import { apiErrorMessage } from '../../../services/api';
 import { showAppToast } from '../../../utils/appToast';
 import { createAuthenticatedChatSocket } from '../../../services/chatSocket';
 import type { Socket } from 'socket.io-client';
+import { readSession } from '../../../services/auth';
 
 const mergeChatMessages = (
   current: any[],
@@ -42,6 +43,42 @@ type GroupDetailOptions = {
   primaryColor: string;
 };
 
+export type GroupUserSearchResult = {
+  id: string;
+  name: string;
+  publicId: string;
+  profileImageUrl?: string;
+};
+
+type GroupRecord = {
+  name: string;
+  description: string;
+  members: number | Array<Record<string, any>>;
+  imageUrl?: string;
+  image?: string;
+  isLeader?: boolean;
+  isCurrentUserLeader?: boolean;
+  currentUserRole?: string;
+  role?: string;
+  leaderId?: string;
+  leaderUserId?: string;
+  creatorId?: string;
+  ownerId?: string;
+  createdByUserId?: string;
+  leader?: string | { id?: string; userId?: string };
+  owner?: string | { id?: string; userId?: string };
+  createdBy?: string | { id?: string; userId?: string };
+};
+
+const relatedUserId = (value: unknown): string | undefined => {
+  if (typeof value === 'string') return value;
+  if (value && typeof value === 'object') {
+    const user = value as { id?: string; userId?: string };
+    return user.id || user.userId;
+  }
+  return undefined;
+};
+
 export default function useGroupDetail({
   groupId,
   groupName: initialGroupName,
@@ -54,7 +91,17 @@ export default function useGroupDetail({
   const [groupDescription, setGroupDescription] = useState(
     initialGroupDescription,
   );
+  const [groupImageUrl, setGroupImageUrl] = useState<string | undefined>();
   const [memberCount, setMemberCount] = useState(initialMemberCount);
+  const [isLeader, setIsLeader] = useState(false);
+  const [memberSearchVisible, setMemberSearchVisible] = useState(false);
+  const [memberSearchQuery, setMemberSearchQuery] = useState('');
+  const [memberSearchResults, setMemberSearchResults] = useState<
+    GroupUserSearchResult[]
+  >([]);
+  const [memberSearchLoading, setMemberSearchLoading] = useState(false);
+  const [groupEditVisible, setGroupEditVisible] = useState(false);
+  const [groupNameDraft, setGroupNameDraft] = useState(initialGroupName);
   const [challenges, setChallenges] = useState<GroupChallenge[]>([]);
   const [members, setMembers] = useState<Member[]>([]);
   const [messages, setMessages] = useState<any[]>([]);
@@ -68,6 +115,7 @@ export default function useGroupDetail({
   const [reward, setReward] = useState(REWARD_OPTIONS[1]);
   const chatSocketRef = useRef<Socket | null>(null);
   const chatUserIdRef = useRef('');
+  const memberSearchRequestRef = useRef(0);
 
   const refreshGroup = useCallback(async () => {
     if (!groupId) return;
@@ -77,7 +125,7 @@ export default function useGroupDetail({
       const [groupResult, challengeResult, messageResult, leaderboardResult] =
         await Promise.all([
           authenticatedRequest<{
-            group: { name: string; description: string; members: number };
+            group: GroupRecord;
           }>('GET', `/community/groups/${encodeURIComponent(groupId)}`),
           authenticatedRequest<{
             challenges: Array<{
@@ -112,7 +160,43 @@ export default function useGroupDetail({
         ]);
       setGroupName(groupResult.group.name);
       setGroupDescription(groupResult.group.description);
-      setMemberCount(groupResult.group.members);
+      setGroupImageUrl(groupResult.group.imageUrl || groupResult.group.image);
+      const session = await readSession();
+      const userId = session?.user?.id;
+      const group = groupResult.group;
+      const memberRecords = Array.isArray(group.members) ? group.members : [];
+      const leaderIds = [
+        group.leaderId,
+        group.leaderUserId,
+        group.creatorId,
+        group.ownerId,
+        group.createdByUserId,
+        relatedUserId(group.leader),
+        relatedUserId(group.owner),
+        relatedUserId(group.createdBy),
+        ...memberRecords
+          .filter(member =>
+            ['LEADER', 'OWNER', 'GL', 'GROUP_LEADER'].includes(
+              String(member.role || member.groupRole || '').toUpperCase(),
+            ),
+          )
+          .map(
+            member =>
+              relatedUserId(member.user) || member.userId || member.id,
+          ),
+      ].filter((id): id is string => Boolean(id));
+      const currentRole = String(
+        group.currentUserRole || group.role || '',
+      ).toUpperCase();
+      setIsLeader(
+        group.isLeader === true ||
+        group.isCurrentUserLeader === true ||
+          ['LEADER', 'OWNER', 'GL', 'GROUP_LEADER'].includes(currentRole) ||
+          Boolean(userId && leaderIds.includes(userId)),
+      );
+      setMemberCount(
+        Array.isArray(group.members) ? group.members.length : group.members,
+      );
       setChallenges(
         challengeResult.challenges.map(item => ({
           id: item.id,
@@ -327,12 +411,151 @@ export default function useGroupDetail({
     }
   }, [groupId, messageDraft, primaryColor]);
 
+  const searchMembers = useCallback(async (query: string) => {
+    setMemberSearchQuery(query);
+    const requestId = ++memberSearchRequestRef.current;
+    if (query.trim().length < 2) {
+      setMemberSearchResults([]);
+      setMemberSearchLoading(false);
+      return;
+    }
+    setMemberSearchLoading(true);
+    try {
+      const result = await authenticatedRequest<{
+        users: GroupUserSearchResult[];
+      }>(
+        'GET',
+        `/community/users/search?q=${encodeURIComponent(query.trim())}`,
+      );
+      if (requestId === memberSearchRequestRef.current) {
+        setMemberSearchResults(result.users || []);
+      }
+    } catch (error) {
+      if (requestId === memberSearchRequestRef.current) {
+        showAppToast(
+          'error',
+          'Could not search members',
+          apiErrorMessage(error),
+        );
+      }
+    } finally {
+      if (requestId === memberSearchRequestRef.current) {
+        setMemberSearchLoading(false);
+      }
+    }
+  }, []);
+
+  const addMember = useCallback(
+    async (user: GroupUserSearchResult) => {
+      try {
+        await authenticatedRequest(
+          'POST',
+          `/community/groups/${encodeURIComponent(groupId)}/members`,
+          { publicId: user.publicId },
+        );
+        setMemberSearchVisible(false);
+        setMemberSearchQuery('');
+        setMemberSearchResults([]);
+        await refreshGroup();
+        showAppToast(
+          'success',
+          'Member added',
+          `${user.name} joined the group.`,
+        );
+      } catch (error) {
+        showAppToast('error', 'Could not add member', apiErrorMessage(error));
+      }
+    },
+    [groupId, refreshGroup],
+  );
+
+  const saveGroup = useCallback(
+    async (image?: string | null) => {
+      const name = groupNameDraft.trim();
+      if (!name) {
+        showAppToast('error', 'Group name required', 'Enter a group name.');
+        return;
+      }
+      try {
+        const result = await authenticatedRequest<{
+          group?: {
+            name?: string;
+            description?: string;
+            imageUrl?: string;
+            image?: string;
+          };
+        }>('PATCH', `/community/groups/${encodeURIComponent(groupId)}`, {
+          name,
+          ...(image !== undefined ? { image } : {}),
+        });
+        setGroupName(result.group?.name || name);
+        setGroupDescription(result.group?.description || groupDescription);
+        setGroupImageUrl(
+          image === null
+            ? undefined
+            : result.group?.imageUrl ||
+                result.group?.image ||
+                (typeof image === 'string' ? image : groupImageUrl),
+        );
+        setGroupEditVisible(false);
+        showAppToast('success', 'Group updated');
+      } catch (error) {
+        showAppToast('error', 'Could not update group', apiErrorMessage(error));
+      }
+    },
+    [groupDescription, groupId, groupImageUrl, groupNameDraft],
+  );
+
+  const leaveGroup = useCallback(async () => {
+    try {
+      await authenticatedRequest(
+        'POST',
+        `/community/groups/${encodeURIComponent(groupId)}/leave`,
+      );
+      showAppToast('success', 'Left group', 'You have left this group.');
+      return true;
+    } catch (error) {
+      showAppToast('error', 'Could not leave group', apiErrorMessage(error));
+      return false;
+    }
+  }, [groupId]);
+
+  const archiveGroup = useCallback(async () => {
+    try {
+      await authenticatedRequest(
+        'DELETE',
+        `/community/groups/${encodeURIComponent(groupId)}`,
+      );
+      showAppToast('success', 'Group archived', 'The group has been archived.');
+      return true;
+    } catch (error) {
+      showAppToast('error', 'Could not archive group', apiErrorMessage(error));
+      return false;
+    }
+  }, [groupId]);
+
   return {
     activeTab,
     setActiveTab,
     groupName,
     groupDescription,
+    groupImageUrl,
     memberCount,
+    isLeader,
+    groupEditVisible,
+    setGroupEditVisible,
+    groupNameDraft,
+    setGroupNameDraft,
+    saveGroup,
+    leaveGroup,
+    archiveGroup,
+    memberSearchVisible,
+    setMemberSearchVisible,
+    memberSearchQuery,
+    memberSearchResults,
+    memberSearchLoading,
+    searchMembers,
+    addMember,
     challenges,
     members,
     messages,

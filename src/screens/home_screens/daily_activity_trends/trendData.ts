@@ -9,7 +9,7 @@ type TrendSummary = {
 
 type TrendMetricData = {
   color: string;
-  bars: number[];
+  bars: (number | null)[];
   stats: TrendSummary[];
   insight: string;
   goalUnit: string;

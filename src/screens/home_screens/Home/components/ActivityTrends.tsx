@@ -11,29 +11,33 @@ import {
 import { useTheme } from '../../../../theme/useTheme';
 import { TREND_DATA, TREND_TABS, TrendTab } from '../const';
 import { createHomeStyles } from '../styles.Home';
-import { authenticatedRequest } from '../../../../services/authenticatedApi';
 import {
-  istDateKey,
   recentIstDates,
   recentHealthDayLabels,
 } from '../../../../utils/healthDates';
 import { readStepsHistory } from '../../../../services/healthConnect';
+import { fetchHealthTrend } from '../../../../services/healthTrends';
 
 const BAR_MAX_HEIGHT = 100;
 
-const BarChart: React.FC<{ data: number[]; color: string }> = ({
+const BarChart: React.FC<{ data: (number | null)[]; color: string }> = ({
   data,
   color,
 }) => {
   const { theme } = useTheme();
   const styles = createHomeStyles(theme);
-  const maxValue = Math.max(...data, 1);
+  const maxValue = Math.max(
+    ...data.filter((value): value is number => value !== null),
+    1,
+  );
 
   return (
     <View style={styles.chartArea}>
       {data.map((value, index) => {
         const height =
-          value > 0 ? Math.max(2, (value / maxValue) * BAR_MAX_HEIGHT) : 0;
+          value !== null && value > 0
+            ? Math.max(2, (value / maxValue) * BAR_MAX_HEIGHT)
+            : 0;
         return (
           <View key={recentHealthDayLabels()[index]} style={styles.barWrapper}>
             <View
@@ -56,9 +60,10 @@ const BarChart: React.FC<{ data: number[]; color: string }> = ({
   );
 };
 
-const ActivityTrends: React.FC<{ onPressDetails: () => void }> = ({
-  onPressDetails,
-}) => {
+const ActivityTrends: React.FC<{
+  onPressDetails: () => void;
+  healthRefreshKey?: number;
+}> = ({ onPressDetails, healthRefreshKey = 0 }) => {
   const { theme } = useTheme();
   const styles = createHomeStyles(theme);
   const [activeTab, setActiveTab] = useState<TrendTab>('Steps');
@@ -75,70 +80,77 @@ const ActivityTrends: React.FC<{ onPressDetails: () => void }> = ({
     setLoadError('');
     setHasData(false);
     const load = async () => {
-      const end = new Date();
-      const start = new Date(Date.now() - 6 * 86400000);
-      const key = istDateKey;
+      const dates = recentIstDates();
       const metricType =
         activeTab === 'Steps'
           ? 'steps'
           : activeTab === 'Sleep'
           ? 'sleep'
           : 'active_minutes';
-      const history =
+      const history: { date: string; value: number | null }[] =
         activeTab === 'Steps'
-          ? await readStepsHistory(7)
+          ? (await readStepsHistory(7)).map(item => ({
+              date: item.date,
+              value: item.value,
+            }))
           : (
-              await authenticatedRequest<{
-                history: Array<{ date: string; value: number }>;
-              }>(
-                'GET',
-                `/health/history?metricType=${metricType}&from=${key(
-                  start,
-                )}&to=${key(end)}`,
-              )
-            ).history;
+              await fetchHealthTrend(metricType, dates[0], dates[dates.length - 1])
+            ).series;
       if (!active) return;
-      if (!history.length) {
+      const byDate = new Map(history.map(row => [row.date, row.value]));
+      const values = dates.map(date =>
+        byDate.has(date) ? byDate.get(date) ?? null : null,
+      );
+      const observedValues = values.filter(
+        (value): value is number => value !== null,
+      );
+      if (!observedValues.length) {
         setLoading(false);
         return;
       }
-      const byDate = new Map(history.map(row => [row.date, row.value]));
-      const values = recentIstDates().map(date => byDate.get(date) || 0);
-      const sum = values.reduce((total, value) => total + value, 0);
-      const average = Math.round(sum / values.length);
+      const sum = observedValues.reduce((total, value) => total + value, 0);
+      const average = Math.round(sum / observedValues.length);
       setTrendData(current => ({
         ...current,
         [activeTab]: {
           ...current[activeTab],
           bars: values,
-          stats: current[activeTab].stats.map((stat, index) =>
-            index === 0
-              ? {
-                  ...stat,
-                  value:
-                    activeTab === 'Sleep'
-                      ? `${Math.floor(average / 60)}h ${Math.round(
-                          average % 60,
-                        )}m`
-                      : sum.toLocaleString(),
-                }
-              : index === 1
-              ? {
-                  ...stat,
-                  value:
-                    activeTab === 'Sleep'
-                      ? `${(average / 60).toFixed(1)}h`
-                      : average.toLocaleString(),
-                }
-              : index === 2 && activeTab === 'Steps'
-              ? {
-                  ...stat,
-                  value: values
-                    .filter(value => value >= 10000)
-                    .length.toString(),
-                }
-              : { ...stat, value: '—' },
-          ),
+          stats:
+            activeTab === 'Steps'
+              ? [
+                  { value: sum.toLocaleString(), label: 'Total' },
+                  { value: average.toLocaleString(), label: 'Daily Avg' },
+                  {
+                    value: String(
+                      observedValues.filter(value => value >= 10000).length,
+                    ),
+                    label: 'Days >10K',
+                  },
+                ]
+              : activeTab === 'Sleep'
+              ? [
+                  {
+                    value: `${Math.floor(average / 60)}h ${Math.round(
+                      average % 60,
+                    )}m`,
+                    label: 'Avg Sleep',
+                  },
+                  { value: '—', label: 'Quality' },
+                  {
+                    value: `${(Math.min(...observedValues) / 60).toFixed(1)}h`,
+                    label: 'Lowest',
+                  },
+                ]
+              : [
+                  { value: sum.toLocaleString(), label: 'Total Mins' },
+                  { value: average.toLocaleString(), label: 'Daily Avg' },
+                  {
+                    value: String(
+                      observedValues.filter(value => value === 0).length,
+                    ),
+                    label: 'Rest Days',
+                  },
+                ],
         },
       }));
       setHasData(true);
@@ -158,7 +170,7 @@ const ActivityTrends: React.FC<{ onPressDetails: () => void }> = ({
     return () => {
       active = false;
     };
-  }, [activeTab, isFocused, reloadKey]);
+  }, [activeTab, healthRefreshKey, isFocused, reloadKey]);
   const activeTrendData = trendData[activeTab];
 
   return (

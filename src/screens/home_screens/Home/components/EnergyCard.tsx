@@ -1,8 +1,8 @@
 import React from 'react';
-import { ActivityIndicator, View, Text } from 'react-native';
+import { View, Text } from 'react-native';
 import Svg, { Circle } from 'react-native-svg';
 
-import { AppText } from '../../../../components';
+import { AppShimmer, AppText } from '../../../../components';
 import { useTheme } from '../../../../theme/useTheme';
 import { createHomeStyles } from '../styles.Home';
 import { useIsFocused } from '@react-navigation/native';
@@ -74,8 +74,13 @@ const EnergyCircle: React.FC<{ energy: number }> = ({ energy }) => {
   );
 };
 
-const EnergyCard: React.FC = () => {
-  const { data: todayHealthData, syncVersion } = useTodayHealthData();
+const EnergyCard: React.FC<{ healthRefreshKey?: number }> = ({
+  healthRefreshKey = 0,
+}) => {
+  const { data: todayHealthData, syncVersion } = useTodayHealthData(
+    false,
+    healthRefreshKey,
+  );
   const isFocused = useIsFocused();
   const [energy, setEnergy] = React.useState(0);
   const [streakPeriod, setStreakPeriod] = React.useState(0);
@@ -190,12 +195,37 @@ const EnergyCard: React.FC = () => {
   return (
     <View style={styles.energyCard}>
       {loading ? (
-        <View style={styles.energyStatus}>
-          <ActivityIndicator size="small" color={colors.white} />
-          <AppText variant="caption" color="textInverse">
-            Loading today’s progress…
-          </AppText>
-        </View>
+        <AppShimmer
+          style={[styles.energyStatus, styles.energyLoading]}
+          highlightColor={colors.whiteOverlay65}
+        >
+          <View
+            style={[
+              styles.energyLoadingCircle,
+              { backgroundColor: colors.whiteOverlay17 },
+            ]}
+          />
+          <View style={styles.energyLoadingText}>
+            <View
+              style={[
+                styles.energyLoadingLine,
+                styles.energyLoadingLineTitle,
+              ]}
+            />
+            <View
+              style={[
+                styles.energyLoadingLine,
+                styles.energyLoadingLineDescription,
+              ]}
+            />
+            <View
+              style={[
+                styles.energyLoadingLine,
+                styles.energyLoadingLineFootnote,
+              ]}
+            />
+          </View>
+        </AppShimmer>
       ) : loadError ? (
         <View style={styles.energyStatus}>
           <AppText variant="subtitle1" bold color="textInverse">

@@ -50,7 +50,7 @@ export type TrendTab = (typeof TREND_TABS)[number];
 export const TREND_DATA: Record<
   TrendTab,
   {
-    bars: number[];
+    bars: (number | null)[];
     color: string;
     stats: { value: string; label: string }[];
   }

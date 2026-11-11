@@ -39,12 +39,18 @@ const createStyles = ({ colors, spacing, radius }: AppTheme) =>
       paddingHorizontal: spacing.base,
       paddingTop: spacing.xs,
     },
+    leaderboardHeading: {
+      gap: spacing.xxs,
+      paddingHorizontal: spacing.xs,
+      marginBottom: spacing.xs,
+    },
     podium: {
       flexDirection: 'row',
       alignItems: 'flex-end',
       justifyContent: 'center',
-      marginBottom: spacing.base,
+      marginBottom: spacing.md,
       paddingTop: spacing.md,
+      paddingHorizontal: spacing.xs,
     },
     podiumPerson: {
       flex: 1,
@@ -53,6 +59,7 @@ const createStyles = ({ colors, spacing, radius }: AppTheme) =>
     },
     firstPlacePerson: {
       paddingHorizontal: spacing.xs,
+      zIndex: 1,
     },
     podiumAvatar: {
       borderRadius: radius.full,
@@ -92,6 +99,7 @@ const createStyles = ({ colors, spacing, radius }: AppTheme) =>
       backgroundColor: colors.surface,
       borderRadius: radius.lg,
       overflow: 'hidden',
+      marginTop: spacing.xs,
       elevation: 2,
       shadowColor: colors.black,
       shadowOpacity: 0.04,
@@ -101,23 +109,116 @@ const createStyles = ({ colors, spacing, radius }: AppTheme) =>
     competitionCard: {
       backgroundColor: colors.surface,
       borderRadius: radius.lg,
-      padding: spacing.md,
       marginBottom: spacing.md,
-      gap: spacing.xs,
+      overflow: 'hidden',
       elevation: 1,
       shadowColor: colors.black,
-      shadowOpacity: 0.035,
-      shadowRadius: 5,
-      shadowOffset: { width: 0, height: 2 },
+      shadowOpacity: 0.06,
+      shadowRadius: 8,
+      shadowOffset: { width: 0, height: 3 },
     },
-    competitionEntry: {
-      borderTopWidth: StyleSheet.hairlineWidth,
-      borderTopColor: colors.border,
-      paddingTop: spacing.xs,
-      marginTop: spacing.xs,
+    competitionList: {
+      paddingBottom: spacing.sm,
+    },
+    competitionAccent: {
+      height: 4,
+      width: '100%',
+    },
+    competitionCardContent: {
+      padding: spacing.md,
+      gap: spacing.md,
+    },
+    competitionCardHeading: {
       flexDirection: 'row',
+      alignItems: 'center',
+      gap: spacing.sm,
+    },
+    competitionIcon: {
+      width: 42,
+      height: 42,
+      borderRadius: radius.md,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    competitionTitleWrap: {
+      flex: 1,
+      gap: spacing.xxs,
+    },
+    competitionStatus: {
+      borderRadius: radius.full,
+      paddingHorizontal: spacing.sm,
+      paddingVertical: spacing.xxs + 1,
+    },
+    competitionGoalRow: {
+      flexDirection: 'row',
+      flexWrap: 'wrap',
+      gap: spacing.md,
+    },
+    competitionGoalItem: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: spacing.xs,
+    },
+    competitionDate: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: spacing.xs,
+    },
+    myProgressCard: {
+      padding: spacing.md,
+      gap: spacing.sm,
+      borderRadius: radius.md,
+      backgroundColor: colors.backgroundSecondary,
+    },
+    myProgressHeading: {
+      flexDirection: 'row',
+      alignItems: 'center',
       justifyContent: 'space-between',
       gap: spacing.sm,
+    },
+    myProgressTitle: {
+      flex: 1,
+      flexDirection: 'row',
+      alignItems: 'center',
+      flexWrap: 'wrap',
+      gap: spacing.sm,
+    },
+    achievedBadge: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: spacing.xxs,
+    },
+    competitionProgressTrack: {
+      height: 8,
+      borderRadius: radius.full,
+      backgroundColor: colors.surfaceElevated,
+      overflow: 'hidden',
+    },
+    competitionProgressFill: {
+      height: '100%',
+      borderRadius: radius.full,
+    },
+    competitionLeaderboard: {
+      gap: spacing.xs,
+    },
+    competitionRank: {
+      width: 24,
+      height: 24,
+      borderRadius: radius.full,
+      alignItems: 'center',
+      justifyContent: 'center',
+      backgroundColor: colors.primaryLight,
+    },
+    leaderboardName: {
+      flex: 1,
+    },
+    competitionEntry: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: spacing.sm,
+      paddingVertical: spacing.xs,
+      borderTopWidth: StyleSheet.hairlineWidth,
+      borderTopColor: colors.border,
     },
     leaderboardRow: {
       minHeight: 60,

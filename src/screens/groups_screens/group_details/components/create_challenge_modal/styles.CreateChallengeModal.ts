@@ -8,14 +8,21 @@ const createChallengeModalStyles = (colors: any, spacing: any, radius: any) =>
       justifyContent: 'flex-end',
     },
     modalKeyboardContainer: {
+      flex: 1,
+      width: '100%',
       justifyContent: 'flex-end',
     },
     bottomSheet: {
+      maxHeight: '90%',
       backgroundColor: colors.surface,
       borderTopLeftRadius: radius.xxl,
       borderTopRightRadius: radius.xxl,
       paddingHorizontal: spacing.base,
       paddingTop: spacing.sm,
+    },
+    sheetScrollContent: {
+      flexGrow: 1,
+      paddingBottom: spacing.sm,
     },
     sheetHandle: {
       width: 40,

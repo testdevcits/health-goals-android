@@ -23,8 +23,13 @@ const RewardsScreen: React.FC<{ navigation: ProfileScreenNavigation }> = ({
   const { colors } = theme;
   const {
     points,
+    wallet,
+    dailyActivity,
     rewards,
     redemptions,
+    transactions,
+    hasMoreTransactions,
+    loadingMoreTransactions,
     ticketClaims,
     revealedCodes,
     redeemingRewardId,
@@ -33,7 +38,20 @@ const RewardsScreen: React.FC<{ navigation: ProfileScreenNavigation }> = ({
     refresh,
     confirmRedeem,
     refreshRedemption,
+    loadMoreTransactions,
   } = useRewards();
+  const activityStatusColor =
+    dailyActivity?.state === 'SETTLED'
+      ? colors.success
+      : dailyActivity?.state === 'RETRY'
+      ? colors.warning
+      : colors.info;
+  const activityStatusBackground =
+    dailyActivity?.state === 'SETTLED'
+      ? colors.successLight
+      : dailyActivity?.state === 'RETRY'
+      ? colors.warningLight
+      : colors.infoLight;
 
   return (
     <View style={{ flex: 1, backgroundColor: colors.backgroundSecondary }}>
@@ -74,7 +92,103 @@ const RewardsScreen: React.FC<{ navigation: ProfileScreenNavigation }> = ({
             <AppText variant="caption" color="white">
               Earn points by hitting goals and winning challenges
             </AppText>
+            {wallet ? (
+              <View style={styles.lifetimeRow}>
+                <View style={styles.lifetimeMetric}>
+                  <AppText variant="subtitle2" color="white" bold>
+                    {wallet.lifetimeEarned.toLocaleString()}
+                  </AppText>
+                  <AppText variant="caption" color="white">
+                    Lifetime earned
+                  </AppText>
+                </View>
+                <View style={styles.lifetimeDivider} />
+                <View style={styles.lifetimeMetric}>
+                  <AppText variant="subtitle2" color="white" bold>
+                    {wallet.lifetimeRedeemed.toLocaleString()}
+                  </AppText>
+                  <AppText variant="caption" color="white">
+                    Lifetime redeemed
+                  </AppText>
+                </View>
+              </View>
+            ) : null}
           </View>
+          {dailyActivity ? (
+            <ProfileCard style={styles.dailyActivityCard}>
+              <View style={styles.dailyActivityHeading}>
+                <View style={styles.dailyActivityTitle}>
+                  <AppText variant="subtitle2" bold>
+                    Today&apos;s activity
+                  </AppText>
+                  <AppText variant="caption" secondary>
+                    {new Date(
+                      `${dailyActivity.day}T12:00:00Z`,
+                    ).toLocaleDateString(undefined, {
+                      month: 'short',
+                      day: 'numeric',
+                      year: 'numeric',
+                      timeZone: dailyActivity.timezone,
+                    })}
+                  </AppText>
+                </View>
+                <View
+                  style={[
+                    styles.activityStateBadge,
+                    { backgroundColor: activityStatusBackground },
+                  ]}
+                >
+                  <AppText
+                    variant="caption"
+                    bold
+                    style={{ color: activityStatusColor }}
+                  >
+                    {dailyActivity.state.replace(/_/g, ' ')}
+                  </AppText>
+                </View>
+              </View>
+              <View style={styles.dailyActivityMetrics}>
+                <View style={styles.dailyActivityMetric}>
+                  <AppText variant="subtitle2" bold>
+                    {dailyActivity.creditedCoins.toLocaleString()}
+                  </AppText>
+                  <AppText variant="caption" secondary>
+                    Credited
+                  </AppText>
+                </View>
+                <View style={styles.dailyActivityMetric}>
+                  <AppText variant="subtitle2" bold>
+                    {dailyActivity.pendingCoins.toLocaleString()}
+                  </AppText>
+                  <AppText variant="caption" secondary>
+                    Pending
+                  </AppText>
+                </View>
+                <View style={styles.dailyActivityMetric}>
+                  <AppText variant="subtitle2" bold>
+                    {dailyActivity.entitledCoins.toLocaleString()}
+                  </AppText>
+                  <AppText variant="caption" secondary>
+                    Eligible
+                  </AppText>
+                </View>
+              </View>
+              {dailyActivity.needsSettlement ? (
+                <AppText variant="caption" secondary>
+                  Points are awaiting settlement. Expected by{' '}
+                  {new Date(dailyActivity.dueAt).toLocaleTimeString(
+                    undefined,
+                    {
+                      hour: 'numeric',
+                      minute: '2-digit',
+                      timeZone: dailyActivity.timezone,
+                    },
+                  )}{' '}
+                  ({dailyActivity.timezone}).
+                </AppText>
+              ) : null}
+            </ProfileCard>
+          ) : null}
           <ProfileSectionLabel>Leaderboard Ticket Rewards</ProfileSectionLabel>
           <View style={styles.rewardList}>
             {ticketClaims.length === 0 ? (
@@ -215,6 +329,69 @@ const RewardsScreen: React.FC<{ navigation: ProfileScreenNavigation }> = ({
               ))
             )}
           </View>
+          <ProfileSectionLabel>Points Activity</ProfileSectionLabel>
+          <ProfileCard>
+            {transactions.length === 0 ? (
+              <AppEmptyState
+                title="No points activity yet"
+                description="Earned and spent points will appear here."
+              />
+            ) : (
+              transactions.map((transaction, index) => {
+                const transactionIcons = {
+                  EARN: '🪙',
+                  BONUS: '🎉',
+                  REDEEM: '🎁',
+                  ADJUSTMENT: '⚖️',
+                  REVERSAL: '↩️',
+                  EXPIRATION: '⌛',
+                } as const;
+                const amount =
+                  transaction.amount > 0
+                    ? `+${transaction.amount}`
+                    : String(transaction.amount);
+                const date = transaction.createdAt
+                  ? new Date(transaction.createdAt).toLocaleDateString(
+                      undefined,
+                      { month: 'short', day: 'numeric', year: 'numeric' },
+                    )
+                  : '';
+                return (
+                  <ProfileListRow
+                    key={transaction.id}
+                    icon={transactionIcons[transaction.type]}
+                    title={
+                      transaction.description ||
+                      transaction.type.replace(/_/g, ' ')
+                    }
+                    detail={`${transaction.type}${
+                      date ? ` · ${date}` : ''
+                    }${
+                      transaction.referenceType
+                        ? ` · ${transaction.referenceType.replace(/_/g, ' ')}`
+                        : ''
+                    } · Balance ${transaction.balanceAfter.toLocaleString()} pts`}
+                    action={`${amount} pts`}
+                    last={index === transactions.length - 1}
+                  />
+                );
+              })
+            )}
+            {hasMoreTransactions ? (
+              <Pressable
+                onPress={loadMoreTransactions}
+                disabled={loadingMoreTransactions}
+                style={styles.loadMoreButton}
+                accessibilityRole="button"
+              >
+                <AppText variant="caption" primary bold>
+                  {loadingMoreTransactions
+                    ? 'Loading…'
+                    : 'Load more points activity'}
+                </AppText>
+              </Pressable>
+            ) : null}
+          </ProfileCard>
           <ProfileSectionLabel>Recent Redemptions</ProfileSectionLabel>
           <ProfileCard>
             {redemptions.length === 0 ? (
@@ -275,8 +452,38 @@ const RewardsScreen: React.FC<{ navigation: ProfileScreenNavigation }> = ({
 };
 
 const styles = StyleSheet.create({
-  pointsCard: { borderRadius: 22, padding: 20, marginBottom: 4 },
+  pointsCard: { borderRadius: 22, padding: 20, marginBottom: 12 },
   pointsValue: { marginVertical: 2 },
+  lifetimeRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 16,
+    paddingTop: 12,
+    borderTopWidth: StyleSheet.hairlineWidth,
+    borderTopColor: 'rgba(255,255,255,0.35)',
+  },
+  lifetimeMetric: { flex: 1, gap: 2 },
+  lifetimeDivider: {
+    width: StyleSheet.hairlineWidth,
+    height: 34,
+    marginHorizontal: 16,
+    backgroundColor: 'rgba(255,255,255,0.35)',
+  },
+  dailyActivityCard: { padding: 16, marginBottom: 4, gap: 14 },
+  dailyActivityHeading: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: 10,
+  },
+  dailyActivityTitle: { gap: 2 },
+  activityStateBadge: {
+    borderRadius: 12,
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+  },
+  dailyActivityMetrics: { flexDirection: 'row' },
+  dailyActivityMetric: { flex: 1, gap: 2 },
   rewardList: { gap: 10 },
   rewardRow: {
     minHeight: 74,
@@ -296,6 +503,10 @@ const styles = StyleSheet.create({
   redeemAction: { alignItems: 'flex-end' },
   ticketCard: { gap: 6, padding: 14 },
   ticketImage: { width: '100%', height: 180, marginTop: 8 },
+  loadMoreButton: {
+    alignItems: 'center',
+    paddingVertical: 14,
+  },
 });
 
 export default RewardsScreen;

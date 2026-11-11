@@ -13,8 +13,11 @@ import { useTheme } from '../../../theme/useTheme';
 import ChallengeTabs from './components/ChallengeTabs';
 import BadgesTab from './tabs/BadgesTab';
 import ChallengesTab from './tabs/ChallengesTab';
+import LeaderBoardTab from './tabs/LeaderBoardTab';
 import createStyles from './styles.Challenges';
 import useChallenges from './useChallenges';
+import { spacing } from '../../../theme/spacing';
+import type { LeaderboardPerson } from './data/challengesData';
 
 type Props = NativeStackScreenProps<ChallengesStackParamList, 'Challenges'>;
 
@@ -39,6 +42,75 @@ const ChallengesScreen: React.FC<Props> = ({ navigation }) => {
     () => [...challenges, ...ruleChallenges],
     [challenges, ruleChallenges],
   );
+  const leaderboardCompetition = useMemo(
+    () =>
+      competitions.find(
+        item => item.leaderboard?.length || item.myProgress?.length,
+      ),
+    [competitions],
+  );
+  const leaderboardChallenge = useMemo(
+    () => challenges.find(item => item.leaderboard?.length),
+    [challenges],
+  );
+  const leaderboard = useMemo<LeaderboardPerson[]>(() => {
+    const competitionEntries = leaderboardCompetition?.leaderboard || [];
+    const myEntry = leaderboardCompetition?.myProgress?.[0];
+    const entries = competitionEntries.length
+      ? [
+          ...competitionEntries,
+          ...(myEntry &&
+          !competitionEntries.some(
+            entry => entry.id === myEntry.id || entry.name === myEntry.name,
+          )
+            ? [myEntry]
+            : []),
+        ]
+      : leaderboardChallenge?.leaderboard?.length
+      ? leaderboardChallenge.leaderboard
+      : myEntry
+      ? [myEntry]
+      : [];
+    const currentUser = myEntry;
+    const avatarColors = [
+      '#00BFA5',
+      '#6C63FF',
+      '#FF9B38',
+      '#4F9CF9',
+      '#E879F9',
+      '#F97373',
+    ];
+
+    return [...entries]
+      .sort((a, b) => a.rank - b.rank)
+      .map((entry, index) => {
+        const isCurrentUser = Boolean(
+          currentUser &&
+            (entry.id === currentUser.id || entry.name === currentUser.name),
+        );
+        return {
+          rank: entry.rank || index + 1,
+          name: entry.name,
+          steps: Number(entry.value || 0).toLocaleString(),
+          initials:
+            entry.name
+              .split(/\s+/)
+              .filter(Boolean)
+              .map(part => part[0])
+              .join('')
+              .slice(0, 2)
+              .toUpperCase() || '?',
+          color: avatarColors[index % avatarColors.length],
+          streak: isCurrentUser ? 'Your ranking' : undefined,
+          isCurrentUser,
+          profileImageUrl: entry.profileImageUrl,
+          unit:
+            leaderboardCompetition?.metric?.replace(/_/g, ' ') ||
+            leaderboardChallenge?.metricLabel ||
+            'points',
+        };
+      });
+  }, [leaderboardChallenge, leaderboardCompetition]);
   const browseAllChallenges = useCallback(
     () => navigation.navigate('AllChallenges'),
     [navigation],
@@ -69,7 +141,9 @@ const ChallengesScreen: React.FC<Props> = ({ navigation }) => {
           theme={theme}
         />
 
-        <View style={styles.competitionEntry}>
+        <View
+          style={[styles.competitionEntry, { marginHorizontal: spacing.base }]}
+        >
           <AppText variant="caption" secondary>
             Available points:{' '}
             {walletPoints === null ? '—' : walletPoints.toLocaleString()}
@@ -91,62 +165,27 @@ const ChallengesScreen: React.FC<Props> = ({ navigation }) => {
             />
           ) : null}
           {!loading && !loadError && activeTab === 'Leaderboard' ? (
-            <View>
-              {competitions.length === 0 ? (
-                <AppEmptyState
-                  title="No competitions yet"
-                  description="Active leaderboards and rule competitions will appear here when available."
-                />
-              ) : (
-                competitions.map(competition => (
-                  <View key={competition.id} style={styles.competitionCard}>
-                    <AppText variant="subtitle1" bold>
-                      {competition.title}
-                    </AppText>
-                    <AppText variant="caption" secondary>
-                      {competition.audience.toLowerCase()}{' '}
-                      {competition.ruleType.toLowerCase().replace(/_/g, ' ')} ·{' '}
-                      {competition.metric.replace(/_/g, ' ')} · target{' '}
-                      {competition.targetValue.toLocaleString()} ·{' '}
-                      {Date.parse(competition.start) > Date.now()
-                        ? 'UPCOMING'
-                        : competition.status}
-                    </AppText>
-                    <AppText variant="caption" secondary>
-                      {new Date(competition.start).toLocaleDateString()} –{' '}
-                      {new Date(competition.end).toLocaleDateString()}
-                    </AppText>
-                    {(competition.myProgress || []).map((entry, index) => (
-                      <View
-                        key={`${entry.id}:${index}`}
-                        style={styles.competitionEntry}
-                      >
-                        <AppText variant="body2" bold>
-                          {entry.name}
-                          {entry.rank > 0 ? `: #${entry.rank}` : ''} ·{' '}
-                          {entry.value.toLocaleString()}
-                        </AppText>
-                        <AppText variant="caption" secondary>
-                          {Math.round(entry.progress)}% progress
-                          {entry.achieved ? ' · target reached' : ''}
-                        </AppText>
-                      </View>
-                    ))}
-                    {(competition.leaderboard || []).map(entry => (
-                      <View key={entry.id} style={styles.competitionEntry}>
-                        <AppText variant="body2">
-                          {entry.rank}. {entry.name}
-                        </AppText>
-                        <AppText variant="caption" secondary>
-                          {entry.value.toLocaleString()} ·{' '}
-                          {Math.round(entry.progress)}%
-                        </AppText>
-                      </View>
-                    ))}
-                  </View>
-                ))
-              )}
-            </View>
+            leaderboard.length > 0 ? (
+              <LeaderBoardTab
+                leaderboard={leaderboard}
+                styles={styles}
+                title={
+                  leaderboardCompetition?.title ||
+                  leaderboardChallenge?.title ||
+                  'Challenge leaderboard'
+                }
+                subtitle={
+                  leaderboardCompetition?.metric ||
+                  leaderboardChallenge?.metricLabel ||
+                  'Ranked by challenge progress'
+                }
+              />
+            ) : (
+              <AppEmptyState
+                title="No leaderboard yet"
+                description="Rankings will appear here when a challenge has participants."
+              />
+            )
           ) : null}
           {!loading && !loadError && activeTab === 'Challenges' ? (
             challenges.length || ruleChallenges.length ? (

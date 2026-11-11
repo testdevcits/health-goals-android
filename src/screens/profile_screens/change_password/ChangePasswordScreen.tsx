@@ -1,8 +1,14 @@
 import React, { useState } from 'react';
-import { Alert, StyleSheet, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 import { AppButton, AppHeader, AppInput, AppText } from '../../../components';
 import { ProfileScreenNavigation } from '../components/ProfileScreenLayout';
 import { useTheme } from '../../../theme/useTheme';
+import { apiErrorMessage } from '../../../services/api';
+import { changePassword, clearSession } from '../../../services/auth';
+import { navigationRef } from '../../../navigations/AppNavigation';
+import { useAppDispatch } from '../../../store/hooks';
+import { clearProfile } from '../../../store/profileSlice';
+import { showAppToast } from '../../../utils/appToast';
 
 const ChangePasswordScreen: React.FC<{
   navigation: ProfileScreenNavigation;
@@ -11,16 +17,19 @@ const ChangePasswordScreen: React.FC<{
   const [password, setPassword] = useState('');
   const [confirm, setConfirm] = useState('');
   const [submitted, setSubmitted] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const dispatch = useAppDispatch();
   const { theme } = useTheme();
   const { colors } = theme;
-  const submit = () => {
+  const submit = async () => {
+    if (loading) return;
     setSubmitted(true);
 
     if (!current.trim() || !password || !confirm) {
       return;
     }
 
-    if (password.length < 8) {
+    if (password.length < 8 || password.length > 72) {
       return;
     }
 
@@ -28,12 +37,25 @@ const ChangePasswordScreen: React.FC<{
       return;
     }
 
-    Alert.alert('Password updated', 'Your password has been changed.');
-
-    setCurrent('');
-    setPassword('');
-    setConfirm('');
-    setSubmitted(false);
+    setLoading(true);
+    try {
+      const result = await changePassword(current, password);
+      if (!result.passwordChanged || !result.requiresSignIn) {
+        throw new Error('The server did not confirm the password change.');
+      }
+      await clearSession();
+      dispatch(clearProfile());
+      showAppToast(
+        'success',
+        'Password updated',
+        'Please sign in again with your new password.',
+      );
+      navigationRef.resetRoot({ index: 0, routes: [{ name: 'Login' }] });
+    } catch (error) {
+      showAppToast('error', 'Could not update password', apiErrorMessage(error));
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -65,8 +87,9 @@ const ChangePasswordScreen: React.FC<{
           placeholder="At least 8 characters"
           autoCapitalize="none"
           error={
-            (submitted || password.length > 0) && password.length < 8
-              ? 'New password must be at least 8 characters'
+            (submitted || password.length > 0) &&
+            (password.length < 8 || password.length > 72)
+              ? 'New password must be 8–72 characters'
               : undefined
           }
         />
@@ -88,6 +111,8 @@ const ChangePasswordScreen: React.FC<{
         <AppButton
           title="Update Password"
           onPress={submit}
+          loading={loading}
+          disabled={loading}
           style={styles.updateButton}
         />
 

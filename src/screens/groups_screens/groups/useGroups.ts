@@ -74,7 +74,11 @@ const useGroups = () => {
         emoji: selectedIcon,
         private: isPrivate,
       });
-      await refresh();
+      const groupResult = await authenticatedRequest<{ groups: Group[] }>(
+        'GET',
+        '/community/groups',
+      );
+      setGroups(groupResult.groups || []);
       setCreateModalVisible(false);
       resetCreateForm();
       setActiveTab('My Groups');

@@ -125,14 +125,19 @@ const ChallengesTab: React.FC<ChallengesTabProps> = ({
                 ))}
               </View>
             ) : null}
-            {onJoin && challenge.joinable ? (
+            {onJoin && !challenge.joined ? (
               <Pressable
                 accessibilityRole="button"
-                onPress={() => !challenge.joined && onJoin(challenge.id)}
-                style={[styles.browseButton, { marginTop: 12 }]}
+                accessibilityState={{ disabled: !challenge.joinable }}
+                onPress={() => challenge.joinable && onJoin(challenge.id)}
+                disabled={!challenge.joinable}
+                style={[
+                  styles.browseButton,
+                  { marginTop: 12, opacity: challenge.joinable ? 1 : 0.55 },
+                ]}
               >
                 <AppText variant="buttonSm" primary>
-                  {challenge.joined ? 'Joined' : 'Join challenge'}
+                  {challenge.joinable ? 'Join challenge' : 'Not open to join'}
                 </AppText>
               </Pressable>
             ) : null}

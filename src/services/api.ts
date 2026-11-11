@@ -158,6 +158,19 @@ function getRequestDetails(config: InternalAxiosRequestConfig) {
   };
 }
 
+function shouldOmitBodyLogging(config: InternalAxiosRequestConfig): boolean {
+  const path = getRequestDetails(config).url.split(/[?#]/, 1)[0];
+  return (
+    /\/api\/v1\/(?:health|activity)(?:\/|$)/i.test(path) ||
+    /\/api\/v1\/auth\/me\/profile-(?:answers|questions|image)(?:\/|$)/i.test(
+      path,
+    ) ||
+    /\/api\/v1\/redemptions(?:\/|$)/i.test(path)
+  );
+}
+
+const OMITTED_SENSITIVE_BODY = '[OMITTED: SENSITIVE API DATA]';
+
 // ============================================
 // DEVELOPMENT LOGGING
 // ============================================
@@ -186,7 +199,12 @@ if (__DEV__) {
       }
 
       if (config.data !== undefined) {
-        entries.push(['PAYLOAD', sanitizeRequestPayload(config.data)]);
+        entries.push([
+          'PAYLOAD',
+          shouldOmitBodyLogging(config)
+            ? OMITTED_SENSITIVE_BODY
+            : sanitizeRequestPayload(config.data),
+        ]);
       } else {
         entries.push(['PAYLOAD', 'None']);
       }
@@ -214,7 +232,12 @@ if (__DEV__) {
             Date.now() - (requestStartedAt.get(response.config) ?? Date.now())
           }ms`,
         ],
-        ['BODY', sanitizeValue(response.data)],
+        [
+          'BODY',
+          shouldOmitBodyLogging(response.config)
+            ? OMITTED_SENSITIVE_BODY
+            : sanitizeValue(response.data),
+        ],
       ]);
 
       return response;
@@ -235,16 +258,28 @@ if (__DEV__) {
             `${Date.now() - (requestStartedAt.get(config) ?? Date.now())}ms`,
           ]);
           if (config.data !== undefined) {
-            entries.push(['REQUEST BODY', sanitizeRequestPayload(config.data)]);
+            entries.push([
+              'REQUEST BODY',
+              shouldOmitBodyLogging(config)
+                ? OMITTED_SENSITIVE_BODY
+                : sanitizeRequestPayload(config.data),
+            ]);
           }
         }
 
         if (error.response?.data !== undefined) {
           entries.push([
             'SERVER MESSAGE',
-            getApiErrorMessage(error.response.data) ?? 'Not provided',
+            config && shouldOmitBodyLogging(config)
+              ? OMITTED_SENSITIVE_BODY
+              : getApiErrorMessage(error.response.data) ?? 'Not provided',
           ]);
-          entries.push(['RESPONSE BODY', sanitizeValue(error.response.data)]);
+          entries.push([
+            'RESPONSE BODY',
+            config && shouldOmitBodyLogging(config)
+              ? OMITTED_SENSITIVE_BODY
+              : sanitizeValue(error.response.data),
+          ]);
         }
 
         logHttpBlock('❌ HTTP ERROR RESPONSE', entries);

@@ -17,12 +17,14 @@ const MyGroups = ({
   setCreateModalVisible,
   onJoinGroup,
   discover = false,
+  showCreate = true,
 }: {
   groups: Group[];
   avatarColors?: string[];
   setCreateModalVisible: (visible: boolean) => void;
   onJoinGroup?: (id: string) => void;
   discover?: boolean;
+  showCreate?: boolean;
 }) => {
   // Default avatar colors palette if none provided
   const defaultAvatarColors = ['#FF6B6B', '#4ECDC4', '#FFCE54', '#A29BFE'];
@@ -124,15 +126,17 @@ const MyGroups = ({
       ))}
 
       {/* Create group */}
-      <Pressable
-        accessibilityRole="button"
-        onPress={() => setCreateModalVisible(true)}
-        style={styles.createGroupButton}
-      >
-        <AppText variant="buttonSm" primary>
-          + Create New Group
-        </AppText>
-      </Pressable>
+      {showCreate ? (
+        <Pressable
+          accessibilityRole="button"
+          onPress={() => setCreateModalVisible(true)}
+          style={styles.createGroupButton}
+        >
+          <AppText variant="buttonSm" primary>
+            + Create New Group
+          </AppText>
+        </Pressable>
+      ) : null}
     </View>
   );
 };

@@ -20,6 +20,7 @@ export interface Challenge {
   leaderboard?: Array<{
     id: string;
     name: string;
+    profileImageUrl?: string;
     value: number;
     rank: number;
     winner?: boolean;
@@ -41,6 +42,9 @@ export interface LeaderboardPerson {
   initials: string;
   color: string;
   streak?: string;
+  isCurrentUser?: boolean;
+  unit?: string;
+  profileImageUrl?: string;
 }
 
 export const CHALLENGE_TABS: ChallengeTab[] = [

@@ -1,4 +1,7 @@
-import { readTodayHealthData } from '../src/services/healthConnect';
+import {
+  readStepsHistory,
+  readTodayHealthData,
+} from '../src/services/healthConnect';
 import {
   aggregateRecord,
   aggregateGroupByDuration,
@@ -86,4 +89,24 @@ test('report date ranges change at IST midnight regardless of device timezone', 
     '2026-11-05',
     '2026-11-06',
   ]);
+});
+test('step history uses the selected inclusive date range', async () => {
+  const history = await readStepsHistory(7, {
+    from: new Date('2026-11-01T12:00:00+05:30'),
+    to: new Date('2026-11-03T12:00:00+05:30'),
+  });
+  expect(history.map(item => item.date)).toEqual([
+    '2026-11-01',
+    '2026-11-02',
+    '2026-11-03',
+  ]);
+  expect(aggregateGroupByDuration).toHaveBeenCalledWith(
+    expect.objectContaining({
+      timeRangeFilter: {
+        operator: 'between',
+        startTime: '2026-10-31T18:30:00.000Z',
+        endTime: '2026-11-03T18:30:00.000Z',
+      },
+    }),
+  );
 });

@@ -98,6 +98,44 @@ export const createHomeStyles = (theme: AppTheme) => {
     notificationDescription: {
       opacity: 0.8,
     },
+    healthConnectCard: {
+      flexDirection: 'row',
+      alignItems: 'flex-start',
+      gap: spacing.md,
+      marginHorizontal: spacing.xl,
+      marginTop: spacing.md,
+      padding: spacing.base,
+      borderRadius: radius.lg,
+      borderWidth: StyleSheet.hairlineWidth,
+      borderColor: colors.primary,
+      backgroundColor: colors.surface,
+      elevation: 1,
+      shadowColor: colors.black,
+      shadowOpacity: 0.04,
+      shadowRadius: 6,
+      shadowOffset: { width: 0, height: 2 },
+    },
+    healthConnectIcon: {
+      width: 46,
+      height: 46,
+      alignItems: 'center',
+      justifyContent: 'center',
+      borderRadius: radius.md,
+      backgroundColor: colors.primaryLight,
+    },
+    healthConnectCopy: {
+      flex: 1,
+      gap: spacing.xs,
+    },
+    healthConnectAction: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      alignSelf: 'flex-start',
+      gap: spacing.xs,
+      marginTop: spacing.xxs,
+      paddingVertical: spacing.xs,
+      paddingRight: spacing.xs,
+    },
 
     // ── Energy Card ───────────────────────────────
     energyCard: {
@@ -122,6 +160,37 @@ export const createHomeStyles = (theme: AppTheme) => {
       alignItems: 'center',
       justifyContent: 'center',
       gap: spacing.xs,
+    },
+    energyLoading: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'flex-start',
+      gap: spacing.base,
+      paddingHorizontal: spacing.base,
+    },
+    energyLoadingCircle: {
+      width: 72,
+      height: 72,
+      borderRadius: 36,
+      flexShrink: 0,
+    },
+    energyLoadingText: {
+      flex: 1,
+      gap: spacing.md,
+    },
+    energyLoadingLine: {
+      height: 10,
+      borderRadius: 5,
+      backgroundColor: colors.whiteOverlay17,
+    },
+    energyLoadingLineTitle: {
+      width: '68%',
+    },
+    energyLoadingLineDescription: {
+      width: '92%',
+    },
+    energyLoadingLineFootnote: {
+      width: '52%',
     },
     energyCircle: {
       width: 84,

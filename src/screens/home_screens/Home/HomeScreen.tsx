@@ -3,7 +3,10 @@ import { AppState, ScrollView, View } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { HomeStackParamList } from '../../../navigations/HomeStack';
-import { OnboardingModal } from '../../../components';
+import {
+  OnboardingModal,
+  ProfileQuestionsModal,
+} from '../../../components';
 import { useTheme } from '../../../theme/useTheme';
 import { getNotificationPermission } from '../../../utils/AppPermissions';
 import ActivityTrends from './components/ActivityTrends';
@@ -11,6 +14,7 @@ import DailySummary from './components/DailySummary';
 import EnergyCard from './components/EnergyCard';
 import HomeHeader from './components/HomeHeader';
 import NotificationBanner from './components/NotificationBanner';
+import HealthConnectPrompt from './components/HealthConnectPrompt';
 import WorkoutCategories from './components/WorkoutCategories';
 import { createHomeStyles } from './styles.Home';
 import QuickActions from './components/QuickActions';
@@ -25,6 +29,7 @@ const HomeScreen: React.FC<Props> = ({ navigation }) => {
     boolean | null
   >(null);
   const [onboardingVisible, setOnboardingVisible] = useState(false);
+  const [healthRefreshKey, setHealthRefreshKey] = useState(0);
 
   useFocusEffect(
     useCallback(() => {
@@ -74,10 +79,16 @@ const HomeScreen: React.FC<Props> = ({ navigation }) => {
         {notificationsEnabled === false ? (
           <NotificationBanner onDismiss={() => setNotificationsEnabled(true)} />
         ) : null}
-        <EnergyCard />
+        <HealthConnectPrompt
+          onSyncComplete={() =>
+            setHealthRefreshKey(previous => previous + 1)
+          }
+        />
+        <EnergyCard healthRefreshKey={healthRefreshKey} />
         <DailySummary
           onViewDetails={() => navigation.navigate('DailyActivities')}
           navigation={navigation}
+          healthRefreshKey={healthRefreshKey}
         />
 
         <WorkoutCategories
@@ -85,6 +96,7 @@ const HomeScreen: React.FC<Props> = ({ navigation }) => {
         />
         <ActivityTrends
           onPressDetails={() => navigation.navigate('DailyActivityTrends')}
+          healthRefreshKey={healthRefreshKey}
         />
         <QuickActions
           onActionPress={action => {
@@ -100,6 +112,7 @@ const HomeScreen: React.FC<Props> = ({ navigation }) => {
         visible={onboardingVisible}
         onDismiss={() => setOnboardingVisible(false)}
       />
+      <ProfileQuestionsModal enabled={!onboardingVisible} />
     </View>
   );
 };

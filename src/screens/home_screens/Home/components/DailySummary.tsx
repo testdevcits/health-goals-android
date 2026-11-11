@@ -102,10 +102,11 @@ import AppIcon from '../../../../assets/appicon/AppIcon';
 const DailySummary: React.FC<{
   onViewDetails: () => void;
   navigation: any;
-}> = ({ onViewDetails, navigation }) => {
+  healthRefreshKey?: number;
+}> = ({ onViewDetails, navigation, healthRefreshKey = 0 }) => {
   const { theme } = useTheme();
   const { spacing, radius, colors } = theme;
-  const healthDataState = useTodayHealthData();
+  const healthDataState = useTodayHealthData(false, healthRefreshKey);
   const healthData = healthDataState.data;
 
   const [workoutSession, setWorkoutSession] =

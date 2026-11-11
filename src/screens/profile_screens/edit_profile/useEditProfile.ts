@@ -3,6 +3,7 @@ import { useIsFocused } from '@react-navigation/native';
 import ImagePicker from 'react-native-image-crop-picker';
 import { authenticatedRequest } from '../../../services/authenticatedApi';
 import { getCurrentUser } from '../../../services/profile';
+import { saveProfileAnswers } from '../../../services/profileQuestions';
 import { apiErrorMessage } from '../../../services/api';
 import { showAppToast } from '../../../utils/appToast';
 import { useAppDispatch } from '../../../store/hooks';
@@ -43,6 +44,22 @@ export const getTodayCalendarString = () => {
   )}-${String(today.getDate()).padStart(2, '0')}`;
 };
 
+const GOAL_VALUES: Record<string, string> = {
+  loseweight: 'lose_weight',
+  lose_weight: 'lose_weight',
+  buildmuscle: 'build_muscle',
+  build_muscle: 'build_muscle',
+  improvestamina: 'improve_stamina',
+  improve_stamina: 'improve_stamina',
+  stayactive: 'stay_active',
+  stay_active: 'stay_active',
+};
+
+export const normalizeProfileGoal = (value?: string) => {
+  if (!value) return '';
+  return GOAL_VALUES[value.toLowerCase().replace(/\s+/g, '')] || value;
+};
+
 export default function useEditProfile(navigation: ProfileScreenNavigation) {
   const dispatch = useAppDispatch();
   const [name, setName] = useState('');
@@ -50,6 +67,8 @@ export default function useEditProfile(navigation: ProfileScreenNavigation) {
   const [height, setHeight] = useState('');
   const [weight, setWeight] = useState('');
   const [birthDate, setBirthDate] = useState('');
+  const [gender, setGender] = useState('');
+  const [phone, setPhone] = useState('');
   const [goal, setGoal] = useState('');
   const [profileImage, setProfileImage] = useState('');
   const [profileImageUrl, setProfileImageUrl] = useState('');
@@ -73,10 +92,18 @@ export default function useEditProfile(navigation: ProfileScreenNavigation) {
         dispatch(setProfile(user));
         setName(user?.name || '');
         setEmail(user?.email || '');
-        setGoal(user?.goal || '');
+        setGoal(normalizeProfileGoal(user?.goal));
         setHeight(user?.heightCm == null ? '' : String(user.heightCm));
         setWeight(user?.weightKg == null ? '' : String(user.weightKg));
         setBirthDate(user?.birthDate || '');
+        setGender(
+          user?.gender === 'Woman' || user?.gender === 'Female'
+            ? 'Female'
+            : user?.gender === 'Man' || user?.gender === 'Male'
+            ? 'Male'
+            : user?.gender || '',
+        );
+        setPhone(user?.phone || '');
         setProfileImageUrl(user?.profileImageUrl || '');
       })
       .catch(error => {
@@ -143,8 +170,13 @@ export default function useEditProfile(navigation: ProfileScreenNavigation) {
   };
 
   const saveProfile = async () => {
+    if (phone.trim() && (phone.length < 10 || phone.length > 15)) {
+      showAppToast('error', 'Invalid phone number', 'Enter 10–15 digits.');
+      return;
+    }
     setSavingProfile(true);
     try {
+      await saveProfileAnswers({ gender: gender || null });
       const user = await authenticatedRequest<{
         user: {
           name: string;
@@ -152,6 +184,7 @@ export default function useEditProfile(navigation: ProfileScreenNavigation) {
           heightCm?: number | null;
           weightKg?: number | null;
           birthDate?: string;
+          phone?: string;
         };
       }>('PATCH', '/auth/me', {
         name,
@@ -159,9 +192,10 @@ export default function useEditProfile(navigation: ProfileScreenNavigation) {
         heightCm: height.trim() ? Number(height) : null,
         weightKg: weight.trim() ? Number(weight) : null,
         birthDate,
+        ...(phone.trim() ? { phone: phone.trim() } : {}),
       });
       setName(user.user.name || '');
-      dispatch(updateProfile(user.user));
+      dispatch(updateProfile({ ...user.user, gender }));
       showAppToast('success', 'Profile saved', 'Your details are up to date.');
       navigation.goBack();
     } catch (error) {
@@ -181,6 +215,10 @@ export default function useEditProfile(navigation: ProfileScreenNavigation) {
     setWeight,
     birthDate,
     setBirthDate,
+    gender,
+    setGender,
+    phone,
+    setPhone,
     goal,
     setGoal,
     profileImage,

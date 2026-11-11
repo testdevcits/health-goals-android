@@ -15,8 +15,12 @@ import ForgotPasswordScreen from '../screens/auth_screens/ForgotPassword/ForgotP
 import Notifications from '../screens/common_screens/notifications/Notifications';
 import VerifyEmailScreen from '../screens/auth_screens/verify_email /VerifyEmailScreen';
 import { restoreSession } from '../services/auth';
+import { subscribeToSessionExpired } from '../services/auth';
 import { useTheme } from '../theme/useTheme';
 import AppIcon from '../assets/appicon/AppIcon';
+import SessionExpiredModal from '../components/SessionExpiredModal';
+import { clearProfile } from '../store/profileSlice';
+import { useAppDispatch } from '../store/hooks';
 
 export type RootStackParamList = {
   Splash: undefined;
@@ -39,7 +43,10 @@ export const navigationRef = createNavigationContainerRef<RootStackParamList>();
 
 const AppNavigation = () => {
   const { theme } = useTheme();
+  const dispatch = useAppDispatch();
   const bounce = useRef(new Animated.Value(0)).current;
+  const pendingLoginReset = useRef(false);
+  const [sessionExpiredVisible, setSessionExpiredVisible] = useState(false);
   const [initialRoute, setInitialRoute] = useState<
     'Login' | 'MainTabNavigation' | null
   >(null);
@@ -70,6 +77,29 @@ const AppNavigation = () => {
       .then(session => setInitialRoute(session ? 'MainTabNavigation' : 'Login'))
       .catch(() => setInitialRoute('Login'));
   }, []);
+
+  useEffect(
+    () =>
+      subscribeToSessionExpired(() => {
+        dispatch(clearProfile());
+        setSessionExpiredVisible(true);
+        if (navigationRef.isReady()) {
+          navigationRef.resetRoot({ index: 0, routes: [{ name: 'Login' }] });
+        } else {
+          pendingLoginReset.current = true;
+        }
+      }),
+    [dispatch],
+  );
+
+  const continueToLogin = () => {
+    setSessionExpiredVisible(false);
+    if (navigationRef.isReady()) {
+      navigationRef.resetRoot({ index: 0, routes: [{ name: 'Login' }] });
+    } else {
+      pendingLoginReset.current = true;
+    }
+  };
 
   if (!initialRoute)
     return (
@@ -118,37 +148,54 @@ const AppNavigation = () => {
       </View>
     );
   return (
-    <NavigationContainer ref={navigationRef}>
-      <Stack.Navigator
-        initialRouteName={initialRoute}
-        screenOptions={{ headerShown: false, animation: 'fade' }}
+    <>
+      <NavigationContainer
+        ref={navigationRef}
+        onReady={() => {
+          if (pendingLoginReset.current) {
+            pendingLoginReset.current = false;
+            navigationRef.resetRoot({
+              index: 0,
+              routes: [{ name: 'Login' }],
+            });
+          }
+        }}
       >
-        <Stack.Screen name="Splash" component={SplashScreen} />
-        {/* <Stack.Screen name="Onboarding" component={OnboardingScreen} /> */}
-        <Stack.Screen name="Login" component={LoginScreen} />
-        <Stack.Screen name="Register" component={RegisterScreen} />
-        <Stack.Screen
-          name="VerifyEmail"
-          component={VerifyEmailScreen}
-          options={{ animation: 'slide_from_right' }}
-        />
-        <Stack.Screen
-          name="ForgotPassword"
-          component={ForgotPasswordScreen}
-          options={{ animation: 'slide_from_right' }}
-        />
-        <Stack.Screen
-          name="MainTabNavigation"
-          component={MainTabNavigation}
-          options={{ animation: 'slide_from_right' }}
-        />
-        <Stack.Screen
-          name="Notifications"
-          component={Notifications}
-          options={{ animation: 'slide_from_bottom' }}
-        />
-      </Stack.Navigator>
-    </NavigationContainer>
+        <Stack.Navigator
+          initialRouteName={initialRoute}
+          screenOptions={{ headerShown: false, animation: 'fade' }}
+        >
+          <Stack.Screen name="Splash" component={SplashScreen} />
+          {/* <Stack.Screen name="Onboarding" component={OnboardingScreen} /> */}
+          <Stack.Screen name="Login" component={LoginScreen} />
+          <Stack.Screen name="Register" component={RegisterScreen} />
+          <Stack.Screen
+            name="VerifyEmail"
+            component={VerifyEmailScreen}
+            options={{ animation: 'slide_from_right' }}
+          />
+          <Stack.Screen
+            name="ForgotPassword"
+            component={ForgotPasswordScreen}
+            options={{ animation: 'slide_from_right' }}
+          />
+          <Stack.Screen
+            name="MainTabNavigation"
+            component={MainTabNavigation}
+            options={{ animation: 'slide_from_right' }}
+          />
+          <Stack.Screen
+            name="Notifications"
+            component={Notifications}
+            options={{ animation: 'slide_from_bottom' }}
+          />
+        </Stack.Navigator>
+      </NavigationContainer>
+      <SessionExpiredModal
+        visible={sessionExpiredVisible}
+        onContinue={continueToLogin}
+      />
+    </>
   );
 };
 

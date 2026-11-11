@@ -1,5 +1,5 @@
 import React, { memo } from 'react';
-import { View } from 'react-native';
+import { Image, Pressable, View } from 'react-native';
 import { AppText } from '../../../../../components';
 import { useTheme } from '../../../../../theme/useTheme';
 import { Member, AVATAR_PALETTE } from '../../constants';
@@ -10,10 +10,19 @@ interface Props {
   groupDescription: string;
   memberCount: number;
   members: Member[];
+  onSettingsPress?: () => void;
+  imageUrl?: string;
 }
 
 export const GroupBanner: React.FC<Props> = memo(
-  ({ groupName, groupDescription, memberCount, members }) => {
+  ({
+    groupName,
+    groupDescription,
+    memberCount,
+    members,
+    onSettingsPress,
+    imageUrl,
+  }) => {
     const { theme } = useTheme();
     const { colors } = theme;
 
@@ -21,14 +30,24 @@ export const GroupBanner: React.FC<Props> = memo(
       <View
         style={[styles.bannerContainer, { backgroundColor: colors.primary }]}
       >
-        <View
+        <Pressable
+          onPress={onSettingsPress}
+          disabled={!onSettingsPress}
           style={[
             styles.iconContainer,
             { backgroundColor: colors.whiteOverlay17 },
           ]}
         >
-          <AppText style={styles.groupIcon}>🏃</AppText>
-        </View>
+          {imageUrl ? (
+            <Image
+              source={{ uri: imageUrl }}
+              style={{ width: 70, height: 70, borderRadius: 22 }}
+              resizeMode="cover"
+            />
+          ) : (
+            <AppText style={styles.groupIcon}>🏃</AppText>
+          )}
+        </Pressable>
 
         <View style={styles.content}>
           <AppText variant="h3" style={{ color: colors.white }} bold>

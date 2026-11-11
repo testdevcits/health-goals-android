@@ -113,6 +113,7 @@ const GroupsScreen: React.FC = () => {
               setCreateModalVisible={setCreateModalVisible}
               onJoinGroup={joinGroup}
               discover={activeTab === 'Discover'}
+              showCreate={activeTab === 'My Groups'}
             />
           ) : (
             <AppEmptyState

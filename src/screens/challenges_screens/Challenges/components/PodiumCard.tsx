@@ -1,7 +1,6 @@
 import React, { memo } from 'react';
-import { View } from 'react-native';
+import { Image, View } from 'react-native';
 import { AppText } from '../../../../components';
-import { useTheme } from '../../../../theme/useTheme';
 import type { LeaderboardPerson } from '../data/challengesData';
 import type { ChallengesStyles } from '../styles.Challenges';
 
@@ -11,9 +10,14 @@ interface PodiumCardProps {
 }
 
 const PodiumCard: React.FC<PodiumCardProps> = ({ leaderboard, styles }) => {
-  const { theme } = useTheme();
-  const { colors } = theme;
-  const topThree = [leaderboard[1], leaderboard[0], leaderboard[2]];
+  const ranked = [...leaderboard].sort((a, b) => a.rank - b.rank);
+  const topThree = [
+    ranked.find(person => person.rank === 2),
+    ranked.find(person => person.rank === 1),
+    ranked.find(person => person.rank === 3),
+  ].filter((person): person is LeaderboardPerson => Boolean(person));
+
+  if (topThree.length === 0) return null;
 
   return (
     <View style={styles.podium}>
@@ -21,10 +25,10 @@ const PodiumCard: React.FC<PodiumCardProps> = ({ leaderboard, styles }) => {
         const isFirst = person.rank === 1;
         const podiumColor =
           person.rank === 1
-            ? colors.warning
+            ? '#F4C400'
             : person.rank === 2
-            ? colors.textTertiary
-            : colors.coral;
+            ? '#B8BEC6'
+            : '#B76E2B';
 
         return (
           <View
@@ -40,21 +44,33 @@ const PodiumCard: React.FC<PodiumCardProps> = ({ leaderboard, styles }) => {
                 },
               ]}
             >
-              <AppText
-                variant={isFirst ? 'h2' : 'h3'}
-                color="white"
-                bold
-                center
-              >
-                {person.initials}
-              </AppText>
+              {person.profileImageUrl ? (
+                <Image
+                  source={{ uri: person.profileImageUrl }}
+                  resizeMode="cover"
+                  accessibilityLabel={`${person.name} profile photo`}
+                  style={{ width: '100%', height: '100%', borderRadius: 999 }}
+                />
+              ) : (
+                <AppText
+                  variant={isFirst ? 'h2' : 'h3'}
+                  color="white"
+                  bold
+                  center
+                >
+                  {person.initials}
+                </AppText>
+              )}
             </View>
 
-            <AppText variant="label" center>
+            <AppText variant="label" center numberOfLines={1}>
               {person.name}
             </AppText>
             <AppText variant="caption" secondary center>
               {person.steps}
+            </AppText>
+            <AppText variant="caption" secondary center>
+              {person.unit || 'points'}
             </AppText>
 
             <View
