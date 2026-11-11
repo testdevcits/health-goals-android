@@ -39,7 +39,7 @@ export const useTodayHealthData = (
     }));
 
     // Server sync must not depend on every optional dashboard read succeeding.
-    void syncRecentHealthData()
+    syncRecentHealthData()
       .then(result => {
         if (isActive)
           setState(previous => ({

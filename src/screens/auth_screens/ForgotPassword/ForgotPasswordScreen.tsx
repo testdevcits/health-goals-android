@@ -28,11 +28,8 @@ const ForgotPasswordScreen: React.FC<Props> = ({ navigation }) => {
     error,
     setError,
     loading,
-
     sent,
-
     developmentCode,
-
     otp,
     setOtp,
     password,

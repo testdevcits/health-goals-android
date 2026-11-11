@@ -69,13 +69,13 @@ const VerifyEmailScreen: React.FC<Props> = ({ route, navigation }) => {
             {route.params.email || 'your email'}
           </AppText>
 
-          {route.params.deliveryMode === 'development' && (
+          {/* {route.params.deliveryMode === 'development' && (
             <View style={styles.developmentNotice}>
               <AppText variant="caption" secondary center>
                 Development code: 123456
               </AppText>
             </View>
-          )}
+          )} */}
 
           <View style={styles.codeSection}>
             <AppText variant="subtitle2" style={styles.codeLabel}>
