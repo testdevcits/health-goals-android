@@ -1,6 +1,7 @@
 // ─── Types ──────────────────────────────────────────────────────────────────
 
-export type DetailTab = 'Overview' | 'Leaderboard' | 'Challenges' | 'Chat';
+export type DetailTab = 'Overview' | 'Leaderboard' | 'Challenges'
+// | 'Chat';
 
 export interface Member {
   id: string;
@@ -29,6 +30,12 @@ export interface GroupChallenge {
   progress: number;
   progressLabel: string;
   color: string;
+  joined?: boolean;
+  joinable?: boolean;
+  targetValue?: number;
+  currentValue?: number;
+  endsAt?: string;
+  participantCount?: number;
 }
 
 // ─── Mock Data ───────────────────────────────────────────────────────────────
@@ -37,7 +44,7 @@ export const DETAIL_TABS: DetailTab[] = [
   'Overview',
   'Leaderboard',
   'Challenges',
-  'Chat',
+  // 'Chat',
 ];
 
 export const INITIAL_MEMBERS: Member[] = [
@@ -151,7 +158,6 @@ export const WEEKLY_STEPS = [
 ];
 
 export const DURATION_OPTIONS = ['3 days', '7 days', '14 days', '30 days'];
-export const REWARD_OPTIONS = ['100 pts', '200 pts', '500 pts', '1000 pts'];
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 

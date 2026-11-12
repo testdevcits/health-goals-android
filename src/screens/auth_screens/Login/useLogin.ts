@@ -41,10 +41,10 @@ const useLogin = ({ navigation }: any) => {
     try {
       const challenge = await requestLogin(email, password);
       navigation.navigate('VerifyEmail', {
-        challengeId: challenge.challengeId,
+        challengeId: challenge?.challengeId,
         email,
         purpose: 'login',
-        deliveryMode: challenge.deliveryMode,
+        deliveryMode: challenge?.deliveryMode,
       });
     } catch (error) {
       showAppToast('error', 'Sign in failed', apiErrorMessage(error));

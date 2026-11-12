@@ -17,20 +17,21 @@ const createGroupOverviewStyles = (colors: any, spacing: any, radius: any) =>
       shadowRadius: 6,
       shadowOffset: { width: 0, height: 3 },
     },
-    goalRing: {
+    goalRingContainer: {
       width: 86,
       height: 86,
-      borderRadius: radius.full,
-      borderWidth: 7,
-      borderColor: colors.primary,
+      position: 'relative',
       alignItems: 'center',
       justifyContent: 'center',
-      borderLeftColor: colors.surfaceElevated,
-      transform: [{ rotate: '-30deg' }],
     },
     goalRingInner: {
+      position: 'absolute',
+      top: 0,
+      left: 0,
+      right: 0,
+      bottom: 0,
       alignItems: 'center',
-      transform: [{ rotate: '30deg' }],
+      justifyContent: 'center',
     },
     goalInfo: {
       flex: 1,

@@ -266,37 +266,28 @@ const useChallenges = () => {
         );
       }
 
-      const failedResult = [
-        challengeResult,
-        badgeResult,
-        competitionResult,
-        notificationResult,
-        walletResult,
-      ].find(result => result.status === 'rejected');
-      if (failedResult?.status === 'rejected') {
+      if (challengeResult.status === 'rejected') {
+        const message = apiErrorMessage(challengeResult.reason);
+        setLoadError(message);
         showAppToast(
           'error',
-          'Some challenges could not load',
-          apiErrorMessage(failedResult.reason),
+          'Could not load challenges',
+          message,
         );
-      }
-
-      if (
-        [
-          challengeResult,
+      } else {
+        const optionalFailure = [
           badgeResult,
           competitionResult,
           notificationResult,
           walletResult,
-        ].every(result => result.status === 'rejected')
-      ) {
-        setLoadError(
-          apiErrorMessage(
-            challengeResult.status === 'rejected'
-              ? challengeResult.reason
-              : undefined,
-          ),
-        );
+        ].find(result => result.status === 'rejected');
+        if (optionalFailure?.status === 'rejected') {
+          showAppToast(
+            'error',
+            'Some additional data could not load',
+            apiErrorMessage(optionalFailure.reason),
+          );
+        }
       }
     } finally {
       setLoading(false);
@@ -317,20 +308,32 @@ const useChallenges = () => {
     return () => subscription.remove();
   }, [refresh]);
 
+  const [joiningChallengeId, setJoiningChallengeId] = useState<string | null>(
+    null,
+  );
+
   const joinChallenge = useCallback(
     async (id: string) => {
       try {
+        setJoiningChallengeId(id);
         await authenticatedRequest(
           'POST',
           `/community/challenges/${encodeURIComponent(id)}/join`,
         );
         await refresh();
+        showAppToast(
+          'success',
+          'Joined challenge',
+          'You are now participating.',
+        );
       } catch (error) {
         showAppToast(
           'error',
           'Could not join challenge',
           apiErrorMessage(error),
         );
+      } finally {
+        setJoiningChallengeId(null);
       }
     },
     [refresh],
@@ -349,6 +352,7 @@ const useChallenges = () => {
     unreadNotifications,
     refresh,
     joinChallenge,
+    joiningChallengeId,
   };
 };
 

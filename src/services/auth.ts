@@ -174,8 +174,17 @@ export const isExpiredTokenResponse = (error: unknown): boolean => {
     if ('message' in data && typeof data.message === 'string') {
       messages.push(data.message);
     }
-    if ('error' in data && typeof data.error === 'string') {
-      messages.push(data.error);
+    if ('error' in data) {
+      if (typeof data.error === 'string') {
+        messages.push(data.error);
+      } else if (
+        typeof data.error === 'object' &&
+        data.error !== null &&
+        'message' in data.error &&
+        typeof data.error.message === 'string'
+      ) {
+        messages.push(data.error.message);
+      }
     }
     if ('data' in data && typeof data.data === 'object' && data.data !== null) {
       if ('message' in data.data && typeof data.data.message === 'string') {

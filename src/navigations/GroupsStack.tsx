@@ -11,6 +11,7 @@ export type RootStackParamList = {
     name: string;
     description: string;
     members: number;
+    private?: boolean;
   };
 };
 

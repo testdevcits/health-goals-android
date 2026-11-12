@@ -37,6 +37,7 @@ const ChallengesScreen: React.FC<Props> = ({ navigation }) => {
     unreadNotifications,
     refresh,
     joinChallenge,
+    joiningChallengeId,
   } = useChallenges();
   const visibleChallenges = useMemo(
     () => [...challenges, ...ruleChallenges],
@@ -58,19 +59,19 @@ const ChallengesScreen: React.FC<Props> = ({ navigation }) => {
     const myEntry = leaderboardCompetition?.myProgress?.[0];
     const entries = competitionEntries.length
       ? [
-          ...competitionEntries,
-          ...(myEntry &&
+        ...competitionEntries,
+        ...(myEntry &&
           !competitionEntries.some(
             entry => entry.id === myEntry.id || entry.name === myEntry.name,
           )
-            ? [myEntry]
-            : []),
-        ]
+          ? [myEntry]
+          : []),
+      ]
       : leaderboardChallenge?.leaderboard?.length
-      ? leaderboardChallenge.leaderboard
-      : myEntry
-      ? [myEntry]
-      : [];
+        ? leaderboardChallenge.leaderboard
+        : myEntry
+          ? [myEntry]
+          : [];
     const currentUser = myEntry;
     const avatarColors = [
       '#00BFA5',
@@ -86,7 +87,7 @@ const ChallengesScreen: React.FC<Props> = ({ navigation }) => {
       .map((entry, index) => {
         const isCurrentUser = Boolean(
           currentUser &&
-            (entry.id === currentUser.id || entry.name === currentUser.name),
+          (entry.id === currentUser.id || entry.name === currentUser.name),
         );
         return {
           rank: entry.rank || index + 1,
@@ -96,7 +97,7 @@ const ChallengesScreen: React.FC<Props> = ({ navigation }) => {
             entry.name
               .split(/\s+/)
               .filter(Boolean)
-              .map(part => part[0])
+              .map((part: string) => part[0])
               .join('')
               .slice(0, 2)
               .toUpperCase() || '?',
@@ -192,6 +193,7 @@ const ChallengesScreen: React.FC<Props> = ({ navigation }) => {
               <ChallengesTab
                 challenges={visibleChallenges}
                 onJoin={joinChallenge}
+                joiningChallengeId={joiningChallengeId}
                 onBrowseAll={browseAllChallenges}
                 styles={styles}
               />

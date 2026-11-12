@@ -112,12 +112,9 @@ const createStyles = (colors: any, spacing: any, radius: any) =>
     },
 
     submitButton: {
-      minHeight: 48,
       borderRadius: radius.md,
-      backgroundColor: colors.primary,
-      alignItems: 'center',
-      justifyContent: 'center',
       marginTop: spacing.xs,
+      marginBottom: spacing.xl,
     },
   });
 

@@ -4,7 +4,7 @@ import { authenticatedRequest } from '../../../services/authenticatedApi';
 import { apiErrorMessage } from '../../../services/api';
 import { showAppToast } from '../../../utils/appToast';
 
-export type ChallengeCategory = 'All' | 'Steps' | 'Mind' | 'Strength';
+export type ChallengeCategory = 'All' | 'Steps' | 'Mind' | 'Strength' | 'Other';
 
 export interface Challenge {
   id: string;
@@ -30,6 +30,13 @@ export const challengeCategories: ChallengeCategory[] = [
   'Strength',
 ];
 
+export const challengeGroupCategories: Exclude<ChallengeCategory, 'All'>[] = [
+  'Steps',
+  'Mind',
+  'Strength',
+  'Other',
+];
+
 export default function useAllChallenges() {
   const [selectedCategory, setSelectedCategory] =
     useState<ChallengeCategory>('All');
@@ -48,6 +55,7 @@ export default function useAllChallenges() {
           description?: string;
           metricType?: string;
           metric?: string;
+          category?: string;
           targetValue: number;
           status: string;
           joined: boolean;
@@ -65,6 +73,7 @@ export default function useAllChallenges() {
           description?: string;
           metricType?: string;
           metric?: string;
+          category?: string;
           targetValue: number;
           status: string;
           joined: boolean;
@@ -84,19 +93,29 @@ export default function useAllChallenges() {
           const targetValue = Number(item.targetValue || 0);
           const progress = Number(
             item.progress ??
-              (targetValue > 0 ? (currentValue / targetValue) * 100 : 0),
+            (targetValue > 0 ? (currentValue / targetValue) * 100 : 0),
           );
           const joined = Boolean(item.joined);
           const status = String(item.status || 'UPCOMING').toUpperCase();
           const joinable = Boolean(
             item.joinable ??
-              (!joined && ['ACTIVE', 'LIVE', 'PUBLISHED'].includes(status)),
+            (!joined && ['ACTIVE', 'LIVE', 'PUBLISHED'].includes(status)),
           );
-          const category = metric.includes('step')
-            ? 'Steps'
-            : metric.includes('workout')
-            ? 'Strength'
-            : 'Mind';
+          const responseCategory = String(item.category || '').toLowerCase();
+          const category: ChallengeCategory =
+            responseCategory === 'steps'
+              ? 'Steps'
+              : responseCategory === 'mind'
+                ? 'Mind'
+                : responseCategory === 'strength'
+                  ? 'Strength'
+                  : responseCategory === 'other'
+                    ? 'Other'
+                    : metric.includes('step')
+                      ? 'Steps'
+                      : metric.includes('workout')
+                        ? 'Strength'
+                        : 'Other';
           const participants = Number(
             item.participantCount ?? item.participants ?? 0,
           );
@@ -112,7 +131,14 @@ export default function useAllChallenges() {
               ? `${currentValue.toLocaleString()} / ${targetValue.toLocaleString()} · ${participants} participants`
               : `Not joined · ${participants} participants`,
             color: '#00C6A2',
-            emoji: category === 'Steps' ? '👟' : category === 'Strength' ? '💪' : '🧘',
+            emoji:
+              category === 'Steps'
+                ? '👟'
+                : category === 'Strength'
+                  ? '💪'
+                  : category === 'Mind'
+                    ? '🧘'
+                    : '🎯',
             joined,
             joinable,
             currentValue,
@@ -136,21 +162,29 @@ export default function useAllChallenges() {
     }, [refresh]),
   );
 
+  const [joiningChallengeId, setJoiningChallengeId] = useState<string | null>(
+    null,
+  );
+
   const joinChallenge = async (challengeId: string) => {
     try {
+      setJoiningChallengeId(challengeId);
       await authenticatedRequest(
         'POST',
         `/community/challenges/${encodeURIComponent(challengeId)}/join`,
       );
       await refresh();
+      showAppToast('success', 'Joined challenge', 'You are now participating.');
     } catch (error) {
       showAppToast('error', 'Could not join challenge', apiErrorMessage(error));
+    } finally {
+      setJoiningChallengeId(null);
     }
   };
 
   const filteredChallenges = challenges.filter(
     challenge =>
-      selectedCategory === 'All' || challenge.category === selectedCategory,
+      selectedCategory === 'All' || challenge?.category === selectedCategory,
   );
 
   return {
@@ -160,6 +194,7 @@ export default function useAllChallenges() {
     loadError,
     refresh,
     joinChallenge,
+    joiningChallengeId,
     filteredChallenges,
   };
 }

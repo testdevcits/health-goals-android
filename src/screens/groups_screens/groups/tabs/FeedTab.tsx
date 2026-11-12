@@ -6,6 +6,23 @@ import { useTheme } from '../../../../theme/useTheme';
 import createStyles from './styles.FeedTab';
 import type { FeedPost } from '../data';
 
+const formatFeedTime = (value: string): string => {
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return value;
+
+  const elapsedMs = Math.max(0, Date.now() - date.getTime());
+  const minutes = Math.floor(elapsedMs / 60_000);
+  if (minutes < 1) return 'Just now';
+  if (minutes < 60) return `${minutes}m ago`;
+
+  const hours = Math.floor(minutes / 60);
+  if (hours < 24) return `${hours}h ago`;
+
+  const days = Math.floor(hours / 24);
+  if (days < 7) return `${days}d ago`;
+  return date.toLocaleDateString();
+};
+
 const FeedTab = ({ posts }: { posts: FeedPost[] }) => {
   const { theme } = useTheme();
   const { colors, spacing, radius } = theme;
@@ -27,7 +44,7 @@ const FeedTab = ({ posts }: { posts: FeedPost[] }) => {
               <AppText variant="label">{post.name}</AppText>
 
               <AppText variant="caption" secondary>
-                {post.time} ago · {post.group}
+                {formatFeedTime(post.time)} · {post.group}
               </AppText>
             </View>
 

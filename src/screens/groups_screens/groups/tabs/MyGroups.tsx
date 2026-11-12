@@ -49,6 +49,7 @@ const MyGroups = ({
               name: group.name,
               description: group.description,
               members: group.members,
+              private: group.private,
             })
           }
           style={styles.groupCard}

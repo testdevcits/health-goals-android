@@ -59,13 +59,17 @@ function sanitizeValue(value: unknown, seen = new WeakSet<object>()): unknown {
   }
 
   if (!isRecord(value)) {
-    return '[OBJECT OMITTED]';
+    return value;
   }
 
   return Object.fromEntries(
     Object.entries(value).map(([key, nestedValue]) => [
       key,
-      SECRET_FIELD.test(key) ? '[REDACTED]' : sanitizeValue(nestedValue, seen),
+      __DEV__
+        ? sanitizeValue(nestedValue, seen)
+        : SECRET_FIELD.test(key)
+        ? '[REDACTED]'
+        : sanitizeValue(nestedValue, seen),
     ]),
   );
 }
@@ -77,7 +81,7 @@ function sanitizeRequestPayload(value: unknown): unknown {
         part.headers['content-disposition']?.match(
           /(?:^|;)\s*name="([^"]*)"/i,
         )?.[1] ?? '';
-      return SECRET_FIELD.test(fieldName)
+      return !__DEV__ && SECRET_FIELD.test(fieldName)
         ? { field: fieldName, value: '[REDACTED]' }
         : sanitizeValue(part);
     });
@@ -87,7 +91,7 @@ function sanitizeRequestPayload(value: unknown): unknown {
     try {
       return sanitizeValue(JSON.parse(value));
     } catch {
-      return '[STRING OMITTED]';
+      return value;
     }
   }
 
@@ -140,7 +144,9 @@ function sanitizeUrl(url: string): string {
         // Keep malformed query keys unchanged.
       }
 
-      return SECRET_FIELD.test(decodedKey) ? `${key}=[REDACTED]` : parameter;
+      return !__DEV__ && SECRET_FIELD.test(decodedKey)
+        ? `${key}=[REDACTED]`
+        : parameter;
     })
     .join('&');
 
@@ -158,15 +164,8 @@ function getRequestDetails(config: InternalAxiosRequestConfig) {
   };
 }
 
-function shouldOmitBodyLogging(config: InternalAxiosRequestConfig): boolean {
-  const path = getRequestDetails(config).url.split(/[?#]/, 1)[0];
-  return (
-    /\/api\/v1\/(?:health|activity)(?:\/|$)/i.test(path) ||
-    /\/api\/v1\/auth\/me\/profile-(?:answers|questions|image)(?:\/|$)/i.test(
-      path,
-    ) ||
-    /\/api\/v1\/redemptions(?:\/|$)/i.test(path)
-  );
+function shouldOmitBodyLogging(_config: InternalAxiosRequestConfig): boolean {
+  return false;
 }
 
 const OMITTED_SENSITIVE_BODY = '[OMITTED: SENSITIVE API DATA]';
@@ -223,7 +222,7 @@ if (__DEV__) {
 
   api.interceptors.response.use(
     response => {
-      logHttpBlock('✅ HTTP RESPONSE', [
+      const entries: Array<[string, unknown]> = [
         ...Object.entries(getRequestDetails(response.config)),
         ['STATUS', `${response.status} ${response.statusText || 'OK'}`],
         [
@@ -232,13 +231,19 @@ if (__DEV__) {
             Date.now() - (requestStartedAt.get(response.config) ?? Date.now())
           }ms`,
         ],
-        [
-          'BODY',
-          shouldOmitBodyLogging(response.config)
-            ? OMITTED_SENSITIVE_BODY
-            : sanitizeValue(response.data),
-        ],
+      ];
+      const serverTiming = response.headers?.['server-timing'];
+      if (serverTiming != null) {
+        entries.push(['SERVER-TIMING', serverTiming]);
+      }
+      entries.push([
+        'BODY',
+        shouldOmitBodyLogging(response.config)
+          ? OMITTED_SENSITIVE_BODY
+          : sanitizeValue(response.data),
       ]);
+
+      logHttpBlock('✅ HTTP RESPONSE', entries);
 
       return response;
     },
@@ -265,6 +270,11 @@ if (__DEV__) {
                 : sanitizeRequestPayload(config.data),
             ]);
           }
+        }
+
+        const serverTiming = error.response?.headers?.['server-timing'];
+        if (serverTiming != null) {
+          entries.push(['SERVER-TIMING', serverTiming]);
         }
 
         if (error.response?.data !== undefined) {

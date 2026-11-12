@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { PermissionsAndroid, Platform } from 'react-native';
+import { Alert, PermissionsAndroid, Platform } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
 import {
   BleManager,
@@ -16,6 +16,12 @@ import {
   SdkAvailabilityStatus,
 } from 'react-native-health-connect';
 import type { Permission } from 'react-native-health-connect';
+import {
+  disableBackgroundHealthSync,
+  enableBackgroundHealthSync,
+  isBackgroundHealthSyncEnabled,
+  requestBackgroundHealthReadPermission,
+} from '../../../services/backgroundHealthSync';
 import { HEALTH_PERMISSIONS } from '../../../services/healthConnect';
 import { syncRecentHealthData } from '../../../services/healthSync';
 
@@ -59,6 +65,8 @@ export default function useConnectedDevices() {
   );
   const [isRequesting, setIsRequesting] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
+  const [autoSyncEnabled, setAutoSyncEnabled] = useState(false);
+  const [autoSyncLoading, setAutoSyncLoading] = useState(false);
 
   useEffect(() => {
     const subscription = bleManager.onStateChange(setBluetoothState, true);
@@ -274,11 +282,101 @@ export default function useConnectedDevices() {
     }
   }, []);
 
+  const refreshAutoSyncState = useCallback(async () => {
+    if (Platform.OS !== 'android' || Number(Platform.Version) < 34) {
+      setAutoSyncEnabled(false);
+      return;
+    }
+
+    try {
+      setAutoSyncEnabled(await isBackgroundHealthSyncEnabled());
+    } catch (error) {
+      console.warn('Unable to load auto-sync setting:', error);
+      setAutoSyncEnabled(false);
+    }
+  }, []);
+
   useFocusEffect(
     useCallback(() => {
       refreshConnection();
-    }, [refreshConnection]),
+      refreshAutoSyncState();
+    }, [refreshAutoSyncState, refreshConnection]),
   );
+
+  const requestAndEnableAutoSync = async () => {
+    setAutoSyncLoading(true);
+    try {
+      const granted = await requestBackgroundHealthReadPermission();
+      if (!granted) {
+        Alert.alert(
+          'Background health access is off',
+          'Allow background access for Vitality in Health Connect settings to sync health data while the app is closed.',
+          [
+            { text: 'Not now', style: 'cancel' },
+            {
+              text: 'Open Health Connect',
+              onPress: () => {
+                try {
+                  openHealthConnectSettings();
+                } catch (error) {
+                  console.error(
+                    'Unable to open Health Connect settings:',
+                    error,
+                  );
+                  Alert.alert(
+                    'Could not open Health Connect',
+                    'Open Health Connect from your device settings to manage Vitality’s access.',
+                  );
+                }
+              },
+            },
+          ],
+        );
+        return;
+      }
+
+      await enableBackgroundHealthSync();
+      setAutoSyncEnabled(true);
+    } catch (error) {
+      console.error('Unable to enable auto-sync:', error);
+      Alert.alert(
+        'Auto-sync could not be enabled',
+        error instanceof Error
+          ? error.message
+          : 'Connect Health Connect and allow background access, then try again.',
+      );
+    } finally {
+      setAutoSyncLoading(false);
+    }
+  };
+
+  const handleAutoSyncToggle = (enabled: boolean) => {
+    if (autoSyncLoading) return;
+
+    if (enabled) {
+      Alert.alert(
+        'Allow auto-sync?',
+        'Vitality will periodically read the Health Connect data you have approved and sync it to your account, even when the app is closed. Android may delay background runs to save battery. You can turn this off at any time.',
+        [
+          { text: 'Not now', style: 'cancel' },
+          { text: 'Continue', onPress: requestAndEnableAutoSync },
+        ],
+      );
+      return;
+    }
+
+    setAutoSyncLoading(true);
+    disableBackgroundHealthSync()
+      .then(() => setAutoSyncEnabled(false))
+      .catch(error => {
+        console.error('Unable to disable auto-sync:', error);
+        Alert.alert(
+          'Could not turn off auto-sync',
+          'Vitality could not update this setting. Please try again.',
+        );
+      })
+      .finally(() => setAutoSyncLoading(false));
+  };
 
   const requestHealthAccess = async () => {
     setIsRequesting(true);
@@ -366,5 +464,8 @@ export default function useConnectedDevices() {
     disconnectDevice,
     handleProviderAction,
     openHealthConnectSettings,
+    autoSyncEnabled,
+    autoSyncLoading,
+    handleAutoSyncToggle,
   };
 }

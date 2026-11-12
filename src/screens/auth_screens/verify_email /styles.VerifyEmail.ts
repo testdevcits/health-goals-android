@@ -25,7 +25,7 @@ const createStyles = (theme: ReturnType<typeof useTheme>['theme']) => {
     },
     content: {
       flex: 1,
-      justifyContent: 'center',
+      // justifyContent: 'center',
       alignItems: 'center',
       paddingBottom: spacing.xl,
     },

@@ -23,7 +23,7 @@ import { useTheme } from '../../../theme/useTheme';
 import createStyles from './styles.EditProfile';
 import useEditProfile, {
   calendarStringToBirthDate,
-  getTodayCalendarString,
+  getMaxBirthDateCalendarString,
 } from './useEditProfile';
 import AppIcon from '../../../assets/appicon/AppIcon';
 
@@ -85,8 +85,8 @@ const EditProfileScreen: React.FC<{ navigation: ProfileScreenNavigation }> = ({
                   profileImage
                     ? { uri: profileImage }
                     : profileImageUrl
-                    ? { uri: profileImageUrl }
-                    : {
+                      ? { uri: profileImageUrl }
+                      : {
                         uri: 'https://imgv3.fotor.com/images/slider-image/after-image-generated-by-ai-profile-pictuire-maker-for-mobile.jpg',
                       }
                 }
@@ -198,6 +198,11 @@ const EditProfileScreen: React.FC<{ navigation: ProfileScreenNavigation }> = ({
                 >
                   {birthDate || 'Select date of birth'}
                 </AppText>
+                <AppIcon
+                  name="Calendar"
+                  size={18}
+                  color={colors.textSecondary}
+                />
               </Pressable>
             </View>
             <View style={styles.field}>
@@ -244,17 +249,17 @@ const EditProfileScreen: React.FC<{ navigation: ProfileScreenNavigation }> = ({
               Date of Birth
             </AppText>
             <Calendar
-              current={selectedBirthDate}
-              maxDate={getTodayCalendarString()}
+              current={selectedBirthDate || getMaxBirthDateCalendarString()}
+              maxDate={getMaxBirthDateCalendarString()}
               minDate="1900-01-01"
               markedDates={{
                 ...(selectedBirthDate
                   ? {
-                      [selectedBirthDate]: {
-                        selected: true,
-                        selectedColor: colors.primary,
-                      },
-                    }
+                    [selectedBirthDate]: {
+                      selected: true,
+                      selectedColor: colors.primary,
+                    },
+                  }
                   : {}),
               }}
               onDayPress={day => {

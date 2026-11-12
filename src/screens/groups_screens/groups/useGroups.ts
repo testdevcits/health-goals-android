@@ -1,5 +1,5 @@
 import { Alert } from 'react-native';
-import { useCallback, useState } from 'react';
+import { useCallback, useRef, useState } from 'react';
 import { authenticatedRequest } from '../../../services/authenticatedApi';
 import { apiErrorMessage } from '../../../services/api';
 import { showAppToast } from '../../../utils/appToast';
@@ -50,16 +50,22 @@ const useGroups = () => {
   const [createModalVisible, setCreateModalVisible] = useState(false);
 
   const [groupName, setGroupName] = useState('');
+  const [groupDescription, setGroupDescription] = useState('');
   const [selectedIcon, setSelectedIcon] = useState('🏃');
   const [isPrivate, setIsPrivate] = useState(true);
+  const [createLoading, setCreateLoading] = useState(false);
+  const createInFlight = useRef(false);
 
   const resetCreateForm = () => {
     setGroupName('');
+    setGroupDescription('');
     setSelectedIcon('🏃');
     setIsPrivate(true);
   };
 
   const handleCreateGroup = async () => {
+    if (createInFlight.current) return;
+
     const name = groupName.trim();
 
     if (!name) {
@@ -67,10 +73,12 @@ const useGroups = () => {
       return;
     }
 
+    createInFlight.current = true;
+    setCreateLoading(true);
     try {
       await authenticatedRequest('POST', '/community/groups', {
         name,
-        description: 'Your new community',
+        description: groupDescription.trim() || undefined,
         emoji: selectedIcon,
         private: isPrivate,
       });
@@ -85,6 +93,9 @@ const useGroups = () => {
       showAppToast('success', 'Group created', 'Your community is ready.');
     } catch (error) {
       showAppToast('error', 'Could not create group', apiErrorMessage(error));
+    } finally {
+      createInFlight.current = false;
+      setCreateLoading(false);
     }
   };
   const joinGroup = async (groupId: string) => {
@@ -112,10 +123,13 @@ const useGroups = () => {
     setCreateModalVisible,
     groupName,
     setGroupName,
+    groupDescription,
+    setGroupDescription,
     selectedIcon,
     setSelectedIcon,
     isPrivate,
     setIsPrivate,
+    createLoading,
     resetCreateForm,
     handleCreateGroup,
     joinGroup,

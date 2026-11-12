@@ -36,7 +36,9 @@ const createStyles = (colors: AppColors) =>
     field: { marginBottom: 16 },
     dateField: {
       minHeight: 52,
-      justifyContent: 'center',
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
       paddingHorizontal: 16,
       borderWidth: 1.5,
       borderRadius: 10,

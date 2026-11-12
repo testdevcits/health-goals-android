@@ -1,8 +1,5 @@
 import React, { useMemo, useState } from 'react';
-import { Alert, View, ScrollView, Modal, Pressable } from 'react-native';
-import ImagePicker from 'react-native-image-crop-picker';
-import { apiErrorMessage } from '../../../services/api';
-import { showAppToast } from '../../../utils/appToast';
+import { View, ScrollView, Pressable } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import {
   useNavigation,
@@ -16,17 +13,21 @@ import { GroupTabs } from './components/groups_tab/GroupTabs';
 import { GroupOverview } from './components/group_overview/GroupOverview';
 import { GroupLeaderboard } from './components/group_leaderboard/GroupLeaderboard';
 import { CreateChallengeModal } from './components/create_challenge_modal/CreateChallengeModal';
+import { EditGroupModal } from './components/edit_group_modal/EditGroupModal';
+import { MemberSearchModal } from './components/member_search_modal/MemberSearchModal';
 import {
+  AppButton,
   AppErrorView,
   AppHeader,
-  AppInput,
   AppLoader,
   AppText,
+  ConfirmationModal,
 } from '../../../components';
 import ChallengesTab from './components/challengestab/ChallengesTab';
 import type { RootStackParamList } from '../../../navigations/GroupsStack';
-import { GroupChat } from './components/group_chats/GroupChat';
-import useGroupDetail from './useGroupDetail';
+// import { GroupChat } from './components/group_chats/GroupChat';
+import useGroupDetail, { type GroupUserSearchResult } from './useGroupDetail';
+import AppIcon from '../../../assets/appicon/AppIcon';
 
 interface GroupDetailScreenProps {
   groupName?: string;
@@ -42,6 +43,13 @@ const GroupDetailScreen: React.FC<GroupDetailScreenProps> = ({
   const [groupImage, setGroupImage] = useState<string | null | undefined>(
     undefined,
   );
+  const [archiveModalVisible, setArchiveModalVisible] = useState(false);
+  const [archiveLoading, setArchiveLoading] = useState(false);
+  const [leaveModalVisible, setLeaveModalVisible] = useState(false);
+  const [leaveLoading, setLeaveLoading] = useState(false);
+  const [saveLoading, setSaveLoading] = useState(false);
+  const [pendingInviteUser, setPendingInviteUser] =
+    useState<GroupUserSearchResult | null>(null);
   const { theme } = useTheme();
   const { colors, spacing } = theme;
   const insets = useSafeAreaInsets();
@@ -59,6 +67,7 @@ const GroupDetailScreen: React.FC<GroupDetailScreenProps> = ({
     groupDescription,
     groupImageUrl,
     memberCount,
+    isPrivateGroup,
     isLeader,
     groupEditVisible,
     setGroupEditVisible,
@@ -72,28 +81,37 @@ const GroupDetailScreen: React.FC<GroupDetailScreenProps> = ({
     memberSearchQuery,
     memberSearchResults,
     memberSearchLoading,
+    memberAddLoading,
     searchMembers,
     addMember,
     challenges,
     members,
-    messages,
+    // messages,
     loading,
     loadError,
-    messageDraft,
-    setMessageDraft,
+    // messageDraft,
+    // setMessageDraft,
     createChallengeVisible,
     setCreateChallengeVisible,
+    createChallengeLoading,
     challengeName,
     setChallengeName,
+    challengeDescription,
+    setChallengeDescription,
     challengeGoal,
     setChallengeGoal,
+    metricType,
+    setMetricType,
+    rewardPoints,
+    setRewardPoints,
     duration,
-    reward,
+    setDuration,
+    joiningChallengeId,
     refreshGroup,
     cycleDuration,
-    cycleReward,
     handleCreateChallenge,
-    sendMessage,
+    joinGroupChallenge,
+    // sendMessage,
   } = useGroupDetail({
     groupId,
     groupName: route.params?.name || initialGroupName,
@@ -124,6 +142,7 @@ const GroupDetailScreen: React.FC<GroupDetailScreenProps> = ({
               groupName={groupName}
               groupDescription={groupDescription}
               memberCount={memberCount}
+              isPrivate={isPrivateGroup}
               members={members}
               imageUrl={groupImageUrl}
               onSettingsPress={() => {
@@ -132,18 +151,24 @@ const GroupDetailScreen: React.FC<GroupDetailScreenProps> = ({
                 setGroupEditVisible(true);
               }}
             />
-            <Pressable
-              onPress={() => setMemberSearchVisible(true)}
-              style={{
-                alignSelf: 'flex-end',
-                paddingVertical: 10,
-                paddingHorizontal: 14,
-              }}
-            >
-              <AppText variant="label" primary bold>
-                + Add member
-              </AppText>
-            </Pressable>
+            {isLeader ? (
+              <Pressable
+                onPress={() => setMemberSearchVisible(true)}
+                style={styles.addMemberButton}
+                accessibilityRole="button"
+                accessibilityLabel="Add member to group"
+              >
+                <AppIcon
+                  name="Plus"
+                  size={15}
+                  color={colors.primary}
+                  strokeWidth={2.5}
+                />
+                <AppText variant="caption" style={styles.addMemberText}>
+                  Add member
+                </AppText>
+              </Pressable>
+            ) : null}
             <GroupTabs activeTab={activeTab} onTabChange={setActiveTab} />
             {activeTab === 'Overview' && (
               <GroupOverview
@@ -151,23 +176,7 @@ const GroupDetailScreen: React.FC<GroupDetailScreenProps> = ({
                 challenges={challenges}
                 isLeader={isLeader}
                 onNewChallenge={() => setCreateChallengeVisible(true)}
-                onArchiveGroup={() =>
-                  Alert.alert(
-                    'Archive this group?',
-                    'The group will disappear from active groups, Discover, feeds, and leaderboards. Its messages and challenges will be retained, but the group cannot be restored in the app.',
-                    [
-                      { text: 'Cancel', style: 'cancel' },
-                      {
-                        text: 'Archive group',
-                        style: 'destructive',
-                        onPress: async () => {
-                          const archived = await archiveGroup();
-                          if (archived) navigation.goBack();
-                        },
-                      },
-                    ],
-                  )
-                }
+                onArchiveGroup={() => setArchiveModalVisible(true)}
               />
             )}
             {activeTab === 'Leaderboard' && (
@@ -177,211 +186,172 @@ const GroupDetailScreen: React.FC<GroupDetailScreenProps> = ({
               <ChallengesTab
                 onNewChallenge={() => setCreateChallengeVisible(true)}
                 challenges={challenges}
+                onJoin={joinGroupChallenge}
+                joiningChallengeId={joiningChallengeId}
               />
             )}
-            {activeTab === 'Chat' && (
+            {/* {activeTab === 'Chat' && (
               <GroupChat
                 messages={messages}
                 messageDraft={messageDraft}
                 onChangeDraft={setMessageDraft}
                 onSend={() => sendMessage()}
               />
-            )}
+            )} */}
           </>
         )}
       </ScrollView>
       <CreateChallengeModal
         visible={createChallengeVisible}
         challengeName={challengeName}
+        challengeDescription={challengeDescription}
         challengeGoal={challengeGoal}
+        metricType={metricType}
         duration={duration}
-        reward={reward}
+        rewardPoints={rewardPoints}
         bottomInset={insets.bottom}
-        onClose={() => setCreateChallengeVisible(false)}
+        loading={createChallengeLoading}
+        onClose={() => !createChallengeLoading && setCreateChallengeVisible(false)}
         onChangeName={setChallengeName}
+        onChangeDescription={setChallengeDescription}
         onChangeGoal={setChallengeGoal}
+        onChangeMetricType={setMetricType}
+        onChangeRewardPoints={setRewardPoints}
         onCycleDuration={cycleDuration}
-        onCycleReward={cycleReward}
+        onSelectDuration={setDuration}
         onSubmit={handleCreateChallenge}
       />
-      <Modal
+      <EditGroupModal
         visible={groupEditVisible}
-        transparent
-        animationType="slide"
-        onRequestClose={() => setGroupEditVisible(false)}
-      >
-        <View
-          style={{
-            flex: 1,
-            justifyContent: 'flex-end',
-            backgroundColor: 'rgba(0,0,0,0.45)',
-          }}
-        >
-          <View
-            style={{
-              padding: 20,
-              borderTopLeftRadius: 24,
-              borderTopRightRadius: 24,
-              backgroundColor: colors.surface,
-            }}
-          >
-            <AppText variant="h3" bold mb={12}>
-              Edit group
-            </AppText>
-            <AppInput
-              label="Group name"
-              value={groupNameDraft}
-              onChangeText={setGroupNameDraft}
-              maxLength={50}
-            />
-            <Pressable
-              onPress={async () => {
-                try {
-                  const image = await ImagePicker.openPicker({
-                    mediaType: 'photo',
-                    cropping: true,
-                    width: 900,
-                    height: 600,
-                    compressImageQuality: 0.8,
-                    includeBase64: true,
-                    includeExif: false,
-                  });
-                  if (image.data) {
-                    setGroupImage(
-                      `data:${image.mime || 'image/jpeg'};base64,${image.data}`,
-                    );
-                  }
-                } catch (error: any) {
-                  if (error?.code !== 'E_PICKER_CANCELLED') {
-                    showAppToast(
-                      'error',
-                      'Could not choose image',
-                      apiErrorMessage(error),
-                    );
-                  }
-                }
-              }}
-              style={{ paddingVertical: 12 }}
-            >
-              <AppText variant="label" primary bold>
-                {groupImage
-                  ? 'Group image selected · Change image'
-                  : 'Choose group image'}
-              </AppText>
-            </Pressable>
-            <Pressable
-              onPress={() => setGroupImage(null)}
-              style={{ paddingVertical: 8 }}
-            >
-              <AppText variant="caption" secondary>
-                Remove group image
-              </AppText>
-            </Pressable>
-            <Pressable
-              onPress={() => void saveGroup(groupImage)}
-              style={{ paddingVertical: 14, alignItems: 'center' }}
-            >
-              <AppText variant="label" primary bold>
-                Save changes
-              </AppText>
-            </Pressable>
-            <Pressable
-              onPress={() =>
-                Alert.alert(
-                  'Leave this group?',
-                  'You will lose access to this group’s activity and chat.',
-                  [
-                    { text: 'Cancel', style: 'cancel' },
-                    {
-                      text: 'Leave group',
-                      style: 'destructive',
-                      onPress: async () => {
-                        const left = await leaveGroup();
-                        if (left) navigation.goBack();
-                      },
-                    },
-                  ],
-                )
-              }
-              style={{ paddingVertical: 12, alignItems: 'center' }}
-            >
-              <AppText variant="label" error bold>
-                Leave group
-              </AppText>
-            </Pressable>
-          </View>
-        </View>
-      </Modal>
-      <Modal
+        onClose={() => !saveLoading && setGroupEditVisible(false)}
+        isLeader={isLeader}
+        groupNameDraft={groupNameDraft}
+        setGroupNameDraft={setGroupNameDraft}
+        groupImage={groupImage}
+        currentGroupImage={groupImageUrl}
+        setGroupImage={setGroupImage}
+        saveLoading={saveLoading}
+        onSaveGroup={async img => {
+          setSaveLoading(true);
+          try {
+            await saveGroup(img);
+          } finally {
+            setSaveLoading(false);
+          }
+        }}
+        onOpenLeaveModal={() => setLeaveModalVisible(true)}
+      />
+
+      <MemberSearchModal
         visible={memberSearchVisible}
-        transparent
-        animationType="slide"
-        onRequestClose={() => setMemberSearchVisible(false)}
+        onClose={() => setMemberSearchVisible(false)}
+        searchQuery={memberSearchQuery}
+        onSearchChange={searchMembers}
+        loading={memberSearchLoading}
+        searchResults={memberSearchResults}
+        onSelectUser={setPendingInviteUser}
+      />
+
+      <ConfirmationModal
+        visible={pendingInviteUser !== null}
+        onClose={() => !memberAddLoading && setPendingInviteUser(null)}
+        title="Invite this member?"
+        message={
+          pendingInviteUser
+            ? `Add ${pendingInviteUser.name} (${pendingInviteUser.publicId}) to ${groupName}?`
+            : ''
+        }
+        position="bottom"
       >
-        <View
-          style={{
-            flex: 1,
-            justifyContent: 'flex-end',
-            backgroundColor: 'rgba(0,0,0,0.45)',
-          }}
-        >
-          <View
-            style={{
-              maxHeight: '75%',
-              padding: 20,
-              borderTopLeftRadius: 24,
-              borderTopRightRadius: 24,
-              backgroundColor: colors.surface,
+        <View style={styles.modalActions}>
+          <AppButton
+            title="Cancel"
+            variant="ghost"
+            disabled={memberAddLoading}
+            onPress={() => setPendingInviteUser(null)}
+            style={styles.modalActionButton}
+          />
+          <AppButton
+            title="Invite member"
+            loading={memberAddLoading}
+            disabled={memberAddLoading || !pendingInviteUser}
+            onPress={async () => {
+              if (!pendingInviteUser) return;
+              const added = await addMember(pendingInviteUser);
+              if (added) setPendingInviteUser(null);
             }}
-          >
-            <AppText variant="h3" bold mb={12}>
-              Add a group member
-            </AppText>
-            <AppInput
-              value={memberSearchQuery}
-              onChangeText={searchMembers}
-              placeholder="Search by name or public ID"
-              autoCapitalize="none"
-            />
-            {memberSearchLoading ? (
-              <AppText variant="body2" secondary mb={12}>
-                Searching…
-              </AppText>
-            ) : null}
-            <ScrollView keyboardShouldPersistTaps="handled">
-              {memberSearchResults.map(user => (
-                <Pressable
-                  key={user.id}
-                  onPress={() => void addMember(user)}
-                  style={{ paddingVertical: 12 }}
-                >
-                  <AppText variant="subtitle2" bold>
-                    {user.name}
-                  </AppText>
-                  <AppText variant="caption" secondary>
-                    {user.publicId}
-                  </AppText>
-                </Pressable>
-              ))}
-              {memberSearchQuery.trim().length >= 2 &&
-              !memberSearchLoading &&
-              memberSearchResults.length === 0 ? (
-                <AppText variant="body2" secondary mb={12}>
-                  No matching users found.
-                </AppText>
-              ) : null}
-            </ScrollView>
-            <Pressable
-              onPress={() => setMemberSearchVisible(false)}
-              style={{ paddingTop: 14, alignItems: 'center' }}
-            >
-              <AppText variant="label" primary bold>
-                Close
-              </AppText>
-            </Pressable>
-          </View>
+            style={styles.modalActionButton}
+          />
         </View>
-      </Modal>
+      </ConfirmationModal>
+
+      <ConfirmationModal
+        visible={archiveModalVisible}
+        onClose={() => !archiveLoading && setArchiveModalVisible(false)}
+        title="Archive this group?"
+        message="The group will disappear from active groups, Discover, feeds, and leaderboards. Its messages and challenges will be retained, but the group cannot be restored in the app."
+        position="bottom"
+      >
+        <View style={styles.modalActions}>
+          <AppButton
+            title="Cancel"
+            variant="ghost"
+            disabled={archiveLoading}
+            onPress={() => setArchiveModalVisible(false)}
+            style={styles.modalActionButton}
+          />
+          <AppButton
+            title="Exit group"
+            loading={archiveLoading}
+            disabled={archiveLoading}
+            onPress={async () => {
+              setArchiveLoading(true);
+              try {
+                const archived = await archiveGroup();
+                setArchiveModalVisible(false);
+                if (archived) navigation.goBack();
+              } finally {
+                setArchiveLoading(false);
+              }
+            }}
+            style={[styles.modalActionButton, styles.destructiveButton]}
+          />
+        </View>
+      </ConfirmationModal>
+
+      <ConfirmationModal
+        visible={leaveModalVisible}
+        onClose={() => !leaveLoading && setLeaveModalVisible(false)}
+        title="Leave this group?"
+        message="You will lose access to this group’s activity and chat."
+        position="bottom"
+      >
+        <View style={styles.modalActions}>
+          <AppButton
+            title="Cancel"
+            variant="ghost"
+            disabled={leaveLoading}
+            onPress={() => setLeaveModalVisible(false)}
+            style={styles.modalActionButton}
+          />
+          <AppButton
+            title="Leave group"
+            loading={leaveLoading}
+            disabled={leaveLoading}
+            onPress={async () => {
+              setLeaveLoading(true);
+              try {
+                const left = await leaveGroup();
+                setLeaveModalVisible(false);
+                if (left) navigation.goBack();
+              } finally {
+                setLeaveLoading(false);
+              }
+            }}
+            style={[styles.modalActionButton, styles.destructiveButton]}
+          />
+        </View>
+      </ConfirmationModal>
     </View>
   );
 };

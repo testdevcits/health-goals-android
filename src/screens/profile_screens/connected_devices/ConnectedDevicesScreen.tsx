@@ -1,11 +1,12 @@
 import React from 'react';
-import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
+import { Platform, Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { State as BluetoothState } from 'react-native-ble-plx';
 import {
   AppHeader,
   AppText,
   ProfileCard,
   ProfileListRow,
+  ProfileToggleRow,
 } from '../../../components';
 import { useTheme } from '../../../theme/useTheme';
 import { ProfileScreenNavigation } from '../components/ProfileScreenLayout';
@@ -55,6 +56,9 @@ const ConnectedDevicesScreen: React.FC<{
     disconnectDevice,
     handleProviderAction,
     openHealthConnectSettings,
+    autoSyncEnabled,
+    autoSyncLoading,
+    handleAutoSyncToggle,
   } = useConnectedDevices();
 
   return (
@@ -159,6 +163,19 @@ const ConnectedDevicesScreen: React.FC<{
           >
             HEALTH DATA
           </AppText>
+          {Platform.OS === 'android' && Number(Platform.Version) >= 34 ? (
+            <ProfileCard>
+              <ProfileToggleRow
+                icon="🔄"
+                title="Auto-Sync"
+                detail="Sync data in the background every 15 min"
+                value={autoSyncEnabled}
+                onChange={handleAutoSyncToggle}
+                disabled={autoSyncLoading}
+                last
+              />
+            </ProfileCard>
+          ) : null}
           <ProfileCard>
             <ProfileListRow
               icon="❤️"

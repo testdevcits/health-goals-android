@@ -1,5 +1,5 @@
 import React from 'react';
-import { Image, Pressable, ScrollView, StyleSheet, View } from 'react-native';
+import { Image, Pressable, ScrollView, View } from 'react-native';
 import {
   AppHeader,
   AppEmptyState,
@@ -15,12 +15,14 @@ import {
   ProfileSectionLabel,
 } from '../components/ProfileScreenLayout';
 import useRewards, { rewardIcon } from './useRewards';
+import createStyles from './styles.Rewards';
 
 const RewardsScreen: React.FC<{ navigation: ProfileScreenNavigation }> = ({
   navigation,
 }) => {
   const { theme } = useTheme();
   const { colors } = theme;
+  const styles = createStyles(colors);
   const {
     points,
     wallet,
@@ -54,7 +56,7 @@ const RewardsScreen: React.FC<{ navigation: ProfileScreenNavigation }> = ({
       : colors.infoLight;
 
   return (
-    <View style={{ flex: 1, backgroundColor: colors.backgroundSecondary }}>
+    <View style={styles.container}>
       <AppHeader
         title="Rewards & Redemption"
         subtitle="Redeem your hard-earned points"
@@ -71,18 +73,9 @@ const RewardsScreen: React.FC<{ navigation: ProfileScreenNavigation }> = ({
         />
       ) : (
         <ScrollView
-          contentContainerStyle={{
-            flexGrow: 1,
-            paddingBottom: 100,
-            padding: 16,
-          }}
+          contentContainerStyle={styles.scrollContent}
         >
-          <View
-            style={[
-              styles.pointsCard,
-              { backgroundColor: theme.colors.primary },
-            ]}
-          >
+          <View style={styles.pointsCard}>
             <AppText variant="caption" color="white" bold>
               Available Points
             </AppText>
@@ -264,12 +257,7 @@ const RewardsScreen: React.FC<{ navigation: ProfileScreenNavigation }> = ({
               rewards.map(reward => (
                 <ProfileCard key={reward.id}>
                   <View style={styles.rewardRow}>
-                    <View
-                      style={[
-                        styles.rewardIcon,
-                        { backgroundColor: theme.colors.primaryLight },
-                      ]}
-                    >
+                    <View style={styles.rewardIcon}>
                       <AppText variant="h3">{rewardIcon(reward.title)}</AppText>
                     </View>
                     <View style={styles.rewardCopy}>
@@ -450,63 +438,5 @@ const RewardsScreen: React.FC<{ navigation: ProfileScreenNavigation }> = ({
     </View>
   );
 };
-
-const styles = StyleSheet.create({
-  pointsCard: { borderRadius: 22, padding: 20, marginBottom: 12 },
-  pointsValue: { marginVertical: 2 },
-  lifetimeRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginTop: 16,
-    paddingTop: 12,
-    borderTopWidth: StyleSheet.hairlineWidth,
-    borderTopColor: 'rgba(255,255,255,0.35)',
-  },
-  lifetimeMetric: { flex: 1, gap: 2 },
-  lifetimeDivider: {
-    width: StyleSheet.hairlineWidth,
-    height: 34,
-    marginHorizontal: 16,
-    backgroundColor: 'rgba(255,255,255,0.35)',
-  },
-  dailyActivityCard: { padding: 16, marginBottom: 4, gap: 14 },
-  dailyActivityHeading: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    gap: 10,
-  },
-  dailyActivityTitle: { gap: 2 },
-  activityStateBadge: {
-    borderRadius: 12,
-    paddingHorizontal: 10,
-    paddingVertical: 5,
-  },
-  dailyActivityMetrics: { flexDirection: 'row' },
-  dailyActivityMetric: { flex: 1, gap: 2 },
-  rewardList: { gap: 10 },
-  rewardRow: {
-    minHeight: 74,
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 14,
-    gap: 12,
-  },
-  rewardIcon: {
-    width: 42,
-    height: 42,
-    borderRadius: 12,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  rewardCopy: { flex: 1 },
-  redeemAction: { alignItems: 'flex-end' },
-  ticketCard: { gap: 6, padding: 14 },
-  ticketImage: { width: '100%', height: 180, marginTop: 8 },
-  loadMoreButton: {
-    alignItems: 'center',
-    paddingVertical: 14,
-  },
-});
 
 export default RewardsScreen;

@@ -1,5 +1,6 @@
 import React, { memo } from 'react';
 import { View, Pressable, Alert } from 'react-native';
+import Svg, { Circle } from 'react-native-svg';
 import { AppText } from '../../../../../components';
 import { Member, GroupChallenge, formatSteps } from '../../constants';
 import { useTheme } from '../../../../../theme/useTheme';
@@ -15,14 +16,50 @@ interface Props {
 
 const GoalCard: React.FC<{ styles: any; members: Member[] }> = memo(
   ({ styles, members }) => {
+    const { theme } = useTheme();
+    const { colors } = theme;
     const total = members.reduce((sum, member) => sum + member.steps, 0);
     const target = members.length * 10000;
-    const percent = target
-      ? Math.min(100, Math.round((total / target) * 100))
-      : 0;
+    const hasData = target > 0 && total > 0;
+    const progressRatio = target > 0 ? Math.min(1, total / target) : 0;
+    const percent = Math.round(progressRatio * 100);
+
+    const size = 86;
+    const strokeWidth = 7;
+    const radius = (size - strokeWidth) / 2;
+    const circumference = 2 * Math.PI * radius;
+    const strokeDashoffset = circumference * (1 - progressRatio);
+
     return (
       <View style={styles.goalCard}>
-        <View style={styles.goalRing}>
+        <View style={styles.goalRingContainer}>
+          <Svg width={size} height={size}>
+            {/* Background unfilled track */}
+            <Circle
+              cx={size / 2}
+              cy={size / 2}
+              r={radius}
+              stroke={colors.border}
+              strokeWidth={strokeWidth}
+              fill="none"
+            />
+            {/* Filled progress circle when data is available */}
+            {hasData ? (
+              <Circle
+                cx={size / 2}
+                cy={size / 2}
+                r={radius}
+                stroke={colors.primary}
+                strokeWidth={strokeWidth}
+                fill="none"
+                strokeDasharray={`${circumference} ${circumference}`}
+                strokeDashoffset={strokeDashoffset}
+                strokeLinecap="round"
+                rotation={-90}
+                origin={`${size / 2}, ${size / 2}`}
+              />
+            ) : null}
+          </Svg>
           <View style={styles.goalRingInner}>
             <AppText variant="h3" center>
               {percent}%
@@ -42,8 +79,12 @@ const GoalCard: React.FC<{ styles: any; members: Member[] }> = memo(
               {` / ${formatSteps(target)} steps`}
             </AppText>
           </View>
-          <AppText variant="caption" success bold>
-            {members.length
+          <AppText
+            variant="caption"
+            color={hasData ? 'textSuccess' : 'textTertiary'}
+            bold
+          >
+            {members.length && total > 0
               ? `${members.length} members · last 7 days`
               : 'No synced steps this week'}
           </AppText>
@@ -173,8 +214,7 @@ const MemberRow: React.FC<{
       onPress={() =>
         Alert.alert(
           member.name,
-          `${formatSteps(member.steps)} steps · ${
-            member.streak
+          `${formatSteps(member.steps)} steps · ${member.streak
           } active days this week`,
         )
       }
@@ -194,8 +234,8 @@ const MemberRow: React.FC<{
               index === 0
                 ? colors.warning
                 : index === 2
-                ? colors.coral
-                : colors.textSecondary,
+                  ? colors.coral
+                  : colors.textSecondary,
           }}
           bold
         >
@@ -232,23 +272,23 @@ const MemberRow: React.FC<{
 
 const ChallengeCard: React.FC<{ challenge: GroupChallenge; styles: any }> =
   memo(({ challenge, styles }) => (
-    <View style={[styles.challengeCard, { borderLeftColor: challenge.color }]}>
+    <View style={[styles.challengeCard, { borderLeftColor: challenge?.color }]}>
       <View style={styles.challengeHeading}>
         <View style={styles.challengeTitleRow}>
           <AppText style={styles.challengeEmoji}>🔥</AppText>
           <AppText variant="subtitle2" style={styles.challengeTitle}>
-            {challenge.title}
+            {challenge?.title}
           </AppText>
         </View>
         <View style={styles.challengeStatus}>
-          <AppText variant="caption" style={{ color: challenge.color }}>
-            {challenge.status}
+          <AppText variant="caption" style={{ color: challenge?.color }}>
+            {challenge?.status}
           </AppText>
         </View>
       </View>
 
       <AppText variant="body2" secondary style={styles.challengeDescription}>
-        {challenge.description}
+        {challenge?.description}
       </AppText>
 
       <View style={styles.progressTrack}>
@@ -256,8 +296,8 @@ const ChallengeCard: React.FC<{ challenge: GroupChallenge; styles: any }> =
           style={[
             styles.progressFill,
             {
-              width: `${challenge.progress}%` as any,
-              backgroundColor: challenge.color,
+              width: `${challenge?.progress}%` as any,
+              backgroundColor: challenge?.color,
             },
           ]}
         />
@@ -265,10 +305,10 @@ const ChallengeCard: React.FC<{ challenge: GroupChallenge; styles: any }> =
 
       <View style={styles.challengeFooter}>
         <AppText variant="caption" secondary>
-          {challenge.progressLabel}
+          {challenge?.progressLabel}
         </AppText>
-        <AppText variant="caption" style={{ color: challenge.color }} bold>
-          {challenge.progress}%
+        <AppText variant="caption" style={{ color: challenge?.color }} bold>
+          {challenge?.progress}%
         </AppText>
       </View>
     </View>
@@ -328,12 +368,12 @@ export const GroupOverview: React.FC<Props> = memo(
           <View style={styles.section}>
             <Pressable
               accessibilityRole="button"
-              accessibilityLabel="Archive group"
+              accessibilityLabel="Exit group"
               onPress={onArchiveGroup}
               style={styles.archiveGroupButton}
             >
               <AppText variant="label" error bold>
-                Archive group
+                Exit group
               </AppText>
               <AppText variant="caption" secondary center>
                 This group will be removed from active groups and cannot be restored in the app.

@@ -1,4 +1,4 @@
-import React, { Suspense } from 'react';
+import React from 'react';
 import { View, ScrollView, Pressable } from 'react-native';
 import { useTheme } from '../../../theme/useTheme';
 import {
@@ -11,6 +11,7 @@ import {
 import createStyles from './styles.Groups';
 import FeedTab from './tabs/FeedTab';
 import MyGroups from './tabs/MyGroups';
+import CreateGroupModal from './components/CreateGroupModal';
 
 import useGroups, { GroupTab } from './useGroups';
 
@@ -21,9 +22,6 @@ const GroupsScreen: React.FC = () => {
   const { colors, spacing, radius } = theme;
 
   const styles = createStyles(colors, spacing, radius);
-  const CreateGroupModal = React.lazy(
-    () => import('./components/CreateGroupModal'),
-  );
   const {
     activeTab,
     setActiveTab,
@@ -36,10 +34,13 @@ const GroupsScreen: React.FC = () => {
     setCreateModalVisible,
     groupName,
     setGroupName,
+    groupDescription,
+    setGroupDescription,
     selectedIcon,
     setSelectedIcon,
     isPrivate,
     setIsPrivate,
+    createLoading,
 
     handleCreateGroup,
     joinGroup,
@@ -148,19 +149,20 @@ const GroupsScreen: React.FC = () => {
       </ScrollView>
 
       {/* Create Group bottom sheet */}
-      <Suspense fallback={<AppLoader message="Loading create group sheet…" />}>
-        <CreateGroupModal
-          createModalVisible={createModalVisible}
-          setCreateModalVisible={setCreateModalVisible}
-          groupName={groupName}
-          setGroupName={setGroupName}
-          selectedIcon={selectedIcon}
-          setSelectedIcon={setSelectedIcon}
-          isPrivate={isPrivate}
-          setIsPrivate={setIsPrivate}
-          handleCreateGroup={handleCreateGroup}
-        />
-      </Suspense>
+      <CreateGroupModal
+        createModalVisible={createModalVisible}
+        setCreateModalVisible={setCreateModalVisible}
+        groupName={groupName}
+        setGroupName={setGroupName}
+        groupDescription={groupDescription}
+        setGroupDescription={setGroupDescription}
+        selectedIcon={selectedIcon}
+        setSelectedIcon={setSelectedIcon}
+        isPrivate={isPrivate}
+        setIsPrivate={setIsPrivate}
+        createLoading={createLoading}
+        handleCreateGroup={handleCreateGroup}
+      />
     </View>
   );
 };

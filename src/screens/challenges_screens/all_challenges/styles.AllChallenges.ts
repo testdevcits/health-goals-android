@@ -44,6 +44,38 @@ export const createStyles = (colors: any, spacing: any, radius: any) =>
       paddingHorizontal: spacing.base,
     },
 
+    categoryHeading: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      marginTop: spacing.md,
+      marginBottom: spacing.sm,
+      paddingHorizontal: spacing.xs,
+    },
+
+    createChallengeLink: {
+      alignSelf: 'flex-end',
+      paddingVertical: spacing.md,
+      paddingHorizontal: spacing.base,
+    },
+
+    createModalOverlay: {
+      flex: 1,
+      justifyContent: 'flex-end',
+      backgroundColor: 'rgba(0,0,0,0.45)',
+    },
+
+    createModalSheet: {
+      padding: spacing.lg,
+      borderTopLeftRadius: 24,
+      borderTopRightRadius: 24,
+      backgroundColor: colors.surface,
+    },
+
+    cancelCreateButton: {
+      marginTop: spacing.sm,
+    },
+
     emptyState: {
       alignItems: 'center',
       justifyContent: 'center',

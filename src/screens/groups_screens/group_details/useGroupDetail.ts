@@ -2,7 +2,6 @@ import { Alert } from 'react-native';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import {
   DURATION_OPTIONS,
-  REWARD_OPTIONS,
   type DetailTab,
   type GroupChallenge,
   type Member,
@@ -10,7 +9,7 @@ import {
 import { authenticatedRequest } from '../../../services/authenticatedApi';
 import { apiErrorMessage } from '../../../services/api';
 import { showAppToast } from '../../../utils/appToast';
-import { createAuthenticatedChatSocket } from '../../../services/chatSocket';
+// import { createAuthenticatedChatSocket } from '../../../services/chatSocket';
 import type { Socket } from 'socket.io-client';
 import { readSession } from '../../../services/auth';
 
@@ -54,6 +53,8 @@ type GroupRecord = {
   name: string;
   description: string;
   members: number | Array<Record<string, any>>;
+  private?: boolean;
+  isPrivate?: boolean;
   imageUrl?: string;
   image?: string;
   isLeader?: boolean;
@@ -93,6 +94,7 @@ export default function useGroupDetail({
   );
   const [groupImageUrl, setGroupImageUrl] = useState<string | undefined>();
   const [memberCount, setMemberCount] = useState(initialMemberCount);
+  const [isPrivateGroup, setIsPrivateGroup] = useState(false);
   const [isLeader, setIsLeader] = useState(false);
   const [memberSearchVisible, setMemberSearchVisible] = useState(false);
   const [memberSearchQuery, setMemberSearchQuery] = useState('');
@@ -100,6 +102,7 @@ export default function useGroupDetail({
     GroupUserSearchResult[]
   >([]);
   const [memberSearchLoading, setMemberSearchLoading] = useState(false);
+  const [memberAddLoading, setMemberAddLoading] = useState(false);
   const [groupEditVisible, setGroupEditVisible] = useState(false);
   const [groupNameDraft, setGroupNameDraft] = useState(initialGroupName);
   const [challenges, setChallenges] = useState<GroupChallenge[]>([]);
@@ -109,58 +112,36 @@ export default function useGroupDetail({
   const [loadError, setLoadError] = useState('');
   const [messageDraft, setMessageDraft] = useState('');
   const [createChallengeVisible, setCreateChallengeVisible] = useState(false);
+  const [createChallengeLoading, setCreateChallengeLoading] = useState(false);
   const [challengeName, setChallengeName] = useState('');
-  const [challengeGoal, setChallengeGoal] = useState('');
+  const [challengeDescription, setChallengeDescription] = useState('');
+  const [challengeGoal, setChallengeGoal] = useState('10000');
+  const [metricType, setMetricType] = useState('steps');
+  const [rewardPoints, setRewardPoints] = useState('0');
   const [duration, setDuration] = useState(DURATION_OPTIONS[0]);
-  const [reward, setReward] = useState(REWARD_OPTIONS[1]);
+  const [joiningChallengeId, setJoiningChallengeId] = useState<string | null>(
+    null,
+  );
+  const joiningChallengeRef = useRef<string | null>(null);
   const chatSocketRef = useRef<Socket | null>(null);
   const chatUserIdRef = useRef('');
   const memberSearchRequestRef = useRef(0);
+  const memberAddInFlightRef = useRef(false);
 
   const refreshGroup = useCallback(async () => {
     if (!groupId) return;
     setLoading(true);
     setLoadError('');
     try {
-      const [groupResult, challengeResult, messageResult, leaderboardResult] =
-        await Promise.all([
-          authenticatedRequest<{
-            group: GroupRecord;
-          }>('GET', `/community/groups/${encodeURIComponent(groupId)}`),
-          authenticatedRequest<{
-            challenges: Array<{
-              id: string;
-              title: string;
-              description: string;
-              status: string;
-              participants: number;
-            }>;
-          }>(
-            'GET',
-            `/community/groups/${encodeURIComponent(groupId)}/challenges`,
-          ),
-          authenticatedRequest<{ messages: any[] }>(
-            'GET',
-            `/community/groups/${encodeURIComponent(groupId)}/messages`,
-          ),
-          authenticatedRequest<{
-            leaderboard: Array<{
-              id: string;
-              rank: number;
-              name: string;
-              steps: number;
-              initials: string;
-              streak: string;
-              color: string;
-            }>;
-          }>(
-            'GET',
-            `/community/groups/${encodeURIComponent(groupId)}/leaderboard`,
-          ),
-        ]);
+      const groupResult = await authenticatedRequest<{
+        group: GroupRecord;
+      }>('GET', `/community/groups/${encodeURIComponent(groupId)}`);
       setGroupName(groupResult.group.name);
       setGroupDescription(groupResult.group.description);
       setGroupImageUrl(groupResult.group.imageUrl || groupResult.group.image);
+      setIsPrivateGroup(
+        Boolean(groupResult.group.private ?? groupResult.group.isPrivate),
+      );
       const session = await readSession();
       const userId = session?.user?.id;
       const group = groupResult.group;
@@ -191,39 +172,144 @@ export default function useGroupDetail({
       setIsLeader(
         group.isLeader === true ||
         group.isCurrentUserLeader === true ||
-          ['LEADER', 'OWNER', 'GL', 'GROUP_LEADER'].includes(currentRole) ||
-          Boolean(userId && leaderIds.includes(userId)),
+        ['LEADER', 'OWNER', 'GL', 'GROUP_LEADER'].includes(currentRole) ||
+        Boolean(userId && leaderIds.includes(userId)),
       );
       setMemberCount(
         Array.isArray(group.members) ? group.members.length : group.members,
       );
-      setChallenges(
-        challengeResult.challenges.map(item => ({
-          id: item.id,
-          title: item.title,
-          description: item.description,
-          status: item.status,
-          progress: 0,
-          progressLabel: `${item.participants} participants`,
-          color: primaryColor,
-        })),
-      );
-      setMessages(
-        (messageResult.messages || []).map(item => ({
-          ...item,
-          color: primaryColor,
-        })),
-      );
-      setMembers(
-        (leaderboardResult.leaderboard || []).map(item => ({
-          id: item.id,
-          name: item.name,
-          initials: item.initials,
-          steps: item.steps,
-          streak: Number.parseInt(item.streak, 10) || 0,
-          color: item.color,
-        })),
-      );
+      setLoading(false);
+
+      const [challengeResult, messageResult, leaderboardResult] =
+        await Promise.allSettled([
+          authenticatedRequest<{
+            challenges: Array<{
+              id: string;
+              title: string;
+              description?: string;
+              metricType?: string;
+              targetValue?: number;
+              currentValue?: number;
+              progress?: number;
+              status: string;
+              joined?: boolean;
+              joinable?: boolean;
+              participantCount?: number;
+              participants?: number;
+              joinCount?: number;
+              startsAt?: string;
+              endsAt?: string;
+            }>;
+          }>(
+            'GET',
+            `/community/groups/${encodeURIComponent(groupId)}/challenges`,
+          ),
+          authenticatedRequest<{ messages: any[] }>(
+            'GET',
+            `/community/groups/${encodeURIComponent(groupId)}/messages`,
+          ),
+          authenticatedRequest<{
+            leaderboard: Array<{
+              id: string;
+              rank: number;
+              name: string;
+              steps: number;
+              initials: string;
+              streak: string;
+              color: string;
+            }>;
+          }>(
+            'GET',
+            `/community/groups/${encodeURIComponent(groupId)}/leaderboard`,
+          ),
+        ]);
+
+      if (challengeResult.status === 'fulfilled') {
+        setChallenges(
+          (challengeResult.value.challenges || []).map(item => {
+            const targetValue = Number(item.targetValue || 0);
+            const currentValue = Number(item.currentValue || 0);
+            const progress = Number(
+              item.progress ??
+              (targetValue > 0 ? (currentValue / targetValue) * 100 : 0),
+            );
+            const joined = Boolean(item.joined);
+            const status = String(item.status || 'UPCOMING').toUpperCase();
+            const inWindow =
+              (!item.startsAt || Date.parse(item.startsAt) <= Date.now()) &&
+              (!item.endsAt || Date.parse(item.endsAt) >= Date.now());
+            const joinable = Boolean(
+              item.joinable ??
+              (!joined &&
+                inWindow &&
+                ['ACTIVE', 'LIVE', 'PUBLISHED'].includes(status)),
+            );
+            const participants = Number(
+              item.participantCount ?? item.participants ?? item.joinCount ?? 0,
+            );
+            const endsLabel = item.endsAt
+              ? ` · ends ${new Date(item.endsAt).toLocaleDateString()}`
+              : '';
+            return {
+              id: item.id,
+              title: item.title,
+              description: `${item.description || item.metricType || 'Group challenge'}${targetValue ? ` · Target ${targetValue.toLocaleString()}` : ''}${endsLabel}`,
+              status: joined ? 'JOINED' : joinable ? 'OPEN' : 'CLOSED',
+              progress: Math.min(100, Math.max(0, progress)),
+              progressLabel: joined
+                ? `${currentValue.toLocaleString()} / ${targetValue.toLocaleString()} · ${participants} joined`
+                : `${participants} joined`,
+              color: primaryColor,
+              joined,
+              joinable,
+              targetValue,
+              currentValue,
+              endsAt: item.endsAt,
+              participantCount: participants,
+            };
+          }),
+        );
+      } else {
+        showAppToast(
+          'error',
+          'Could not load group challenges',
+          apiErrorMessage(challengeResult.reason),
+        );
+      }
+
+      if (messageResult.status === 'fulfilled') {
+        setMessages(
+          (messageResult.value.messages || []).map(item => ({
+            ...item,
+            color: primaryColor,
+          })),
+        );
+      } else {
+        showAppToast(
+          'error',
+          'Could not load group chat',
+          apiErrorMessage(messageResult.reason),
+        );
+      }
+
+      if (leaderboardResult.status === 'fulfilled') {
+        setMembers(
+          (leaderboardResult.value.leaderboard || []).map(item => ({
+            id: item.id,
+            name: item.name,
+            initials: item.initials,
+            steps: item.steps,
+            streak: Number.parseInt(item.streak, 10) || 0,
+            color: item.color,
+          })),
+        );
+      } else {
+        showAppToast(
+          'error',
+          'Could not load group leaderboard',
+          apiErrorMessage(leaderboardResult.reason),
+        );
+      }
     } catch (error) {
       const message = apiErrorMessage(error);
       setLoadError(message);
@@ -237,68 +323,68 @@ export default function useGroupDetail({
     refreshGroup();
   }, [refreshGroup]);
 
-  useEffect(() => {
-    if (activeTab !== 'Chat' || !groupId) return;
-    let active = true;
-    let socket: Socket | null = null;
-    createAuthenticatedChatSocket()
-      .then(connection => {
-        if (!active) {
-          connection.socket.disconnect();
-          return;
-        }
-        socket = connection.socket;
-        chatSocketRef.current = socket;
-        chatUserIdRef.current = connection.userId;
-        socket.on('group:message', (message: any) => {
-          if (active) {
-            setMessages(current =>
-              mergeChatMessages(
-                current,
-                [message],
-                chatUserIdRef.current,
-                primaryColor,
-              ),
-            );
-          }
-        });
-        socket.on('connect', () => {
-          socket?.emit('group:join', { groupId }, (result: any) => {
-            if (!active || !result?.ok) return;
-            authenticatedRequest<{ messages: any[] }>(
-              'GET',
-              `/community/groups/${encodeURIComponent(groupId)}/messages`,
-            )
-              .then(messagesResult => {
-                if (active) {
-                  setMessages(current =>
-                    mergeChatMessages(
-                      current,
-                      messagesResult.messages || [],
-                      chatUserIdRef.current,
-                      primaryColor,
-                    ),
-                  );
-                }
-              })
-              .catch(() => {});
-          });
-        });
-        socket.connect();
-      })
-      .catch(error =>
-        console.warn('Realtime group chat is unavailable:', error),
-      );
+  // useEffect(() => {
+  //   // if (activeTab !== 'Chat' || !groupId) return;
+  //   let active = true;
+  //   let socket: Socket | null = null;
+  //   createAuthenticatedChatSocket()
+  //     .then(connection => {
+  //       if (!active) {
+  //         connection.socket.disconnect();
+  //         return;
+  //       }
+  //       socket = connection.socket;
+  //       chatSocketRef.current = socket;
+  //       chatUserIdRef.current = connection.userId;
+  //       socket.on('group:message', (message: any) => {
+  //         if (active) {
+  //           setMessages(current =>
+  //             mergeChatMessages(
+  //               current,
+  //               [message],
+  //               chatUserIdRef.current,
+  //               primaryColor,
+  //             ),
+  //           );
+  //         }
+  //       });
+  //       socket.on('connect', () => {
+  //         socket?.emit('group:join', { groupId }, (result: any) => {
+  //           if (!active || !result?.ok) return;
+  //           authenticatedRequest<{ messages: any[] }>(
+  //             'GET',
+  //             `/community/groups/${encodeURIComponent(groupId)}/messages`,
+  //           )
+  //             .then(messagesResult => {
+  //               if (active) {
+  //                 setMessages(current =>
+  //                   mergeChatMessages(
+  //                     current,
+  //                     messagesResult.messages || [],
+  //                     chatUserIdRef.current,
+  //                     primaryColor,
+  //                   ),
+  //                 );
+  //               }
+  //             })
+  //             .catch(() => { });
+  //         });
+  //       });
+  //       socket.connect();
+  //     })
+  //     .catch(error =>
+  //       console.warn('Realtime group chat is unavailable:', error),
+  //     );
 
-    return () => {
-      active = false;
-      if (socket) {
-        socket.emit('group:leave', { groupId });
-        socket.disconnect();
-      }
-      if (chatSocketRef.current === socket) chatSocketRef.current = null;
-    };
-  }, [activeTab, groupId, primaryColor]);
+  //   return () => {
+  //     active = false;
+  //     if (socket) {
+  //       socket.emit('group:leave', { groupId });
+  //       socket.disconnect();
+  //     }
+  //     if (chatSocketRef.current === socket) chatSocketRef.current = null;
+  //   };
+  // }, [activeTab, groupId, primaryColor]);
 
   const cycleDuration = useCallback(() => {
     setDuration(previous => {
@@ -307,48 +393,52 @@ export default function useGroupDetail({
     });
   }, []);
 
-  const cycleReward = useCallback(() => {
-    setReward(previous => {
-      const index = REWARD_OPTIONS.indexOf(previous);
-      return REWARD_OPTIONS[(index + 1) % REWARD_OPTIONS.length];
-    });
-  }, []);
-
   const handleCreateChallenge = useCallback(async () => {
-    if (!challengeName.trim() || !challengeGoal.trim()) {
+    if (!challengeName.trim()) {
       Alert.alert(
         'Missing details',
-        'Enter a challenge name and goal to continue.',
+        'Enter a challenge title to continue.',
       );
       return;
     }
+    const targetValue = Number(challengeGoal.replace(/[^0-9.]/g, ''));
+    if (!Number.isSafeInteger(targetValue) || targetValue < 1) {
+      Alert.alert(
+        'Invalid target',
+        'Enter a whole number for the target steps.',
+      );
+      return;
+    }
+    setCreateChallengeLoading(true);
     try {
-      const targetValue = Number(challengeGoal.replace(/[^0-9.]/g, ''));
-      if (!Number.isSafeInteger(targetValue) || targetValue < 1) {
-        throw new Error('Enter a whole number for the target.');
-      }
+      const days = Number.parseInt(duration, 10) || 7;
       const endsAt = new Date(
-        Date.now() + Number.parseInt(duration, 10) * 86400000,
+        Date.now() + days * 86400000,
       ).toISOString();
+      const points = Number(rewardPoints) || 0;
       await authenticatedRequest(
         'POST',
         `/community/groups/${encodeURIComponent(groupId)}/challenges`,
         {
           title: challengeName.trim(),
-          description: challengeGoal.trim(),
-          metricType: 'steps',
+          description:
+            challengeDescription.trim() ||
+            `${targetValue.toLocaleString()} ${metricType.replace(/_/g, ' ')} challenge`,
+          metricType: metricType || 'steps',
           targetValue,
           startsAt: new Date().toISOString(),
           endsAt,
-          rewardPoints: Number.parseInt(reward, 10) || 0,
+          rewardPoints: points,
         },
       );
       await refreshGroup();
       setCreateChallengeVisible(false);
       setChallengeName('');
-      setChallengeGoal('');
+      setChallengeDescription('');
+      setChallengeGoal('10000');
+      setMetricType('steps');
+      setRewardPoints('0');
       setDuration(DURATION_OPTIONS[0]);
-      setReward(REWARD_OPTIONS[1]);
       setActiveTab('Challenges');
       showAppToast(
         'success',
@@ -361,8 +451,36 @@ export default function useGroupDetail({
         'Could not create challenge',
         apiErrorMessage(error),
       );
+    } finally {
+      setCreateChallengeLoading(false);
     }
-  }, [challengeName, challengeGoal, duration, reward, groupId, refreshGroup]);
+  }, [challengeName, challengeDescription, challengeGoal, metricType, duration, rewardPoints, groupId, refreshGroup]);
+
+  const joinGroupChallenge = useCallback(
+    async (challengeId: string) => {
+      if (joiningChallengeRef.current) return;
+      joiningChallengeRef.current = challengeId;
+      setJoiningChallengeId(challengeId);
+      try {
+        await authenticatedRequest(
+          'POST',
+          `/community/groups/${encodeURIComponent(groupId)}/challenges/${encodeURIComponent(challengeId)}/join`,
+        );
+        await refreshGroup();
+        showAppToast('success', 'Challenge joined');
+      } catch (error) {
+        showAppToast(
+          'error',
+          'Could not join challenge',
+          apiErrorMessage(error),
+        );
+      } finally {
+        joiningChallengeRef.current = null;
+        setJoiningChallengeId(null);
+      }
+    },
+    [groupId, refreshGroup],
+  );
 
   const sendMessage = useCallback(async () => {
     const message = messageDraft.trim();
@@ -447,6 +565,9 @@ export default function useGroupDetail({
 
   const addMember = useCallback(
     async (user: GroupUserSearchResult) => {
+      if (memberAddInFlightRef.current) return false;
+      memberAddInFlightRef.current = true;
+      setMemberAddLoading(true);
       try {
         await authenticatedRequest(
           'POST',
@@ -462,8 +583,13 @@ export default function useGroupDetail({
           'Member added',
           `${user.name} joined the group.`,
         );
+        return true;
       } catch (error) {
         showAppToast('error', 'Could not add member', apiErrorMessage(error));
+        return false;
+      } finally {
+        memberAddInFlightRef.current = false;
+        setMemberAddLoading(false);
       }
     },
     [groupId, refreshGroup],
@@ -494,8 +620,8 @@ export default function useGroupDetail({
           image === null
             ? undefined
             : result.group?.imageUrl ||
-                result.group?.image ||
-                (typeof image === 'string' ? image : groupImageUrl),
+            result.group?.image ||
+            (typeof image === 'string' ? image : groupImageUrl),
         );
         setGroupEditVisible(false);
         showAppToast('success', 'Group updated');
@@ -541,6 +667,7 @@ export default function useGroupDetail({
     groupDescription,
     groupImageUrl,
     memberCount,
+    isPrivateGroup,
     isLeader,
     groupEditVisible,
     setGroupEditVisible,
@@ -554,6 +681,7 @@ export default function useGroupDetail({
     memberSearchQuery,
     memberSearchResults,
     memberSearchLoading,
+    memberAddLoading,
     searchMembers,
     addMember,
     challenges,
@@ -565,16 +693,24 @@ export default function useGroupDetail({
     setMessageDraft,
     createChallengeVisible,
     setCreateChallengeVisible,
+    createChallengeLoading,
     challengeName,
     setChallengeName,
+    challengeDescription,
+    setChallengeDescription,
     challengeGoal,
     setChallengeGoal,
+    metricType,
+    setMetricType,
+    rewardPoints,
+    setRewardPoints,
     duration,
-    reward,
+    setDuration,
+    joiningChallengeId,
     refreshGroup,
     cycleDuration,
-    cycleReward,
     handleCreateChallenge,
+    joinGroupChallenge,
     sendMessage,
   };
 }

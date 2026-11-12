@@ -10,7 +10,8 @@ const ProfileToggleRow: React.FC<{
   value: boolean;
   onChange: (value: boolean) => void;
   last?: boolean;
-}> = ({ icon, title, detail, value, onChange, last }) => {
+  disabled?: boolean;
+}> = ({ icon, title, detail, value, onChange, last, disabled = false }) => {
   const { theme } = useTheme();
   const { colors, radius } = theme;
   return (
@@ -43,12 +44,16 @@ const ProfileToggleRow: React.FC<{
       </View>
       <Pressable
         onPress={() => onChange(!value)}
+        disabled={disabled}
         accessibilityRole="switch"
-        accessibilityState={{ checked: value }}
+        accessibilityState={{ checked: value, disabled }}
         accessibilityLabel={title}
         style={[
           styles.switchTrack,
-          { backgroundColor: value ? colors.primary : colors.border },
+          {
+            backgroundColor: value ? colors.primary : colors.border,
+            opacity: disabled ? 0.5 : 1,
+          },
         ]}
       >
         <View

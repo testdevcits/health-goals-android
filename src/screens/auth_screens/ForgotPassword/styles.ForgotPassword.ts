@@ -6,70 +6,55 @@ export const createForgotPasswordStyles = (theme: AppTheme) => {
   const { spacing, radius, colors } = theme;
 
   return StyleSheet.create({
-    keyboardView: {
+    container: {
       flex: 1,
       backgroundColor: colors.background,
     },
-    scroll: {
-      flexGrow: 1,
-      paddingBottom: spacing.xxxl,
+    keyboardView: {
+      flex: 1,
     },
     scrollContent: {
+      flexGrow: 1,
       paddingHorizontal: spacing.xl,
-      paddingTop: spacing.lg,
+      paddingBottom: spacing.xxl,
       alignItems: 'center',
     },
-    // ── Header ────────────────────────────────────
     header: {
       alignItems: 'center',
       width: '100%',
-      maxWidth: 460,
-      paddingTop: spacing.lg,
-      paddingBottom: spacing.xl,
+      maxWidth: 440,
+      paddingTop: spacing.md,
+      paddingBottom: spacing.lg,
     },
     iconBox: {
-      width: 72,
-      height: 72,
-      borderRadius: radius.xl,
-      backgroundColor: colors.warning,
+      width: 76,
+      height: 76,
+      borderRadius: radius.xxl,
+      backgroundColor: colors.primaryLight,
       alignItems: 'center',
       justifyContent: 'center',
-      marginBottom: spacing.md,
-    },
-    iconEmoji: {
-      fontSize: 36,
+      marginBottom: spacing.base,
     },
     subtitleText: {
-      maxWidth: 280,
-      marginTop: spacing.sm,
+      maxWidth: 320,
+      marginTop: spacing.xxs,
+      lineHeight: 20,
     },
-    // ── Form ─────────────────────────────────────
     formSection: {
       width: '100%',
-      maxWidth: 460,
+      maxWidth: 440,
       alignSelf: 'center',
-      paddingTop: spacing.xs,
     },
     sendButton: {
-      marginTop: spacing.xs,
+      marginTop: spacing.sm,
     },
-    // ── Success ───────────────────────────────────
-    successBox: {
-      width: '100%',
-      padding: spacing.xl,
-      alignItems: 'center',
-      borderRadius: radius.lg,
-      backgroundColor: colors.surfaceElevated,
-    },
-    successEmoji: {
-      fontSize: 40,
-      marginBottom: spacing.md,
-    },
-    // ── Footer ───────────────────────────────────
     backRow: {
+      flexDirection: 'row',
       alignItems: 'center',
+      justifyContent: 'center',
+      gap: 6,
       marginTop: spacing.xl,
-      paddingBottom: spacing.xl,
+      paddingVertical: spacing.sm,
     },
   });
 };

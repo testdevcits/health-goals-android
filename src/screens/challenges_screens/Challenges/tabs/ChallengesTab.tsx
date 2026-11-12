@@ -1,5 +1,5 @@
 import React, { memo } from 'react';
-import { Pressable, View } from 'react-native';
+import { ActivityIndicator, Pressable, View } from 'react-native';
 import { AppText } from '../../../../components';
 import { useTheme } from '../../../../theme/useTheme';
 import type { Challenge } from '../data/challengesData';
@@ -11,6 +11,7 @@ interface ChallengesTabProps {
   onBrowseAll: () => void;
   styles: ChallengesStyles;
   onJoin?: (id: string) => void;
+  joiningChallengeId?: string | null;
 }
 
 const ChallengesTab: React.FC<ChallengesTabProps> = ({
@@ -18,63 +19,64 @@ const ChallengesTab: React.FC<ChallengesTabProps> = ({
   onBrowseAll,
   styles,
   onJoin,
+  joiningChallengeId,
 }) => {
   const { theme } = useTheme();
 
   return (
     <View>
       {challenges.map(challenge => {
-        const Icon = challenge.icon;
+        const Icon = challenge?.icon;
 
         return (
           <View
-            key={challenge.id}
-            style={[styles.challengeCard, { borderLeftColor: challenge.color }]}
+            key={challenge?.id}
+            style={[styles.challengeCard, { borderLeftColor: challenge?.color }]}
           >
             <View style={styles.challengeHeading}>
               <View style={styles.challengeTitleRow}>
-                <Icon size={19} color={challenge.color} strokeWidth={2.5} />
+                <Icon size={19} color={challenge?.color} strokeWidth={2.5} />
                 <AppText variant="subtitle2" style={styles.challengeTitle}>
-                  {challenge.title}
+                  {challenge?.title}
                 </AppText>
               </View>
               <View
                 style={[
                   styles.statusPill,
-                  { backgroundColor: `${challenge.color}20` },
+                  { backgroundColor: `${challenge?.color}20` },
                 ]}
               >
                 <AppText
                   variant="caption"
-                  style={{ color: challenge.color }}
+                  style={{ color: challenge?.color }}
                   bold
                 >
-                  {challenge.status}
+                  {challenge?.status}
                 </AppText>
               </View>
             </View>
 
             <AppText variant="body2" secondary>
-              {challenge.description}
+              {challenge?.description}
             </AppText>
 
-            {(challenge.metricLabel ||
-              challenge.targetLabel ||
-              challenge.dateLabel) && (
-              <AppText variant="caption" secondary>
-                {[
-                  challenge.metricLabel,
-                  challenge.targetLabel
-                    ? `Target ${challenge.targetLabel}`
-                    : undefined,
-                  challenge.dateLabel,
-                ]
-                  .filter(Boolean)
-                  .join(' · ')}
-              </AppText>
-            )}
+            {(challenge?.metricLabel ||
+              challenge?.targetLabel ||
+              challenge?.dateLabel) && (
+                <AppText variant="caption" secondary>
+                  {[
+                    challenge?.metricLabel,
+                    challenge?.targetLabel
+                      ? `Target ${challenge?.targetLabel}`
+                      : undefined,
+                    challenge?.dateLabel,
+                  ]
+                    .filter(Boolean)
+                    .join(' · ')}
+                </AppText>
+              )}
 
-            {challenge.joined ? (
+            {challenge?.joined ? (
               <>
                 <View style={styles.progressTrack}>
                   <View
@@ -83,9 +85,9 @@ const ChallengesTab: React.FC<ChallengesTabProps> = ({
                       {
                         width: `${Math.min(
                           100,
-                          Math.max(0, challenge.progress),
+                          Math.max(0, challenge?.progress),
                         )}%`,
-                        backgroundColor: challenge.color,
+                        backgroundColor: challenge?.color,
                       },
                     ]}
                   />
@@ -93,52 +95,76 @@ const ChallengesTab: React.FC<ChallengesTabProps> = ({
 
                 <View style={styles.progressFooter}>
                   <AppText variant="caption" secondary>
-                    {challenge.progressLabel}
+                    {challenge?.progressLabel}
                   </AppText>
                   <AppText
                     variant="caption"
-                    style={{ color: challenge.color }}
+                    style={{ color: challenge?.color }}
                     bold
                   >
-                    {challenge.progress}%
+                    {challenge?.progress}%
                   </AppText>
                 </View>
               </>
             ) : (
               <AppText variant="caption" secondary>
-                {challenge.progressLabel}
+                {challenge?.progressLabel}
               </AppText>
             )}
 
-            {challenge.leaderboard?.length ? (
+            {challenge?.leaderboard?.length ? (
               <View>
-                {challenge.leaderboard.map(entry => (
+                {challenge?.leaderboard.map(entry => (
                   <View key={entry.id} style={styles.progressFooter}>
                     <AppText variant="caption" secondary>
                       #{entry.rank} {entry.name}
                       {entry.winner ? ' · Winner' : ''}
                     </AppText>
                     <AppText variant="caption" secondary>
-                      {entry.value.toLocaleString()} {challenge.metricLabel}
+                      {entry.value.toLocaleString()} {challenge?.metricLabel}
                     </AppText>
                   </View>
                 ))}
               </View>
             ) : null}
-            {onJoin && !challenge.joined ? (
+            {onJoin && !challenge?.joined ? (
               <Pressable
                 accessibilityRole="button"
-                accessibilityState={{ disabled: !challenge.joinable }}
-                onPress={() => challenge.joinable && onJoin(challenge.id)}
-                disabled={!challenge.joinable}
+                accessibilityState={{
+                  disabled:
+                    !challenge?.joinable ||
+                    joiningChallengeId === challenge?.id,
+                }}
+                onPress={() =>
+                  challenge?.joinable &&
+                  joiningChallengeId !== challenge?.id &&
+                  onJoin(challenge?.id)
+                }
+                disabled={
+                  !challenge?.joinable || joiningChallengeId === challenge?.id
+                }
                 style={[
                   styles.browseButton,
-                  { marginTop: 12, opacity: challenge.joinable ? 1 : 0.55 },
+                  {
+                    marginTop: 12,
+                    opacity:
+                      challenge?.joinable &&
+                        joiningChallengeId !== challenge?.id
+                        ? 1
+                        : 0.55,
+                  },
                 ]}
               >
-                <AppText variant="buttonSm" primary>
-                  {challenge.joinable ? 'Join challenge' : 'Not open to join'}
-                </AppText>
+                {joiningChallengeId === challenge?.id ? (
+                  <ActivityIndicator
+                    size="small"
+                    color={theme.colors.primary}
+                  />
+                ) : (
+                  <AppText variant="buttonSm" primary>
+                    {challenge?.joinable ? 'Join challenge' : 'Not open to join'}
+                  </AppText>
+                )}
               </Pressable>
             ) : null}
           </View>

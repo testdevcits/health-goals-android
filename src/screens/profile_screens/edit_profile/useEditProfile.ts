@@ -44,6 +44,28 @@ export const getTodayCalendarString = () => {
   )}-${String(today.getDate()).padStart(2, '0')}`;
 };
 
+export const getMaxBirthDateCalendarString = () => {
+  const today = new Date();
+  const max = new Date(today.getFullYear() - 18, today.getMonth(), today.getDate());
+  return `${max.getFullYear()}-${String(max.getMonth() + 1).padStart(
+    2,
+    '0',
+  )}-${String(max.getDate()).padStart(2, '0')}`;
+};
+
+export const isAtLeast18 = (value: string) => {
+  const match = /^(\d{2})\/(\d{2})\/(\d{4})$/.exec(value.trim());
+  const isoMatch = /^(\d{4})-(\d{2})-(\d{2})$/.exec(value.trim());
+  const year = Number(match?.[3] ?? isoMatch?.[1]);
+  const month = Number(match?.[2] ?? isoMatch?.[2]);
+  const day = Number(match?.[1] ?? isoMatch?.[3]);
+  if (!year || !month || !day) return false;
+  const date = new Date(year, month - 1, day);
+  const today = new Date();
+  const maxAllowed = new Date(today.getFullYear() - 18, today.getMonth(), today.getDate());
+  return date <= maxAllowed;
+};
+
 const GOAL_VALUES: Record<string, string> = {
   loseweight: 'lose_weight',
   lose_weight: 'lose_weight',
@@ -172,6 +194,14 @@ export default function useEditProfile(navigation: ProfileScreenNavigation) {
   const saveProfile = async () => {
     if (phone.trim() && (phone.length < 10 || phone.length > 15)) {
       showAppToast('error', 'Invalid phone number', 'Enter 10–15 digits.');
+      return;
+    }
+    if (birthDate.trim() && !isAtLeast18(birthDate)) {
+      showAppToast(
+        'error',
+        'Invalid date of birth',
+        'You must be at least 18 years old.',
+      );
       return;
     }
     setSavingProfile(true);

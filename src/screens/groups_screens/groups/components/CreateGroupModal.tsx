@@ -1,5 +1,6 @@
-import React, { memo, useState } from 'react';
+import React, { memo, useEffect, useState } from 'react';
 import {
+  Keyboard,
   KeyboardAvoidingView,
   Modal,
   Platform,
@@ -11,7 +12,7 @@ import {
 
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { AppInput, AppText, CustomSwitch } from '../../../../components';
+import { AppButton, AppInput, AppText, CustomSwitch } from '../../../../components';
 import { useTheme } from '../../../../theme/useTheme';
 import createStyles from './styles.CreateGroupMOdal';
 import AppIcon from '../../../../assets/appicon/AppIcon';
@@ -25,10 +26,13 @@ interface CreateGroupModalProps {
   setCreateModalVisible: (visible: boolean) => void;
   groupName: string;
   setGroupName: (name: string) => void;
+  groupDescription: string;
+  setGroupDescription: (description: string) => void;
   selectedIcon: string;
   setSelectedIcon: (icon: string) => void;
   isPrivate: boolean;
   setIsPrivate: (value: boolean) => void;
+  createLoading: boolean;
   handleCreateGroup: () => void;
 }
 
@@ -37,16 +41,40 @@ const CreateGroupModal: React.FC<CreateGroupModalProps> = ({
   setCreateModalVisible,
   groupName,
   setGroupName,
+  groupDescription,
+  setGroupDescription,
   selectedIcon,
   setSelectedIcon,
   isPrivate,
   setIsPrivate,
+  createLoading,
   handleCreateGroup,
 }) => {
   const { theme } = useTheme();
   const { colors, spacing, radius } = theme;
   const insets = useSafeAreaInsets();
   const [groupNameError, setGroupNameError] = useState('');
+  const [keyboardHeight, setKeyboardHeight] = useState(0);
+
+  useEffect(() => {
+    const showSub = Keyboard.addListener(
+      Platform.OS === 'ios' ? 'keyboardWillShow' : 'keyboardDidShow',
+      e => {
+        setKeyboardHeight(e.endCoordinates.height);
+      },
+    );
+    const hideSub = Keyboard.addListener(
+      Platform.OS === 'ios' ? 'keyboardWillHide' : 'keyboardDidHide',
+      () => {
+        setKeyboardHeight(0);
+      },
+    );
+
+    return () => {
+      showSub.remove();
+      hideSub.remove();
+    };
+  }, []);
 
   const styles = createStyles(colors, spacing, radius);
 
@@ -102,18 +130,22 @@ const CreateGroupModal: React.FC<CreateGroupModalProps> = ({
         />
 
         <KeyboardAvoidingView
-          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+          behavior={Platform.OS === 'ios' ? 'padding' : undefined}
           style={styles.modalKeyboardContainer}
         >
           <View
             style={[
               styles.bottomSheet,
-              { paddingBottom: Math.max(insets.bottom, spacing.base) },
+              {
+                paddingBottom:
+                  keyboardHeight > 0
+                    ? keyboardHeight + spacing.sm
+                    : Math.max(insets.bottom, spacing.base),
+              },
             ]}
           >
             <ScrollView
               keyboardShouldPersistTaps="handled"
-              keyboardDismissMode="on-drag"
               showsVerticalScrollIndicator={false}
               contentContainerStyle={styles.sheetScrollContent}
             >
@@ -150,6 +182,18 @@ const CreateGroupModal: React.FC<CreateGroupModalProps> = ({
                 maxLength={50}
                 returnKeyType="done"
                 error={groupNameError}
+              />
+
+              <AppText variant="label" secondary style={styles.fieldLabel}>
+                Description (optional)
+              </AppText>
+              <AppInput
+                value={groupDescription}
+                onChangeText={setGroupDescription}
+                placeholder="What is this group about?"
+                placeholderTextColor={colors.inputPlaceholder}
+                maxLength={240}
+                multiline
               />
 
               <AppText variant="label" secondary style={styles.fieldLabel}>
@@ -199,16 +243,14 @@ const CreateGroupModal: React.FC<CreateGroupModalProps> = ({
               <AppText variant="caption" secondary style={styles.capacityNote}>
                 Groups can have up to 10 members, including their creator.
               </AppText>
-
-              <Pressable
-                accessibilityRole="button"
+ 
+              <AppButton
+                loading={createLoading}
+                disabled={createLoading}
+                title="Create Group"
                 onPress={handleCreateGroupPress}
                 style={styles.submitButton}
-              >
-                <AppText variant="button" color="white">
-                  Create Group
-                </AppText>
-              </Pressable>
+              />
             </ScrollView>
           </View>
         </KeyboardAvoidingView>

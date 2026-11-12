@@ -3,6 +3,8 @@ import type { AppColors } from '../../../theme/colors';
 
 const createStyles = (colors: AppColors) =>
   StyleSheet.create({
+    container: { flex: 1, backgroundColor: colors.backgroundSecondary },
+    scrollContent: { flexGrow: 1, paddingBottom: 100, padding: 16 },
     reportCard: { padding: 16, marginBottom: 12 },
     summaryCard: {
       padding: 16,

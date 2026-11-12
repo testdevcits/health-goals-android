@@ -84,10 +84,10 @@ const useRegister = ({ navigation }: { navigation: any }) => {
         goal,
       );
       navigation.navigate('VerifyEmail', {
-        challengeId: challenge.challengeId,
+        challengeId: challenge?.challengeId,
         email,
         purpose: 'register',
-        deliveryMode: challenge.deliveryMode,
+        deliveryMode: challenge?.deliveryMode,
       });
     } catch (error) {
       showAppToast('error', 'Account creation failed', apiErrorMessage(error));

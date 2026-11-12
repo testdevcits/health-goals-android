@@ -15,16 +15,23 @@ interface ChallengeItem {
   progressLabel: string;
   color: string;
   emoji?: string;
+  joined?: boolean;
+  joinable?: boolean;
+  participantCount?: number;
 }
 
 interface ChallengesTabProps {
   onNewChallenge?: () => void;
   challenges: ChallengeItem[];
+  onJoin?: (challengeId: string) => void;
+  joiningChallengeId?: string | null;
 }
 
 const ChallengesTab: React.FC<ChallengesTabProps> = ({
   onNewChallenge,
   challenges,
+  onJoin,
+  joiningChallengeId,
 }) => {
   const { theme } = useTheme();
   const { colors, spacing, radius } = theme;
@@ -32,9 +39,7 @@ const ChallengesTab: React.FC<ChallengesTabProps> = ({
 
   return (
     <View style={styles.section}>
-      <View style={styles.sectionHeading}>
-        <AppText variant="subtitle1">Challenges</AppText>
-      </View>
+
 
       {challenges.length === 0 ? (
         <AppEmptyState
@@ -44,12 +49,14 @@ const ChallengesTab: React.FC<ChallengesTabProps> = ({
       ) : (
         challenges.map((challenge: ChallengeItem) => (
           <ChallengeCard
-            key={challenge.id}
+            key={challenge?.id}
             challenge={{
               ...challenge,
               category: 'All',
-              emoji: challenge.emoji ?? '🏆',
+              emoji: challenge?.emoji ?? '🏆',
             }}
+            onContinue={onJoin}
+            loading={joiningChallengeId === challenge?.id}
             colors={colors}
             spacing={spacing}
             radius={radius}
@@ -57,15 +64,17 @@ const ChallengesTab: React.FC<ChallengesTabProps> = ({
         ))
       )}
 
-      <Pressable
-        accessibilityRole="button"
-        onPress={onNewChallenge}
-        style={overviewStyles.newChallengeButton}
-      >
-        <AppText variant="buttonSm" primary>
-          + New Challenge
-        </AppText>
-      </Pressable>
+      {onNewChallenge ? (
+        <Pressable
+          accessibilityRole="button"
+          onPress={onNewChallenge}
+          style={overviewStyles.newChallengeButton}
+        >
+          <AppText variant="buttonSm" primary>
+            + New Challenge
+          </AppText>
+        </Pressable>
+      ) : null}
     </View>
   );
 };

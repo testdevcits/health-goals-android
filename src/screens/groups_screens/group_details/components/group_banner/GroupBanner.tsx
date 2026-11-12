@@ -9,6 +9,7 @@ interface Props {
   groupName: string;
   groupDescription: string;
   memberCount: number;
+  isPrivate: boolean;
   members: Member[];
   onSettingsPress?: () => void;
   imageUrl?: string;
@@ -19,6 +20,7 @@ export const GroupBanner: React.FC<Props> = memo(
     groupName,
     groupDescription,
     memberCount,
+    isPrivate,
     members,
     onSettingsPress,
     imageUrl,
@@ -30,13 +32,8 @@ export const GroupBanner: React.FC<Props> = memo(
       <View
         style={[styles.bannerContainer, { backgroundColor: colors.primary }]}
       >
-        <Pressable
-          onPress={onSettingsPress}
-          disabled={!onSettingsPress}
-          style={[
-            styles.iconContainer,
-            { backgroundColor: colors.whiteOverlay17 },
-          ]}
+        <View
+          style={[styles.iconContainer, { backgroundColor: colors.whiteOverlay17 }]}
         >
           {imageUrl ? (
             <Image
@@ -47,7 +44,7 @@ export const GroupBanner: React.FC<Props> = memo(
           ) : (
             <AppText style={styles.groupIcon}>🏃</AppText>
           )}
-        </Pressable>
+        </View>
 
         <View style={styles.content}>
           <AppText variant="h3" style={{ color: colors.white }} bold>
@@ -58,7 +55,7 @@ export const GroupBanner: React.FC<Props> = memo(
             variant="subtitle2"
             style={[styles.description, { color: colors.white }]}
           >
-            {groupDescription} · {memberCount} members
+            {groupDescription} · {isPrivate ? 'Private' : 'Public'} · {memberCount}/10 members
           </AppText>
 
           <View style={styles.bannerMemberAvatars}>
@@ -103,7 +100,11 @@ export const GroupBanner: React.FC<Props> = memo(
           </View>
         </View>
 
-        <View
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel="Group options"
+          onPress={onSettingsPress}
+          disabled={!onSettingsPress}
           style={[
             styles.settingsButton,
             { backgroundColor: colors.whiteOverlay20 },
@@ -112,7 +113,7 @@ export const GroupBanner: React.FC<Props> = memo(
           <AppText style={[styles.settingsIcon, { color: colors.white }]}>
             ⚙
           </AppText>
-        </View>
+        </Pressable>
       </View>
     );
   },

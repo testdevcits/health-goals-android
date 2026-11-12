@@ -12,6 +12,8 @@ import MainTabNavigation from './MainTabNavigation';
 import SplashScreen from '../screens/auth_screens/Splash/SplashScreen';
 import RegisterScreen from '../screens/auth_screens/Register/RegisterScreen';
 import ForgotPasswordScreen from '../screens/auth_screens/ForgotPassword/ForgotPasswordScreen';
+import VerifyResetOtpScreen from '../screens/auth_screens/VerifyResetOtp/VerifyResetOtpScreen';
+import ResetPasswordScreen from '../screens/auth_screens/ResetPassword/ResetPasswordScreen';
 import Notifications from '../screens/common_screens/notifications/Notifications';
 import VerifyEmailScreen from '../screens/auth_screens/verify_email /VerifyEmailScreen';
 import { restoreSession } from '../services/auth';
@@ -27,6 +29,15 @@ export type RootStackParamList = {
   Onboarding: undefined;
   Login: undefined;
   ForgotPassword: undefined;
+  VerifyResetOtp: {
+    challengeId: string;
+    email: string;
+  };
+  ResetPassword: {
+    challengeId: string;
+    email: string;
+    otp: string;
+  };
   Register: undefined;
   VerifyEmail: {
     challengeId: string;
@@ -177,6 +188,16 @@ const AppNavigation = () => {
           <Stack.Screen
             name="ForgotPassword"
             component={ForgotPasswordScreen}
+            options={{ animation: 'slide_from_right' }}
+          />
+          <Stack.Screen
+            name="VerifyResetOtp"
+            component={VerifyResetOtpScreen}
+            options={{ animation: 'slide_from_right' }}
+          />
+          <Stack.Screen
+            name="ResetPassword"
+            component={ResetPasswordScreen}
             options={{ animation: 'slide_from_right' }}
           />
           <Stack.Screen

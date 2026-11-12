@@ -1,9 +1,9 @@
-import { Pressable, View } from 'react-native';
+import { ActivityIndicator, Pressable, View } from 'react-native';
 import React, { memo } from 'react';
 import { createCardStyles } from '../screens/challenges_screens/all_challenges/styles.AllChallenges';
 import AppText from './AppText';
 
-type ChallengeCategory = 'All' | 'Steps' | 'Mind' | 'Strength';
+type ChallengeCategory = 'All' | 'Steps' | 'Mind' | 'Strength' | 'Other';
 
 interface Challenge {
   id: string;
@@ -15,11 +15,14 @@ interface Challenge {
   progressLabel: string;
   color: string;
   emoji: string;
+  joined?: boolean;
+  joinable?: boolean;
 }
 
 interface ChallengeCardProps {
   challenge: Challenge;
   onContinue?: (challengeId: string) => void;
+  loading?: boolean;
   colors: any;
   spacing: any;
   radius: any;
@@ -28,6 +31,7 @@ interface ChallengeCardProps {
 const ChallengeCard: React.FC<ChallengeCardProps> = ({
   challenge,
   onContinue,
+  loading = false,
   colors,
   spacing,
   radius,
@@ -35,14 +39,14 @@ const ChallengeCard: React.FC<ChallengeCardProps> = ({
   const styles = createCardStyles(colors, spacing, radius);
 
   return (
-    <View style={[styles.card, { borderLeftColor: challenge.color }]}>
+    <View style={[styles.card, { borderLeftColor: challenge?.color }]}>
       {/* Title and status */}
       <View style={styles.titleRow}>
         <View style={styles.titleContent}>
-          <AppText style={styles.emoji}>{challenge.emoji}</AppText>
+          <AppText style={styles.emoji}>{challenge?.emoji}</AppText>
 
           <AppText variant="subtitle2" style={styles.title} numberOfLines={2}>
-            {challenge.title}
+            {challenge?.title}
           </AppText>
         </View>
 
@@ -50,19 +54,19 @@ const ChallengeCard: React.FC<ChallengeCardProps> = ({
           style={[
             styles.statusBadge,
             {
-              backgroundColor: `${challenge.color}20`,
+              backgroundColor: `${challenge?.color}20`,
             },
           ]}
         >
-          <AppText variant="caption" style={{ color: challenge.color }} bold>
-            {challenge.status}
+          <AppText variant="caption" style={{ color: challenge?.color }} bold>
+            {challenge?.status}
           </AppText>
         </View>
       </View>
 
       {/* Challenge description */}
       <AppText variant="body2" secondary style={styles.description}>
-        {challenge.description}
+        {challenge?.description}
       </AppText>
 
       {/* Progress bar */}
@@ -71,7 +75,7 @@ const ChallengeCard: React.FC<ChallengeCardProps> = ({
         accessibilityValue={{
           min: 0,
           max: 100,
-          now: challenge.progress,
+          now: challenge?.progress,
         }}
         style={styles.progressTrack}
       >
@@ -79,8 +83,8 @@ const ChallengeCard: React.FC<ChallengeCardProps> = ({
           style={[
             styles.progressFill,
             {
-              width: `${challenge.progress}%`,
-              backgroundColor: challenge.color,
+              width: `${challenge?.progress}%`,
+              backgroundColor: challenge?.color,
             },
           ]}
         />
@@ -89,23 +93,47 @@ const ChallengeCard: React.FC<ChallengeCardProps> = ({
       {/* Progress labels */}
       <View style={styles.progressFooter}>
         <AppText variant="caption" secondary>
-          {challenge.progressLabel}
+          {challenge?.progressLabel}
         </AppText>
 
-        <AppText variant="caption" style={{ color: challenge.color }} bold>
-          {challenge.progress}%
+        <AppText variant="caption" style={{ color: challenge?.color }} bold>
+          {challenge?.progress}%
         </AppText>
       </View>
 
       {/* Continue action */}
       <Pressable
         accessibilityRole="button"
-        onPress={() => onContinue?.(challenge.id)}
-        style={[styles.continueButton, { backgroundColor: colors.primary }]}
+        accessibilityState={{ disabled: loading || challenge?.joined || challenge?.joinable === false }}
+        onPress={() => {
+          if (!loading && !challenge?.joined && challenge?.joinable !== false) {
+            onContinue?.(challenge?.id);
+          }
+        }}
+        disabled={loading || Boolean(challenge?.joined) || challenge?.joinable === false}
+        style={[
+          styles.continueButton,
+          {
+            backgroundColor:
+              challenge?.joined || challenge?.joinable === false
+                ? colors.textTertiary
+                : colors.primary,
+          },
+        ]}
       >
-        <AppText variant="buttonSm" color="white">
-          Continue
-        </AppText>
+        {loading ? (
+          <ActivityIndicator color="white" size="small" />
+        ) : (
+          <AppText variant="buttonSm" color="white">
+            {challenge?.joined
+              ? 'Joined'
+              : challenge?.joinable === false
+                ? 'Not open to join'
+                : onContinue
+                  ? 'Join challenge'
+                  : 'Continue'}
+          </AppText>
+        )}
       </Pressable>
     </View>
   );

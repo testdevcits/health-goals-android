@@ -291,7 +291,7 @@ These routes are authenticated and use the same success envelope. They are not r
 | `GET /community/groups/{id}/messages` / `POST`       | Read/send group messages.                                                                                                                                            |
 | `GET /community/groups/{id}/challenges` / `POST`     | Read/create group challenges.                                                                                                                                        |
 | `GET /community/challenges`                          | Challenges list/progress.                                                                                                                                            |
-| `POST /community/challenges/{id}/join`               | Join challenge.                                                                                                                                                      |
+| `POST /community/challenges/{id}/join`               | Join challenge?.                                                                                                                                                      |
 | `GET /community/badges`                              | User badges.                                                                                                                                                         |
 
 The backend also attaches a Socket.IO chat gateway for group messages. The Android socket client should authenticate with the current user session; do not use partner API credentials for sockets. For exact socket event names/payloads, inspect `backend/src/socket/chat.gateway.js` alongside `android/src/services/chatSocket.ts` before changing chat behavior.
@@ -437,7 +437,7 @@ All defaults have zero bonus points. Re-running the seed updates the same seeded
 rules by stable seed identity, including after renaming; custom rules are preserved.
 Group defaults are skipped when no groups exist. Create groups and re-run the seed
 to enroll defaults for them. Seed updates do not reset existing period snapshots
-or restart an already-created timed challenge.
+or restart an already-created timed challenge?.
 
 Admin rule endpoints (relative to the same API base URL):
 
