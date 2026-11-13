@@ -2,6 +2,7 @@ import * as Keychain from 'react-native-keychain';
 import { Platform } from 'react-native';
 import { authenticatedRequest } from './authenticatedApi';
 import { readSession } from './auth';
+import { API_ENDPOINTS } from '../constants/endpoints';
 
 const INSTALL_ID_SERVICE = 'com.vitality.device-id';
 let registration: Promise<string> | null = null;
@@ -60,7 +61,7 @@ export async function syncPhoneProfile(): Promise<string> {
       })`,
       appVersion: '1.0',
     };
-    await authenticatedRequest('POST', '/auth/me/device', phone);
+    await authenticatedRequest('POST', API_ENDPOINTS.AUTH.DEVICE_REGISTER, phone);
     return deviceIdentifier;
   })();
   profileSync = { userId: session.user.id, promise };
@@ -85,7 +86,7 @@ export async function ensureHealthConnectDevice(): Promise<string> {
       };
       const result = await authenticatedRequest<{
         devices: RegisteredDevice[];
-      }>('GET', '/devices');
+      }>('GET', API_ENDPOINTS.DEVICES.LIST);
       const existingDevice = result.devices.find(
         device => device.deviceIdentifier === deviceIdentifier,
       );
@@ -98,7 +99,7 @@ export async function ensureHealthConnectDevice(): Promise<string> {
 
       const created = await authenticatedRequest<{
         device: RegisteredDevice;
-      }>('POST', '/devices', {
+      }>('POST', API_ENDPOINTS.DEVICES.REGISTER, {
         deviceType: 'phone',
         deviceIdentifier,
         manufacturer: constants.Manufacturer || constants.Brand || 'Unknown',
@@ -122,10 +123,10 @@ export async function ensureHealthConnectDevice(): Promise<string> {
 export async function listDevices() {
   return authenticatedRequest<{ devices: RegisteredDevice[] }>(
     'GET',
-    '/devices',
+    API_ENDPOINTS.DEVICES.LIST,
   );
 }
 
 export async function removeDevice(id: string) {
-  return authenticatedRequest('DELETE', `/devices/${encodeURIComponent(id)}`);
+  return authenticatedRequest('DELETE', API_ENDPOINTS.DEVICES.REMOVE(id));
 }

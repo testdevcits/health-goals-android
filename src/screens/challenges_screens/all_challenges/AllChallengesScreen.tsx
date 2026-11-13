@@ -20,6 +20,7 @@ import useAllChallenges, {
 } from './useAllChallenges';
 import AppIcon from '../../../assets/appicon/AppIcon';
 import { authenticatedRequest } from '../../../services/authenticatedApi';
+import { API_ENDPOINTS } from '../../../constants';
 import { apiErrorMessage } from '../../../services/api';
 import { showAppToast } from '../../../utils/appToast';
 
@@ -83,7 +84,7 @@ const AllChallengesScreen: React.FC<AllChallengesScreenProps> = ({
     }
     setCreating(true);
     try {
-      await authenticatedRequest('POST', '/community/challenges', {
+      await authenticatedRequest('POST', API_ENDPOINTS.CHALLENGES.CREATE, {
         title: createTitle.trim(),
         description: createDescription.trim(),
         metricType: 'steps',

@@ -1,4 +1,5 @@
 import { authenticatedRequest } from './authenticatedApi';
+import { API_ENDPOINTS } from '../constants/endpoints';
 
 export type HealthTrendMetric =
   | 'steps'
@@ -41,7 +42,7 @@ export async function fetchHealthTrend(
   const query = new URLSearchParams({ metricType, from, to }).toString();
   const result = await authenticatedRequest<HealthTrendResponse>(
     'GET',
-    `/health/trends?${query}`,
+    `${API_ENDPOINTS.HEALTH.TRENDS}?${query}`,
   );
   if (
     !Array.isArray(result?.series) ||

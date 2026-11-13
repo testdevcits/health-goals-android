@@ -7,6 +7,7 @@ import {
   type Member,
 } from './constants';
 import { authenticatedRequest } from '../../../services/authenticatedApi';
+import { API_ENDPOINTS } from '../../../constants';
 import { apiErrorMessage } from '../../../services/api';
 import { showAppToast } from '../../../utils/appToast';
 // import { createAuthenticatedChatSocket } from '../../../services/chatSocket';
@@ -135,7 +136,7 @@ export default function useGroupDetail({
     try {
       const groupResult = await authenticatedRequest<{
         group: GroupRecord;
-      }>('GET', `/community/groups/${encodeURIComponent(groupId)}`);
+      }>('GET', API_ENDPOINTS.COMMUNITY.GROUP_DETAILS(groupId));
       setGroupName(groupResult.group.name);
       setGroupDescription(groupResult.group.description);
       setGroupImageUrl(groupResult.group.imageUrl || groupResult.group.image);
@@ -202,11 +203,11 @@ export default function useGroupDetail({
             }>;
           }>(
             'GET',
-            `/community/groups/${encodeURIComponent(groupId)}/challenges`,
+            API_ENDPOINTS.COMMUNITY.GROUP_CHALLENGES(groupId),
           ),
           authenticatedRequest<{ messages: any[] }>(
             'GET',
-            `/community/groups/${encodeURIComponent(groupId)}/messages`,
+            API_ENDPOINTS.COMMUNITY.GROUP_MESSAGES(groupId),
           ),
           authenticatedRequest<{
             leaderboard: Array<{
@@ -220,7 +221,7 @@ export default function useGroupDetail({
             }>;
           }>(
             'GET',
-            `/community/groups/${encodeURIComponent(groupId)}/leaderboard`,
+            API_ENDPOINTS.COMMUNITY.GROUP_MEMBER_LEADERBOARD(groupId),
           ),
         ]);
 
@@ -418,7 +419,7 @@ export default function useGroupDetail({
       const points = Number(rewardPoints) || 0;
       await authenticatedRequest(
         'POST',
-        `/community/groups/${encodeURIComponent(groupId)}/challenges`,
+        API_ENDPOINTS.COMMUNITY.GROUP_CHALLENGES(groupId),
         {
           title: challengeName.trim(),
           description:
@@ -464,7 +465,7 @@ export default function useGroupDetail({
       try {
         await authenticatedRequest(
           'POST',
-          `/community/groups/${encodeURIComponent(groupId)}/challenges/${encodeURIComponent(challengeId)}/join`,
+          API_ENDPOINTS.COMMUNITY.JOIN_GROUP_CHALLENGE(groupId, challengeId),
         );
         await refreshGroup();
         showAppToast('success', 'Challenge joined');
@@ -511,7 +512,7 @@ export default function useGroupDetail({
       } else {
         const result = await authenticatedRequest<{ message: any }>(
           'POST',
-          `/community/groups/${encodeURIComponent(groupId)}/messages`,
+          API_ENDPOINTS.COMMUNITY.GROUP_MESSAGES(groupId),
           { message },
         );
         setMessages(current =>
@@ -543,7 +544,7 @@ export default function useGroupDetail({
         users: GroupUserSearchResult[];
       }>(
         'GET',
-        `/community/users/search?q=${encodeURIComponent(query.trim())}`,
+        API_ENDPOINTS.COMMUNITY.USERS_SEARCH(query.trim()),
       );
       if (requestId === memberSearchRequestRef.current) {
         setMemberSearchResults(result.users || []);
@@ -571,7 +572,7 @@ export default function useGroupDetail({
       try {
         await authenticatedRequest(
           'POST',
-          `/community/groups/${encodeURIComponent(groupId)}/members`,
+          API_ENDPOINTS.COMMUNITY.GROUP_MEMBERS(groupId),
           { publicId: user.publicId },
         );
         setMemberSearchVisible(false);
@@ -610,7 +611,7 @@ export default function useGroupDetail({
             imageUrl?: string;
             image?: string;
           };
-        }>('PATCH', `/community/groups/${encodeURIComponent(groupId)}`, {
+        }>('PATCH', API_ENDPOINTS.COMMUNITY.GROUP_DETAILS(groupId), {
           name,
           ...(image !== undefined ? { image } : {}),
         });
@@ -636,7 +637,7 @@ export default function useGroupDetail({
     try {
       await authenticatedRequest(
         'POST',
-        `/community/groups/${encodeURIComponent(groupId)}/leave`,
+        API_ENDPOINTS.COMMUNITY.LEAVE_GROUP(groupId),
       );
       showAppToast('success', 'Left group', 'You have left this group.');
       return true;
@@ -650,7 +651,7 @@ export default function useGroupDetail({
     try {
       await authenticatedRequest(
         'DELETE',
-        `/community/groups/${encodeURIComponent(groupId)}`,
+        API_ENDPOINTS.COMMUNITY.GROUP_DETAILS(groupId),
       );
       showAppToast('success', 'Group archived', 'The group has been archived.');
       return true;

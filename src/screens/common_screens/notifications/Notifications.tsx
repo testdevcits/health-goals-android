@@ -17,6 +17,7 @@ import styles from './styles.notification';
 import type { NotificationItem } from './const';
 import { useNavigation } from '@react-navigation/native';
 import { authenticatedRequest } from '../../../services/authenticatedApi';
+import { API_ENDPOINTS } from '../../../constants';
 import { apiErrorMessage } from '../../../services/api';
 import { showAppToast } from '../../../utils/appToast';
 import notifee, { AndroidImportance } from '@notifee/react-native';
@@ -79,7 +80,7 @@ const Notifications = () => {
     try {
       const result = await authenticatedRequest<NotificationPage>(
         'GET',
-        '/notifications?page=1&limit=50',
+        API_ENDPOINTS.NOTIFICATIONS.LIST(1, 50),
       );
       const items = result.items || [];
       try {
@@ -155,7 +156,7 @@ const Notifications = () => {
       try {
         await authenticatedRequest(
           'PATCH',
-          `/notifications/${encodeURIComponent(id)}/read`,
+          API_ENDPOINTS.NOTIFICATIONS.MARK_READ(id),
         );
         await notifee.cancelNotification(id);
       } catch (error) {
@@ -179,7 +180,7 @@ const Notifications = () => {
     setNotifications(updatedItems);
     setUnreadCount(0);
     try {
-      await authenticatedRequest('PATCH', '/notifications/read-all');
+      await authenticatedRequest('PATCH', API_ENDPOINTS.NOTIFICATIONS.MARK_ALL_READ);
       await Promise.all(
         notificationsRef.current.map(item =>
           notifee.cancelNotification(item.id),

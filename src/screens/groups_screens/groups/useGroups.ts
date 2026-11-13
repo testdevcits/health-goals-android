@@ -1,6 +1,7 @@
 import { Alert } from 'react-native';
 import { useCallback, useRef, useState } from 'react';
 import { authenticatedRequest } from '../../../services/authenticatedApi';
+import { API_ENDPOINTS } from '../../../constants';
 import { apiErrorMessage } from '../../../services/api';
 import { showAppToast } from '../../../utils/appToast';
 import { useFocusEffect } from '@react-navigation/native';
@@ -21,15 +22,15 @@ const useGroups = () => {
       if (activeTab === 'Feed') {
         const feedResult = await authenticatedRequest<{ posts: FeedPost[] }>(
           'GET',
-          '/community/feed',
+          API_ENDPOINTS.COMMUNITY.FEED,
         );
         setPosts(feedResult.posts || []);
       } else {
         const groupResult = await authenticatedRequest<{ groups: Group[] }>(
           'GET',
           activeTab === 'Discover'
-            ? '/community/groups/discover'
-            : '/community/groups',
+            ? API_ENDPOINTS.COMMUNITY.DISCOVER_GROUPS
+            : API_ENDPOINTS.COMMUNITY.GROUPS,
         );
         setGroups(groupResult.groups || []);
       }
@@ -76,7 +77,7 @@ const useGroups = () => {
     createInFlight.current = true;
     setCreateLoading(true);
     try {
-      await authenticatedRequest('POST', '/community/groups', {
+      await authenticatedRequest('POST', API_ENDPOINTS.COMMUNITY.GROUPS, {
         name,
         description: groupDescription.trim() || undefined,
         emoji: selectedIcon,
@@ -84,7 +85,7 @@ const useGroups = () => {
       });
       const groupResult = await authenticatedRequest<{ groups: Group[] }>(
         'GET',
-        '/community/groups',
+        API_ENDPOINTS.COMMUNITY.GROUPS,
       );
       setGroups(groupResult.groups || []);
       setCreateModalVisible(false);
@@ -102,7 +103,7 @@ const useGroups = () => {
     try {
       await authenticatedRequest(
         'POST',
-        `/community/groups/${encodeURIComponent(groupId)}/join`,
+        API_ENDPOINTS.COMMUNITY.JOIN_GROUP(groupId),
       );
       await refresh();
       setActiveTab('My Groups');

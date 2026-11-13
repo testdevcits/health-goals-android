@@ -1,4 +1,5 @@
 import { authenticatedRequest } from './authenticatedApi';
+import { API_ENDPOINTS } from '../constants/endpoints';
 
 export type ProfileQuestionType = 'text' | 'number' | 'select' | 'date';
 
@@ -52,7 +53,7 @@ export async function fetchPendingProfileQuestions(): Promise<
 > {
   const result = await authenticatedRequest<QuestionsResponse>(
     'GET',
-    '/auth/me/profile-questions',
+    API_ENDPOINTS.AUTH.PROFILE_QUESTIONS,
   );
   return validateQuestions(result?.questions);
 }
@@ -62,7 +63,7 @@ export async function saveProfileAnswers(
 ): Promise<ProfileQuestion[] | null> {
   const result = await authenticatedRequest<AnswersResponse>(
     'PATCH',
-    '/auth/me/profile-answers',
+    API_ENDPOINTS.AUTH.PROFILE_ANSWERS,
     { answers },
   );
   if (result?.pendingQuestions === undefined) return null;

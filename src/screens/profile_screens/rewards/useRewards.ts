@@ -2,6 +2,7 @@ import { Alert } from 'react-native';
 import { useCallback, useRef, useState } from 'react';
 import { useFocusEffect } from '@react-navigation/native';
 import { authenticatedRequest } from '../../../services/authenticatedApi';
+import { API_ENDPOINTS } from '../../../constants';
 import { fetchActivityTransactions } from '../../../services/activityTransactions';
 import type { WalletTransaction } from '../../../services/activityTransactions';
 import { fetchWallet } from '../../../services/wallet';
@@ -87,14 +88,17 @@ export default function useRewards() {
       transactionsResult,
     ] = await Promise.allSettled([
         fetchWallet(),
-        authenticatedRequest<{ rewards: Reward[] }>('GET', '/rewards'),
+        authenticatedRequest<{ rewards: Reward[] }>(
+          'GET',
+          API_ENDPOINTS.REWARDS.LIST,
+        ),
         authenticatedRequest<{ redemptions: Redemption[] }>(
           'GET',
-          '/redemptions',
+          API_ENDPOINTS.REWARDS.REDEMPTIONS,
         ),
         authenticatedRequest<{ items: TicketClaim[] }>(
           'GET',
-          '/rewards/leaderboard-tickets',
+          API_ENDPOINTS.REWARDS.LEADERBOARD_TICKETS,
         ),
         fetchActivityTransactions(1),
       ]);
@@ -206,7 +210,7 @@ export default function useRewards() {
     try {
       const result = await authenticatedRequest<{ redemption: Redemption }>(
         'POST',
-        `/rewards/${encodeURIComponent(reward.id)}/redeem`,
+        API_ENDPOINTS.REWARDS.REDEEM(reward.id),
       );
       if (!result.redemption?.id) {
         throw new Error('The server did not confirm this redemption.');
@@ -235,7 +239,7 @@ export default function useRewards() {
     try {
       const result = await authenticatedRequest<{ redemption: Redemption }>(
         'GET',
-        `/redemptions/${encodeURIComponent(redemption.id)}`,
+        API_ENDPOINTS.REWARDS.REDEMPTION_DETAILS(redemption.id),
       );
       setRedemptions(previous =>
         previous.map(item =>

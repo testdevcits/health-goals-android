@@ -4,6 +4,7 @@ import { DeviceEventEmitter } from 'react-native';
 import { Dumbbell, Footprints, Sunrise } from 'lucide-react-native';
 import { apiErrorMessage } from '../../../services/api';
 import { authenticatedRequest } from '../../../services/authenticatedApi';
+import { API_ENDPOINTS } from '../../../constants';
 import { showAppToast } from '../../../utils/appToast';
 import type { Badge, Challenge, ChallengeTab } from './data/challengesData';
 
@@ -93,19 +94,19 @@ const useChallenges = () => {
         authenticatedRequest<{
           challenges?: CommunityChallenge[];
           items?: CommunityChallenge[];
-        }>('GET', '/community/challenges'),
-        authenticatedRequest<{ badges: Badge[] }>('GET', '/community/badges'),
+        }>('GET', API_ENDPOINTS.CHALLENGES.LIST),
+        authenticatedRequest<{ badges: Badge[] }>('GET', API_ENDPOINTS.CHALLENGES.BADGES),
         authenticatedRequest<{
           competitions: Competition[];
           achievements: Achievement[];
-        }>('GET', '/rewards/competitions'),
+        }>('GET', API_ENDPOINTS.CHALLENGES.RULE_COMPETITIONS),
         authenticatedRequest<{
           items?: Array<{ read: boolean }>;
           unread?: number;
-        }>('GET', '/notifications?page=1&limit=50'),
+        }>('GET', API_ENDPOINTS.NOTIFICATIONS.LIST(1, 50)),
         authenticatedRequest<{
           wallet?: { availablePoints?: number; balance?: number };
-        }>('GET', '/wallet'),
+        }>('GET', API_ENDPOINTS.REWARDS.WALLET),
       ]);
 
       if (challengeResult.status === 'fulfilled') {
@@ -318,7 +319,7 @@ const useChallenges = () => {
         setJoiningChallengeId(id);
         await authenticatedRequest(
           'POST',
-          `/community/challenges/${encodeURIComponent(id)}/join`,
+          API_ENDPOINTS.CHALLENGES.JOIN(id),
         );
         await refresh();
         showAppToast(

@@ -1,4 +1,5 @@
 import { authenticatedRequest } from './authenticatedApi';
+import { API_ENDPOINTS } from '../constants/endpoints';
 
 export type WalletTransactionType =
   | 'EARN'
@@ -33,7 +34,7 @@ export async function fetchActivityTransactions(
 ): Promise<ActivityTransactionsPage> {
   const result = await authenticatedRequest<ActivityTransactionsPage>(
     'GET',
-    `/activity/transactions?page=${page}&limit=${limit}`,
+    API_ENDPOINTS.ACTIVITY.TRANSACTIONS(page, limit),
   );
   if (
     !Array.isArray(result?.items) ||

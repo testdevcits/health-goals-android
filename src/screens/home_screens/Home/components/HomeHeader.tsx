@@ -11,6 +11,7 @@ import { getCurrentUser } from '../../../../services/profile';
 import { useAppDispatch, useAppSelector } from '../../../../store/hooks';
 import { setProfile } from '../../../../store/profileSlice';
 import { authenticatedRequest } from '../../../../services/authenticatedApi';
+import { API_ENDPOINTS } from '../../../../constants';
 
 const HomeHeader: React.FC = () => {
   const dispatch = useAppDispatch();
@@ -34,7 +35,7 @@ const HomeHeader: React.FC = () => {
       authenticatedRequest<{
         unread?: number;
         items?: Array<{ read: boolean }>;
-      }>('GET', '/notifications?page=1&limit=50')
+      }>('GET', API_ENDPOINTS.NOTIFICATIONS.LIST(1, 50))
         .then(result => {
           if (active) {
             setUnreadNotifications(

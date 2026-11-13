@@ -3,6 +3,7 @@ import { useIsFocused } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '../../../navigations/ProfileStack';
 import { authenticatedRequest } from '../../../services/authenticatedApi';
+import { API_ENDPOINTS } from '../../../constants';
 import { getCurrentUser } from '../../../services/profile';
 import { logout } from '../../../services/auth';
 import { useAppDispatch, useAppSelector } from '../../../store/hooks';
@@ -37,7 +38,7 @@ export default function useProfile(
       getCurrentUser(),
       authenticatedRequest<{
         wallet?: { availablePoints?: number; balance?: number };
-      }>('GET', '/wallet'),
+      }>('GET', API_ENDPOINTS.REWARDS.WALLET),
     ])
       .then(([userResult, walletResult]) => {
         if (!active) return;
@@ -103,8 +104,8 @@ export default function useProfile(
   const device = user?.deviceProfile;
   const phone = device
     ? [device.brand || device.manufacturer, device.model]
-        .filter(Boolean)
-        .join(' ')
+      .filter(Boolean)
+      .join(' ')
     : '';
   const initials =
     name

@@ -629,6 +629,7 @@ import {
 } from './workoutSessionStore';
 import { WORKOUT_ACTIVITIES } from './workoutActivities';
 import { authenticatedRequest } from '../../../services/authenticatedApi';
+import { API_ENDPOINTS } from '../../../constants';
 
 type Activity = (typeof WORKOUT_ACTIVITIES)[number] & { color: string };
 
@@ -996,7 +997,7 @@ const WorkoutSessionScreen: React.FC<Props> = ({ navigation, route }) => {
               for (let offset = 0; offset < records.length; offset += 100) {
                 await authenticatedRequest(
                   'POST',
-                  '/health/sync',
+                  API_ENDPOINTS.HEALTH.SYNC,
                   {
                     records: records.slice(offset, offset + 100),
                   },

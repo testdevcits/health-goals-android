@@ -1,4 +1,5 @@
 import { authenticatedRequest } from './authenticatedApi';
+import { API_ENDPOINTS } from '../constants/endpoints';
 
 export type HealthRecord = {
   id: string;
@@ -35,7 +36,7 @@ export async function fetchHealthRecords(
   });
   const result = await authenticatedRequest<HealthRecordPage>(
     'GET',
-    `/health/records?${query.toString()}`,
+    `${API_ENDPOINTS.HEALTH.RECORDS}?${query.toString()}`,
   );
   if (
     !Array.isArray(result?.records) ||
@@ -59,11 +60,11 @@ export async function fetchHealthRecords(
 }
 
 export async function fetchHealthDashboard(): Promise<unknown> {
-  return authenticatedRequest('GET', '/health/dashboard');
+  return authenticatedRequest('GET', API_ENDPOINTS.HEALTH.DASHBOARD);
 }
 
 export async function createHealthRecord(
   record: Record<string, unknown>,
 ): Promise<unknown> {
-  return authenticatedRequest('POST', '/health/records', record);
+  return authenticatedRequest('POST', API_ENDPOINTS.HEALTH.RECORDS, record);
 }

@@ -1,11 +1,12 @@
 import { authenticatedRequest } from './authenticatedApi';
+import { API_ENDPOINTS } from '../constants/endpoints';
 
 export type HealthSummary = Record<string, number>;
 
 export async function fetchHealthSummary(): Promise<HealthSummary> {
   const result = await authenticatedRequest<HealthSummary>(
     'GET',
-    '/health/summary',
+    API_ENDPOINTS.HEALTH.SUMMARY,
   );
   if (
     !result ||

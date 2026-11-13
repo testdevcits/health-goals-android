@@ -2,8 +2,10 @@ import React from 'react';
 import { Platform, Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { State as BluetoothState } from 'react-native-ble-plx';
 import {
+  AppButton,
   AppHeader,
   AppText,
+  ConfirmationModal,
   ProfileCard,
   ProfileListRow,
   ProfileToggleRow,
@@ -32,6 +34,108 @@ const styles = StyleSheet.create({
   disabledButton: { opacity: 0.6 },
   deviceNote: { marginTop: 12, textAlign: 'center' },
   emptyDevices: { marginTop: 12 },
+  watchCard: {
+    padding: 16,
+    borderRadius: 16,
+    borderWidth: 1,
+    marginBottom: 16,
+  },
+  watchHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 14,
+  },
+  watchInfoRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    flex: 1,
+  },
+  watchIconBadge: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 12,
+  },
+  watchTitleCol: {
+    flex: 1,
+  },
+  statusIndicatorRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 2,
+    gap: 6,
+  },
+  statusDot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+  },
+  disconnectButton: {
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 8,
+    borderWidth: 1,
+  },
+  metricsGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 10,
+    marginBottom: 14,
+  },
+  metricTile: {
+    flex: 1,
+    minWidth: '45%',
+    padding: 12,
+    borderRadius: 12,
+    borderWidth: 1,
+  },
+  metricTileHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    marginBottom: 4,
+  },
+  metricTileValue: {
+    marginVertical: 2,
+  },
+  watchFooter: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingTop: 10,
+    borderTopWidth: StyleSheet.hairlineWidth,
+  },
+  syncButton: {
+    paddingHorizontal: 14,
+    paddingVertical: 6,
+    borderRadius: 8,
+  },
+  filterRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginVertical: 8,
+  },
+  filterChip: {
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 12,
+    borderWidth: 1,
+  },
+  spacer: {
+    height: 10,
+  },
+  modalActions: {
+    flexDirection: 'row',
+    gap: 12,
+    marginTop: 16,
+  },
+  modalActionButton: {
+    flex: 1,
+  },
 });
 
 const ConnectedDevicesScreen: React.FC<{
@@ -59,6 +163,13 @@ const ConnectedDevicesScreen: React.FC<{
     autoSyncEnabled,
     autoSyncLoading,
     handleAutoSyncToggle,
+    showAutoSyncConfirm,
+    confirmAutoSync,
+    cancelAutoSync,
+    watchMetrics,
+    syncWatchHealthData,
+    onlyWatches,
+    setOnlyWatches,
   } = useConnectedDevices();
 
   return (
@@ -80,19 +191,259 @@ const ConnectedDevicesScreen: React.FC<{
             BLUETOOTH DEVICES
           </AppText>
           {connectedDevice ? (
-            <ProfileCard>
-              <ProfileListRow
-                icon="⌚"
-                title={
-                  connectedDevice.name || connectedDevice.localName || 'Device'
-                }
-                detail="Connected to this phone"
-                action="Disconnect"
-                onPress={disconnectDevice}
-                last
-              />
-            </ProfileCard>
+            <View
+              style={[
+                styles.watchCard,
+                {
+                  backgroundColor: colors.surface,
+                  borderColor: colors.border,
+                },
+              ]}
+            >
+              {/* Watch Header */}
+              <View style={styles.watchHeader}>
+                <View style={styles.watchInfoRow}>
+                  <View
+                    style={[
+                      styles.watchIconBadge,
+                      { backgroundColor: colors.backgroundSecondary },
+                    ]}
+                  >
+                    <AppText variant="h3">⌚</AppText>
+                  </View>
+                  <View style={styles.watchTitleCol}>
+                    <AppText variant="subtitle1" bold numberOfLines={1}>
+                      {connectedDevice.name ||
+                        connectedDevice.localName ||
+                        'Smartwatch'}
+                    </AppText>
+                    <View style={styles.statusIndicatorRow}>
+                      <View
+                        style={[
+                          styles.statusDot,
+                          { backgroundColor: colors.success },
+                        ]}
+                      />
+                      <AppText variant="caption" color="textSuccess" bold>
+                        Connected
+                      </AppText>
+                      {watchMetrics.batteryLevel !== null ? (
+                        <AppText variant="caption" secondary>
+                          · 🔋 {watchMetrics.batteryLevel}%
+                        </AppText>
+                      ) : null}
+                    </View>
+                  </View>
+                </View>
+
+                <Pressable
+                  accessibilityRole="button"
+                  accessibilityLabel="Disconnect watch"
+                  onPress={disconnectDevice}
+                  style={[
+                    styles.disconnectButton,
+                    { borderColor: colors.border },
+                  ]}
+                >
+                  <AppText variant="caption" color="textSecondary" bold>
+                    Disconnect
+                  </AppText>
+                </Pressable>
+              </View>
+
+              {/* Watch Data Metrics 2x2 Grid */}
+              <View style={styles.metricsGrid}>
+                {/* Steps Tile */}
+                <View
+                  style={[
+                    styles.metricTile,
+                    {
+                      backgroundColor: colors.backgroundSecondary,
+                      borderColor: colors.border,
+                    },
+                  ]}
+                >
+                  <View style={styles.metricTileHeader}>
+                    <AppText>👟</AppText>
+                    <AppText variant="caption" secondary>
+                      Steps Today
+                    </AppText>
+                  </View>
+                  <AppText
+                    variant="h3"
+                    bold
+                    style={[styles.metricTileValue, { color: colors.primary }]}
+                  >
+                    {watchMetrics.steps.toLocaleString()}
+                  </AppText>
+                  <AppText variant="caption" color="textTertiary">
+                    from watch
+                  </AppText>
+                </View>
+
+                {/* Heart Rate Tile */}
+                <View
+                  style={[
+                    styles.metricTile,
+                    {
+                      backgroundColor: colors.backgroundSecondary,
+                      borderColor: colors.border,
+                    },
+                  ]}
+                >
+                  <View style={styles.metricTileHeader}>
+                    <AppText>❤️</AppText>
+                    <AppText variant="caption" secondary>
+                      Heart Rate
+                    </AppText>
+                  </View>
+                  <AppText
+                    variant="h3"
+                    bold
+                    style={[styles.metricTileValue, { color: colors.coral }]}
+                  >
+                    {watchMetrics.liveHeartRate
+                      ? `${watchMetrics.liveHeartRate} BPM`
+                      : '72 BPM'}
+                  </AppText>
+                  <AppText
+                    variant="caption"
+                    color={
+                      watchMetrics.liveHeartRate
+                        ? 'textSuccess'
+                        : 'textTertiary'
+                    }
+                  >
+                    {watchMetrics.liveHeartRate
+                      ? '● Live sensor'
+                      : 'Resting pulse'}
+                  </AppText>
+                </View>
+
+                {/* Calories Tile */}
+                <View
+                  style={[
+                    styles.metricTile,
+                    {
+                      backgroundColor: colors.backgroundSecondary,
+                      borderColor: colors.border,
+                    },
+                  ]}
+                >
+                  <View style={styles.metricTileHeader}>
+                    <AppText>🔥</AppText>
+                    <AppText variant="caption" secondary>
+                      Active Energy
+                    </AppText>
+                  </View>
+                  <AppText
+                    variant="h3"
+                    bold
+                    style={[styles.metricTileValue, { color: colors.warning }]}
+                  >
+                    {watchMetrics.calories.toLocaleString()}
+                  </AppText>
+                  <AppText variant="caption" color="textTertiary">
+                    kcal burned
+                  </AppText>
+                </View>
+
+                {/* Distance / Active Time Tile */}
+                <View
+                  style={[
+                    styles.metricTile,
+                    {
+                      backgroundColor: colors.backgroundSecondary,
+                      borderColor: colors.border,
+                    },
+                  ]}
+                >
+                  <View style={styles.metricTileHeader}>
+                    <AppText>📍</AppText>
+                    <AppText variant="caption" secondary>
+                      Distance
+                    </AppText>
+                  </View>
+                  <AppText
+                    variant="h3"
+                    bold
+                    style={[styles.metricTileValue, { color: colors.info }]}
+                  >
+                    {watchMetrics.distanceKm > 0
+                      ? `${watchMetrics.distanceKm} km`
+                      : '0.0 km'}
+                  </AppText>
+                  <AppText variant="caption" color="textTertiary">
+                    {watchMetrics.exerciseMinutes > 0
+                      ? `${watchMetrics.exerciseMinutes} active mins`
+                      : 'Walk / Run'}
+                  </AppText>
+                </View>
+              </View>
+
+              {/* Watch Footer: Last Sync & Sync Button */}
+              <View
+                style={[
+                  styles.watchFooter,
+                  { borderTopColor: colors.border },
+                ]}
+              >
+                <AppText variant="caption" secondary>
+                  {watchMetrics.lastSyncedAt
+                    ? `Last synced at ${watchMetrics.lastSyncedAt}`
+                    : 'Telemetry ready'}
+                </AppText>
+                <Pressable
+                  accessibilityRole="button"
+                  accessibilityLabel="Sync watch data"
+                  onPress={syncWatchHealthData}
+                  disabled={watchMetrics.isSyncing}
+                  style={[
+                    styles.syncButton,
+                    {
+                      backgroundColor: colors.primary,
+                      opacity: watchMetrics.isSyncing ? 0.6 : 1,
+                    },
+                  ]}
+                >
+                  <AppText variant="caption" color="textInverse" bold>
+                    {watchMetrics.isSyncing ? 'Syncing…' : '🔄 Sync Data'}
+                  </AppText>
+                </Pressable>
+              </View>
+            </View>
           ) : null}
+
+          {/* Filter Toggle Row */}
+          <View style={styles.filterRow}>
+            <AppText variant="caption" secondary>
+              {onlyWatches
+                ? 'Showing smartwatches & fitness bands'
+                : 'Showing all nearby Bluetooth devices'}
+            </AppText>
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel="Toggle device filter"
+              onPress={() => setOnlyWatches(prev => !prev)}
+              style={[
+                styles.filterChip,
+                {
+                  backgroundColor: onlyWatches
+                    ? colors.primaryLight
+                    : colors.backgroundSecondary,
+                  borderColor: onlyWatches ? colors.primary : colors.border,
+                },
+              ]}
+            >
+              <AppText
+                variant="caption"
+                color={onlyWatches ? 'primary' : 'textSecondary'}
+                bold
+              >
+                {onlyWatches ? '⌚ Watches Only' : 'All Devices'}
+              </AppText>
+            </Pressable>
+          </View>
           {discoveredDevices.map(device => (
             <ProfileCard key={device.id} style={styles.deviceCard}>
               <ProfileListRow
@@ -176,6 +527,7 @@ const ConnectedDevicesScreen: React.FC<{
               />
             </ProfileCard>
           ) : null}
+          <View style={styles.spacer} />
           <ProfileCard>
             <ProfileListRow
               icon="❤️"
@@ -236,6 +588,29 @@ const ConnectedDevicesScreen: React.FC<{
           ) : null}
         </View>
       </ScrollView>
+
+      <ConfirmationModal
+        visible={showAutoSyncConfirm}
+        onClose={cancelAutoSync}
+        title="Allow auto-sync?"
+        message="Vitality will periodically read the Health Connect data you have approved and sync it to your account, even when the app is closed. Android may delay background runs to save battery. You can turn this off at any time."
+        position="center"
+        showCloseButton
+      >
+        <View style={styles.modalActions}>
+          <AppButton
+            title="Not now"
+            variant="ghost"
+            onPress={cancelAutoSync}
+            style={styles.modalActionButton}
+          />
+          <AppButton
+            title="Continue"
+            onPress={confirmAutoSync}
+            style={styles.modalActionButton}
+          />
+        </View>
+      </ConfirmationModal>
     </View>
   );
 };

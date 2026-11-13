@@ -1,4 +1,5 @@
 import { authenticatedRequest } from './authenticatedApi';
+import { API_ENDPOINTS } from '../constants/endpoints';
 
 export type UserProfile = {
   id: string;
@@ -41,7 +42,7 @@ type CurrentUserResponse = {
 export async function getCurrentUser(): Promise<UserProfile> {
   const response = await authenticatedRequest<CurrentUserResponse>(
     'GET',
-    '/auth/me',
+    API_ENDPOINTS.AUTH.ME,
   );
 
   if (!response.user) {

@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { Alert, NativeModules } from 'react-native';
 import { useIsFocused } from '@react-navigation/native';
 import { authenticatedRequest } from '../../../services/authenticatedApi';
+import { API_ENDPOINTS } from '../../../constants';
 import { apiErrorMessage } from '../../../services/api';
 import { localDateKey } from '../../../utils/healthDates';
 import { readStepsHistory } from '../../../services/healthConnect';
@@ -64,7 +65,7 @@ const fetchActivityHistory = async (
   const range = `from=${dateKey(from)}&to=${dateKey(to)}&limit=100`;
   const firstPage = await authenticatedRequest<ActivityHistoryResponse>(
     'GET',
-    `/activity/history?${range}&page=1`,
+    `${API_ENDPOINTS.ACTIVITY.HISTORY}?${range}&page=1`,
   );
   const pageCount = Number.isFinite(firstPage.totalPages)
     ? Math.max(1, Math.floor(firstPage.totalPages))
@@ -73,7 +74,7 @@ const fetchActivityHistory = async (
     Array.from({ length: pageCount - 1 }, (_, index) =>
       authenticatedRequest<ActivityHistoryResponse>(
         'GET',
-        `/activity/history?${range}&page=${index + 2}`,
+        `${API_ENDPOINTS.ACTIVITY.HISTORY}?${range}&page=${index + 2}`,
       ),
     ),
   );
@@ -122,7 +123,7 @@ export default function useHealthReports() {
         ? readStepsHistory(7, { from, to })
         : authenticatedRequest<{ history: DailyValue[] }>(
             'GET',
-            `/health/history?metricType=${metricType}&from=${dateKey(
+            `${API_ENDPOINTS.HEALTH.HISTORY}?metricType=${metricType}&from=${dateKey(
               from,
             )}&to=${dateKey(to)}`,
           ).then(result => result.history),

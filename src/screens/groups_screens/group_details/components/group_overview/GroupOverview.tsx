@@ -8,8 +8,8 @@ import createGroupOverviewStyles from './styles.GroupOverview';
 
 interface Props {
   members: Member[];
-  challenges: GroupChallenge[];
-  onNewChallenge: () => void;
+  challenges?: GroupChallenge[];
+  onNewChallenge?: () => void;
   isLeader: boolean;
   onArchiveGroup: () => void;
 }
@@ -270,52 +270,8 @@ const MemberRow: React.FC<{
   );
 });
 
-const ChallengeCard: React.FC<{ challenge: GroupChallenge; styles: any }> =
-  memo(({ challenge, styles }) => (
-    <View style={[styles.challengeCard, { borderLeftColor: challenge?.color }]}>
-      <View style={styles.challengeHeading}>
-        <View style={styles.challengeTitleRow}>
-          <AppText style={styles.challengeEmoji}>🔥</AppText>
-          <AppText variant="subtitle2" style={styles.challengeTitle}>
-            {challenge?.title}
-          </AppText>
-        </View>
-        <View style={styles.challengeStatus}>
-          <AppText variant="caption" style={{ color: challenge?.color }}>
-            {challenge?.status}
-          </AppText>
-        </View>
-      </View>
-
-      <AppText variant="body2" secondary style={styles.challengeDescription}>
-        {challenge?.description}
-      </AppText>
-
-      <View style={styles.progressTrack}>
-        <View
-          style={[
-            styles.progressFill,
-            {
-              width: `${challenge?.progress}%` as any,
-              backgroundColor: challenge?.color,
-            },
-          ]}
-        />
-      </View>
-
-      <View style={styles.challengeFooter}>
-        <AppText variant="caption" secondary>
-          {challenge?.progressLabel}
-        </AppText>
-        <AppText variant="caption" style={{ color: challenge?.color }} bold>
-          {challenge?.progress}%
-        </AppText>
-      </View>
-    </View>
-  ));
-
 export const GroupOverview: React.FC<Props> = memo(
-  ({ members, challenges, onNewChallenge, isLeader, onArchiveGroup }) => {
+  ({ members, isLeader, onArchiveGroup }) => {
     const { theme } = useTheme();
     const { colors, spacing, radius } = theme;
     const styles = createGroupOverviewStyles(colors, spacing, radius);
@@ -346,23 +302,7 @@ export const GroupOverview: React.FC<Props> = memo(
           </AppText>
         </View>
 
-        <View style={styles.section}>
-          <View style={styles.sectionHeading}>
-            <AppText variant="subtitle1">Challenges</AppText>
-          </View>
-          {challenges.map(c => (
-            <ChallengeCard key={c.id} challenge={c} styles={styles} />
-          ))}
-          <Pressable
-            accessibilityRole="button"
-            onPress={onNewChallenge}
-            style={styles.newChallengeButton}
-          >
-            <AppText variant="buttonSm" primary>
-              + New Challenge
-            </AppText>
-          </Pressable>
-        </View>
+
 
         {isLeader ? (
           <View style={styles.section}>

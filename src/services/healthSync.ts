@@ -12,6 +12,7 @@ import { authenticatedRequest } from './authenticatedApi';
 import { ensureHealthConnectDevice } from './devices';
 import { ensureHealthConnectInitialized } from './healthConnect';
 import { readSession } from './auth';
+import { API_ENDPOINTS } from '../constants/endpoints';
 
 const IST_OFFSET_MS = 330 * 60 * 1000;
 const DAY_MS = 24 * 60 * 60 * 1000;
@@ -850,7 +851,7 @@ async function uploadHealthBatch(batch: SnapshotRecord[], userId: string) {
         duplicates?: number;
       }>(
         'POST',
-        '/health/sync',
+        API_ENDPOINTS.HEALTH.SYNC,
         { records: batch, includeRecords: false },
         60_000,
         userId,

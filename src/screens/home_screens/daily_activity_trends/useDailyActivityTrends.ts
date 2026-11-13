@@ -2,6 +2,7 @@ import { Alert } from 'react-native';
 import { useEffect, useRef, useState } from 'react';
 import { useIsFocused } from '@react-navigation/native';
 import { authenticatedRequest } from '../../../services/authenticatedApi';
+import { API_ENDPOINTS } from '../../../constants';
 import { getCurrentUser } from '../../../services/profile';
 import { apiErrorMessage } from '../../../services/api';
 import { showAppToast } from '../../../utils/appToast';
@@ -212,7 +213,7 @@ export default function useDailyActivityTrends() {
       activeMetric === 'Sleep' ? Math.round(numericGoal * 60) : numericGoal;
     authenticatedRequest<{ user: { healthGoals?: Record<string, number> } }>(
       'PATCH',
-      '/auth/me/goals',
+      API_ENDPOINTS.AUTH.GOALS,
       { metricType: metricTypes[activeMetric], targetValue: storedTarget },
     )
       .then(() => {

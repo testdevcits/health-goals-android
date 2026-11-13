@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useIsFocused } from '@react-navigation/native';
 import ImagePicker from 'react-native-image-crop-picker';
 import { authenticatedRequest } from '../../../services/authenticatedApi';
+import { API_ENDPOINTS } from '../../../constants';
 import { getCurrentUser } from '../../../services/profile';
 import { saveProfileAnswers } from '../../../services/profileQuestions';
 import { apiErrorMessage } from '../../../services/api';
@@ -167,7 +168,7 @@ export default function useEditProfile(navigation: ProfileScreenNavigation) {
         user: { profileImageUrl?: string };
       }>(
         'POST',
-        '/auth/me/profile-image',
+        API_ENDPOINTS.AUTH.PROFILE_IMAGE,
         { image: `data:${mime};base64,${image.data}` },
         60000,
       );
@@ -216,7 +217,7 @@ export default function useEditProfile(navigation: ProfileScreenNavigation) {
           birthDate?: string;
           phone?: string;
         };
-      }>('PATCH', '/auth/me', {
+      }>('PATCH', API_ENDPOINTS.AUTH.ME, {
         name,
         goal,
         heightCm: height.trim() ? Number(height) : null,

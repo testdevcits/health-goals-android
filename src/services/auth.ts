@@ -1,6 +1,7 @@
 import * as Keychain from 'react-native-keychain';
 import { api } from './api';
 import type { UserProfile } from './profile';
+import { API_ENDPOINTS } from '../constants/endpoints';
 
 const KEYCHAIN_SERVICE = 'com.vitality.auth';
 let refreshInFlight: Promise<AuthTokens | null> | null = null;
@@ -42,7 +43,7 @@ export async function requestLogin(email: string, password: string) {
       maskedEmail?: string;
       deliveryMode?: string;
     }>
-  >('/auth/login', {
+  >(API_ENDPOINTS.AUTH.LOGIN, {
     identifier: email.trim(),
     password,
   });
@@ -58,7 +59,7 @@ export async function requestRegistration(
 ) {
   const response = await api.post<
     ApiResult<{ challengeId: string; deliveryMode?: string }>
-  >('/auth/register', {
+  >(API_ENDPOINTS.AUTH.REGISTER, {
     name: name.trim(),
     email: email.trim(),
     password,
@@ -69,17 +70,20 @@ export async function requestRegistration(
 }
 
 export async function verifyEmailCode(challengeId: string, otp: string) {
-  const response = await api.post<ApiResult<AuthTokens>>('/auth/verify-otp', {
-    challengeId,
-    otp,
-  });
+  const response = await api.post<ApiResult<AuthTokens>>(
+    API_ENDPOINTS.AUTH.VERIFY_OTP,
+    {
+      challengeId,
+      otp,
+    },
+  );
   return saveTokens(response.data.data, true);
 }
 
 export async function requestPasswordReset(email: string) {
   const response = await api.post<
     ApiResult<{ challengeId?: string; deliveryMode?: string }>
-  >('/auth/password/forgot', { email: email.trim() });
+  >(API_ENDPOINTS.AUTH.FORGOT_PASSWORD, { email: email.trim() });
   return response.data.data;
 }
 
@@ -88,7 +92,11 @@ export async function resetPassword(
   otp: string,
   password: string,
 ) {
-  await api.post('/auth/password/reset', { challengeId, otp, password });
+  await api.post(API_ENDPOINTS.AUTH.RESET_PASSWORD, {
+    challengeId,
+    otp,
+    password,
+  });
 }
 
 export async function changePassword(
@@ -99,13 +107,19 @@ export async function changePassword(
   return authenticatedRequest<{
     passwordChanged: boolean;
     requiresSignIn: boolean;
-  }>('PATCH', '/auth/me/password', { currentPassword, newPassword });
+  }>('PATCH', API_ENDPOINTS.AUTH.CHANGE_PASSWORD, {
+    currentPassword,
+    newPassword,
+  });
 }
 
 export async function signInWithGoogle(idToken: string) {
-  const response = await api.post<ApiResult<AuthTokens>>('/auth/google', {
-    idToken,
-  });
+  const response = await api.post<ApiResult<AuthTokens>>(
+    API_ENDPOINTS.AUTH.GOOGLE_SIGN_IN,
+    {
+      idToken,
+    },
+  );
   return saveTokens(response.data.data, true);
 }
 
@@ -127,12 +141,15 @@ export async function restoreSession(): Promise<AuthTokens | null> {
   const session = await readSession();
   if (!session?.refreshToken) return null;
   try {
-    const response = await api.post<ApiResult<AuthTokens>>('/auth/refresh', {
-      refreshToken: session.refreshToken,
-    });
+    const response = await api.post<ApiResult<AuthTokens>>(
+      API_ENDPOINTS.AUTH.REFRESH_TOKEN,
+      {
+        refreshToken: session.refreshToken,
+      },
+    );
     const refreshed = response.data.data;
     const profile = await api.get<ApiResult<{ user: UserProfile }>>(
-      '/auth/me',
+      API_ENDPOINTS.AUTH.ME,
       {
         headers: { Authorization: `Bearer ${refreshed.accessToken}` },
       },
@@ -227,9 +244,12 @@ async function refreshSessionOnce(): Promise<AuthTokens | null> {
   const session = await readSession();
   if (!session?.refreshToken) return null;
   try {
-    const response = await api.post<ApiResult<AuthTokens>>('/auth/refresh', {
-      refreshToken: session.refreshToken,
-    });
+    const response = await api.post<ApiResult<AuthTokens>>(
+      API_ENDPOINTS.AUTH.REFRESH_TOKEN,
+      {
+        refreshToken: session.refreshToken,
+      },
+    );
     return saveTokens({ ...response.data.data, user: session.user });
   } catch (error) {
     await clearSession();
@@ -244,11 +264,11 @@ export async function logout() {
   if (session?.accessToken) {
     void api
       .post(
-        '/auth/logout',
+        API_ENDPOINTS.AUTH.LOGOUT,
         {},
         { headers: { Authorization: `Bearer ${session.accessToken}` } },
       )
-      .catch(() => {});
+      .catch(() => { });
   }
 }
 

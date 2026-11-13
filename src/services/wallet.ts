@@ -1,4 +1,5 @@
 import { authenticatedRequest } from './authenticatedApi';
+import { API_ENDPOINTS } from '../constants/endpoints';
 import type {
   WalletTransaction,
   WalletTransactionType,
@@ -97,7 +98,10 @@ const isWalletTransaction = (value: unknown): value is WalletTransaction => {
 };
 
 export async function fetchWallet(): Promise<WalletResponse> {
-  const result = await authenticatedRequest<WalletResponse>('GET', '/wallet');
+  const result = await authenticatedRequest<WalletResponse>(
+    'GET',
+    API_ENDPOINTS.REWARDS.WALLET,
+  );
   const wallet = result?.wallet;
   const activity = result?.dailyActivity;
   if (

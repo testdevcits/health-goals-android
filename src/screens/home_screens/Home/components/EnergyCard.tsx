@@ -7,6 +7,7 @@ import { useTheme } from '../../../../theme/useTheme';
 import { createHomeStyles } from '../styles.Home';
 import { useIsFocused } from '@react-navigation/native';
 import { authenticatedRequest } from '../../../../services/authenticatedApi';
+import { API_ENDPOINTS } from '../../../../constants';
 import { useTodayHealthData } from '../../../../hooks/useTodayHealthData';
 import { getCurrentUser } from '../../../../services/profile';
 
@@ -101,7 +102,7 @@ const EnergyCard: React.FC<{ healthRefreshKey?: number }> = ({
           meditationMinutes?: number;
         };
         creditedCoins?: number;
-      }>('GET', '/activity/today'),
+      }>('GET', API_ENDPOINTS.ACTIVITY.TODAY),
       getCurrentUser(),
       authenticatedRequest<{
         items: Array<{
@@ -113,7 +114,7 @@ const EnergyCard: React.FC<{ healthRefreshKey?: number }> = ({
             meditationMinutes?: number;
           };
         }>;
-      }>('GET', '/activity/history?limit=30'),
+      }>('GET', `${API_ENDPOINTS.ACTIVITY.HISTORY}?limit=30`),
     ])
       .then(([day, profile, history]) => {
         if (!active) return;

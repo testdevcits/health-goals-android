@@ -1,6 +1,7 @@
 import { useCallback, useState } from 'react';
 import { useFocusEffect } from '@react-navigation/native';
 import { authenticatedRequest } from '../../../services/authenticatedApi';
+import { API_ENDPOINTS } from '../../../constants';
 import { apiErrorMessage } from '../../../services/api';
 import { showAppToast } from '../../../utils/appToast';
 
@@ -85,7 +86,7 @@ export default function useAllChallenges() {
           startsAt?: string;
           endsAt?: string;
         }>;
-      }>('GET', '/community/challenges');
+      }>('GET', API_ENDPOINTS.CHALLENGES.LIST);
       setChallenges(
         (result.challenges || result.items || []).map(item => {
           const metric = (item.metricType || item.metric || 'steps').toLowerCase();
@@ -171,7 +172,7 @@ export default function useAllChallenges() {
       setJoiningChallengeId(challengeId);
       await authenticatedRequest(
         'POST',
-        `/community/challenges/${encodeURIComponent(challengeId)}/join`,
+        API_ENDPOINTS.CHALLENGES.JOIN(challengeId),
       );
       await refresh();
       showAppToast('success', 'Joined challenge', 'You are now participating.');

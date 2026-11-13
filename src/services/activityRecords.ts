@@ -1,4 +1,5 @@
 import { authenticatedRequest } from './authenticatedApi';
+import { API_ENDPOINTS } from '../constants/endpoints';
 
 export type ActivityRecord = {
   id: string;
@@ -34,7 +35,7 @@ export async function fetchActivityRecords(
   }).toString();
   const result = await authenticatedRequest<ActivityRecordPage>(
     'GET',
-    `/activity/records?${query}`,
+    `${API_ENDPOINTS.ACTIVITY.RECORDS}?${query}`,
   );
   if (
     !Array.isArray(result?.items) ||
