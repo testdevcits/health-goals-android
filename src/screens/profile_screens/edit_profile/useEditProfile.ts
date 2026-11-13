@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useIsFocused } from '@react-navigation/native';
 import ImagePicker from 'react-native-image-crop-picker';
 import { authenticatedRequest } from '../../../services/authenticatedApi';
@@ -64,7 +64,20 @@ export const isAtLeast18 = (value: string) => {
   const date = new Date(year, month - 1, day);
   const today = new Date();
   const maxAllowed = new Date(today.getFullYear() - 18, today.getMonth(), today.getDate());
-  return date <= maxAllowed;
+  const minAllowed = new Date(1900, 0, 1);
+  return date <= maxAllowed && date >= minAllowed;
+};
+
+export const isValidHeight = (value: string): boolean => {
+  if (!value.trim()) return true;
+  const num = Number(value);
+  return Number.isFinite(num) && num >= 50 && num <= 300;
+};
+
+export const isValidWeight = (value: string): boolean => {
+  if (!value.trim()) return true;
+  const num = Number(value);
+  return Number.isFinite(num) && num >= 20 && num <= 500;
 };
 
 const GOAL_VALUES: Record<string, string> = {
@@ -96,8 +109,11 @@ export default function useEditProfile(navigation: ProfileScreenNavigation) {
   const [profileImage, setProfileImage] = useState('');
   const [profileImageUrl, setProfileImageUrl] = useState('');
   const [imageBusy, setImageBusy] = useState(false);
+  const isPickingRef = useRef(false);
   const [savingProfile, setSavingProfile] = useState(false);
   const [isCalendarVisible, setIsCalendarVisible] = useState(false);
+  const [isHeightPickerVisible, setIsHeightPickerVisible] = useState(false);
+  const [isWeightPickerVisible, setIsWeightPickerVisible] = useState(false);
   const [profileLoading, setProfileLoading] = useState(true);
   const [profileLoadError, setProfileLoadError] = useState('');
   const [reloadKey, setReloadKey] = useState(0);
@@ -145,6 +161,9 @@ export default function useEditProfile(navigation: ProfileScreenNavigation) {
   }, [dispatch, isFocused, reloadKey]);
 
   const handleChooseImage = async () => {
+    if (isPickingRef.current || imageBusy) return;
+    isPickingRef.current = true;
+    setImageBusy(true);
     try {
       const image = await ImagePicker.openPicker({
         mediaType: 'photo',
@@ -162,7 +181,6 @@ export default function useEditProfile(navigation: ProfileScreenNavigation) {
           'The selected image could not be prepared. Please select it again.',
         );
       }
-      setImageBusy(true);
       const mime = image.mime || 'image/jpeg';
       const result = await authenticatedRequest<{
         user: { profileImageUrl?: string };
@@ -188,6 +206,7 @@ export default function useEditProfile(navigation: ProfileScreenNavigation) {
           'Unable to select profile image.',
       );
     } finally {
+      isPickingRef.current = false;
       setImageBusy(false);
     }
   };
@@ -202,6 +221,22 @@ export default function useEditProfile(navigation: ProfileScreenNavigation) {
         'error',
         'Invalid date of birth',
         'You must be at least 18 years old.',
+      );
+      return;
+    }
+    if (height.trim() && !isValidHeight(height)) {
+      showAppToast(
+        'error',
+        'Invalid height',
+        'Height must be between 50 and 300 cm.',
+      );
+      return;
+    }
+    if (weight.trim() && !isValidWeight(weight)) {
+      showAppToast(
+        'error',
+        'Invalid weight',
+        'Weight must be between 20 and 500 kg.',
       );
       return;
     }
@@ -258,6 +293,10 @@ export default function useEditProfile(navigation: ProfileScreenNavigation) {
     savingProfile,
     isCalendarVisible,
     setIsCalendarVisible,
+    isHeightPickerVisible,
+    setIsHeightPickerVisible,
+    isWeightPickerVisible,
+    setIsWeightPickerVisible,
     profileLoading,
     profileLoadError,
     refreshProfile: () => setReloadKey(value => value + 1),

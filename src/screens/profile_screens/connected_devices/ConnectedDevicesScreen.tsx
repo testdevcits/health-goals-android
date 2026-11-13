@@ -1,5 +1,5 @@
 import React from 'react';
-import { Platform, Pressable, ScrollView, StyleSheet, View } from 'react-native';
+import { Platform, Pressable, ScrollView, View } from 'react-native';
 import { State as BluetoothState } from 'react-native-ble-plx';
 import {
   AppButton,
@@ -13,136 +13,14 @@ import {
 import { useTheme } from '../../../theme/useTheme';
 import { ProfileScreenNavigation } from '../components/ProfileScreenLayout';
 import useConnectedDevices from './useConnectedDevices';
-
-const styles = StyleSheet.create({
-  settingsButton: {
-    minHeight: 48,
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderWidth: StyleSheet.hairlineWidth,
-  },
-  infoCard: { borderWidth: StyleSheet.hairlineWidth },
-  errorMessage: { marginTop: 12, textAlign: 'center' },
-  sectionLabel: { marginBottom: 8 },
-  healthSectionLabel: { marginTop: 24 },
-  deviceCard: { marginTop: 8 },
-  scanButton: {
-    minHeight: 48,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  disabledButton: { opacity: 0.6 },
-  deviceNote: { marginTop: 12, textAlign: 'center' },
-  emptyDevices: { marginTop: 12 },
-  watchCard: {
-    padding: 16,
-    borderRadius: 16,
-    borderWidth: 1,
-    marginBottom: 16,
-  },
-  watchHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    marginBottom: 14,
-  },
-  watchInfoRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    flex: 1,
-  },
-  watchIconBadge: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginRight: 12,
-  },
-  watchTitleCol: {
-    flex: 1,
-  },
-  statusIndicatorRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginTop: 2,
-    gap: 6,
-  },
-  statusDot: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-  },
-  disconnectButton: {
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 8,
-    borderWidth: 1,
-  },
-  metricsGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 10,
-    marginBottom: 14,
-  },
-  metricTile: {
-    flex: 1,
-    minWidth: '45%',
-    padding: 12,
-    borderRadius: 12,
-    borderWidth: 1,
-  },
-  metricTileHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-    marginBottom: 4,
-  },
-  metricTileValue: {
-    marginVertical: 2,
-  },
-  watchFooter: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingTop: 10,
-    borderTopWidth: StyleSheet.hairlineWidth,
-  },
-  syncButton: {
-    paddingHorizontal: 14,
-    paddingVertical: 6,
-    borderRadius: 8,
-  },
-  filterRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginVertical: 8,
-  },
-  filterChip: {
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: 12,
-    borderWidth: 1,
-  },
-  spacer: {
-    height: 10,
-  },
-  modalActions: {
-    flexDirection: 'row',
-    gap: 12,
-    marginTop: 16,
-  },
-  modalActionButton: {
-    flex: 1,
-  },
-});
+import createStyles from './styles.ConnectedDevices';
 
 const ConnectedDevicesScreen: React.FC<{
   navigation: ProfileScreenNavigation;
 }> = ({ navigation }) => {
   const { theme } = useTheme();
   const { colors, spacing, radius } = theme;
+  const styles = createStyles(colors);
   const {
     bluetoothState,
     discoveredDevices,
@@ -416,7 +294,7 @@ const ConnectedDevicesScreen: React.FC<{
 
           {/* Filter Toggle Row */}
           <View style={styles.filterRow}>
-            <AppText variant="caption" secondary>
+            <AppText variant="caption" secondary style={{ width: "50%" }}>
               {onlyWatches
                 ? 'Showing smartwatches & fitness bands'
                 : 'Showing all nearby Bluetooth devices'}

@@ -25,3 +25,6 @@ export { default as ProfileToggleRow } from './ProfileToggleRow';
 export { default as ProfileListRow } from './ProfileListRow';
 export { default as ProfileScreen } from './ProfileScreen';
 export { default as ConfirmationModal } from './ConfirmationModal';
+export { default as ScrollableValuePickerModal } from './ScrollableValuePickerModal';
+export { default as AestheticRulerPickerModal } from './AestheticRulerPickerModal';
+export { default as FitnessAvatar } from './FitnessAvatar';

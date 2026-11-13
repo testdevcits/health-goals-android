@@ -34,6 +34,15 @@ const createStyles = (colors: AppColors) =>
     twoColumns: { flexDirection: 'row', gap: 12 },
     column: { flex: 1 },
     field: { marginBottom: 16 },
+    pickerField: {
+      minHeight: 52,
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      paddingHorizontal: 14,
+      borderWidth: 1.5,
+      borderRadius: 10,
+    },
     dateField: {
       minHeight: 52,
       flexDirection: 'row',

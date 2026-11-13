@@ -1,5 +1,6 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Alert, PermissionsAndroid, Platform } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useFocusEffect } from '@react-navigation/native';
 import {
   BleManager,
@@ -183,8 +184,17 @@ const matchingHealthPermissions = (
     ),
   );
 
+const SAVED_WATCH_KEY = 'vitality:connected_watch';
+let sharedBleManager: BleManager | null = null;
+const getBleManager = () => {
+  if (!sharedBleManager) {
+    sharedBleManager = new BleManager();
+  }
+  return sharedBleManager;
+};
+
 export default function useConnectedDevices() {
-  const [bleManager] = useState(() => new BleManager());
+  const bleManager = useMemo(() => getBleManager(), []);
   const [bluetoothState, setBluetoothState] = useState<BluetoothState>(
     BluetoothState.Unknown,
   );
@@ -212,22 +222,6 @@ export default function useConnectedDevices() {
   const [autoSyncEnabled, setAutoSyncEnabled] = useState(false);
   const [autoSyncLoading, setAutoSyncLoading] = useState(false);
   const [showAutoSyncConfirm, setShowAutoSyncConfirm] = useState(false);
-
-  useEffect(() => {
-    const subscription = bleManager.onStateChange(setBluetoothState, true);
-    return () => {
-      subscription.remove();
-      disconnectSubscription.current?.remove();
-      hrSubscription.current?.remove();
-      if (scanTimeout.current) clearTimeout(scanTimeout.current);
-      bleManager.stopDeviceScan().catch(error => {
-        console.warn('Could not stop Bluetooth scan during cleanup:', error);
-      });
-      bleManager.destroy().catch(error => {
-        console.warn('Could not release Bluetooth manager:', error);
-      });
-    };
-  }, [bleManager]);
 
   const stopScan = useCallback(async () => {
     if (scanTimeout.current) {
@@ -416,6 +410,79 @@ export default function useConnectedDevices() {
     [syncWatchHealthData],
   );
 
+  const autoReconnectSavedWatch = useCallback(async () => {
+    try {
+      const savedJson = await AsyncStorage.getItem(SAVED_WATCH_KEY);
+      if (!savedJson) return;
+      const saved = JSON.parse(savedJson);
+      if (!saved?.id) return;
+
+      const currentState = await bleManager.state();
+      if (currentState !== BluetoothState.PoweredOn) return;
+
+      const isConnected = await bleManager.isDeviceConnected(saved.id);
+      let activeConnection: Device;
+
+      if (isConnected) {
+        const known = await bleManager.devices([saved.id]);
+        if (known.length > 0) {
+          activeConnection = known[0];
+        } else {
+          activeConnection = await bleManager.connectToDevice(saved.id, {
+            autoConnect: true,
+            timeout: 10000,
+          });
+        }
+      } else {
+        activeConnection = await bleManager.connectToDevice(saved.id, {
+          autoConnect: true,
+          timeout: 15000,
+        });
+      }
+
+      const discoveredConnection =
+        await activeConnection.discoverAllServicesAndCharacteristics();
+      disconnectSubscription.current?.remove();
+      disconnectSubscription.current = bleManager.onDeviceDisconnected(
+        saved.id,
+        async () => {
+          hrSubscription.current?.remove();
+          hrSubscription.current = null;
+          setWatchMetrics(INITIAL_WATCH_METRICS);
+          setConnectedDevice(null);
+          disconnectSubscription.current?.remove();
+          disconnectSubscription.current = null;
+          // Check if still saved in storage to auto-reconnect when back in range
+          const stillSaved = await AsyncStorage.getItem(SAVED_WATCH_KEY);
+          if (stillSaved) {
+            void autoReconnectSavedWatch();
+          }
+        },
+      );
+      setConnectedDevice(discoveredConnection);
+      void readWatchTelemetry(discoveredConnection);
+    } catch (reconnectError) {
+      console.log('Watch auto-reconnect skipped or watch not in range:', reconnectError);
+    }
+  }, [bleManager, readWatchTelemetry]);
+
+  useEffect(() => {
+    const subscription = bleManager.onStateChange(state => {
+      setBluetoothState(state);
+      if (state === BluetoothState.PoweredOn) {
+        void autoReconnectSavedWatch();
+      }
+    }, true);
+
+    void autoReconnectSavedWatch();
+
+    return () => {
+      subscription.remove();
+      if (scanTimeout.current) clearTimeout(scanTimeout.current);
+      bleManager.stopDeviceScan().catch(() => {});
+    };
+  }, [bleManager, autoReconnectSavedWatch]);
+
   const connectToDevice = async (device: Device) => {
     setBleError('');
     setConnectingDeviceId(device.id);
@@ -429,7 +496,7 @@ export default function useConnectedDevices() {
       disconnectSubscription.current?.remove();
       disconnectSubscription.current = bleManager.onDeviceDisconnected(
         device.id,
-        error => {
+        async error => {
           hrSubscription.current?.remove();
           hrSubscription.current = null;
           setWatchMetrics(INITIAL_WATCH_METRICS);
@@ -437,11 +504,23 @@ export default function useConnectedDevices() {
           disconnectSubscription.current?.remove();
           disconnectSubscription.current = null;
           if (error) setBleError(`Bluetooth connection lost: ${error.message}`);
+          const stillSaved = await AsyncStorage.getItem(SAVED_WATCH_KEY);
+          if (stillSaved) {
+            void autoReconnectSavedWatch();
+          }
         },
       );
       setConnectedDevice(discoveredConnection);
       setDiscoveredDevices(previous =>
         previous.filter(discovered => discovered.id !== device.id),
+      );
+      // Persist paired watch so it auto-reconnects if app is killed
+      await AsyncStorage.setItem(
+        SAVED_WATCH_KEY,
+        JSON.stringify({
+          id: device.id,
+          name: device.name || device.localName || 'Smartwatch',
+        }),
       );
       void readWatchTelemetry(discoveredConnection);
     } catch (error) {
@@ -466,6 +545,8 @@ export default function useConnectedDevices() {
   const disconnectDevice = async () => {
     if (!connectedDevice) return;
     try {
+      // Clear saved watch from storage so it does NOT auto-reconnect
+      await AsyncStorage.removeItem(SAVED_WATCH_KEY);
       hrSubscription.current?.remove();
       hrSubscription.current = null;
       setWatchMetrics(INITIAL_WATCH_METRICS);

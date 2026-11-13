@@ -1,5 +1,6 @@
 import React from 'react';
 import {
+  ActivityIndicator,
   Image,
   Modal,
   Pressable,
@@ -16,6 +17,7 @@ import {
   AppLoader,
   AppSelect,
   AppText,
+  AestheticRulerPickerModal,
 } from '../../../components';
 import { ProfileScreenNavigation } from '../components/ProfileScreenLayout';
 import { radius } from '../../../theme/radius';
@@ -24,7 +26,11 @@ import createStyles from './styles.EditProfile';
 import useEditProfile, {
   calendarStringToBirthDate,
   getMaxBirthDateCalendarString,
+  isAtLeast18,
+  isValidHeight,
+  isValidWeight,
 } from './useEditProfile';
+import { showAppToast } from '../../../utils/appToast';
 import AppIcon from '../../../assets/appicon/AppIcon';
 
 const EditProfileScreen: React.FC<{ navigation: ProfileScreenNavigation }> = ({
@@ -55,6 +61,10 @@ const EditProfileScreen: React.FC<{ navigation: ProfileScreenNavigation }> = ({
     savingProfile,
     isCalendarVisible,
     setIsCalendarVisible,
+    isHeightPickerVisible,
+    setIsHeightPickerVisible,
+    isWeightPickerVisible,
+    setIsWeightPickerVisible,
     profileLoading,
     profileLoadError,
     refreshProfile,
@@ -62,6 +72,10 @@ const EditProfileScreen: React.FC<{ navigation: ProfileScreenNavigation }> = ({
     handleChooseImage,
     saveProfile,
   } = useEditProfile(navigation);
+
+  const isInvalidHeight = Boolean(height.trim() && !isValidHeight(height));
+  const isInvalidWeight = Boolean(weight.trim() && !isValidWeight(weight));
+  const isInvalidBirthDate = Boolean(birthDate.trim() && !isAtLeast18(birthDate));
 
   return (
     <View style={{ flex: 1, backgroundColor: colors.backgroundSecondary }}>
@@ -80,33 +94,52 @@ const EditProfileScreen: React.FC<{ navigation: ProfileScreenNavigation }> = ({
         <ScrollView contentContainerStyle={{ flexGrow: 1, paddingBottom: 100 }}>
           <View style={styles.form}>
             <View style={styles.profileImageContainer}>
-              <Image
-                source={
-                  profileImage
-                    ? { uri: profileImage }
-                    : profileImageUrl
-                      ? { uri: profileImageUrl }
-                      : {
-                        uri: 'https://imgv3.fotor.com/images/slider-image/after-image-generated-by-ai-profile-pictuire-maker-for-mobile.jpg',
-                      }
-                }
-                style={[styles.profileImage, { borderRadius: radius.full }]}
-                resizeMode="cover"
-              />
+              {profileImage || profileImageUrl ? (
+                <Image
+                  source={{ uri: profileImage || profileImageUrl }}
+                  style={[styles.profileImage, { borderRadius: radius.full }]}
+                  resizeMode="cover"
+                />
+              ) : (
+                <View
+                  style={[
+                    styles.profileImage,
+                    {
+                      borderRadius: radius.full,
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      backgroundColor: colors.surfaceElevated,
+                    },
+                  ]}
+                >
+                  <AppIcon
+                    name="UserRound"
+                    size={42}
+                    color={colors.textSecondary}
+                  />
+                </View>
+              )}
 
               <Pressable
                 onPress={handleChooseImage}
-                style={styles.cameraButton}
+                style={[
+                  styles.cameraButton,
+                  imageBusy && { opacity: 0.6 },
+                ]}
                 hitSlop={8}
                 disabled={imageBusy}
                 accessibilityState={{ busy: imageBusy }}
               >
-                <AppIcon
-                  name="Camera"
-                  size={16}
-                  color={colors.textPrimary}
-                  strokeWidth={2}
-                />
+                {imageBusy ? (
+                  <ActivityIndicator size="small" color={colors.primary} />
+                ) : (
+                  <AppIcon
+                    name="Camera"
+                    size={16}
+                    color={colors.textPrimary}
+                    strokeWidth={2}
+                  />
+                )}
               </Pressable>
             </View>
             <AppInput label="Full Name" value={name} onChangeText={setName} />
@@ -146,31 +179,84 @@ const EditProfileScreen: React.FC<{ navigation: ProfileScreenNavigation }> = ({
                   : undefined
               }
             />
-            <View style={styles.twoColumns}>
-              <AppInput
-                containerStyle={styles.column}
-                label="Height (cm)"
-                value={height}
-                onChangeText={setHeight}
-                keyboardType="numeric"
-                error={
-                  parseInt(height) < 50 || parseInt(height) > 300
-                    ? 'Height must be between 50 and 300 cm'
-                    : undefined
-                }
-              />
-              <AppInput
-                containerStyle={styles.column}
-                label="Weight (kg)"
-                value={weight}
-                onChangeText={setWeight}
-                keyboardType="numeric"
-                error={
-                  parseInt(weight) < 20 || parseInt(weight) > 500
-                    ? 'Weight must be between 20 and 500 kg'
-                    : undefined
-                }
-              />
+            <View style={[styles.twoColumns, styles.field]}>
+              <View style={styles.column}>
+                <AppText variant="label" secondary mb={6}>
+                  Height (cm)
+                </AppText>
+                <Pressable
+                  onPress={() => setIsHeightPickerVisible(true)}
+                  style={[
+                    styles.pickerField,
+                    {
+                      backgroundColor: colors.inputBg,
+                      borderColor: isInvalidHeight
+                        ? colors.error
+                        : colors.inputBorder,
+                    },
+                  ]}
+                  accessibilityRole="button"
+                  accessibilityLabel={
+                    height ? `Height, ${height} centimeters` : 'Select height'
+                  }
+                >
+                  <AppText
+                    variant="body2"
+                    color={height ? 'textPrimary' : 'textTertiary'}
+                  >
+                    {height ? `${height} cm` : 'Select height'}
+                  </AppText>
+                  <AppIcon
+                    name="ChevronDown"
+                    size={18}
+                    color={colors.textSecondary}
+                  />
+                </Pressable>
+                {isInvalidHeight ? (
+                  <AppText variant="caption" error mt={4}>
+                    Height must be 50–300 cm
+                  </AppText>
+                ) : null}
+              </View>
+
+              <View style={styles.column}>
+                <AppText variant="label" secondary mb={6}>
+                  Weight (kg)
+                </AppText>
+                <Pressable
+                  onPress={() => setIsWeightPickerVisible(true)}
+                  style={[
+                    styles.pickerField,
+                    {
+                      backgroundColor: colors.inputBg,
+                      borderColor: isInvalidWeight
+                        ? colors.error
+                        : colors.inputBorder,
+                    },
+                  ]}
+                  accessibilityRole="button"
+                  accessibilityLabel={
+                    weight ? `Weight, ${weight} kilograms` : 'Select weight'
+                  }
+                >
+                  <AppText
+                    variant="body2"
+                    color={weight ? 'textPrimary' : 'textTertiary'}
+                  >
+                    {weight ? `${weight} kg` : 'Select weight'}
+                  </AppText>
+                  <AppIcon
+                    name="ChevronDown"
+                    size={18}
+                    color={colors.textSecondary}
+                  />
+                </Pressable>
+                {isInvalidWeight ? (
+                  <AppText variant="caption" error mt={4}>
+                    Weight must be 20–500 kg
+                  </AppText>
+                ) : null}
+              </View>
             </View>
             <View style={styles.field}>
               <AppText variant="label" secondary mb={6}>
@@ -182,7 +268,9 @@ const EditProfileScreen: React.FC<{ navigation: ProfileScreenNavigation }> = ({
                   styles.dateField,
                   {
                     backgroundColor: colors.inputBg,
-                    borderColor: colors.inputBorder,
+                    borderColor: isInvalidBirthDate
+                      ? colors.error
+                      : colors.inputBorder,
                   },
                 ]}
                 accessibilityRole="button"
@@ -194,16 +282,29 @@ const EditProfileScreen: React.FC<{ navigation: ProfileScreenNavigation }> = ({
               >
                 <AppText
                   variant="body2"
-                  color={birthDate ? 'textPrimary' : 'textTertiary'}
+                  color={
+                    birthDate
+                      ? isInvalidBirthDate
+                        ? 'error'
+                        : 'textPrimary'
+                      : 'textTertiary'
+                  }
                 >
                   {birthDate || 'Select date of birth'}
                 </AppText>
                 <AppIcon
                   name="Calendar"
                   size={18}
-                  color={colors.textSecondary}
+                  color={
+                    isInvalidBirthDate ? colors.error : colors.textSecondary
+                  }
                 />
               </Pressable>
+              {isInvalidBirthDate ? (
+                <AppText variant="caption" error mt={4}>
+                  You must be at least 18 years old
+                </AppText>
+              ) : null}
             </View>
             <View style={styles.field}>
               <AppText variant="label" secondary mb={6}>
@@ -224,7 +325,12 @@ const EditProfileScreen: React.FC<{ navigation: ProfileScreenNavigation }> = ({
               title="Save Changes"
               onPress={() => saveProfile()}
               loading={savingProfile}
-              disabled={savingProfile}
+              disabled={
+                savingProfile ||
+                isInvalidHeight ||
+                isInvalidWeight ||
+                isInvalidBirthDate
+              }
               style={styles.saveButton}
             />
           </View>
@@ -263,7 +369,16 @@ const EditProfileScreen: React.FC<{ navigation: ProfileScreenNavigation }> = ({
                   : {}),
               }}
               onDayPress={day => {
-                setBirthDate(calendarStringToBirthDate(day.dateString));
+                const formatted = calendarStringToBirthDate(day.dateString);
+                if (!isAtLeast18(formatted)) {
+                  showAppToast(
+                    'error',
+                    'Invalid date of birth',
+                    'You must be at least 18 years old.',
+                  );
+                  return;
+                }
+                setBirthDate(formatted);
                 setIsCalendarVisible(false);
               }}
               theme={{
@@ -288,6 +403,24 @@ const EditProfileScreen: React.FC<{ navigation: ProfileScreenNavigation }> = ({
           </View>
         </View>
       </Modal>
+      <AestheticRulerPickerModal
+        visible={isHeightPickerVisible}
+        mode="height"
+        value={height}
+        min={50}
+        max={250}
+        onSelect={setHeight}
+        onClose={() => setIsHeightPickerVisible(false)}
+      />
+      <AestheticRulerPickerModal
+        visible={isWeightPickerVisible}
+        mode="weight"
+        value={weight}
+        min={30}
+        max={200}
+        onSelect={setWeight}
+        onClose={() => setIsWeightPickerVisible(false)}
+      />
     </View>
   );
 };
