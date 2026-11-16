@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { Alert, PermissionsAndroid, Platform } from 'react-native';
+import { Alert, Linking, PermissionsAndroid, Platform } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useFocusEffect } from '@react-navigation/native';
 import {
@@ -193,6 +193,62 @@ const getBleManager = () => {
   return sharedBleManager;
 };
 
+const waitForBluetoothPoweredOn = (
+  manager: BleManager,
+  timeoutMs = 8000,
+): Promise<boolean> => {
+  return new Promise(resolve => {
+    let timeoutHandle: ReturnType<typeof setTimeout> | null = null;
+    let subscription: Subscription | null = null;
+    let pollInterval: ReturnType<typeof setInterval> | null = null;
+
+    const cleanup = () => {
+      if (timeoutHandle) clearTimeout(timeoutHandle);
+      if (pollInterval) clearInterval(pollInterval);
+      if (subscription) subscription.remove();
+    };
+
+    manager
+      .state()
+      .then(state => {
+        if (state === BluetoothState.PoweredOn) {
+          cleanup();
+          resolve(true);
+        }
+      })
+      .catch(() => {});
+
+    subscription = manager.onStateChange(state => {
+      if (state === BluetoothState.PoweredOn) {
+        cleanup();
+        resolve(true);
+      }
+    }, true);
+
+    pollInterval = setInterval(async () => {
+      try {
+        const state = await manager.state();
+        if (state === BluetoothState.PoweredOn) {
+          cleanup();
+          resolve(true);
+        }
+      } catch {
+        // ignore error during state check
+      }
+    }, 400);
+
+    timeoutHandle = setTimeout(async () => {
+      cleanup();
+      try {
+        const finalState = await manager.state();
+        resolve(finalState === BluetoothState.PoweredOn);
+      } catch {
+        resolve(false);
+      }
+    }, timeoutMs);
+  });
+};
+
 export default function useConnectedDevices() {
   const bleManager = useMemo(() => getBleManager(), []);
   const [bluetoothState, setBluetoothState] = useState<BluetoothState>(
@@ -232,6 +288,54 @@ export default function useConnectedDevices() {
     setIsScanning(false);
   }, [bleManager]);
 
+  const enableBluetooth = useCallback(async (): Promise<boolean> => {
+    setBleError('');
+    if (Platform.OS !== 'android') {
+      try {
+        await Linking.openURL('App-Prefs:Bluetooth').catch(() =>
+          Linking.openSettings(),
+        );
+      } catch {
+        await Linking.openSettings();
+      }
+      return false;
+    }
+
+    try {
+      if (Number(Platform.Version) >= 31) {
+        const requiredPermissions = [
+          PermissionsAndroid.PERMISSIONS.BLUETOOTH_CONNECT,
+          PermissionsAndroid.PERMISSIONS.BLUETOOTH_SCAN,
+        ];
+        const results = await PermissionsAndroid.requestMultiple(
+          requiredPermissions,
+        );
+        const granted = requiredPermissions.every(
+          perm => results[perm] === PermissionsAndroid.RESULTS.GRANTED,
+        );
+        if (!granted) {
+          setBleError('Bluetooth permission is required to turn on Bluetooth.');
+          return false;
+        }
+      }
+
+      await bleManager.enable();
+      const ready = await waitForBluetoothPoweredOn(bleManager, 8000);
+      if (ready) {
+        setBluetoothState(BluetoothState.PoweredOn);
+        setBleError('');
+        return true;
+      }
+      setBleError('Bluetooth was not turned on. Check your device settings.');
+      return false;
+    } catch {
+      setBleError(
+        'Could not turn on Bluetooth. Please enable it in device settings.',
+      );
+      return false;
+    }
+  }, [bleManager]);
+
   const scanForDevices = async () => {
     setBleError('');
     try {
@@ -260,10 +364,23 @@ export default function useConnectedDevices() {
       }
 
       let currentState = await bleManager.state();
-      if (currentState === BluetoothState.PoweredOff) {
+      if (
+        currentState === BluetoothState.PoweredOff ||
+        currentState === BluetoothState.Resetting
+      ) {
         if (Platform.OS === 'android') {
-          await bleManager.enable();
-          currentState = await bleManager.state();
+          try {
+            await bleManager.enable();
+          } catch (enableError) {
+            console.warn('Bluetooth enable request:', enableError);
+          }
+          const isPoweredOn = await waitForBluetoothPoweredOn(bleManager, 8000);
+          if (isPoweredOn) {
+            currentState = BluetoothState.PoweredOn;
+            setBluetoothState(BluetoothState.PoweredOn);
+          } else {
+            currentState = await bleManager.state();
+          }
         } else {
           setBleError('Turn on Bluetooth in your device settings, then retry.');
           return;
@@ -273,7 +390,7 @@ export default function useConnectedDevices() {
         setBleError(
           currentState === BluetoothState.Unsupported
             ? 'This device does not support Bluetooth Low Energy.'
-            : 'Bluetooth is not ready. Check Bluetooth and app permissions.',
+            : 'Bluetooth is not ready. Turn on Bluetooth and retry.',
         );
         return;
       }
@@ -782,6 +899,7 @@ export default function useConnectedDevices() {
     errorMessage,
     statusDetail,
     actionLabel,
+    enableBluetooth,
     stopScan,
     scanForDevices,
     connectToDevice,

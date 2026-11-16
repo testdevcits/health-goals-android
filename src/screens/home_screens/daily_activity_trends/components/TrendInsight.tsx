@@ -8,6 +8,10 @@ const TrendInsight: React.FC<{ text: string }> = ({ text }) => {
   const { theme } = useTheme();
   const styles = createTrendStyles(theme);
 
+  if (!text) {
+    return null;
+  }
+
   return (
     <View
       style={[styles.insightCard, { backgroundColor: theme.colors.surface }]}

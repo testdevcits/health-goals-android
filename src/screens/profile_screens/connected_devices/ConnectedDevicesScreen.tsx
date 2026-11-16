@@ -355,16 +355,22 @@ const ConnectedDevicesScreen: React.FC<{
             accessibilityLabel={
               isScanning
                 ? 'Stop scanning for Bluetooth devices'
+                : bluetoothState === BluetoothState.PoweredOff
+                ? 'Turn on Bluetooth and scan for devices'
                 : 'Scan for devices'
             }
           >
             <AppText variant="button" color="textInverse">
-              {isScanning ? 'Stop Scan' : 'Scan for Devices'}
+              {isScanning
+                ? 'Stop Scan'
+                : bluetoothState === BluetoothState.PoweredOff
+                ? 'Turn on Bluetooth & Scan'
+                : 'Scan for Devices'}
             </AppText>
           </Pressable>
           <AppText variant="caption" secondary style={styles.deviceNote}>
             {bluetoothState === BluetoothState.PoweredOff
-              ? 'Bluetooth is off. Start a scan to turn it on and search for nearby devices.'
+              ? 'Bluetooth is off. Tap the button above to turn it on directly and search for devices.'
               : 'This creates a Bluetooth Low Energy connection, not system pairing or automatic health-data sync. Some watches require their own app or a brand-specific protocol.'}
           </AppText>
           {!isScanning && discoveredDevices.length === 0 && !connectedDevice ? (

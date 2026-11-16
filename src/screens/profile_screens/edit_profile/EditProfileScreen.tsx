@@ -393,6 +393,7 @@ const EditProfileScreen: React.FC<{ navigation: ProfileScreenNavigation }> = ({
                 monthTextColor: colors.textPrimary,
                 arrowColor: colors.primary,
               }}
+              enableSwipeMonths
             />
             <AppButton
               title="Close"

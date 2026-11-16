@@ -56,30 +56,30 @@ export const TREND_DATA: Record<
   }
 > = {
   Steps: {
-    bars: [6500, 8200, 7100, 9400, 8800, 5600, 7200],
+    bars: [null, null, null, null, null, null, null],
     color: '#00C6A2',
     stats: [
-      { value: '55,872', label: 'Total' },
-      { value: '7,981', label: 'Daily Avg' },
-      { value: '2', label: 'Days >10K' },
+      { value: '—', label: 'Total' },
+      { value: '—', label: 'Daily Avg' },
+      { value: '—', label: 'Days >10K' },
     ],
   },
   Sleep: {
-    bars: [7.5, 6.8, 8.1, 7.2, 6.5, 8.8, 7.0],
+    bars: [null, null, null, null, null, null, null],
     color: '#7C5CBF',
     stats: [
-      { value: '7h 16m', label: 'Avg Sleep' },
-      { value: '88%', label: 'Quality' },
-      { value: '6.4h', label: 'Lowest' },
+      { value: '—', label: 'Avg Sleep' },
+      { value: '—', label: 'Quality' },
+      { value: '—', label: 'Lowest' },
     ],
   },
   Active: {
-    bars: [45, 60, 35, 75, 55, 30, 50],
+    bars: [null, null, null, null, null, null, null],
     color: '#3B82F6',
     stats: [
-      { value: '350', label: 'Total Mins' },
-      { value: '50', label: 'Daily Avg' },
-      { value: '1', label: 'Rest Days' },
+      { value: '—', label: 'Total Mins' },
+      { value: '—', label: 'Daily Avg' },
+      { value: '—', label: 'Rest Days' },
     ],
   },
 };

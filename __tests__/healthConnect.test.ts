@@ -1,4 +1,6 @@
 import {
+  readActiveMinutesHistory,
+  readSleepHistory,
   readStepsHistory,
   readTodayHealthData,
 } from '../src/services/healthConnect';
@@ -26,9 +28,13 @@ jest.mock('react-native-health-connect', () => ({
 beforeEach(() => {
   jest.clearAllMocks();
   (getGrantedPermissions as jest.Mock).mockResolvedValue(
-    ['Steps', 'Distance', 'TotalCaloriesBurned', 'ExerciseSession'].map(
-      recordType => ({ recordType, accessType: 'read' }),
-    ),
+    [
+      'Steps',
+      'Distance',
+      'TotalCaloriesBurned',
+      'ExerciseSession',
+      'SleepSession',
+    ].map(recordType => ({ recordType, accessType: 'read' })),
   );
   (readRecords as jest.Mock).mockResolvedValue({ records: [] });
   (aggregateGroupByDuration as jest.Mock).mockResolvedValue([]);
@@ -109,4 +115,54 @@ test('step history uses the selected inclusive date range', async () => {
       },
     }),
   );
+});
+
+test('sleep history aggregates minutes correctly across dates', async () => {
+  (aggregateGroupByDuration as jest.Mock).mockResolvedValue([
+    {
+      startTime: '2026-11-01T18:30:00.000Z',
+      result: {
+        SLEEP_DURATION_TOTAL: 28800, // 8 hours = 480 mins
+      },
+    },
+  ]);
+  const history = await readSleepHistory(3, {
+    from: new Date('2026-11-01T12:00:00+05:30'),
+    to: new Date('2026-11-03T12:00:00+05:30'),
+  });
+  expect(history).toHaveLength(3);
+  expect(history[0]).toEqual({
+    date: '2026-11-01',
+    value: 0,
+    count: 0,
+    unit: 'minutes',
+  });
+  expect(history[1]).toEqual({
+    date: '2026-11-02',
+    value: 480,
+    count: 0,
+    unit: 'minutes',
+  });
+});
+
+test('active minutes history aggregates exercise minutes correctly', async () => {
+  (aggregateGroupByDuration as jest.Mock).mockResolvedValue([
+    {
+      startTime: '2026-11-02T04:30:00.000Z', // 10:00 AM IST on 2026-11-02
+      result: {
+        EXERCISE_DURATION_TOTAL: { inSeconds: 2700 }, // 45 mins
+      },
+    },
+  ]);
+  const history = await readActiveMinutesHistory(3, {
+    from: new Date('2026-11-01T12:00:00+05:30'),
+    to: new Date('2026-11-03T12:00:00+05:30'),
+  });
+  expect(history).toHaveLength(3);
+  expect(history[1]).toEqual({
+    date: '2026-11-02',
+    value: 45,
+    count: 0,
+    unit: 'minutes',
+  });
 });

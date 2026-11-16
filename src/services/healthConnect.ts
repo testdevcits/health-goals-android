@@ -51,6 +51,20 @@ export interface DailyStepTotal {
   unit: 'steps';
 }
 
+export interface DailySleepTotal {
+  date: string;
+  value: number;
+  count: number;
+  unit: 'minutes';
+}
+
+export interface DailyActiveMinutesTotal {
+  date: string;
+  value: number;
+  count: number;
+  unit: 'minutes';
+}
+
 const EXERCISE_NAMES = new Map<number, string>([
   [ExerciseType.BIKING, 'Cycling'],
   [ExerciseType.BIKING_STATIONARY, 'Indoor cycling'],
@@ -402,6 +416,194 @@ export const readStepsHistory = async (
       value: totals.get(key) || 0,
       count: 0,
       unit: 'steps' as const,
+    };
+  });
+};
+
+/** Read daily sleep in minutes through Health Connect */
+export const readSleepHistory = async (
+  days = 7,
+  range?: { from: Date; to: Date },
+): Promise<DailySleepTotal[]> => {
+  if (Platform.OS !== 'android' || days < 1) return [];
+
+  if (!(await ensureHealthConnectInitialized())) return [];
+
+  const granted = (await getGrantedPermissions()).filter(
+    (permission): permission is Permission =>
+      'accessType' in permission && 'recordType' in permission,
+  );
+  if (!hasReadPermission(granted, 'SleepSession')) return [];
+
+  const today = istDateKey(new Date());
+  const firstDay = range
+    ? localDateKey(range.from)
+    : shiftDateKey(today, -(days - 1));
+  const lastDay = range ? localDateKey(range.to) : today;
+  const rangeDays =
+    Math.floor(
+      (Date.parse(`${lastDay}T00:00:00.000Z`) -
+        Date.parse(`${firstDay}T00:00:00.000Z`)) /
+        (24 * 60 * 60 * 1000),
+    ) + 1;
+  if (rangeDays < 1) return [];
+  const start = new Date(
+    Date.parse(`${firstDay}T00:00:00.000Z`) - IST_OFFSET_MS,
+  );
+  const end = new Date(
+    Date.parse(
+      `${shiftDateKey(lastDay, 1)}T00:00:00.000Z`,
+    ) - IST_OFFSET_MS,
+  );
+
+  const totals = new Map<string, number>();
+
+  try {
+    const grouped = await aggregateGroupByDuration({
+      recordType: 'SleepSession',
+      timeRangeFilter: {
+        operator: 'between',
+        startTime: start.toISOString(),
+        endTime: end.toISOString(),
+      },
+      timeRangeSlicer: { duration: 'DAYS', length: 1 },
+    });
+    grouped.forEach(group => {
+      const key = istDateKey(group.startTime);
+      const minutes = Math.round((group.result.SLEEP_DURATION_TOTAL || 0) / 60);
+      totals.set(key, (totals.get(key) || 0) + minutes);
+    });
+  } catch (err) {
+    console.warn('[HealthConnect] aggregateGroupByDuration SleepSession error:', err);
+  }
+
+  const hasAggregated = Array.from(totals.values()).some(v => v > 0);
+  if (!hasAggregated) {
+    try {
+      const records = await readRecords('SleepSession', {
+        timeRangeFilter: {
+          operator: 'between',
+          startTime: start.toISOString(),
+          endTime: end.toISOString(),
+        },
+      });
+      records.records.forEach(rec => {
+        const key = istDateKey(rec.endTime);
+        const durationMins = Math.max(
+          0,
+          Math.round(
+            (Date.parse(rec.endTime) - Date.parse(rec.startTime)) / 60000,
+          ),
+        );
+        totals.set(key, (totals.get(key) || 0) + durationMins);
+      });
+    } catch (readErr) {
+      console.warn('[HealthConnect] readRecords SleepSession error:', readErr);
+    }
+  }
+
+  return Array.from({ length: range ? rangeDays : days }, (_, index) => {
+    const key = shiftDateKey(firstDay, index);
+    return {
+      date: key,
+      value: totals.get(key) || 0,
+      count: 0,
+      unit: 'minutes' as const,
+    };
+  });
+};
+
+/** Read daily active / exercise minutes through Health Connect */
+export const readActiveMinutesHistory = async (
+  days = 7,
+  range?: { from: Date; to: Date },
+): Promise<DailyActiveMinutesTotal[]> => {
+  if (Platform.OS !== 'android' || days < 1) return [];
+
+  if (!(await ensureHealthConnectInitialized())) return [];
+
+  const granted = (await getGrantedPermissions()).filter(
+    (permission): permission is Permission =>
+      'accessType' in permission && 'recordType' in permission,
+  );
+  if (!hasReadPermission(granted, 'ExerciseSession')) return [];
+
+  const today = istDateKey(new Date());
+  const firstDay = range
+    ? localDateKey(range.from)
+    : shiftDateKey(today, -(days - 1));
+  const lastDay = range ? localDateKey(range.to) : today;
+  const rangeDays =
+    Math.floor(
+      (Date.parse(`${lastDay}T00:00:00.000Z`) -
+        Date.parse(`${firstDay}T00:00:00.000Z`)) /
+        (24 * 60 * 60 * 1000),
+    ) + 1;
+  if (rangeDays < 1) return [];
+  const start = new Date(
+    Date.parse(`${firstDay}T00:00:00.000Z`) - IST_OFFSET_MS,
+  );
+  const end = new Date(
+    Date.parse(
+      `${shiftDateKey(lastDay, 1)}T00:00:00.000Z`,
+    ) - IST_OFFSET_MS,
+  );
+
+  const totals = new Map<string, number>();
+
+  try {
+    const grouped = await aggregateGroupByDuration({
+      recordType: 'ExerciseSession',
+      timeRangeFilter: {
+        operator: 'between',
+        startTime: start.toISOString(),
+        endTime: end.toISOString(),
+      },
+      timeRangeSlicer: { duration: 'DAYS', length: 1 },
+    });
+    grouped.forEach(group => {
+      const key = istDateKey(group.startTime);
+      const minutes = Math.round(
+        (group.result.EXERCISE_DURATION_TOTAL?.inSeconds || 0) / 60,
+      );
+      totals.set(key, (totals.get(key) || 0) + minutes);
+    });
+  } catch (err) {
+    console.warn('[HealthConnect] aggregateGroupByDuration ExerciseSession error:', err);
+  }
+
+  const hasAggregated = Array.from(totals.values()).some(v => v > 0);
+  if (!hasAggregated) {
+    try {
+      const records = await readRecords('ExerciseSession', {
+        timeRangeFilter: {
+          operator: 'between',
+          startTime: start.toISOString(),
+          endTime: end.toISOString(),
+        },
+      });
+      records.records.forEach(rec => {
+        const key = istDateKey(rec.startTime);
+        const durationMins = Math.max(
+          0,
+          Math.round(
+            (Date.parse(rec.endTime) - Date.parse(rec.startTime)) / 60000,
+          ),
+        );
+        totals.set(key, (totals.get(key) || 0) + durationMins);
+      });
+    } catch (readErr) {
+      console.warn('[HealthConnect] readRecords ExerciseSession error:', readErr);
+    }
+  }
+
+  return Array.from({ length: range ? rangeDays : days }, (_, index) => {
+    const key = shiftDateKey(firstDay, index);
+    return {
+      date: key,
+      value: totals.get(key) || 0,
+      count: 0,
+      unit: 'minutes' as const,
     };
   });
 };

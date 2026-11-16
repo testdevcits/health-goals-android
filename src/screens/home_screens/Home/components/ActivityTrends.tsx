@@ -15,7 +15,11 @@ import {
   recentIstDates,
   recentHealthDayLabels,
 } from '../../../../utils/healthDates';
-import { readStepsHistory } from '../../../../services/healthConnect';
+import {
+  readActiveMinutesHistory,
+  readSleepHistory,
+  readStepsHistory,
+} from '../../../../services/healthConnect';
 import { fetchHealthTrend } from '../../../../services/healthTrends';
 import { storageService } from '../../../../storage/storageService';
 
@@ -71,43 +75,107 @@ const ActivityTrends: React.FC<{
   const styles = createHomeStyles(theme);
   const [activeTab, setActiveTab] = useState<TrendTab>('Steps');
   const [trendData, setTrendData] = useState(() => {
-    return storageService.getObject<typeof TREND_DATA>(CACHE_KEY_TREND_DATA) || TREND_DATA;
+    return (
+      storageService.getObject<typeof TREND_DATA>(CACHE_KEY_TREND_DATA) ||
+      TREND_DATA
+    );
   });
-  const [loading, setLoading] = useState(() => {
-    const cached = storageService.getObject<typeof TREND_DATA>(CACHE_KEY_TREND_DATA);
-    return !cached || !cached.Steps?.bars.some(v => v !== null && v > 0);
-  });
-  const [hasData, setHasData] = useState(() => {
-    const cached = storageService.getObject<typeof TREND_DATA>(CACHE_KEY_TREND_DATA);
-    return Boolean(cached && cached.Steps?.bars.some(v => v !== null && v > 0));
-  });
+  const [loading, setLoading] = useState(false);
   const [loadError, setLoadError] = useState('');
   const [reloadKey, setReloadKey] = useState(0);
   const isFocused = useIsFocused();
+
+  const activeTrendData = trendData[activeTab];
+  const hasData = activeTrendData.bars.some(
+    value => value !== null && value > 0,
+  );
+
   React.useEffect(() => {
     if (!isFocused) return;
     let active = true;
-    if (!storageService.getObject<typeof TREND_DATA>(CACHE_KEY_TREND_DATA)) {
+    const currentCached =
+      storageService.getObject<typeof TREND_DATA>(CACHE_KEY_TREND_DATA);
+    const hasCachedData = currentCached?.[activeTab]?.bars.some(
+      v => v !== null && v > 0,
+    );
+    if (!hasCachedData) {
       setLoading(true);
     }
     setLoadError('');
+
     const load = async () => {
       const dates = recentIstDates();
-      const metricType =
-        activeTab === 'Steps'
-          ? 'steps'
-          : activeTab === 'Sleep'
-          ? 'sleep'
-          : 'active_minutes';
-      const history: { date: string; value: number | null }[] =
-        activeTab === 'Steps'
-          ? (await readStepsHistory(7)).map(item => ({
+      let history: { date: string; value: number | null }[] = [];
+
+      try {
+        if (activeTab === 'Steps') {
+          const hcSteps = await readStepsHistory(7);
+          if (hcSteps.length && hcSteps.some(item => item.value > 0)) {
+            history = hcSteps.map(item => ({
               date: item.date,
               value: item.value,
-            }))
-          : (
-              await fetchHealthTrend(metricType, dates[0], dates[dates.length - 1])
-            ).series;
+            }));
+          } else {
+            const res = await fetchHealthTrend(
+              'steps',
+              dates[0],
+              dates[dates.length - 1],
+            );
+            history = res.series;
+          }
+        } else if (activeTab === 'Sleep') {
+          const hcSleep = await readSleepHistory(7);
+          if (hcSleep.length && hcSleep.some(item => item.value > 0)) {
+            history = hcSleep.map(item => ({
+              date: item.date,
+              value: item.value,
+            }));
+          } else {
+            const res = await fetchHealthTrend(
+              'sleep',
+              dates[0],
+              dates[dates.length - 1],
+            );
+            history = res.series;
+          }
+        } else {
+          const hcActive = await readActiveMinutesHistory(7);
+          if (hcActive.length && hcActive.some(item => item.value > 0)) {
+            history = hcActive.map(item => ({
+              date: item.date,
+              value: item.value,
+            }));
+          } else {
+            const res = await fetchHealthTrend(
+              'active_minutes',
+              dates[0],
+              dates[dates.length - 1],
+            );
+            history = res.series;
+          }
+        }
+      } catch {
+        if (activeTab === 'Steps') {
+          const fallback = await readStepsHistory(7).catch(() => []);
+          history = fallback.map(item => ({
+            date: item.date,
+            value: item.value,
+          }));
+        } else if (activeTab === 'Sleep') {
+          const fallback = await readSleepHistory(7).catch(() => []);
+          history = fallback.map(item => ({
+            date: item.date,
+            value: item.value,
+          }));
+        } else {
+          const fallback = await readActiveMinutesHistory(7).catch(() => []);
+          history = fallback.map(item => ({
+            date: item.date,
+            value: item.value,
+          }));
+        }
+      }
+
       if (!active) return;
       const byDate = new Map(history.map(row => [row.date, row.value]));
       const values = dates.map(date =>
@@ -116,12 +184,34 @@ const ActivityTrends: React.FC<{
       const observedValues = values.filter(
         (value): value is number => value !== null,
       );
-      if (!observedValues.length) {
+      const hasAnyNonZero = observedValues.some(value => value > 0);
+
+      if (!observedValues.length || !hasAnyNonZero) {
+        setTrendData(current => {
+          const updated = {
+            ...current,
+            [activeTab]: {
+              ...current[activeTab],
+              bars: values,
+            },
+          };
+          storageService.setObject(CACHE_KEY_TREND_DATA, updated);
+          return updated;
+        });
         setLoading(false);
         return;
       }
+
       const sum = observedValues.reduce((total, value) => total + value, 0);
       const average = Math.round(sum / observedValues.length);
+      const positiveSleep = observedValues.filter(value => value > 0);
+      const lowestSleep = positiveSleep.length ? Math.min(...positiveSleep) : 0;
+      const qualityScore = Math.round(
+        (observedValues.filter(value => value >= 420).length /
+          observedValues.length) *
+          100,
+      );
+
       setTrendData(current => {
         const updated = {
           ...current,
@@ -148,9 +238,9 @@ const ActivityTrends: React.FC<{
                       )}m`,
                       label: 'Avg Sleep',
                     },
-                    { value: '—', label: 'Quality' },
+                    { value: `${qualityScore}%`, label: 'Quality' },
                     {
-                      value: `${(Math.min(...observedValues) / 60).toFixed(1)}h`,
+                      value: `${(lowestSleep / 60).toFixed(1)}h`,
                       label: 'Lowest',
                     },
                   ]
@@ -169,8 +259,8 @@ const ActivityTrends: React.FC<{
         storageService.setObject(CACHE_KEY_TREND_DATA, updated);
         return updated;
       });
-      setHasData(true);
     };
+
     load()
       .catch(error => {
         if (active)
@@ -183,11 +273,11 @@ const ActivityTrends: React.FC<{
       .finally(() => {
         if (active) setLoading(false);
       });
+
     return () => {
       active = false;
     };
   }, [activeTab, healthRefreshKey, isFocused, reloadKey]);
-  const activeTrendData = trendData[activeTab];
 
   return (
     <>

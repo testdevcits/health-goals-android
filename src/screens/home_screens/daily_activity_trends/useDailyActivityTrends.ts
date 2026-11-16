@@ -7,7 +7,10 @@ import { getCurrentUser } from '../../../services/profile';
 import { apiErrorMessage } from '../../../services/api';
 import { showAppToast } from '../../../utils/appToast';
 import { recentIstDates } from '../../../utils/healthDates';
-import { readStepsHistory } from '../../../services/healthConnect';
+import {
+  readSleepHistory,
+  readStepsHistory,
+} from '../../../services/healthConnect';
 import { fetchHealthTrend } from '../../../services/healthTrends';
 import { trendData as initialTrendData } from './trendData';
 import type { TrendMetric } from './trendData';
@@ -53,6 +56,21 @@ export default function useDailyActivityTrends() {
             ? readStepsHistory(7).then(history =>
                 history.map(item => ({ date: item.date, value: item.value })),
               )
+            : activeMetric === 'Sleep'
+            ? readSleepHistory(7).then(async history => {
+                if (history.length && history.some(item => item.value > 0)) {
+                  return history.map(item => ({
+                    date: item.date,
+                    value: item.value,
+                  }));
+                }
+                const res = await fetchHealthTrend(
+                  'sleep',
+                  dates[0],
+                  dates[dates.length - 1],
+                );
+                return res.series;
+              })
             : activeMetric === 'Stress'
             ? Promise.reject(
                 new Error(
@@ -93,11 +111,19 @@ export default function useDailyActivityTrends() {
           const values = barsByDate.filter(
             (value): value is number => value !== null,
           );
-          if (!values.length) return;
+          const hasAnyNonZero = values.some(value => value > 0);
+          if (!values.length || !hasAnyNonZero) {
+            setHasData(false);
+            return;
+          }
           const average = Math.round(
             values.reduce((sum, value) => sum + value, 0) / values.length,
           );
           const total = values.reduce((sum, value) => sum + value, 0);
+          const positiveValues = values.filter(value => value > 0);
+          const lowestObserved = positiveValues.length
+            ? Math.min(...positiveValues)
+            : 0;
           const savedGoal =
             goalResult.status === 'fulfilled'
               ? goalResult.value.healthGoals?.[metricTypes[activeMetric]]
@@ -153,10 +179,10 @@ export default function useDailyActivityTrends() {
                         label: 'Longest day',
                       },
                       {
-                        value: `${(Math.min(...values) / 60).toFixed(1)}h`,
+                        value: `${(lowestObserved / 60).toFixed(1)}h`,
                         label: 'Shortest day',
                       },
-                      { value: String(values.length), label: 'Days synced' },
+                      { value: String(positiveValues.length), label: 'Days synced' },
                     ]
                   : [
                       { value: averageLabel, label: 'Daily avg' },
@@ -165,13 +191,13 @@ export default function useDailyActivityTrends() {
                         label: 'Highest daily avg',
                       },
                       {
-                        value: String(Math.min(...values)),
+                        value: String(lowestObserved),
                         label: 'Lowest daily avg',
                       },
-                      { value: String(values.length), label: 'Days synced' },
+                      { value: String(positiveValues.length), label: 'Days synced' },
                     ],
               insight: `${
-                values.length
+                positiveValues.length
               } synced ${activeMetric.toLowerCase()} daily records in the last 7 days. Your average is ${averageLabel}.`,
             },
           }));
