@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "572010941912",
+    "project_id": "vitality",
+    "storage_bucket": "vitality.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:572010941912:android:b46ff6b4aa2ecfdf4976ad",
+        "android_client_info": {
+          "package_name": "com.vitality"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "572010941912-u4j9f34ggodplmf060fepvnqv6k532s1.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.vitality",
+            "certificate_hash": "5e8f16062ea3cd2c4a0d547876baa6f38cabf625"
+          }
+        },
+        {
+          "client_id": "572010941912-8o2qmpdducgt69senfsfeol8jrfva0op.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAjV643Td-Q1e8FlFuh-g_epQJgvNyrr3k"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "572010941912-8o2qmpdducgt69senfsfeol8jrfva0op.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
