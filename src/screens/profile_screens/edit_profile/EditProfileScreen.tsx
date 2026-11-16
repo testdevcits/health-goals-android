@@ -1,15 +1,7 @@
 import React from 'react';
+import { ScrollView, View } from 'react-native';
 import {
-  ActivityIndicator,
-  Image,
-  Modal,
-  Pressable,
-  ScrollView,
-  StyleSheet,
-  View,
-} from 'react-native';
-import { Calendar } from 'react-native-calendars';
-import {
+  AestheticRulerPickerModal,
   AppButton,
   AppErrorView,
   AppHeader,
@@ -17,21 +9,21 @@ import {
   AppLoader,
   AppSelect,
   AppText,
-  AestheticRulerPickerModal,
 } from '../../../components';
-import { ProfileScreenNavigation } from '../components/ProfileScreenLayout';
-import { radius } from '../../../theme/radius';
 import { useTheme } from '../../../theme/useTheme';
+import type { ProfileScreenNavigation } from '../components/ProfileScreenLayout';
+import {
+  AvatarUploader,
+  BirthDateCalendarModal,
+  BirthDateField,
+  HeightWeightFieldRow,
+} from './components';
 import createStyles from './styles.EditProfile';
 import useEditProfile, {
-  calendarStringToBirthDate,
-  getMaxBirthDateCalendarString,
   isAtLeast18,
   isValidHeight,
   isValidWeight,
 } from './useEditProfile';
-import { showAppToast } from '../../../utils/appToast';
-import AppIcon from '../../../assets/appicon/AppIcon';
 
 const EditProfileScreen: React.FC<{ navigation: ProfileScreenNavigation }> = ({
   navigation,
@@ -93,55 +85,13 @@ const EditProfileScreen: React.FC<{ navigation: ProfileScreenNavigation }> = ({
       ) : (
         <ScrollView contentContainerStyle={{ flexGrow: 1, paddingBottom: 100 }}>
           <View style={styles.form}>
-            <View style={styles.profileImageContainer}>
-              {profileImage || profileImageUrl ? (
-                <Image
-                  source={{ uri: profileImage || profileImageUrl }}
-                  style={[styles.profileImage, { borderRadius: radius.full }]}
-                  resizeMode="cover"
-                />
-              ) : (
-                <View
-                  style={[
-                    styles.profileImage,
-                    {
-                      borderRadius: radius.full,
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      backgroundColor: colors.surfaceElevated,
-                    },
-                  ]}
-                >
-                  <AppIcon
-                    name="UserRound"
-                    size={42}
-                    color={colors.textSecondary}
-                  />
-                </View>
-              )}
+            <AvatarUploader
+              profileImage={profileImage}
+              profileImageUrl={profileImageUrl}
+              imageBusy={imageBusy}
+              onChooseImage={handleChooseImage}
+            />
 
-              <Pressable
-                onPress={handleChooseImage}
-                style={[
-                  styles.cameraButton,
-                  imageBusy && { opacity: 0.6 },
-                ]}
-                hitSlop={8}
-                disabled={imageBusy}
-                accessibilityState={{ busy: imageBusy }}
-              >
-                {imageBusy ? (
-                  <ActivityIndicator size="small" color={colors.primary} />
-                ) : (
-                  <AppIcon
-                    name="Camera"
-                    size={16}
-                    color={colors.textPrimary}
-                    strokeWidth={2}
-                  />
-                )}
-              </Pressable>
-            </View>
             <AppInput label="Full Name" value={name} onChangeText={setName} />
             <AppInput
               label="Email"
@@ -150,6 +100,7 @@ const EditProfileScreen: React.FC<{ navigation: ProfileScreenNavigation }> = ({
               keyboardType="email-address"
               autoCapitalize="none"
             />
+
             <View style={styles.field}>
               <AppText variant="label" secondary mb={6}>
                 Gender
@@ -165,6 +116,7 @@ const EditProfileScreen: React.FC<{ navigation: ProfileScreenNavigation }> = ({
                 ]}
               />
             </View>
+
             <AppInput
               label="Phone number"
               value={phone}
@@ -179,133 +131,22 @@ const EditProfileScreen: React.FC<{ navigation: ProfileScreenNavigation }> = ({
                   : undefined
               }
             />
-            <View style={[styles.twoColumns, styles.field]}>
-              <View style={styles.column}>
-                <AppText variant="label" secondary mb={6}>
-                  Height (cm)
-                </AppText>
-                <Pressable
-                  onPress={() => setIsHeightPickerVisible(true)}
-                  style={[
-                    styles.pickerField,
-                    {
-                      backgroundColor: colors.inputBg,
-                      borderColor: isInvalidHeight
-                        ? colors.error
-                        : colors.inputBorder,
-                    },
-                  ]}
-                  accessibilityRole="button"
-                  accessibilityLabel={
-                    height ? `Height, ${height} centimeters` : 'Select height'
-                  }
-                >
-                  <AppText
-                    variant="body2"
-                    color={height ? 'textPrimary' : 'textTertiary'}
-                  >
-                    {height ? `${height} cm` : 'Select height'}
-                  </AppText>
-                  <AppIcon
-                    name="ChevronDown"
-                    size={18}
-                    color={colors.textSecondary}
-                  />
-                </Pressable>
-                {isInvalidHeight ? (
-                  <AppText variant="caption" error mt={4}>
-                    Height must be 50–300 cm
-                  </AppText>
-                ) : null}
-              </View>
 
-              <View style={styles.column}>
-                <AppText variant="label" secondary mb={6}>
-                  Weight (kg)
-                </AppText>
-                <Pressable
-                  onPress={() => setIsWeightPickerVisible(true)}
-                  style={[
-                    styles.pickerField,
-                    {
-                      backgroundColor: colors.inputBg,
-                      borderColor: isInvalidWeight
-                        ? colors.error
-                        : colors.inputBorder,
-                    },
-                  ]}
-                  accessibilityRole="button"
-                  accessibilityLabel={
-                    weight ? `Weight, ${weight} kilograms` : 'Select weight'
-                  }
-                >
-                  <AppText
-                    variant="body2"
-                    color={weight ? 'textPrimary' : 'textTertiary'}
-                  >
-                    {weight ? `${weight} kg` : 'Select weight'}
-                  </AppText>
-                  <AppIcon
-                    name="ChevronDown"
-                    size={18}
-                    color={colors.textSecondary}
-                  />
-                </Pressable>
-                {isInvalidWeight ? (
-                  <AppText variant="caption" error mt={4}>
-                    Weight must be 20–500 kg
-                  </AppText>
-                ) : null}
-              </View>
-            </View>
-            <View style={styles.field}>
-              <AppText variant="label" secondary mb={6}>
-                Date of Birth
-              </AppText>
-              <Pressable
-                onPress={() => setIsCalendarVisible(true)}
-                style={[
-                  styles.dateField,
-                  {
-                    backgroundColor: colors.inputBg,
-                    borderColor: isInvalidBirthDate
-                      ? colors.error
-                      : colors.inputBorder,
-                  },
-                ]}
-                accessibilityRole="button"
-                accessibilityLabel={
-                  birthDate
-                    ? `Date of birth, ${birthDate}`
-                    : 'Choose date of birth'
-                }
-              >
-                <AppText
-                  variant="body2"
-                  color={
-                    birthDate
-                      ? isInvalidBirthDate
-                        ? 'error'
-                        : 'textPrimary'
-                      : 'textTertiary'
-                  }
-                >
-                  {birthDate || 'Select date of birth'}
-                </AppText>
-                <AppIcon
-                  name="Calendar"
-                  size={18}
-                  color={
-                    isInvalidBirthDate ? colors.error : colors.textSecondary
-                  }
-                />
-              </Pressable>
-              {isInvalidBirthDate ? (
-                <AppText variant="caption" error mt={4}>
-                  You must be at least 18 years old
-                </AppText>
-              ) : null}
-            </View>
+            <HeightWeightFieldRow
+              height={height}
+              weight={weight}
+              isInvalidHeight={isInvalidHeight}
+              isInvalidWeight={isInvalidWeight}
+              onOpenHeightPicker={() => setIsHeightPickerVisible(true)}
+              onOpenWeightPicker={() => setIsWeightPickerVisible(true)}
+            />
+
+            <BirthDateField
+              birthDate={birthDate}
+              isInvalidBirthDate={isInvalidBirthDate}
+              onOpenCalendar={() => setIsCalendarVisible(true)}
+            />
+
             <View style={styles.field}>
               <AppText variant="label" secondary mb={6}>
                 Primary Goal
@@ -321,6 +162,7 @@ const EditProfileScreen: React.FC<{ navigation: ProfileScreenNavigation }> = ({
                 ]}
               />
             </View>
+
             <AppButton
               title="Save Changes"
               onPress={() => saveProfile()}
@@ -336,74 +178,14 @@ const EditProfileScreen: React.FC<{ navigation: ProfileScreenNavigation }> = ({
           </View>
         </ScrollView>
       )}
-      <Modal
+
+      <BirthDateCalendarModal
         visible={isCalendarVisible}
-        transparent
-        animationType="fade"
-        onRequestClose={() => setIsCalendarVisible(false)}
-      >
-        <View style={styles.calendarOverlay}>
-          <Pressable
-            style={StyleSheet.absoluteFill}
-            onPress={() => setIsCalendarVisible(false)}
-            accessibilityLabel="Close date picker"
-          />
-          <View
-            style={[styles.calendarCard, { backgroundColor: colors.surface }]}
-          >
-            <AppText variant="h3" style={styles.calendarTitle}>
-              Date of Birth
-            </AppText>
-            <Calendar
-              current={selectedBirthDate || getMaxBirthDateCalendarString()}
-              maxDate={getMaxBirthDateCalendarString()}
-              minDate="1900-01-01"
-              markedDates={{
-                ...(selectedBirthDate
-                  ? {
-                    [selectedBirthDate]: {
-                      selected: true,
-                      selectedColor: colors.primary,
-                    },
-                  }
-                  : {}),
-              }}
-              onDayPress={day => {
-                const formatted = calendarStringToBirthDate(day.dateString);
-                if (!isAtLeast18(formatted)) {
-                  showAppToast(
-                    'error',
-                    'Invalid date of birth',
-                    'You must be at least 18 years old.',
-                  );
-                  return;
-                }
-                setBirthDate(formatted);
-                setIsCalendarVisible(false);
-              }}
-              theme={{
-                backgroundColor: colors.surface,
-                calendarBackground: colors.surface,
-                textSectionTitleColor: colors.textSecondary,
-                selectedDayBackgroundColor: colors.primary,
-                selectedDayTextColor: colors.white,
-                todayTextColor: colors.primary,
-                dayTextColor: colors.textPrimary,
-                textDisabledColor: colors.textTertiary,
-                monthTextColor: colors.textPrimary,
-                arrowColor: colors.primary,
-              }}
-              enableSwipeMonths
-            />
-            <AppButton
-              title="Close"
-              variant="outline"
-              onPress={() => setIsCalendarVisible(false)}
-              style={styles.calendarCloseButton}
-            />
-          </View>
-        </View>
-      </Modal>
+        selectedBirthDate={selectedBirthDate}
+        onSelectBirthDate={setBirthDate}
+        onClose={() => setIsCalendarVisible(false)}
+      />
+
       <AestheticRulerPickerModal
         visible={isHeightPickerVisible}
         mode="height"
@@ -413,6 +195,7 @@ const EditProfileScreen: React.FC<{ navigation: ProfileScreenNavigation }> = ({
         onSelect={setHeight}
         onClose={() => setIsHeightPickerVisible(false)}
       />
+
       <AestheticRulerPickerModal
         visible={isWeightPickerVisible}
         mode="weight"

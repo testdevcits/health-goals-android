@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
-import { View, ScrollView, Pressable, Modal, ActivityIndicator } from 'react-native';
+import { ScrollView, View } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
-
 import { useTheme } from '../../../theme/useTheme';
 import {
   AppEmptyState,
@@ -9,20 +8,19 @@ import {
   AppHeader,
   AppLoader,
   AppText,
-  AppInput,
-  AppButton,
 } from '../../../components';
-import { createCardStyles, createStyles } from './styles.AllChallenges';
+import { createStyles } from './styles.AllChallenges';
 import useAllChallenges, {
-  challengeCategories,
   challengeGroupCategories,
-  type Challenge,
 } from './useAllChallenges';
 import AppIcon from '../../../assets/appicon/AppIcon';
 import { authenticatedRequest } from '../../../services/authenticatedApi';
 import { API_ENDPOINTS } from '../../../constants';
 import { apiErrorMessage } from '../../../services/api';
 import { showAppToast } from '../../../utils/appToast';
+import ChallengeCard from './components/ChallengeCard';
+import ChallengeCategoryFilter from './components/ChallengeCategoryFilter';
+import CreateStepChallengeModal from './components/CreateStepChallengeModal';
 
 interface AllChallengesScreenProps {
   onContinue?: (challengeId: string) => void;
@@ -56,17 +54,17 @@ const AllChallengesScreen: React.FC<AllChallengesScreenProps> = ({
   const challengeGroups =
     selectedCategory === 'All'
       ? challengeGroupCategories.map(category => ({
-        category,
-        challenges: filteredChallenges.filter(
-          challenge => challenge?.category === category,
-        ),
-      }))
+          category,
+          challenges: filteredChallenges.filter(
+            challenge => challenge?.category === category,
+          ),
+        }))
       : [
-        {
-          category: selectedCategory,
-          challenges: filteredChallenges,
-        },
-      ];
+          {
+            category: selectedCategory,
+            challenges: filteredChallenges,
+          },
+        ];
 
   const createChallenge = async () => {
     const targetValue = Number(createTarget);
@@ -109,64 +107,24 @@ const AllChallengesScreen: React.FC<AllChallengesScreenProps> = ({
   };
 
   return (
-    <View style={[styles.container]}>
-      {/* Screen header */}
-
+    <View style={styles.container}>
       <AppHeader
         title="All Challenges"
-        subtitle={'Browse and join new challenges'}
+        subtitle="Browse and join new challenges"
         onBackPress={() => navigation.goBack()}
       />
 
-      {/* Category filter and challenge list */}
       <ScrollView
         showsVerticalScrollIndicator={false}
         contentContainerStyle={styles.scrollContent}
       >
-        {/* {!loading && !loadError ? (
-          <Pressable
-            onPress={() => setCreateVisible(true)}
-            style={styles.createChallengeLink}
-          >
-            <AppText variant="label" primary bold>
-              + Create challenge
-            </AppText>
-          </Pressable>
-        ) : null} */}
         {!loading && !loadError ? (
-          <View style={styles.categoryContainer}>
-            {challengeCategories.map(category => {
-              const isSelected = selectedCategory === category;
-
-              return (
-                <Pressable
-                  key={category}
-                  onPress={() => setSelectedCategory(category)}
-                  accessibilityRole="tab"
-                  accessibilityState={{
-                    selected: isSelected,
-                  }}
-                  style={[
-                    styles.categoryTab,
-                    isSelected && styles.selectedCategoryTab,
-                  ]}
-                >
-                  <AppText
-                    variant="label"
-                    center
-                    style={{
-                      color: isSelected
-                        ? colors.textPrimary
-                        : colors.textSecondary,
-                    }}
-                    medium={isSelected}
-                  >
-                    {category}
-                  </AppText>
-                </Pressable>
-              );
-            })}
-          </View>
+          <ChallengeCategoryFilter
+            selectedCategory={selectedCategory}
+            onSelectCategory={setSelectedCategory}
+            styles={styles}
+            colors={colors}
+          />
         ) : null}
 
         <View style={styles.challengeList}>
@@ -189,7 +147,9 @@ const AllChallengesScreen: React.FC<AllChallengesScreenProps> = ({
                     </AppText>
                     <AppText variant="caption" secondary>
                       {group.challenges.length}{' '}
-                      {group.challenges.length === 1 ? 'challenge' : 'challenges'}
+                      {group.challenges.length === 1
+                        ? 'challenge'
+                        : 'challenges'}
                     </AppText>
                   </View>
                 ) : null}
@@ -232,131 +192,20 @@ const AllChallengesScreen: React.FC<AllChallengesScreenProps> = ({
           )}
         </View>
       </ScrollView>
-      <Modal
+
+      <CreateStepChallengeModal
         visible={createVisible}
-        transparent
-        animationType="slide"
-        onRequestClose={() => setCreateVisible(false)}
-      >
-        <View style={styles.createModalOverlay}>
-          <View style={styles.createModalSheet}>
-            <AppText variant="h3" bold mb={12}>
-              Create a steps challenge
-            </AppText>
-            <AppInput
-              label="Title"
-              value={createTitle}
-              onChangeText={setCreateTitle}
-              maxLength={80}
-            />
-            <AppInput
-              label="Description"
-              value={createDescription}
-              onChangeText={setCreateDescription}
-              maxLength={240}
-            />
-            <AppInput
-              label="Target steps"
-              value={createTarget}
-              onChangeText={setCreateTarget}
-              keyboardType="numeric"
-            />
-            <AppButton
-              title="Create challenge"
-              onPress={createChallenge}
-              loading={creating}
-              disabled={creating}
-            />
-            <AppButton
-              title="Cancel"
-              variant="outline"
-              onPress={() => setCreateVisible(false)}
-              style={styles.cancelCreateButton}
-            />
-          </View>
-        </View>
-      </Modal>
-    </View>
-  );
-};
-
-interface ChallengeCardProps {
-  challenge: Challenge;
-  isJoining?: boolean;
-  onContinue?: (challengeId: string) => void;
-  colors: any;
-  spacing: any;
-  radius: any;
-}
-
-const ChallengeCard: React.FC<ChallengeCardProps> = ({
-  challenge,
-  isJoining = false,
-  onContinue,
-  colors,
-  spacing,
-  radius,
-}) => {
-  const styles = createCardStyles(colors, spacing, radius);
-
-  return (
-    <View style={[styles.card, { borderLeftColor: challenge?.color }]}>
-      {/* Title and status */}
-      <View style={styles.titleRow}>
-        <View style={styles.titleContent}>
-          <AppText style={styles.emoji}>{challenge?.emoji}</AppText>
-
-          <AppText variant="subtitle2" style={styles.title} numberOfLines={2}>
-            {challenge?.title}
-          </AppText>
-        </View>
-
-        <View
-          style={[
-            styles.statusBadge,
-            {
-              backgroundColor: `${challenge?.color}20`,
-            },
-          ]}
-        >
-          <AppText variant="caption" style={{ color: challenge?.color }} bold>
-            {challenge?.status}
-          </AppText>
-        </View>
-      </View>
-
-      {/* Continue action */}
-      <Pressable
-        accessibilityRole="button"
-        onPress={() =>
-          !isJoining &&
-          !challenge?.joined &&
-          challenge?.joinable &&
-          onContinue?.(challenge?.id)
-        }
-        disabled={isJoining || challenge?.joined || !challenge?.joinable}
-        style={[
-          styles.continueButton,
-          {
-            backgroundColor:
-              challenge?.joined || !challenge?.joinable
-                ? colors.textTertiary
-                : colors.primary,
-          },
-        ]}
-      >
-        {isJoining ? (
-          <ActivityIndicator size="small" color={colors.white} />
-        ) : (
-          <AppText variant="buttonSm" color="white">
-            {challenge?.joined
-              ? 'Joined'
-              : challenge?.joinable
-                ? 'Join challenge'
-                : 'Not available'}
-          </AppText>
-        )}
-      </Pressable>
+        onClose={() => setCreateVisible(false)}
+        title={createTitle}
+        onChangeTitle={setCreateTitle}
+        description={createDescription}
+        onChangeDescription={setCreateDescription}
+        target={createTarget}
+        onChangeTarget={setCreateTarget}
+        creating={creating}
+        onSubmit={createChallenge}
+        styles={styles}
+      />
     </View>
   );
 };

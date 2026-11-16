@@ -9,57 +9,22 @@ import {
   StyleSheet,
   View,
 } from 'react-native';
+import AppIcon from '../../../../../assets/appicon/AppIcon';
 import { AppButton, AppInput, AppText } from '../../../../../components';
 import { useTheme } from '../../../../../theme/useTheme';
+import {
+  ChallengeOverviewCard,
+  DurationSelector,
+  GoalPresetsSelector,
+  METRIC_TYPE_OPTIONS,
+  MetricTypeOption,
+  MetricTypeSelector,
+  RewardPointsSelector,
+} from './components';
 import createChallengeModalStyles from './styles.CreateChallengeModal';
-import AppIcon from '../../../../../assets/appicon/AppIcon';
-import { DURATION_OPTIONS } from '../../constants';
 
-export interface MetricTypeOption {
-  id: string;
-  label: string;
-  icon: 'Footprints' | 'MapPin' | 'HeartPulse' | 'Clock';
-  unit: string;
-  defaultGoal: string;
-  presets: string[];
-}
-
-export const METRIC_TYPE_OPTIONS: MetricTypeOption[] = [
-  {
-    id: 'steps',
-    label: 'Steps',
-    icon: 'Footprints',
-    unit: 'steps',
-    defaultGoal: '10000',
-    presets: ['5000', '10000', '15000', '20000'],
-  },
-  {
-    id: 'distance',
-    label: 'Distance',
-    icon: 'MapPin',
-    unit: 'km',
-    defaultGoal: '5',
-    presets: ['3', '5', '10', '21'],
-  },
-  {
-    id: 'calories',
-    label: 'Calories',
-    icon: 'HeartPulse',
-    unit: 'kcal',
-    defaultGoal: '500',
-    presets: ['300', '500', '750', '1000'],
-  },
-  {
-    id: 'active_minutes',
-    label: 'Active Mins',
-    icon: 'Clock',
-    unit: 'mins',
-    defaultGoal: '30',
-    presets: ['30', '45', '60', '90'],
-  },
-];
-
-const REWARD_PRESETS = ['0', '50', '100', '250'];
+export type { MetricTypeOption };
+export { METRIC_TYPE_OPTIONS };
 
 interface Props {
   visible: boolean;
@@ -195,16 +160,18 @@ export const CreateChallengeModal: React.FC<Props> = memo(
       onClose();
     };
 
-    const days = Number.parseInt(duration, 10) || 7;
-    const endsDate = new Date(Date.now() + days * 86400000);
-    const endsDateFormatted = endsDate.toLocaleDateString('en-US', {
-      month: 'short',
-      day: 'numeric',
-      year: 'numeric',
-    });
+    const handleSelectMetric = (metric: MetricTypeOption) => {
+      onChangeMetricType?.(metric.id);
+      if (!challengeGoal || currentMetric.presets.includes(challengeGoal)) {
+        onChangeGoal(metric.defaultGoal);
+      }
+      if (goalError) setGoalError('');
+    };
 
-    const parsedTarget = Number(challengeGoal.replace(/[^0-9.]/g, '')) || 0;
-    const parsedReward = Number(rewardPoints) || 0;
+    const handleSelectPreset = (preset: string) => {
+      onChangeGoal(preset);
+      if (goalError) setGoalError('');
+    };
 
     return (
       <Modal
@@ -257,52 +224,13 @@ export const CreateChallengeModal: React.FC<Props> = memo(
                   </Pressable>
                 </View>
 
-                {/* Metric Type Field (metricType) */}
-                <AppText variant="label" secondary style={styles.fieldLabel}>
-                  Metric Type (metricType) *
-                </AppText>
-                <View style={styles.metricPillsRow}>
-                  {METRIC_TYPE_OPTIONS.map(metric => {
-                    const isSelected = (metricType || 'steps') === metric.id;
-                    return (
-                      <Pressable
-                        key={metric.id}
-                        accessibilityRole="button"
-                        accessibilityLabel={`Select ${metric.label} metric`}
-                        accessibilityState={{ selected: isSelected }}
-                        onPress={() => {
-                          onChangeMetricType?.(metric.id);
-                          if (!challengeGoal || currentMetric.presets.includes(challengeGoal)) {
-                            onChangeGoal(metric.defaultGoal);
-                          }
-                          if (goalError) setGoalError('');
-                        }}
-                        style={[
-                          styles.metricPill,
-                          isSelected && styles.selectedMetricPill,
-                        ]}
-                      >
-                        <AppIcon
-                          name={metric.icon}
-                          size={15}
-                          color={
-                            isSelected ? colors.primary : colors.textSecondary
-                          }
-                        />
-                        <AppText
-                          variant="caption"
-                          bold={isSelected}
-                          primary={isSelected}
-                          secondary={!isSelected}
-                        >
-                          {metric.label}
-                        </AppText>
-                      </Pressable>
-                    );
-                  })}
-                </View>
+                {/* Metric Type Field */}
+                <MetricTypeSelector
+                  selectedMetricId={metricType}
+                  onSelectMetric={handleSelectMetric}
+                />
 
-                {/* Challenge Title (title) */}
+                {/* Challenge Title */}
                 <AppText variant="label" secondary style={styles.fieldLabel}>
                   Challenge Title *
                 </AppText>
@@ -319,7 +247,7 @@ export const CreateChallengeModal: React.FC<Props> = memo(
                   error={nameError}
                 />
 
-                {/* Challenge Description (description) */}
+                {/* Challenge Description */}
                 <AppText variant="label" secondary style={styles.fieldLabel}>
                   Description (optional)
                 </AppText>
@@ -332,7 +260,7 @@ export const CreateChallengeModal: React.FC<Props> = memo(
                   multiline
                 />
 
-                {/* Target Value Goal (targetValue) */}
+                {/* Target Value Goal */}
                 <AppText variant="label" secondary style={styles.fieldLabel}>
                   Target {currentMetric.label} ({currentMetric.unit}) *
                 </AppText>
@@ -351,168 +279,32 @@ export const CreateChallengeModal: React.FC<Props> = memo(
                 />
 
                 {/* Target Quick Presets */}
-                <View style={styles.presetsRow}>
-                  {currentMetric.presets.map(preset => {
-                    const isSelected = challengeGoal === preset;
-                    return (
-                      <Pressable
-                        key={preset}
-                        onPress={() => {
-                          onChangeGoal(preset);
-                          if (goalError) setGoalError('');
-                        }}
-                        style={[
-                          styles.presetChip,
-                          isSelected && styles.selectedPresetChip,
-                        ]}
-                      >
-                        <AppText
-                          variant="caption"
-                          primary={isSelected}
-                          secondary={!isSelected}
-                          bold={isSelected}
-                        >
-                          {Number(preset).toLocaleString()} {currentMetric.unit}
-                        </AppText>
-                      </Pressable>
-                    );
-                  })}
-                </View>
-
-                {/* Challenge Duration (endsAt) */}
-                <AppText variant="label" secondary style={styles.fieldLabel}>
-                  Challenge Duration
-                </AppText>
-                <View style={styles.durationPillsRow}>
-                  {DURATION_OPTIONS.map(opt => {
-                    const isSelected = duration === opt;
-                    return (
-                      <Pressable
-                        key={opt}
-                        accessibilityRole="button"
-                        accessibilityLabel={`Select ${opt} duration`}
-                        accessibilityState={{ selected: isSelected }}
-                        onPress={() => {
-                          if (onSelectDuration) {
-                            onSelectDuration(opt);
-                          } else {
-                            onCycleDuration();
-                          }
-                        }}
-                        style={[
-                          styles.durationPill,
-                          isSelected && styles.selectedDurationPill,
-                        ]}
-                      >
-                        <AppIcon
-                          name="Clock"
-                          size={14}
-                          color={
-                            isSelected ? colors.primary : colors.textSecondary
-                          }
-                        />
-                        <AppText
-                          variant="caption"
-                          bold={isSelected}
-                          primary={isSelected}
-                          secondary={!isSelected}
-                        >
-                          {opt}
-                        </AppText>
-                      </Pressable>
-                    );
-                  })}
-                </View>
-                <AppText variant="caption" secondary style={styles.durationHelper}>
-                  Starts today, finishes on {endsDateFormatted}
-                </AppText>
-
-                {/* Reward Points (rewardPoints) */}
-                <AppText variant="label" secondary style={styles.fieldLabel}>
-                  Reward Points (Optional)
-                </AppText>
-                <AppInput
-                  value={rewardPoints}
-                  onChangeText={text =>
-                    onChangeRewardPoints?.(text.replace(/\D/g, ''))
-                  }
-                  placeholder="0"
-                  placeholderTextColor={colors.inputPlaceholder}
-                  keyboardType="number-pad"
-                  maxLength={6}
+                <GoalPresetsSelector
+                  currentMetric={currentMetric}
+                  selectedGoal={challengeGoal}
+                  onSelectPreset={handleSelectPreset}
                 />
 
-                {/* Reward Quick Presets */}
-                <View style={styles.presetsRow}>
-                  {REWARD_PRESETS.map(preset => {
-                    const isSelected = rewardPoints === preset;
-                    return (
-                      <Pressable
-                        key={preset}
-                        onPress={() => onChangeRewardPoints?.(preset)}
-                        style={[
-                          styles.presetChip,
-                          isSelected && styles.selectedPresetChip,
-                        ]}
-                      >
-                        <AppText
-                          variant="caption"
-                          primary={isSelected}
-                          secondary={!isSelected}
-                          bold={isSelected}
-                        >
-                          {preset === '0' ? 'No bonus' : `+${preset} pts`}
-                        </AppText>
-                      </Pressable>
-                    );
-                  })}
-                </View>
+                {/* Challenge Duration */}
+                <DurationSelector
+                  duration={duration}
+                  onSelectDuration={onSelectDuration}
+                  onCycleDuration={onCycleDuration}
+                />
+
+                {/* Reward Points */}
+                <RewardPointsSelector
+                  rewardPoints={rewardPoints}
+                  onChangeRewardPoints={onChangeRewardPoints}
+                />
 
                 {/* Challenge Summary Preview Card */}
-                <View style={styles.summaryCard}>
-                  <View style={styles.summaryHeader}>
-                    <AppIcon name="Trophy" size={17} color={colors.primary} />
-                    <AppText variant="subtitle2" bold>
-                      Challenge Overview
-                    </AppText>
-                  </View>
-                  <View style={styles.summaryGrid}>
-                    <View style={styles.summaryItem}>
-                      <AppText style={styles.summaryItemLabel}>
-                        Metric Type
-                      </AppText>
-                      <AppText style={styles.summaryItemValue}>
-                        {currentMetric.label}
-                      </AppText>
-                    </View>
-                    <View style={styles.summaryItem}>
-                      <AppText style={styles.summaryItemLabel}>
-                        Target Goal
-                      </AppText>
-                      <AppText style={styles.summaryItemValue}>
-                        {parsedTarget > 0
-                          ? `${parsedTarget.toLocaleString()} ${currentMetric.unit}`
-                          : '—'}
-                      </AppText>
-                    </View>
-                    <View style={styles.summaryItem}>
-                      <AppText style={styles.summaryItemLabel}>
-                        Duration
-                      </AppText>
-                      <AppText style={styles.summaryItemValue}>
-                        {duration}
-                      </AppText>
-                    </View>
-                    <View style={styles.summaryItem}>
-                      <AppText style={styles.summaryItemLabel}>
-                        Bonus Reward
-                      </AppText>
-                      <AppText style={styles.summaryItemValue}>
-                        {parsedReward > 0 ? `${parsedReward} pts` : 'None'}
-                      </AppText>
-                    </View>
-                  </View>
-                </View>
+                <ChallengeOverviewCard
+                  currentMetric={currentMetric}
+                  challengeGoal={challengeGoal}
+                  duration={duration}
+                  rewardPoints={rewardPoints}
+                />
 
                 {/* Submit Button */}
                 <AppButton

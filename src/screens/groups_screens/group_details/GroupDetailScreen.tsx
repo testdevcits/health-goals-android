@@ -17,17 +17,19 @@ import { EditGroupModal } from './components/edit_group_modal/EditGroupModal';
 import { MemberSearchModal } from './components/member_search_modal/MemberSearchModal';
 import { GroupDetailShimmer } from './components/group_detail_shimmer/GroupDetailShimmer';
 import {
-  AppButton,
+
   AppErrorView,
   AppHeader,
   AppText,
-  ConfirmationModal,
 } from '../../../components';
 import ChallengesTab from './components/challengestab/ChallengesTab';
 import type { RootStackParamList } from '../../../navigations/GroupsStack';
 // import { GroupChat } from './components/group_chats/GroupChat';
 import useGroupDetail, { type GroupUserSearchResult } from './useGroupDetail';
 import AppIcon from '../../../assets/appicon/AppIcon';
+import InviteMemberModal from './components/modals/InviteMemberModal';
+import ArchiveGroupModal from './components/modals/ArchiveGroupModal';
+import LeaveGroupModal from './components/modals/LeaveGroupModal';
 
 interface GroupDetailScreenProps {
   groupName?: string;
@@ -261,106 +263,52 @@ const GroupDetailScreen: React.FC<GroupDetailScreenProps> = ({
         onSelectUser={setPendingInviteUser}
       />
 
-      <ConfirmationModal
-        visible={pendingInviteUser !== null}
-        onClose={() => !memberAddLoading && setPendingInviteUser(null)}
-        title="Invite this member?"
-        message={
-          pendingInviteUser
-            ? `Add ${pendingInviteUser.name} (${pendingInviteUser.publicId}) to ${groupName}?`
-            : ''
-        }
-        position="bottom"
-      >
-        <View style={styles.modalActions}>
-          <AppButton
-            title="Cancel"
-            variant="ghost"
-            disabled={memberAddLoading}
-            onPress={() => setPendingInviteUser(null)}
-            style={styles.modalActionButton}
-          />
-          <AppButton
-            title="Invite member"
-            loading={memberAddLoading}
-            disabled={memberAddLoading || !pendingInviteUser}
-            onPress={async () => {
-              if (!pendingInviteUser) return;
-              const added = await addMember(pendingInviteUser);
-              if (added) setPendingInviteUser(null);
-            }}
-            style={styles.modalActionButton}
-          />
-        </View>
-      </ConfirmationModal>
+      <InviteMemberModal
+        user={pendingInviteUser}
+        groupName={groupName}
+        loading={memberAddLoading}
+        onClose={() => setPendingInviteUser(null)}
+        onInvite={async () => {
+          if (!pendingInviteUser) return;
+          const added = await addMember(pendingInviteUser);
+          if (added) setPendingInviteUser(null);
+        }}
+        styles={styles}
+      />
 
-      <ConfirmationModal
+      <ArchiveGroupModal
         visible={archiveModalVisible}
-        onClose={() => !archiveLoading && setArchiveModalVisible(false)}
-        title="Archive this group?"
-        message="The group will disappear from active groups, Discover, feeds, and leaderboards. Its messages and challenges will be retained, but the group cannot be restored in the app."
-        position="bottom"
-      >
-        <View style={styles.modalActions}>
-          <AppButton
-            title="Cancel"
-            variant="ghost"
-            disabled={archiveLoading}
-            onPress={() => setArchiveModalVisible(false)}
-            style={styles.modalActionButton}
-          />
-          <AppButton
-            title="Exit group"
-            loading={archiveLoading}
-            disabled={archiveLoading}
-            onPress={async () => {
-              setArchiveLoading(true);
-              try {
-                const archived = await archiveGroup();
-                setArchiveModalVisible(false);
-                if (archived) navigation.goBack();
-              } finally {
-                setArchiveLoading(false);
-              }
-            }}
-            style={[styles.modalActionButton, styles.destructiveButton]}
-          />
-        </View>
-      </ConfirmationModal>
+        loading={archiveLoading}
+        onClose={() => setArchiveModalVisible(false)}
+        onArchive={async () => {
+          setArchiveLoading(true);
+          try {
+            const archived = await archiveGroup();
+            setArchiveModalVisible(false);
+            if (archived) navigation.goBack();
+          } finally {
+            setArchiveLoading(false);
+          }
+        }}
+        styles={styles}
+      />
 
-      <ConfirmationModal
+      <LeaveGroupModal
         visible={leaveModalVisible}
-        onClose={() => !leaveLoading && setLeaveModalVisible(false)}
-        title="Leave this group?"
-        message="You will lose access to this group’s activity and chat."
-        position="bottom"
-      >
-        <View style={styles.modalActions}>
-          <AppButton
-            title="Cancel"
-            variant="ghost"
-            disabled={leaveLoading}
-            onPress={() => setLeaveModalVisible(false)}
-            style={styles.modalActionButton}
-          />
-          <AppButton
-            title="Leave group"
-            loading={leaveLoading}
-            disabled={leaveLoading}
-            onPress={async () => {
-              setLeaveLoading(true);
-              try {
-                const left = await leaveGroup();
-                setLeaveModalVisible(false);
-                if (left) navigation.goBack();
-              } finally {
-                setLeaveLoading(false);
-              }
-            }}
-            style={[styles.modalActionButton, styles.destructiveButton]}
-          />
-        </View>
-      </ConfirmationModal>
+        loading={leaveLoading}
+        onClose={() => setLeaveModalVisible(false)}
+        onLeave={async () => {
+          setLeaveLoading(true);
+          try {
+            const left = await leaveGroup();
+            setLeaveModalVisible(false);
+            if (left) navigation.goBack();
+          } finally {
+            setLeaveLoading(false);
+          }
+        }}
+        styles={styles}
+      />
     </View>
   );
 };
