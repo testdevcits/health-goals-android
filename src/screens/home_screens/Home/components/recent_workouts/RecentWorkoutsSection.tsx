@@ -2,18 +2,21 @@ import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   DeviceEventEmitter,
   Pressable,
-  StyleSheet,
   View,
 } from 'react-native';
 import { useIsFocused } from '@react-navigation/native';
-import { AppShimmer, AppText, SectionHeader } from '../../../../components';
-import AppIcon from '../../../../assets/appicon/AppIcon';
-import { useTheme } from '../../../../theme/useTheme';
+import { AppShimmer, AppText, SectionHeader } from '../../../../../components';
+import AppIcon from '../../../../../assets/appicon/AppIcon';
+import { useTheme } from '../../../../../theme/useTheme';
 import {
   fetchSyncedHealthRecords,
   type SyncedHealthRecord,
-} from '../../../../services/healthSync';
-import { getWorkoutActivity } from '../../workout_sessions/workoutActivities';
+} from '../../../../../services/healthSync';
+import { getWorkoutActivity } from '../../../workout_sessions/workoutActivities';
+import { storageService } from '../../../../../storage/storageService';
+import styles from './styles.RecentWorkoutsSection';
+
+const CACHE_KEY_SYNCED_RECORDS = 'cache_synced_health_records';
 
 interface RecentWorkoutsSectionProps {
   navigation: any;
@@ -151,11 +154,11 @@ const getRecordDetails = (record: SyncedHealthRecord) => {
     case 'calories':
       return { title: 'Calories Burned', emoji: '🔥', isWorkout: false };
     case 'distance':
-      return { title: 'Distance', emoji: '📍', isWorkout: false };
+      return { title: 'Distance Covered', emoji: '📍', isWorkout: false };
     case 'active_minutes':
       return { title: 'Active Minutes', emoji: '⚡', isWorkout: false };
     case 'sleep':
-      return { title: 'Sleep', emoji: '🌙', isWorkout: false };
+      return { title: 'Sleep Tracked', emoji: '🌙', isWorkout: false };
     case 'heart_rate':
       return { title: 'Heart Rate', emoji: '❤️', isWorkout: false };
     default:
@@ -193,6 +196,39 @@ const formatDailyStatValue = (
     default:
       return `${value} ${unit || ''}`.trim();
   }
+};
+
+const getActivityThemeColors = (
+  activityKey: string,
+  metricType: string,
+  themeColors: any,
+) => {
+  const key = `${activityKey}_${metricType}`.toLowerCase();
+  if (key.includes('run')) {
+    return { bg: themeColors.primaryLight || '#FFEDE8', accent: themeColors.primary };
+  }
+  if (key.includes('walk')) {
+    return { bg: '#E8F5E9', accent: '#2E7D32' };
+  }
+  if (key.includes('cycl')) {
+    return { bg: '#E1F5FE', accent: '#0288D1' };
+  }
+  if (key.includes('step')) {
+    return { bg: '#FFF8E1', accent: '#F59E0B' };
+  }
+  if (key.includes('calor')) {
+    return { bg: '#FFEBEE', accent: '#EF4444' };
+  }
+  if (key.includes('sleep')) {
+    return { bg: '#EDE7F6', accent: '#6366F1' };
+  }
+  if (key.includes('active')) {
+    return { bg: '#FFF3E0', accent: '#F97316' };
+  }
+  if (key.includes('dist')) {
+    return { bg: '#E0F7FA', accent: '#06B6D4' };
+  }
+  return { bg: themeColors.backgroundSecondary, accent: themeColors.primary };
 };
 
 const groupRecordsByActivityAndDate = (
@@ -285,8 +321,19 @@ const RecentWorkoutsSection: React.FC<RecentWorkoutsSectionProps> = ({
   const { theme } = useTheme();
   const { colors, radius } = theme;
   const isFocused = useIsFocused();
-  const [allRecords, setAllRecords] = useState<SyncedHealthRecord[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [allRecords, setAllRecords] = useState<SyncedHealthRecord[]>(() => {
+    return (
+      storageService.getObject<SyncedHealthRecord[]>(
+        CACHE_KEY_SYNCED_RECORDS,
+      ) || []
+    );
+  });
+  const [loading, setLoading] = useState<boolean>(() => {
+    const cached = storageService.getObject<SyncedHealthRecord[]>(
+      CACHE_KEY_SYNCED_RECORDS,
+    );
+    return !cached || cached.length === 0;
+  });
   const [activeTab, setActiveTab] = useState<FilterTab>('all');
   const [showAllItems, setShowAllItems] = useState(false);
   const [expandedCards, setExpandedCards] = useState<Record<string, boolean>>({});
@@ -300,9 +347,11 @@ const RecentWorkoutsSection: React.FC<RecentWorkoutsSectionProps> = ({
 
   const loadRecords = useCallback(async () => {
     try {
-      setLoading(true);
       const data = await fetchSyncedHealthRecords();
       setAllRecords(data);
+      if (data && data.length > 0) {
+        storageService.setObject(CACHE_KEY_SYNCED_RECORDS, data);
+      }
     } catch (error) {
       console.warn('Could not load synced health records:', error);
     } finally {
@@ -359,14 +408,99 @@ const RecentWorkoutsSection: React.FC<RecentWorkoutsSectionProps> = ({
     [groupedActivities],
   );
 
+  // Overview stats calculation for the summary strip
+  const overviewStats = useMemo(() => {
+    let totalMins = 0;
+    let totalCals = 0;
+    let sessionCount = 0;
+
+    for (const group of groupedActivities) {
+      if (group.isWorkout) {
+        totalMins += group.totalDurationMin;
+        totalCals += group.totalCalories;
+        sessionCount += group.sessions.length;
+      }
+    }
+    return {
+      activeTimeText: formatWorkoutDuration(totalMins),
+      caloriesText: `${Math.round(totalCals)} kcal`,
+      sessionsText: `${sessionCount} Sessions`,
+      hasData: sessionCount > 0,
+    };
+  }, [groupedActivities]);
+
   return (
     <View style={styles.container}>
       <SectionHeader
-        sectionTitle="Synced Health Records"
+        sectionTitle="Synced Health Activities"
         rightText="Start New"
         onRightPress={() => navigation.navigate('WorkoutSession')}
         customStyles={styles.sectionHeader}
       />
+
+      {/* Overview Highlights Banner (Attractive Quick Stats) */}
+      {overviewStats.hasData && !loading ? (
+        <View
+          style={[
+            styles.summaryStrip,
+            {
+              backgroundColor: colors.surface,
+              borderColor: colors.border,
+            },
+          ]}
+        >
+          <View style={styles.summaryItem}>
+            <AppText variant="caption" secondary bold>
+              Active Time
+            </AppText>
+            <AppText variant="subtitle2" bold color="primary" mt={2}>
+              {overviewStats.activeTimeText}
+            </AppText>
+          </View>
+
+          <View
+            style={[
+              styles.summaryDivider,
+              { backgroundColor: colors.border },
+            ]}
+          />
+
+          <View style={styles.summaryItem}>
+            <AppText variant="caption" secondary bold>
+              Calories
+            </AppText>
+            <AppText
+              variant="subtitle2"
+              bold
+              style={{ color: colors.warning }}
+              mt={2}
+            >
+              {overviewStats.caloriesText}
+            </AppText>
+          </View>
+
+          <View
+            style={[
+              styles.summaryDivider,
+              { backgroundColor: colors.border },
+            ]}
+          />
+
+          <View style={styles.summaryItem}>
+            <AppText variant="caption" secondary bold>
+              Workouts
+            </AppText>
+            <AppText
+              variant="subtitle2"
+              bold
+              style={{ color: colors.info }}
+              mt={2}
+            >
+              {overviewStats.sessionsText}
+            </AppText>
+          </View>
+        </View>
+      ) : null}
 
       {/* Modern Filter Segment Control */}
       <View style={styles.tabsRow}>
@@ -469,7 +603,6 @@ const RecentWorkoutsSection: React.FC<RecentWorkoutsSectionProps> = ({
             {
               backgroundColor: colors.surface,
               borderColor: colors.border,
-              borderRadius: radius.lg,
             },
           ]}
         >
@@ -495,8 +628,8 @@ const RecentWorkoutsSection: React.FC<RecentWorkoutsSectionProps> = ({
             style={styles.emptySubtitle}
           >
             {activeTab === 'workouts'
-              ? 'Start your running, walking, or cycling session to track your workouts.'
-              : 'Sync your Health Connect or start an activity to see records here.'}
+              ? 'Start running, walking, or cycling to record your activity.'
+              : 'Sync Health Connect or complete an activity to see updates.'}
           </AppText>
           <Pressable
             onPress={() => navigation.navigate('WorkoutSession')}
@@ -524,16 +657,27 @@ const RecentWorkoutsSection: React.FC<RecentWorkoutsSectionProps> = ({
               firstSession?.recordedAt ||
               firstSession?.createdAt,
             );
+            const themeAccents = getActivityThemeColors(
+              group.activityKey,
+              group.metricType,
+              colors,
+            );
+
+            // For steps: calculate progress against 10k daily steps goal
+            const isSteps = group.metricType === 'steps';
+            const stepGoal = 10000;
+            const stepProgress = isSteps
+              ? Math.min(1, Math.max(0, group.totalDurationMin / stepGoal))
+              : 0;
 
             return (
               <View
-                key={group?.id}
+                key={group.id}
                 style={[
                   styles.card,
                   {
                     backgroundColor: colors.surface,
                     borderColor: colors.border,
-                    borderRadius: radius.lg,
                     shadowColor: colors.black,
                   },
                 ]}
@@ -554,26 +698,24 @@ const RecentWorkoutsSection: React.FC<RecentWorkoutsSectionProps> = ({
                       style={[
                         styles.iconBadge,
                         {
-                          backgroundColor: group.isWorkout
-                            ? colors.primaryLight
-                            : colors.backgroundSecondary,
-                          borderRadius: radius.md,
+                          backgroundColor: themeAccents.bg,
+                          borderColor: themeAccents.accent,
                         },
                       ]}
                     >
-                      <AppText style={styles.activityEmoji}>
-                        {group?.emoji}
+                      <AppText  >
+                        {group.emoji}
                       </AppText>
                     </View>
                     <View style={styles.titleCol}>
                       <View style={styles.titleRow}>
                         <AppText variant="subtitle1" bold numberOfLines={1}>
-                          {group?.title}
+                          {group.title}
                         </AppText>
                       </View>
                       <View style={styles.subtitleRow}>
                         <AppText variant="caption" secondary bold>
-                          {group?.dateLabel}
+                          {group.dateLabel}
                         </AppText>
                         <View
                           style={[
@@ -594,7 +736,7 @@ const RecentWorkoutsSection: React.FC<RecentWorkoutsSectionProps> = ({
                               color="primary"
                               style={styles.sessionsBadgeText}
                             >
-                              {group?.sessions.length} Sessions
+                              {group.sessions.length} Sessions
                             </AppText>
                           </View>
                         ) : singleTimeText ? (
@@ -603,30 +745,53 @@ const RecentWorkoutsSection: React.FC<RecentWorkoutsSectionProps> = ({
                           </AppText>
                         ) : (
                           <AppText variant="caption" secondary>
-                            {group?.source}
+                            {group.source}
                           </AppText>
                         )}
                       </View>
                     </View>
                   </View>
 
-                  <View
-                    style={[
-                      styles.sourceBadge,
-                      {
-                        backgroundColor: colors.successLight,
-                        borderColor: colors.success,
-                      },
-                    ]}
-                  >
-                    <AppText
-                      variant="caption"
-                      color="textSuccess"
-                      bold
-                      style={styles.sourceBadgeText}
+                  <View style={styles.headerActions}>
+                    <View
+                      style={[
+                        styles.sourceBadge,
+                        {
+                          backgroundColor: colors.successLight,
+                          borderColor: colors.success,
+                        },
+                      ]}
                     >
-                      {group?.source}
-                    </AppText>
+                      <AppText
+                        variant="caption"
+                        color="textSuccess"
+                        bold
+                        style={styles.sourceBadgeText}
+                      >
+                        {group.source}
+                      </AppText>
+                    </View>
+
+                    {/* Quick Start Activity Action */}
+                    {group.isWorkout ? (
+                      <Pressable
+                        onPress={() =>
+                          navigation.navigate('WorkoutSession', {
+                            activityId: group.activityType,
+                          })
+                        }
+                        style={[
+                          styles.quickStartBtn,
+                          { backgroundColor: colors.primaryLight },
+                        ]}
+                      >
+                        <AppIcon
+                          name="ArrowRight"
+                          size={13}
+                          color={colors.primary}
+                        />
+                      </Pressable>
+                    ) : null}
                   </View>
                 </Pressable>
 
@@ -644,16 +809,16 @@ const RecentWorkoutsSection: React.FC<RecentWorkoutsSectionProps> = ({
                       { backgroundColor: colors.backgroundSecondary },
                     ]}
                   >
-                    {group?.isWorkout ? (
+                    {group.isWorkout ? (
                       <AppIcon name="Clock" size={13} color={colors.primary} />
                     ) : null}
                     <AppText variant="caption" bold color="primary">
-                      {group?.displayValue}
+                      {group.displayValue}
                     </AppText>
                   </View>
 
                   {/* Calories Pill */}
-                  {group?.isWorkout && group?.totalCalories > 0 ? (
+                  {group.isWorkout && group.totalCalories > 0 ? (
                     <View
                       style={[
                         styles.metricPill,
@@ -666,13 +831,13 @@ const RecentWorkoutsSection: React.FC<RecentWorkoutsSectionProps> = ({
                         bold
                         style={{ color: colors.warning }}
                       >
-                        {group?.totalCalories} kcal
+                        {group.totalCalories} kcal
                       </AppText>
                     </View>
                   ) : null}
 
                   {/* Distance Pill */}
-                  {group?.isWorkout && group.totalDistanceKm > 0 ? (
+                  {group.isWorkout && group.totalDistanceKm > 0 ? (
                     <View
                       style={[
                         styles.metricPill,
@@ -685,11 +850,41 @@ const RecentWorkoutsSection: React.FC<RecentWorkoutsSectionProps> = ({
                         bold
                         style={{ color: colors.info }}
                       >
-                        {group?.totalDistanceKm.toFixed(2)} km
+                        {group.totalDistanceKm.toFixed(2)} km
                       </AppText>
                     </View>
                   ) : null}
                 </View>
+
+                {/* Interactive Steps Progress Visual */}
+                {isSteps ? (
+                  <View style={styles.progressContainer}>
+                    <View
+                      style={[
+                        styles.progressBarTrack,
+                        { backgroundColor: colors.backgroundSecondary },
+                      ]}
+                    >
+                      <View
+                        style={[
+                          styles.progressBarFill,
+                          {
+                            width: `${Math.round(stepProgress * 100)}%`,
+                            backgroundColor: themeAccents.accent,
+                          },
+                        ]}
+                      />
+                    </View>
+                    <View style={styles.progressLabelsRow}>
+                      <AppText variant="caption" secondary>
+                        Goal: 10,000 steps
+                      </AppText>
+                      <AppText variant="caption" bold color="primary">
+                        {Math.round(stepProgress * 100)}%
+                      </AppText>
+                    </View>
+                  </View>
+                ) : null}
 
                 {/* Multiple Sessions Expand Toggle */}
                 {hasMultipleSessions ? (
@@ -702,8 +897,8 @@ const RecentWorkoutsSection: React.FC<RecentWorkoutsSectionProps> = ({
                   >
                     <AppText variant="caption" bold secondary>
                       {isExpanded
-                        ? 'Hide Session Details'
-                        : `View all ${group?.sessions.length} sessions`}
+                        ? 'Hide session details'
+                        : `View all ${group.sessions.length} sessions`}
                     </AppText>
                     <AppIcon
                       name={isExpanded ? 'ChevronUp' : 'ChevronDown'}
@@ -721,12 +916,11 @@ const RecentWorkoutsSection: React.FC<RecentWorkoutsSectionProps> = ({
                       { borderTopColor: colors.border },
                     ]}
                   >
-                    {group?.sessions.map((session, index) => {
+                    {group.sessions.map((session, index) => {
                       const sessionDuration = formatWorkoutDuration(
                         session.value,
                       );
-                      const sessionCal =
-                        session.metadata?.estimatedCalories;
+                      const sessionCal = session.metadata?.estimatedCalories;
                       const sessionDist =
                         session.metadata?.estimatedDistanceKm;
                       const sessionTime =
@@ -734,11 +928,15 @@ const RecentWorkoutsSection: React.FC<RecentWorkoutsSectionProps> = ({
                           session.startTime ||
                           session.recordedAt ||
                           session.createdAt,
-                        ) || `Session #${group?.sessions.length - index}`;
+                        ) || `Session #${group.sessions.length - index}`;
 
                       return (
                         <View
-                          key={session.id || session.sourceRecordId || `${index}`}
+                          key={
+                            session.id ||
+                            session.sourceRecordId ||
+                            `${index}`
+                          }
                           style={[
                             styles.sessionItemRow,
                             { backgroundColor: colors.backgroundSecondary },
@@ -803,7 +1001,6 @@ const RecentWorkoutsSection: React.FC<RecentWorkoutsSectionProps> = ({
                 {
                   borderColor: colors.border,
                   backgroundColor: colors.surface,
-                  borderRadius: radius.md,
                 },
               ]}
             >
@@ -819,191 +1016,5 @@ const RecentWorkoutsSection: React.FC<RecentWorkoutsSectionProps> = ({
     </View>
   );
 };
-
-const styles = StyleSheet.create({
-  container: {
-    margin: 16,
-  },
-  sectionHeader: {
-    marginHorizontal: 0,
-  },
-  tabsRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-    marginBottom: 12,
-    marginTop: 4,
-  },
-  tabButton: {
-    paddingHorizontal: 14,
-    paddingVertical: 7,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  list: {
-    gap: 12,
-    marginTop: 2,
-  },
-  shimmerCard: {
-    height: 110,
-    width: '100%',
-  },
-  card: {
-    borderWidth: 1,
-    padding: 16,
-    elevation: 2,
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.05,
-    shadowRadius: 6,
-  },
-  cardHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    marginBottom: 12,
-  },
-  activityInfoRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    flex: 1,
-  },
-  iconBadge: {
-    width: 48,
-    height: 48,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginRight: 12,
-  },
-  activityEmoji: {
-    fontSize: 24,
-  },
-  titleCol: {
-    flex: 1,
-  },
-  titleRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-  },
-  subtitleRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-    marginTop: 3,
-  },
-  dotDivider: {
-    width: 3,
-    height: 3,
-    borderRadius: 1.5,
-  },
-  sessionsBadge: {
-    paddingHorizontal: 6,
-    paddingVertical: 2,
-    borderRadius: 6,
-  },
-  sessionsBadgeText: {
-    fontSize: 10,
-  },
-  sourceBadge: {
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 8,
-    borderWidth: 1,
-  },
-  sourceBadgeText: {
-    fontSize: 11,
-  },
-  metricsRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    flexWrap: 'wrap',
-    gap: 8,
-    paddingTop: 12,
-    borderTopWidth: StyleSheet.hairlineWidth,
-  },
-  metricPill: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 5,
-    paddingHorizontal: 10,
-    paddingVertical: 6,
-    borderRadius: 12,
-  },
-  expandToggleBtn: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 5,
-    paddingVertical: 8,
-    marginTop: 10,
-    borderTopWidth: StyleSheet.hairlineWidth,
-  },
-  sessionsBreakdownContainer: {
-    marginTop: 6,
-    paddingTop: 10,
-    borderTopWidth: StyleSheet.hairlineWidth,
-    gap: 8,
-  },
-  sessionItemRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingVertical: 7,
-    paddingHorizontal: 10,
-    borderRadius: 8,
-  },
-  sessionItemLeft: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-  },
-  sessionIndexBadge: {
-    width: 20,
-    height: 20,
-    borderRadius: 10,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  sessionIndexText: {
-    fontSize: 10,
-  },
-  sessionItemMetrics: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-  },
-  emptyCard: {
-    padding: 28,
-    borderWidth: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginTop: 6,
-  },
-  emptyIconBadge: {
-    width: 58,
-    height: 58,
-    borderRadius: 29,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: 12,
-  },
-  emptySubtitle: {
-    maxWidth: 270,
-    marginBottom: 16,
-  },
-  startButton: {
-    paddingHorizontal: 22,
-    paddingVertical: 11,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  showMoreButton: {
-    borderWidth: 1,
-    paddingVertical: 11,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginTop: 6,
-  },
-});
 
 export default React.memo(RecentWorkoutsSection);

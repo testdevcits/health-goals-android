@@ -66,4 +66,4 @@ const WorkoutCategories: React.FC<{ onViewAllPress: () => void }> = ({
   );
 };
 
-export default WorkoutCategories;
+export default React.memo(WorkoutCategories);

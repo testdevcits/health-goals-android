@@ -725,8 +725,8 @@ async function collectDailySnapshots(
     ExerciseSession: 'workout',
   };
   const dailySnapshots: SnapshotRecord[] = [];
-  for (const type of readTypes.filter(
-    type => !['Steps', 'ExerciseSession'].includes(type),
+  for (const recordType of readTypes.filter(
+    t => !['Steps', 'ExerciseSession'].includes(t),
   )) {
     try {
       dailySnapshots.push(
@@ -734,14 +734,14 @@ async function collectDailySnapshots(
           deviceId,
           range.dates,
           successfulPermissions.filter(
-            permission => permission.recordType === type,
+            permission => permission.recordType === recordType,
           ),
           groups,
-          type === 'OxygenSaturation' ? oxygenRecords : [],
+          recordType === 'OxygenSaturation' ? oxygenRecords : [],
         ),
       );
     } catch {
-      if (!failedMetrics.includes(type)) failedMetrics.push(type);
+      if (!failedMetrics.includes(recordType)) failedMetrics.push(recordType);
     }
   }
   let workoutSnapshots: SnapshotRecord[] = [];

@@ -6,6 +6,9 @@ import {
 } from '../services/healthConnect';
 import { syncRecentHealthData } from '../services/healthSync';
 import { apiErrorMessage } from '../services/api';
+import { storageService } from '../storage/storageService';
+
+const CACHE_KEY_TODAY_HEALTH = 'cache_today_health_data';
 
 type HealthDataState = {
   loading: boolean;
@@ -20,12 +23,15 @@ export const useTodayHealthData = (
   refreshKey = 0,
 ) => {
   const isFocused = useIsFocused();
-  const [state, setState] = useState<HealthDataState>({
-    loading: true,
-    data: null,
-    error: null,
-    syncError: null,
-    syncVersion: 0,
+  const [state, setState] = useState<HealthDataState>(() => {
+    const cached = storageService.getObject<TodayHealthData>(CACHE_KEY_TODAY_HEALTH);
+    return {
+      loading: !cached,
+      data: cached || null,
+      error: null,
+      syncError: null,
+      syncVersion: 0,
+    };
   });
 
   useEffect(() => {
@@ -33,7 +39,7 @@ export const useTodayHealthData = (
     let isActive = true;
     setState(previous => ({
       ...previous,
-      loading: true,
+      loading: !previous.data,
       error: null,
       syncError: null,
     }));
@@ -61,6 +67,9 @@ export const useTodayHealthData = (
     readTodayHealthData(includeHourlyData)
       .then(data => {
         if (isActive) {
+          if (data) {
+            storageService.setObject(CACHE_KEY_TODAY_HEALTH, data);
+          }
           setState(previous => ({
             ...previous,
             loading: false,
@@ -74,7 +83,6 @@ export const useTodayHealthData = (
           setState(previous => ({
             ...previous,
             loading: false,
-            data: null,
             error:
               error instanceof Error
                 ? error.message

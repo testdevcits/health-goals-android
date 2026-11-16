@@ -17,6 +17,9 @@ import {
 } from '../../../../utils/healthDates';
 import { readStepsHistory } from '../../../../services/healthConnect';
 import { fetchHealthTrend } from '../../../../services/healthTrends';
+import { storageService } from '../../../../storage/storageService';
+
+const CACHE_KEY_TREND_DATA = 'cache_trend_data';
 
 const BAR_MAX_HEIGHT = 100;
 
@@ -67,18 +70,27 @@ const ActivityTrends: React.FC<{
   const { theme } = useTheme();
   const styles = createHomeStyles(theme);
   const [activeTab, setActiveTab] = useState<TrendTab>('Steps');
-  const [trendData, setTrendData] = useState(TREND_DATA);
-  const [loading, setLoading] = useState(true);
-  const [hasData, setHasData] = useState(false);
+  const [trendData, setTrendData] = useState(() => {
+    return storageService.getObject<typeof TREND_DATA>(CACHE_KEY_TREND_DATA) || TREND_DATA;
+  });
+  const [loading, setLoading] = useState(() => {
+    const cached = storageService.getObject<typeof TREND_DATA>(CACHE_KEY_TREND_DATA);
+    return !cached || !cached.Steps?.bars.some(v => v !== null && v > 0);
+  });
+  const [hasData, setHasData] = useState(() => {
+    const cached = storageService.getObject<typeof TREND_DATA>(CACHE_KEY_TREND_DATA);
+    return Boolean(cached && cached.Steps?.bars.some(v => v !== null && v > 0));
+  });
   const [loadError, setLoadError] = useState('');
   const [reloadKey, setReloadKey] = useState(0);
   const isFocused = useIsFocused();
   React.useEffect(() => {
     if (!isFocused) return;
     let active = true;
-    setLoading(true);
+    if (!storageService.getObject<typeof TREND_DATA>(CACHE_KEY_TREND_DATA)) {
+      setLoading(true);
+    }
     setLoadError('');
-    setHasData(false);
     const load = async () => {
       const dates = recentIstDates();
       const metricType =
@@ -110,49 +122,53 @@ const ActivityTrends: React.FC<{
       }
       const sum = observedValues.reduce((total, value) => total + value, 0);
       const average = Math.round(sum / observedValues.length);
-      setTrendData(current => ({
-        ...current,
-        [activeTab]: {
-          ...current[activeTab],
-          bars: values,
-          stats:
-            activeTab === 'Steps'
-              ? [
-                  { value: sum.toLocaleString(), label: 'Total' },
-                  { value: average.toLocaleString(), label: 'Daily Avg' },
-                  {
-                    value: String(
-                      observedValues.filter(value => value >= 10000).length,
-                    ),
-                    label: 'Days >10K',
-                  },
-                ]
-              : activeTab === 'Sleep'
-              ? [
-                  {
-                    value: `${Math.floor(average / 60)}h ${Math.round(
-                      average % 60,
-                    )}m`,
-                    label: 'Avg Sleep',
-                  },
-                  { value: '—', label: 'Quality' },
-                  {
-                    value: `${(Math.min(...observedValues) / 60).toFixed(1)}h`,
-                    label: 'Lowest',
-                  },
-                ]
-              : [
-                  { value: sum.toLocaleString(), label: 'Total Mins' },
-                  { value: average.toLocaleString(), label: 'Daily Avg' },
-                  {
-                    value: String(
-                      observedValues.filter(value => value === 0).length,
-                    ),
-                    label: 'Rest Days',
-                  },
-                ],
-        },
-      }));
+      setTrendData(current => {
+        const updated = {
+          ...current,
+          [activeTab]: {
+            ...current[activeTab],
+            bars: values,
+            stats:
+              activeTab === 'Steps'
+                ? [
+                    { value: sum.toLocaleString(), label: 'Total' },
+                    { value: average.toLocaleString(), label: 'Daily Avg' },
+                    {
+                      value: String(
+                        observedValues.filter(value => value >= 10000).length,
+                      ),
+                      label: 'Days >10K',
+                    },
+                  ]
+                : activeTab === 'Sleep'
+                ? [
+                    {
+                      value: `${Math.floor(average / 60)}h ${Math.round(
+                        average % 60,
+                      )}m`,
+                      label: 'Avg Sleep',
+                    },
+                    { value: '—', label: 'Quality' },
+                    {
+                      value: `${(Math.min(...observedValues) / 60).toFixed(1)}h`,
+                      label: 'Lowest',
+                    },
+                  ]
+                : [
+                    { value: sum.toLocaleString(), label: 'Total Mins' },
+                    { value: average.toLocaleString(), label: 'Daily Avg' },
+                    {
+                      value: String(
+                        observedValues.filter(value => value === 0).length,
+                      ),
+                      label: 'Rest Days',
+                    },
+                  ],
+          },
+        };
+        storageService.setObject(CACHE_KEY_TREND_DATA, updated);
+        return updated;
+      });
       setHasData(true);
     };
     load()
@@ -240,4 +256,4 @@ const ActivityTrends: React.FC<{
   );
 };
 
-export default ActivityTrends;
+export default React.memo(ActivityTrends);

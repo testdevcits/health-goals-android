@@ -233,4 +233,4 @@ const HealthConnectPrompt: React.FC<{
   );
 };
 
-export default HealthConnectPrompt;
+export default React.memo(HealthConnectPrompt);

@@ -13,7 +13,9 @@ type ApiResponse<T> = {
 
 export type AuthenticatedRequestMethod = 'GET' | 'POST' | 'PATCH' | 'DELETE';
 
-export async function authenticatedRequest<T = unknown>(
+const inFlightGetRequests = new Map<string, Promise<any>>();
+
+async function executeAuthenticatedRequest<T = unknown>(
   method: AuthenticatedRequestMethod,
   path: string,
   body?: unknown,
@@ -63,4 +65,40 @@ export async function authenticatedRequest<T = unknown>(
       throw retryError;
     }
   }
+}
+
+export async function authenticatedRequest<T = unknown>(
+  method: AuthenticatedRequestMethod,
+  path: string,
+  body?: unknown,
+  timeout = 30_000,
+  expectedUserId?: string,
+): Promise<T> {
+  // Deduplicate concurrent in-flight GET requests to the exact same endpoint
+  if (method === 'GET') {
+    const dedupeKey = `${expectedUserId || 'user'}:${path}`;
+    const inFlight = inFlightGetRequests.get(dedupeKey);
+    if (inFlight) {
+      return inFlight as Promise<T>;
+    }
+    const requestPromise = executeAuthenticatedRequest<T>(
+      method,
+      path,
+      body,
+      timeout,
+      expectedUserId,
+    ).finally(() => {
+      inFlightGetRequests.delete(dedupeKey);
+    });
+    inFlightGetRequests.set(dedupeKey, requestPromise);
+    return requestPromise;
+  }
+
+  return executeAuthenticatedRequest<T>(
+    method,
+    path,
+    body,
+    timeout,
+    expectedUserId,
+  );
 }

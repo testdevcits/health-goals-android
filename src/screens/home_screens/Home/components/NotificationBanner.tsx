@@ -138,4 +138,4 @@ const NotificationBanner: React.FC<{ onDismiss: () => void }> = ({
   );
 };
 
-export default NotificationBanner;
+export default React.memo(NotificationBanner);

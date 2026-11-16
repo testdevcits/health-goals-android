@@ -16,7 +16,7 @@ import HomeHeader from './components/HomeHeader';
 import NotificationBanner from './components/NotificationBanner';
 import HealthConnectPrompt from './components/HealthConnectPrompt';
 import WorkoutCategories from './components/WorkoutCategories';
-import RecentWorkoutsSection from './components/RecentWorkoutsSection';
+import RecentWorkoutsSection from './components/recent_workouts/RecentWorkoutsSection';
 import { createHomeStyles } from './styles.Home';
 import QuickActions from './components/QuickActions';
 import { storageService } from '../../../storage/storageService';
@@ -70,6 +70,41 @@ const HomeScreen: React.FC<Props> = ({ navigation }) => {
     storageService.setString('isFirstTime', 'true');
   }, []);
 
+  const handleNotificationDismiss = useCallback(() => {
+    setNotificationsEnabled(true);
+  }, []);
+
+  const handleSyncComplete = useCallback(() => {
+    setHealthRefreshKey(previous => previous + 1);
+  }, []);
+
+  const handleDailyDetails = useCallback(() => {
+    navigation.navigate('DailyActivities');
+  }, [navigation]);
+
+  const handleViewAllCategories = useCallback(() => {
+    navigation.navigate('Categories');
+  }, [navigation]);
+
+  const handleTrendsDetails = useCallback(() => {
+    navigation.navigate('DailyActivityTrends');
+  }, [navigation]);
+
+  const handleQuickAction = useCallback(
+    (action: string) => {
+      if (action === 'WorkoutSession') {
+        navigation.navigate('WorkoutSession');
+      } else {
+        navigation.getParent()?.navigate('Challenges');
+      }
+    },
+    [navigation],
+  );
+
+  const handleOnboardingDismiss = useCallback(() => {
+    setOnboardingVisible(false);
+  }, []);
+
   return (
     <View style={[styles.container, {}]}>
       <HomeHeader />
@@ -78,36 +113,22 @@ const HomeScreen: React.FC<Props> = ({ navigation }) => {
         showsVerticalScrollIndicator={false}
       >
         {notificationsEnabled === false ? (
-          <NotificationBanner onDismiss={() => setNotificationsEnabled(true)} />
+          <NotificationBanner onDismiss={handleNotificationDismiss} />
         ) : null}
-        <HealthConnectPrompt
-          onSyncComplete={() =>
-            setHealthRefreshKey(previous => previous + 1)
-          }
-        />
+        <HealthConnectPrompt onSyncComplete={handleSyncComplete} />
         <EnergyCard healthRefreshKey={healthRefreshKey} />
         <DailySummary
-          onViewDetails={() => navigation.navigate('DailyActivities')}
+          onViewDetails={handleDailyDetails}
           navigation={navigation}
           healthRefreshKey={healthRefreshKey}
         />
 
-        <WorkoutCategories
-          onViewAllPress={() => navigation.navigate('Categories')}
-        />
+        <WorkoutCategories onViewAllPress={handleViewAllCategories} />
         <ActivityTrends
-          onPressDetails={() => navigation.navigate('DailyActivityTrends')}
+          onPressDetails={handleTrendsDetails}
           healthRefreshKey={healthRefreshKey}
         />
-        <QuickActions
-          onActionPress={action => {
-            if (action === 'WorkoutSession') {
-              navigation.navigate('WorkoutSession');
-            } else {
-              navigation.getParent()?.navigate('Challenges');
-            }
-          }}
-        />
+        <QuickActions onActionPress={handleQuickAction} />
         <RecentWorkoutsSection
           navigation={navigation}
           healthRefreshKey={healthRefreshKey}
@@ -115,7 +136,7 @@ const HomeScreen: React.FC<Props> = ({ navigation }) => {
       </ScrollView>
       <OnboardingModal
         visible={onboardingVisible}
-        onDismiss={() => setOnboardingVisible(false)}
+        onDismiss={handleOnboardingDismiss}
       />
       <ProfileQuestionsModal enabled={!onboardingVisible} />
     </View>

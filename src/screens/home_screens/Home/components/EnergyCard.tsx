@@ -10,6 +10,16 @@ import { authenticatedRequest } from '../../../../services/authenticatedApi';
 import { API_ENDPOINTS } from '../../../../constants';
 import { useTodayHealthData } from '../../../../hooks/useTodayHealthData';
 import { getCurrentUser } from '../../../../services/profile';
+import { storageService } from '../../../../storage/storageService';
+
+const CACHE_KEY_ENERGY_CARD = 'cache_energy_card';
+
+type CachedEnergyCardData = {
+  energy: number;
+  streakPeriod: number;
+  stepsTarget: number;
+  hasActivity: boolean;
+};
 
 const CIRCLE_SIZE = 88;
 const STROKE_WIDTH = 7;
@@ -83,16 +93,40 @@ const EnergyCard: React.FC<{ healthRefreshKey?: number }> = ({
     healthRefreshKey,
   );
   const isFocused = useIsFocused();
-  const [energy, setEnergy] = React.useState(0);
-  const [streakPeriod, setStreakPeriod] = React.useState(0);
-  const [stepsTarget, setStepsTarget] = React.useState(10000);
-  const [loading, setLoading] = React.useState(true);
+  const [energy, setEnergy] = React.useState(() => {
+    return (
+      storageService.getObject<CachedEnergyCardData>(CACHE_KEY_ENERGY_CARD)
+        ?.energy ?? 0
+    );
+  });
+  const [streakPeriod, setStreakPeriod] = React.useState(() => {
+    return (
+      storageService.getObject<CachedEnergyCardData>(CACHE_KEY_ENERGY_CARD)
+        ?.streakPeriod ?? 0
+    );
+  });
+  const [stepsTarget, setStepsTarget] = React.useState(() => {
+    return (
+      storageService.getObject<CachedEnergyCardData>(CACHE_KEY_ENERGY_CARD)
+        ?.stepsTarget ?? 10000
+    );
+  });
+  const [loading, setLoading] = React.useState(() => {
+    return !storageService.getObject<CachedEnergyCardData>(CACHE_KEY_ENERGY_CARD);
+  });
   const [loadError, setLoadError] = React.useState(false);
-  const [hasActivity, setHasActivity] = React.useState(false);
+  const [hasActivity, setHasActivity] = React.useState(() => {
+    return (
+      storageService.getObject<CachedEnergyCardData>(CACHE_KEY_ENERGY_CARD)
+        ?.hasActivity ?? false
+    );
+  });
   React.useEffect(() => {
     if (!isFocused) return;
     let active = true;
-    setLoading(true);
+    if (!storageService.getObject(CACHE_KEY_ENERGY_CARD)) {
+      setLoading(true);
+    }
     setLoadError(false);
     Promise.all([
       authenticatedRequest<{
@@ -178,6 +212,22 @@ const EnergyCard: React.FC<{ healthRefreshKey?: number }> = ({
           cursor.setUTCDate(cursor.getUTCDate() - 1);
         }
         setStreakPeriod(streak);
+        storageService.setObject(CACHE_KEY_ENERGY_CARD, {
+          energy: Math.min(100, Math.round((steps / target) * 100)),
+          streakPeriod: streak,
+          stepsTarget: target,
+          hasActivity:
+            steps > 0 ||
+            Boolean(day.totals?.workoutMinutes) ||
+            Boolean(day.totals?.meditationMinutes) ||
+            (history.items || []).some(item =>
+              Boolean(
+                item.totals?.steps ||
+                  item.totals?.workoutMinutes ||
+                  item.totals?.meditationMinutes,
+              ),
+            ),
+        });
       })
       .catch(() => {
         if (active) setLoadError(true);
@@ -294,4 +344,4 @@ const EnergyCard: React.FC<{ healthRefreshKey?: number }> = ({
   );
 };
 
-export default EnergyCard;
+export default React.memo(EnergyCard);

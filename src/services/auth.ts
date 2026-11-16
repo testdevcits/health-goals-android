@@ -262,7 +262,7 @@ export async function logout() {
   const session = await readSession();
   await clearSession();
   if (session?.accessToken) {
-    void api
+    api
       .post(
         API_ENDPOINTS.AUTH.LOGOUT,
         {},

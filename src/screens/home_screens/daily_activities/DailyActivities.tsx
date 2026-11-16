@@ -40,16 +40,15 @@ const DailyActivities: React.FC<{ navigation: DailyActivityNavigation }> = ({
       const result = await syncRecentHealthData({ force: true });
       setSyncMessage(
         result.failedMetrics?.length
-          ? `Sent ${
-              result.synced
-            } records. Could not read ${result.failedMetrics.join(
-              ', ',
-            )}; please retry sync.`
+          ? `Sent ${result.synced
+          } records. Could not read ${result.failedMetrics.join(
+            ', ',
+          )}; please retry sync.`
           : result.throttled
-          ? 'Health data was synced recently. Try again in a few minutes.'
-          : result.synced === 0
-          ? 'No recent Health Connect records were available to sync.'
-          : `Sent ${result.synced} records · ${result.created} new · ${result.duplicates} already synced.`,
+            ? 'Health data was synced recently. Try again in a few minutes.'
+            : result.synced === 0
+              ? 'No recent Health Connect records were available to sync.'
+              : `Sent ${result.synced} records · ${result.created} new · ${result.duplicates} already synced.`,
       );
       setRefreshKey(value => value + 1);
     } catch (cause) {
@@ -115,6 +114,7 @@ const DailyActivities: React.FC<{ navigation: DailyActivityNavigation }> = ({
               void syncNow();
             }}
             loading={syncing}
+            style={{ marginTop: 15 }}
           />
           {syncMessage || syncError ? (
             <AppText
@@ -193,8 +193,8 @@ const DailyActivities: React.FC<{ navigation: DailyActivityNavigation }> = ({
                   value: data?.exerciseMinutes
                     ? String(Math.round(data.exerciseMinutes))
                     : data?.exerciseMinutes === 0
-                    ? '0'
-                    : '—',
+                      ? '0'
+                      : '—',
                   unit: 'mins',
                   goal: '/ 90',
                   color: theme.colors.coral,
@@ -214,7 +214,7 @@ const DailyActivities: React.FC<{ navigation: DailyActivityNavigation }> = ({
                   label: 'Distance',
                   value:
                     data?.distanceMeters === null ||
-                    data?.distanceMeters === undefined
+                      data?.distanceMeters === undefined
                       ? '—'
                       : `${(data.distanceMeters / 1000).toFixed(2)} km`,
                 },

@@ -42,7 +42,7 @@
 //   );
 // };
 
-// export default DailySummary;
+// export default React.memo(DailySummary);
 // const { theme } = useTheme();
 
 // const { spacing, radius, colors } = theme;
@@ -214,8 +214,8 @@ const DailySummary: React.FC<{
   const workoutStatus = !workoutSession
     ? 'Start workout'
     : isRunning
-    ? 'In progress'
-    : 'Paused';
+      ? 'In progress'
+      : 'Paused';
 
   return (
     <View style={styles.summaryContainer}>
@@ -233,11 +233,9 @@ const DailySummary: React.FC<{
           onPress={onViewDetails}
           activeOpacity={0.85}
           accessibilityRole="button"
-          accessibilityLabel={`Daily activity, ${
-            healthData?.steps?.toLocaleString('en-US') ?? 'unavailable'
-          } steps, ${
-            healthData?.exerciseMinutes ?? 'unavailable'
-          } active minutes`}
+          accessibilityLabel={`Daily activity, ${healthData?.steps?.toLocaleString('en-US') ?? 'unavailable'
+            } steps, ${healthData?.exerciseMinutes ?? 'unavailable'
+            } active minutes`}
         >
           <AppText variant="subtitle2" bold>
             Daily Activity
@@ -259,13 +257,13 @@ const DailySummary: React.FC<{
             {healthDataState.loading
               ? 'Loading health data…'
               : healthData?.status === 'permission-required'
-              ? 'Connect Health Connect in Profile'
-              : healthDataState.error
-              ? healthDataState.error
-              : healthData?.exerciseMinutes === null ||
-                healthData?.exerciseMinutes === undefined
-              ? 'Exercise data unavailable'
-              : `${Math.round(healthData?.exerciseMinutes ?? 0)} active mins`}
+                ? 'Connect Health Connect in Profile'
+                : healthDataState.error
+                  ? healthDataState.error
+                  : healthData?.exerciseMinutes === null ||
+                    healthData?.exerciseMinutes === undefined
+                    ? 'Exercise data unavailable'
+                    : `${Math.round(healthData?.exerciseMinutes ?? 0)} active mins`}
           </AppText>
 
           <View style={styles.bottomIcon}>
@@ -284,9 +282,8 @@ const DailySummary: React.FC<{
           accessibilityRole="button"
           onPress={() => navigation.navigate('WorkoutSession')}
           style={styles.summaryCard}
-          accessibilityLabel={`${workoutStatus}: ${workoutCalories} kcal, ${distanceKm} kilometers${
-            activity ? `, ${activity.name}` : ''
-          }`}
+          accessibilityLabel={`${workoutStatus}: ${workoutCalories} kcal, ${distanceKm} kilometers${activity ? `, ${activity.name}` : ''
+            }`}
         >
           <View style={styles.runningHeader}>
             <AppText variant="subtitle2" secondary>
@@ -338,4 +335,4 @@ const DailySummary: React.FC<{
   );
 };
 
-export default DailySummary;
+export default React.memo(DailySummary);

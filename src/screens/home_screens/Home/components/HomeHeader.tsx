@@ -134,4 +134,4 @@ const HomeHeader: React.FC = () => {
   );
 };
 
-export default HomeHeader;
+export default React.memo(HomeHeader);

@@ -123,7 +123,7 @@ const AllChallengesScreen: React.FC<AllChallengesScreenProps> = ({
         showsVerticalScrollIndicator={false}
         contentContainerStyle={styles.scrollContent}
       >
-        {!loading && !loadError ? (
+        {/* {!loading && !loadError ? (
           <Pressable
             onPress={() => setCreateVisible(true)}
             style={styles.createChallengeLink}
@@ -132,7 +132,7 @@ const AllChallengesScreen: React.FC<AllChallengesScreenProps> = ({
               + Create challenge
             </AppText>
           </Pressable>
-        ) : null}
+        ) : null} */}
         {!loading && !loadError ? (
           <View style={styles.categoryContainer}>
             {challengeCategories.map(category => {

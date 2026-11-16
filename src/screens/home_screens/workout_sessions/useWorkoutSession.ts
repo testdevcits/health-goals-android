@@ -54,6 +54,10 @@ export default function useWorkoutSession(
   const handleConfirmationAction = async (
     action: WorkoutConfirmation['actions'][number],
   ) => {
+    if (action.label === 'Finish & Save') {
+      await action.onPress?.();
+      return;
+    }
     setConfirmation(null);
     await action.onPress?.();
   };
@@ -289,10 +293,14 @@ export default function useWorkoutSession(
               DeviceEventEmitter.emit('activitySyncCompleted');
               await clearWorkoutSession();
               pendingWorkoutUpload.current = null;
+              finishLock.current = false;
+              setSavingWorkout(false);
+              setConfirmation(null);
               returnToPreviousScreen();
             } catch (error) {
               finishLock.current = false;
               setSavingWorkout(false);
+              setConfirmation(null);
               Alert.alert(
                 'Could not finish workout',
                 error instanceof Error ? error.message : String(error),

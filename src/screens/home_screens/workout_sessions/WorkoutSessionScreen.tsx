@@ -53,7 +53,7 @@ const WorkoutSessionScreen: React.FC<Props> = ({ navigation, route }) => {
 
       <ConfirmationModal
         visible={confirmation !== null}
-        onClose={() => setConfirmation(null)}
+        onClose={() => !savingWorkout && setConfirmation(null)}
         title={confirmation?.title}
         message={confirmation?.message}
         position="center"
@@ -65,7 +65,7 @@ const WorkoutSessionScreen: React.FC<Props> = ({ navigation, route }) => {
             title={action.label}
             variant={action.variant ?? 'primary'}
             loading={action.label === 'Finish & Save' && savingWorkout}
-            disabled={action.label === 'Finish & Save' && savingWorkout}
+            disabled={savingWorkout}
             onPress={() => handleConfirmationAction(action)}
             style={[
               styles.modalActionButton,
@@ -139,6 +139,7 @@ const WorkoutSessionScreen: React.FC<Props> = ({ navigation, route }) => {
           hasStarted={hasStarted}
           activityColor={currentActivity.color}
           textColor={colors.textPrimary}
+          savingWorkout={savingWorkout}
           onStartPause={handleStartPause}
           onFinish={handleFinish}
           styles={styles}

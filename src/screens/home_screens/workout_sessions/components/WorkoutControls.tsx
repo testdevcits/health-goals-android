@@ -1,5 +1,5 @@
 import React, { memo } from 'react';
-import { Pressable } from 'react-native';
+import { ActivityIndicator, Pressable } from 'react-native';
 import { AppButton, AppText } from '../../../../components';
 import { createWorkoutSessionStyles } from '../styles.WorkoutSession';
 
@@ -8,6 +8,7 @@ export interface WorkoutControlsProps {
   hasStarted: boolean;
   activityColor: string;
   textColor: string;
+  savingWorkout?: boolean;
   onStartPause: () => void;
   onFinish: () => void;
   styles: ReturnType<typeof createWorkoutSessionStyles>;
@@ -18,6 +19,7 @@ const WorkoutControls: React.FC<WorkoutControlsProps> = ({
   hasStarted,
   activityColor,
   textColor,
+  savingWorkout = false,
   onStartPause,
   onFinish,
   styles,
@@ -27,6 +29,7 @@ const WorkoutControls: React.FC<WorkoutControlsProps> = ({
       <AppButton
         title={isRunning ? 'Pause' : hasStarted ? 'Resume' : 'Start'}
         onPress={onStartPause}
+        disabled={savingWorkout}
         style={[
           styles.startButton,
           { backgroundColor: activityColor },
@@ -35,12 +38,17 @@ const WorkoutControls: React.FC<WorkoutControlsProps> = ({
 
       <Pressable
         onPress={onFinish}
+        disabled={savingWorkout}
         accessibilityRole="button"
         style={styles.finishButton}
       >
-        <AppText variant="subtitle2" style={{ color: textColor }}>
-          Finish & Save
-        </AppText>
+        {savingWorkout ? (
+          <ActivityIndicator size="small" color={textColor} />
+        ) : (
+          <AppText variant="subtitle2" style={{ color: textColor }}>
+            Finish & Save
+          </AppText>
+        )}
       </Pressable>
     </>
   );
