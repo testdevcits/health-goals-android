@@ -74,6 +74,21 @@ export const MemberSearchModal: React.FC<MemberSearchModalProps> = ({
             onChangeText={onSearchChange}
             placeholder="Search by name or public ID"
             autoCapitalize="none"
+            leftIcon={
+              <AppIcon name="Search" size={18} color={colors.textTertiary} />
+            }
+            rightIcon={
+              searchQuery.length > 0 ? (
+                <Pressable
+                  onPress={() => onSearchChange('')}
+                  hitSlop={8}
+                  accessibilityRole="button"
+                  accessibilityLabel="Clear search"
+                >
+                  <AppIcon name="XCircle" size={18} color={colors.textTertiary} />
+                </Pressable>
+              ) : undefined
+            }
           />
 
           {loading ? (
@@ -109,8 +124,8 @@ export const MemberSearchModal: React.FC<MemberSearchModalProps> = ({
               </Pressable>
             ))}
             {searchQuery.trim().length >= 2 &&
-            !loading &&
-            searchResults.length === 0 ? (
+              !loading &&
+              searchResults.length === 0 ? (
               <AppText variant="body2" secondary style={styles.emptyText}>
                 No matching users found.
               </AppText>

@@ -17,6 +17,7 @@ interface AppInputProps extends TextInputProps {
   error?: string;
   containerStyle?: ViewStyle;
   isPassword?: boolean;
+  leftIcon?: React.ReactNode;
   rightIcon?: React.ReactNode;
 }
 
@@ -27,6 +28,7 @@ const AppInput = forwardRef<TextInput, AppInputProps>(
       error,
       containerStyle,
       isPassword = false,
+      leftIcon,
       rightIcon,
       style,
       ...props
@@ -66,6 +68,12 @@ const AppInput = forwardRef<TextInput, AppInputProps>(
             },
           ]}
         >
+          {leftIcon ? (
+            <View style={[styles.leftIconContainer, { marginRight: spacing.sm }]}>
+              {leftIcon}
+            </View>
+          ) : null}
+
           <TextInput
             ref={ref}
             style={[
@@ -121,6 +129,10 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     borderWidth: 1.5,
+  },
+  leftIconContainer: {
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   input: {
     flex: 1,

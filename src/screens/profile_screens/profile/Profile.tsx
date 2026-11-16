@@ -10,7 +10,7 @@ import {
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { useTheme } from '../../../theme/useTheme';
-import { AppSettingsRow, AppText } from '../../../components';
+import { AppHeader, AppSettingsRow, AppText } from '../../../components';
 import { spacing } from '../../../theme/spacing';
 import createStyles from './styles.Profile';
 import { useNavigation } from '@react-navigation/native';
@@ -62,43 +62,16 @@ const ProfileScreen: React.FC = () => {
         backgroundColor={colors.surface}
       />
 
-      <View style={[styles.header, { backgroundColor: colors.surface }]}>
-        <View style={styles.headerMain}>
-          <View style={styles.headerTitle}>
-            <AppText variant="h3">Profile</AppText>
-            <AppText variant="caption" secondary>
-              Your account, rewards, and settings
-            </AppText>
-          </View>
 
-          <Pressable
-            style={[
-              styles.headerIcon,
-              { backgroundColor: colors.backgroundSecondary },
-            ]}
-            accessibilityRole="button"
-            accessibilityLabel="Notifications"
-          >
-            <AppIcon name="Bell" size={19} color={colors.warning} />
-          </Pressable>
 
-          <View
-            style={styles.smallAvatar}
-            
-          >
-            {profileImageUrl ? (
-              <Image
-                source={{ uri: profileImageUrl }}
-                style={{ width: '100%', height: '100%', borderRadius: 22 }}
-              />
-            ) : (
-              <AppText variant="subtitle2" color="white" bold>
-                {initials}
-              </AppText>
-            )}
-          </View>
-        </View>
-      </View>
+
+      <AppHeader
+        title="Profile"
+        subtitle="Your account, rewards, and settings"
+        isBack={false}
+      />
+
+
 
       <ScrollView
         showsVerticalScrollIndicator={false}

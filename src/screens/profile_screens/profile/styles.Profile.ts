@@ -9,43 +9,8 @@ const createStyles = (colors: AppColors) =>
       flex: 1,
     },
 
-    header: {
-      paddingTop: spacing.xs,
-      paddingHorizontal: spacing.base,
-      paddingBottom: spacing.md,
-      borderBottomWidth: StyleSheet.hairlineWidth,
-      borderBottomColor: colors.border,
-    },
 
-    headerMain: {
-      minHeight: 48,
-      flexDirection: 'row',
-      alignItems: 'center',
-      gap: spacing.sm,
-    },
 
-    headerTitle: {
-      flex: 1,
-    },
-
-    headerIcon: {
-      width: 40,
-      height: 40,
-      borderRadius: radius.full,
-      justifyContent: 'center',
-      alignItems: 'center',
-    },
-
-    smallAvatar: {
-      width: 40,
-      height: 40,
-      borderRadius: radius.full,
-      backgroundColor: colors.info,
-      alignItems: 'center',
-      justifyContent: 'center',
-    },
-
-     
     editIconContainer: {
       position: 'absolute',
       bottom: -2,
