@@ -261,10 +261,7 @@ const ConnectedDevicesScreen: React.FC<{
 
               {/* Watch Footer: Last Sync & Sync Button */}
               <View
-                style={[
-                  styles.watchFooter,
-                  { borderTopColor: colors.border },
-                ]}
+                style={[styles.watchFooter, { borderTopColor: colors.border }]}
               >
                 <AppText variant="caption" secondary>
                   {watchMetrics.lastSyncedAt
@@ -294,7 +291,7 @@ const ConnectedDevicesScreen: React.FC<{
 
           {/* Filter Toggle Row */}
           <View style={styles.filterRow}>
-            <AppText variant="caption" secondary style={{ width: "50%" }}>
+            <AppText variant="caption" secondary style={{ width: '50%' }}>
               {onlyWatches
                 ? 'Showing smartwatches & fitness bands'
                 : 'Showing all nearby Bluetooth devices'}

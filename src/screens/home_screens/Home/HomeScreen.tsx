@@ -16,6 +16,7 @@ import HomeHeader from './components/HomeHeader';
 import NotificationBanner from './components/NotificationBanner';
 import HealthConnectPrompt from './components/HealthConnectPrompt';
 import WorkoutCategories from './components/WorkoutCategories';
+import RecentWorkoutsSection from './components/RecentWorkoutsSection';
 import { createHomeStyles } from './styles.Home';
 import QuickActions from './components/QuickActions';
 import { storageService } from '../../../storage/storageService';
@@ -106,6 +107,10 @@ const HomeScreen: React.FC<Props> = ({ navigation }) => {
               navigation.getParent()?.navigate('Challenges');
             }
           }}
+        />
+        <RecentWorkoutsSection
+          navigation={navigation}
+          healthRefreshKey={healthRefreshKey}
         />
       </ScrollView>
       <OnboardingModal

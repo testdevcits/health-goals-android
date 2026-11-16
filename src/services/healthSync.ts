@@ -934,3 +934,57 @@ export function syncRecentHealthData(
   });
   return activeSync;
 }
+
+export interface SyncedHealthRecord {
+  id: string;
+  userId?: string;
+  metricType: string;
+  value: number;
+  unit: string;
+  recordedAt?: string;
+  source?: string;
+  sourceRecordId?: string;
+  activityDate?: string;
+  startTime?: string;
+  endTime?: string;
+  activityType?: string;
+  sourceVersion?: number;
+  deleted?: boolean;
+  metadata?: {
+    estimatedCalories?: number;
+    estimatedDistanceKm?: number;
+  };
+  createdAt?: string;
+}
+
+export interface FetchSyncedRecordsResponse {
+  records?: SyncedHealthRecord[];
+  total?: number;
+  page?: number;
+  limit?: number;
+  hasMore?: boolean;
+  nextPage?: number | null;
+  data?: {
+    records?: SyncedHealthRecord[];
+    total?: number;
+  };
+}
+
+export async function fetchSyncedHealthRecords(): Promise<SyncedHealthRecord[]> {
+  try {
+    const response = await authenticatedRequest<any>(
+      'GET',
+      API_ENDPOINTS.HEALTH.SYNC,
+    );
+    // authenticatedRequest automatically unwraps response.data.data.
+    // We check both direct response.records and response.data.records for backwards/direct compatibility.
+    const records: SyncedHealthRecord[] =
+      response?.records ||
+      response?.data?.records ||
+      (Array.isArray(response) ? response : []);
+    return records;
+  } catch (error) {
+    console.warn('Could not fetch synced health records:', error);
+    return [];
+  }
+}

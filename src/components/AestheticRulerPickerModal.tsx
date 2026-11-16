@@ -144,8 +144,8 @@ const AestheticRulerPickerModal: React.FC<AestheticRulerPickerModalProps> = ({
               backgroundColor: isSelected
                 ? '#EF4444'
                 : isMajor
-                ? colors.textPrimary
-                : colors.border,
+                  ? colors.textPrimary
+                  : colors.border,
               height: isMajor ? 2 : 1.5,
             },
           ]}
@@ -182,8 +182,8 @@ const AestheticRulerPickerModal: React.FC<AestheticRulerPickerModalProps> = ({
               backgroundColor: isSelected
                 ? '#EF4444'
                 : isMajor
-                ? colors.textPrimary
-                : colors.border,
+                  ? colors.textPrimary
+                  : colors.border,
               width: isMajor ? 2 : 1.5,
             },
           ]}
@@ -307,6 +307,11 @@ const AestheticRulerPickerModal: React.FC<AestheticRulerPickerModalProps> = ({
                 decelerationRate="fast"
                 onScroll={handleVerticalScroll}
                 scrollEventThrottle={16}
+                getItemLayout={(_, index) => ({
+                  length: TICK_SPACING,
+                  offset: TICK_SPACING * index,
+                  index,
+                })}
                 contentContainerStyle={{
                   paddingTop: VERTICAL_CENTER_Y,
                   paddingBottom: VERTICAL_CENTER_Y,
@@ -347,6 +352,11 @@ const AestheticRulerPickerModal: React.FC<AestheticRulerPickerModalProps> = ({
                 decelerationRate="fast"
                 onScroll={handleHorizontalScroll}
                 scrollEventThrottle={16}
+                getItemLayout={(_, index) => ({
+                  length: TICK_SPACING,
+                  offset: TICK_SPACING * index,
+                  index,
+                })}
                 contentContainerStyle={{
                   paddingHorizontal: HORIZONTAL_CENTER_X - TICK_SPACING / 2,
                 }}

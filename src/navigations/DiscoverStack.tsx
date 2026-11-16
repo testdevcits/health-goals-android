@@ -18,3 +18,4 @@ const DiscoverStack = () => {
 };
 
 export default DiscoverStack;
+
