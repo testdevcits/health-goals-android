@@ -5,18 +5,13 @@ import HomeScreen from '../screens/home_screens/Home/HomeScreen';
 import DailyActivities from '../screens/home_screens/daily_activities/DailyActivities';
 import DailyActivityTrends from '../screens/home_screens/daily_activity_trends/DailyActivityTrends';
 import WorkoutCategoriesScreen from '../screens/home_screens/categories/WorkoutCategoriesScreen';
-import CategoriesDetailsScreen from '../screens/home_screens/categories_details/CategoriesDetailsScreen';
 import WorkoutSessionScreen from '../screens/home_screens/workout_sessions/WorkoutSessionScreen';
-import type { WorkoutCategory } from '../screens/home_screens/categories/consts';
 
 export type HomeStackParamList = {
   Home: undefined;
   DailyActivities: undefined;
   DailyActivityTrends: undefined;
   Categories: undefined;
-  CategoriesDetailsScreen:
-    | { source: 'categories'; category: WorkoutCategory }
-    | { source: 'home'; workoutId: string };
   WorkoutSession: { activityId?: string } | undefined;
 };
 
@@ -35,13 +30,10 @@ const HomeStack = () => {
         component={DailyActivityTrends}
       />
       <Stack.Screen name="Categories" component={WorkoutCategoriesScreen} />
-      <Stack.Screen
-        name="CategoriesDetailsScreen"
-        component={CategoriesDetailsScreen}
-      />
       <Stack.Screen name="WorkoutSession" component={WorkoutSessionScreen} />
     </Stack.Navigator>
   );
 };
 
 export default HomeStack;
+

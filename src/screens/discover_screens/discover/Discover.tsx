@@ -122,7 +122,10 @@ const DiscoverScreen: React.FC = () => {
         { backgroundColor: colors.backgroundSecondary },
       ]}
     >
-      <StatusBar barStyle="dark-content" backgroundColor={colors.surface} />
+      <StatusBar
+        barStyle={theme.isDark ? 'light-content' : 'dark-content'}
+        backgroundColor={colors.surface}
+      />
 
       <AppHeader
         title="Discover"
@@ -194,3 +197,5 @@ const styles = StyleSheet.create({
 });
 
 export default DiscoverScreen;
+
+

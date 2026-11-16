@@ -1,5 +1,5 @@
 import React, { Suspense } from 'react';
-import { Modal, Pressable, Platform, ScrollView, View } from 'react-native';
+import { Modal, Pressable, Platform, ScrollView, View, StatusBar } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { AppHeader, AppSettingsRow, AppText } from '../../../components';
 import { useTheme } from '../../../theme/useTheme';
@@ -56,6 +56,10 @@ const Settings = ({ navigation }: { navigation: SettingsNavigation }) => {
         { backgroundColor: colors.backgroundSecondary },
       ]}
     >
+      <StatusBar
+        barStyle={theme.isDark ? 'light-content' : 'dark-content'}
+        backgroundColor={colors.backgroundSecondary}
+      />
       <AppHeader
         title="Settings"
         subtitle="Notifications, preferences, and account"

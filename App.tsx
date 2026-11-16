@@ -35,11 +35,16 @@ function AppToastHost() {
 }
 
 function ThemedRoot() {
-  const { colorScheme, theme } = useTheme();
+  const { theme } = useTheme();
+
+  useEffect(() => {
+    StatusBar.setBarStyle(theme.isDark ? 'light-content' : 'dark-content', true);
+  }, [theme.isDark]);
+
   return (
     <>
       <StatusBar
-        barStyle={colorScheme === 'dark' ? 'light-content' : 'dark-content'}
+        barStyle={theme.isDark ? 'light-content' : 'dark-content'}
         translucent
         backgroundColor="transparent"
       />

@@ -57,7 +57,10 @@ const ProfileScreen: React.FC = () => {
         { backgroundColor: colors.backgroundSecondary },
       ]}
     >
-      <StatusBar barStyle="dark-content" backgroundColor={colors.surface} />
+      <StatusBar
+        barStyle={theme.isDark ? 'light-content' : 'dark-content'}
+        backgroundColor={colors.surface}
+      />
 
       <View style={[styles.header, { backgroundColor: colors.surface }]}>
         <View style={styles.headerMain}>

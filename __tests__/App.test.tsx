@@ -5,6 +5,12 @@
 import React from 'react';
 import ReactTestRenderer from 'react-test-renderer';
 
+jest.mock('../src/storage/storageService', () => ({
+  storageService: {
+    getString: jest.fn().mockReturnValue(undefined),
+    setString: jest.fn(),
+  },
+}));
 jest.mock('../src/navigations/AppNavigation', () => () => null);
 jest.mock('react-native-bootsplash', () => ({ hide: jest.fn() }));
 jest.mock('react-redux', () => ({
