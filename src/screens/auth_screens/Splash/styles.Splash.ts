@@ -29,6 +29,11 @@ export const createSplashStyles = (theme: AppTheme) => {
       alignItems: 'center',
       justifyContent: 'center',
     },
+    logoImage: {
+      width: 96,
+      height: 96,
+      borderRadius: radius.xxl,
+    },
     iconEmoji: {
       fontSize: 44,
     },

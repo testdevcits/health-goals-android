@@ -1,2 +1,5 @@
 const GoogleIcon = require('./google.png');
-export { GoogleIcon };
+const AppIconImage = require('./appicon.png');
+const LogoImage = require('./logo.png');
+
+export { GoogleIcon, AppIconImage, LogoImage };

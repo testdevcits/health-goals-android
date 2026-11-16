@@ -62,16 +62,14 @@ const SplashScreen: React.FC<Props> = ({ navigation }) => {
           { transform: [{ scale: logoScale }], opacity: logoOpacity },
         ]}
       >
-        <View style={styles.iconBox}>
-          <Animatable.Text
-            animation="pulse"
-            easing="ease-out"
-            iterationCount="infinite"
-            style={styles.iconEmoji}
-          >
-            💚
-          </Animatable.Text>
-        </View>
+        <Animatable.Image
+          animation="pulse"
+          easing="ease-out"
+          iterationCount="infinite"
+          source={require('../../../assets/images/appicon.png')}
+          style={styles.logoImage}
+          resizeMode="contain"
+        />
       </Animated.View>
 
       {/* Animated Text */}
