@@ -1,10 +1,15 @@
-import React, { memo } from 'react';
-import { View, Pressable, Alert } from 'react-native';
-import Svg, { Circle } from 'react-native-svg';
+import React, { memo, useMemo } from 'react';
+import { View, Pressable } from 'react-native';
 import { AppText } from '../../../../../components';
-import { Member, GroupChallenge, formatSteps } from '../../constants';
+import { Member, GroupChallenge } from '../../constants';
 import { useTheme } from '../../../../../theme/useTheme';
 import createGroupOverviewStyles from './styles.GroupOverview';
+import { OverviewShimmer } from '../group_detail_shimmer/GroupDetailShimmer';
+import { createGroupDetailShimmerStyles } from '../group_detail_shimmer/styles.GroupDetailShimmer';
+import { GoalCard } from './GoalCard';
+import { WeeklyChart } from './WeeklyChart';
+import { MemberRow } from './MemberRow';
+import { MemberAvatar } from './MemberAvatar';
 
 interface Props {
   members: Member[];
@@ -12,269 +17,22 @@ interface Props {
   onNewChallenge?: () => void;
   isLeader: boolean;
   onArchiveGroup: () => void;
+  loading?: boolean;
 }
 
-const GoalCard: React.FC<{ styles: any; members: Member[] }> = memo(
-  ({ styles, members }) => {
-    const { theme } = useTheme();
-    const { colors } = theme;
-    const total = members.reduce((sum, member) => sum + member.steps, 0);
-    const target = members.length * 10000;
-    const hasData = target > 0 && total > 0;
-    const progressRatio = target > 0 ? Math.min(1, total / target) : 0;
-    const percent = Math.round(progressRatio * 100);
-
-    const size = 86;
-    const strokeWidth = 7;
-    const radius = (size - strokeWidth) / 2;
-    const circumference = 2 * Math.PI * radius;
-    const strokeDashoffset = circumference * (1 - progressRatio);
-
-    return (
-      <View style={styles.goalCard}>
-        <View style={styles.goalRingContainer}>
-          <Svg width={size} height={size}>
-            {/* Background unfilled track */}
-            <Circle
-              cx={size / 2}
-              cy={size / 2}
-              r={radius}
-              stroke={colors.border}
-              strokeWidth={strokeWidth}
-              fill="none"
-            />
-            {/* Filled progress circle when data is available */}
-            {hasData ? (
-              <Circle
-                cx={size / 2}
-                cy={size / 2}
-                r={radius}
-                stroke={colors.primary}
-                strokeWidth={strokeWidth}
-                fill="none"
-                strokeDasharray={`${circumference} ${circumference}`}
-                strokeDashoffset={strokeDashoffset}
-                strokeLinecap="round"
-                rotation={-90}
-                origin={`${size / 2}, ${size / 2}`}
-              />
-            ) : null}
-          </Svg>
-          <View style={styles.goalRingInner}>
-            <AppText variant="h3" center>
-              {percent}%
-            </AppText>
-            <AppText variant="caption" secondary center>
-              OF GOAL
-            </AppText>
-          </View>
-        </View>
-        <View style={styles.goalInfo}>
-          <AppText variant="caption" secondary>
-            WEEKLY GROUP GOAL
-          </AppText>
-          <View style={styles.goalNumbers}>
-            <AppText variant="h2">{formatSteps(total)}</AppText>
-            <AppText variant="caption" secondary>
-              {` / ${formatSteps(target)} steps`}
-            </AppText>
-          </View>
-          <AppText
-            variant="caption"
-            color={hasData ? 'textSuccess' : 'textTertiary'}
-            bold
-          >
-            {members.length && total > 0
-              ? `${members.length} members · last 7 days`
-              : 'No synced steps this week'}
-          </AppText>
-        </View>
-      </View>
-    );
-  },
-);
-
-const WeeklyChart: React.FC<{ styles: any; members: Member[] }> = memo(
-  ({ styles, members }) => {
-    const topMembers = [...members]
-      .sort((first, second) => second.steps - first.steps)
-      .slice(0, 7);
-    const maxSteps = Math.max(...topMembers.map(member => member.steps), 0);
-    const axisValues = [maxSteps, Math.round(maxSteps / 2), 0];
-    const compactSteps = (steps: number) =>
-      steps >= 1000 ? `${(steps / 1000).toFixed(1)}k` : String(steps);
-
-    return (
-      <View style={styles.section}>
-        <View style={styles.sectionHeading}>
-          <AppText variant="subtitle1">Member steps</AppText>
-          <View style={styles.weekBadge}>
-            <AppText variant="caption" primary bold>
-              Last 7 days
-            </AppText>
-          </View>
-        </View>
-        <View style={styles.chartCard}>
-          {topMembers.length ? (
-            <>
-              <AppText variant="caption" secondary style={styles.chartCaption}>
-                Steps by member · top {topMembers.length}
-              </AppText>
-              <View style={styles.chartBody}>
-                <View style={styles.chartYAxis}>
-                  {axisValues.map((value, index) => (
-                    <AppText key={`${value}-${index}`} variant="caption" secondary>
-                      {compactSteps(value)}
-                    </AppText>
-                  ))}
-                </View>
-                <View style={styles.chartPlot}>
-                  <View style={[styles.chartGridLine, { top: '12%' }]} />
-                  <View style={[styles.chartGridLine, { top: '56%' }]} />
-                  <View style={[styles.chartGridLine, { bottom: 0 }]} />
-                  <View style={styles.chartBars}>
-                    {topMembers.map(member => {
-                      const barHeight = maxSteps
-                        ? Math.max(3, (member.steps / maxSteps) * 100)
-                        : 0;
-                      return (
-                        <View
-                          key={member.id}
-                          accessibilityRole="image"
-                          accessibilityLabel={`${member.name}: ${formatSteps(member.steps)} steps in the last 7 days`}
-                          style={styles.chartColumn}
-                        >
-                          <AppText
-                            variant="caption"
-                            primary
-                            bold
-                            center
-                            numberOfLines={1}
-                            style={[
-                              styles.chartValue,
-                              { bottom: `${barHeight}%` },
-                            ]}
-                          >
-                            {compactSteps(member.steps)}
-                          </AppText>
-                          <View
-                            style={[
-                              styles.chartBar,
-                              {
-                                height: `${barHeight}%` as any,
-                                backgroundColor: member.color,
-                              },
-                            ]}
-                          />
-                        </View>
-                      );
-                    })}
-                  </View>
-                </View>
-              </View>
-              <View style={styles.chartLabels}>
-                <View style={styles.chartAxisSpacer} />
-                {topMembers.map(member => (
-                  <AppText
-                    key={member.id}
-                    variant="caption"
-                    secondary
-                    center
-                    numberOfLines={1}
-                    style={styles.chartMemberLabel}
-                  >
-                    {member.name.split(/\s+/)[0]}
-                  </AppText>
-                ))}
-              </View>
-            </>
-          ) : (
-            <View style={styles.chartEmpty}>
-              <AppText variant="body2" secondary center>
-                Member step totals will appear here after activity syncs.
-              </AppText>
-            </View>
-          )}
-        </View>
-      </View>
-    );
-  },
-);
-
-const MemberRow: React.FC<{
-  member: Member;
-  index: number;
-  colors: any;
-  styles: any;
-}> = memo(({ member, index, colors, styles }) => {
-  const isCurrentUser = false;
-  return (
-    <Pressable
-      accessibilityRole="button"
-      onPress={() =>
-        Alert.alert(
-          member.name,
-          `${formatSteps(member.steps)} steps · ${member.streak
-          } active days this week`,
-        )
-      }
-      style={[styles.memberRow, isCurrentUser && styles.currentMemberRow]}
-    >
-      <View
-        style={[
-          styles.rankBadge,
-          index === 0 && styles.firstRankBadge,
-          index === 2 && styles.thirdRankBadge,
-        ]}
-      >
-        <AppText
-          variant="caption"
-          style={{
-            color:
-              index === 0
-                ? colors.warning
-                : index === 2
-                  ? colors.coral
-                  : colors.textSecondary,
-          }}
-          bold
-        >
-          {index + 1}
-        </AppText>
-      </View>
-
-      <View style={[styles.memberAvatar, { backgroundColor: member.color }]}>
-        <AppText variant="subtitle2" color="white" bold>
-          {member.initials}
-        </AppText>
-      </View>
-
-      <View style={styles.memberInfo}>
-        <AppText variant="label" numberOfLines={1}>
-          {member.name}
-        </AppText>
-        <AppText variant="caption" secondary>
-          {member.streak} active days this week
-        </AppText>
-      </View>
-
-      <View style={styles.memberSteps}>
-        <AppText variant="label" bold right>
-          {formatSteps(member.steps)}
-        </AppText>
-        <AppText variant="caption" secondary right>
-          steps
-        </AppText>
-      </View>
-    </Pressable>
-  );
-});
-
 export const GroupOverview: React.FC<Props> = memo(
-  ({ members, isLeader, onArchiveGroup }) => {
+  ({ members, isLeader, onArchiveGroup, loading = false }) => {
     const { theme } = useTheme();
     const { colors, spacing, radius } = theme;
     const styles = createGroupOverviewStyles(colors, spacing, radius);
+    const shimmerStyles = useMemo(
+      () => createGroupDetailShimmerStyles(colors, spacing),
+      [colors, spacing],
+    );
+
+    if (loading) {
+      return <OverviewShimmer styles={shimmerStyles} />;
+    }
 
     return (
       <>
@@ -302,8 +60,6 @@ export const GroupOverview: React.FC<Props> = memo(
           </AppText>
         </View>
 
-
-
         {isLeader ? (
           <View style={styles.section}>
             <Pressable
@@ -326,4 +82,5 @@ export const GroupOverview: React.FC<Props> = memo(
   },
 );
 
-export { MemberRow };
+export { GoalCard, WeeklyChart, MemberRow, MemberAvatar };
+export default GroupOverview;

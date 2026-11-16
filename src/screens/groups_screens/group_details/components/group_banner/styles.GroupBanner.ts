@@ -42,6 +42,11 @@ export default StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     marginRight: -7,
+    overflow: 'hidden',
+  },
+  bannerAvatarImage: {
+    width: '100%',
+    height: '100%',
   },
   bannerAvatarText: {
     fontSize: 11,

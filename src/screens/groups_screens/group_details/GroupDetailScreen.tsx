@@ -15,11 +15,11 @@ import { GroupLeaderboard } from './components/group_leaderboard/GroupLeaderboar
 import { CreateChallengeModal } from './components/create_challenge_modal/CreateChallengeModal';
 import { EditGroupModal } from './components/edit_group_modal/EditGroupModal';
 import { MemberSearchModal } from './components/member_search_modal/MemberSearchModal';
+import { GroupDetailShimmer } from './components/group_detail_shimmer/GroupDetailShimmer';
 import {
   AppButton,
   AppErrorView,
   AppHeader,
-  AppLoader,
   AppText,
   ConfirmationModal,
 } from '../../../components';
@@ -88,6 +88,7 @@ const GroupDetailScreen: React.FC<GroupDetailScreenProps> = ({
     members,
     // messages,
     loading,
+    dataLoading,
     loadError,
     // messageDraft,
     // setMessageDraft,
@@ -133,7 +134,10 @@ const GroupDetailScreen: React.FC<GroupDetailScreenProps> = ({
         keyboardShouldPersistTaps="handled"
       >
         {loading ? (
-          <AppLoader message="Loading group details…" />
+          <GroupDetailShimmer
+            activeTab={activeTab}
+            onTabChange={setActiveTab}
+          />
         ) : loadError ? (
           <AppErrorView message={loadError} onRefresh={refreshGroup} />
         ) : (
@@ -175,12 +179,16 @@ const GroupDetailScreen: React.FC<GroupDetailScreenProps> = ({
                 members={members}
                 challenges={challenges}
                 isLeader={isLeader}
+                loading={dataLoading}
                 onNewChallenge={() => setCreateChallengeVisible(true)}
                 onArchiveGroup={() => setArchiveModalVisible(true)}
               />
             )}
             {activeTab === 'Leaderboard' && (
-              <GroupLeaderboard members={members} />
+              <GroupLeaderboard
+                members={members}
+                loading={dataLoading}
+              />
             )}
             {activeTab === 'Challenges' && (
               <ChallengesTab
@@ -188,6 +196,7 @@ const GroupDetailScreen: React.FC<GroupDetailScreenProps> = ({
                 challenges={challenges}
                 onJoin={joinGroupChallenge}
                 joiningChallengeId={joiningChallengeId}
+                loading={dataLoading}
               />
             )}
             {/* {activeTab === 'Chat' && (

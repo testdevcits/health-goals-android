@@ -1,4 +1,4 @@
-import React, { memo } from 'react';
+import React, { memo, useState } from 'react';
 import { Image, Pressable, View } from 'react-native';
 import { AppText } from '../../../../../components';
 import { useTheme } from '../../../../../theme/useTheme';
@@ -14,6 +14,48 @@ interface Props {
   onSettingsPress?: () => void;
   imageUrl?: string;
 }
+
+const BannerAvatarItem: React.FC<{
+  member: Member;
+  index: number;
+  colors: any;
+}> = memo(({ member, index, colors }) => {
+  const [imageError, setImageError] = useState(false);
+  const imageUrl = member.profileImageUrl?.trim();
+  const showImage = Boolean(
+    imageUrl &&
+      (imageUrl.startsWith('http://') || imageUrl.startsWith('https://')) &&
+      !imageError,
+  );
+
+  return (
+    <View
+      style={[
+        styles.bannerAvatar,
+        {
+          backgroundColor:
+            AVATAR_PALETTE[index % AVATAR_PALETTE.length],
+          borderColor: colors.white,
+          zIndex: 10 - index,
+        },
+      ]}
+    >
+      {showImage && imageUrl ? (
+        <Image
+          source={{ uri: imageUrl }}
+          style={styles.bannerAvatarImage}
+          resizeMode="cover"
+          accessibilityIgnoresInvertColors
+          onError={() => setImageError(true)}
+        />
+      ) : (
+        <AppText style={styles.bannerAvatarText} color="white" bold>
+          {member.initials}
+        </AppText>
+      )}
+    </View>
+  );
+});
 
 export const GroupBanner: React.FC<Props> = memo(
   ({
@@ -60,22 +102,12 @@ export const GroupBanner: React.FC<Props> = memo(
 
           <View style={styles.bannerMemberAvatars}>
             {members.slice(0, 4).map((member, index) => (
-              <View
+              <BannerAvatarItem
                 key={member.id}
-                style={[
-                  styles.bannerAvatar,
-                  {
-                    backgroundColor:
-                      AVATAR_PALETTE[index % AVATAR_PALETTE.length],
-                    borderColor: colors.white,
-                    zIndex: 10 - index,
-                  },
-                ]}
-              >
-                <AppText style={styles.bannerAvatarText} color="white" bold>
-                  {member.initials}
-                </AppText>
-              </View>
+                member={member}
+                index={index}
+                colors={colors}
+              />
             ))}
 
             {memberCount > 4 && (

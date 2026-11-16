@@ -1,9 +1,10 @@
-import { Pressable, View } from 'react-native';
-import React from 'react';
-import { AppEmptyState, AppText } from '../../../../../components';
+import { View } from 'react-native';
+import React, { useMemo } from 'react';
+import { AppEmptyState } from '../../../../../components';
 import ChallengeCard from '../../../../../components/ChallengeCard';
 import { useTheme } from '../../../../../theme/useTheme';
-import createGroupOverviewStyles from '../group_overview/styles.GroupOverview';
+import { ChallengesShimmer } from '../group_detail_shimmer/GroupDetailShimmer';
+import { createGroupDetailShimmerStyles } from '../group_detail_shimmer/styles.GroupDetailShimmer';
 import styles from './styles.ChallengesTab';
 
 interface ChallengeItem {
@@ -25,17 +26,25 @@ interface ChallengesTabProps {
   challenges: ChallengeItem[];
   onJoin?: (challengeId: string) => void;
   joiningChallengeId?: string | null;
+  loading?: boolean;
 }
 
 const ChallengesTab: React.FC<ChallengesTabProps> = ({
-  onNewChallenge,
   challenges,
   onJoin,
   joiningChallengeId,
+  loading = false,
 }) => {
   const { theme } = useTheme();
   const { colors, spacing, radius } = theme;
-  const overviewStyles = createGroupOverviewStyles(colors, spacing, radius);
+  const shimmerStyles = useMemo(
+    () => createGroupDetailShimmerStyles(colors, spacing),
+    [colors, spacing],
+  );
+
+  if (loading) {
+    return <ChallengesShimmer styles={shimmerStyles} />;
+  }
 
   return (
     <View style={styles.section}>
@@ -64,7 +73,7 @@ const ChallengesTab: React.FC<ChallengesTabProps> = ({
         ))
       )}
 
-      {onNewChallenge ? (
+      {/* {onNewChallenge ? (
         <Pressable
           accessibilityRole="button"
           onPress={onNewChallenge}
@@ -74,7 +83,7 @@ const ChallengesTab: React.FC<ChallengesTabProps> = ({
             + New Challenge
           </AppText>
         </Pressable>
-      ) : null}
+      ) : null} */}
     </View>
   );
 };

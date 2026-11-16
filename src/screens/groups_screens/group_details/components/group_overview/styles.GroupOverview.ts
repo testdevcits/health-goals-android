@@ -195,6 +195,12 @@ const createGroupOverviewStyles = (colors: any, spacing: any, radius: any) =>
       borderRadius: radius.full,
       alignItems: 'center',
       justifyContent: 'center',
+      overflow: 'hidden',
+    },
+    memberAvatarImage: {
+      width: '100%',
+      height: '100%',
+      borderRadius: radius.full,
     },
     memberInfo: {
       flex: 1,

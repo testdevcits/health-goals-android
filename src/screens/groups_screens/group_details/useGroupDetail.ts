@@ -110,6 +110,7 @@ export default function useGroupDetail({
   const [members, setMembers] = useState<Member[]>([]);
   const [messages, setMessages] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [dataLoading, setDataLoading] = useState(true);
   const [loadError, setLoadError] = useState('');
   const [messageDraft, setMessageDraft] = useState('');
   const [createChallengeVisible, setCreateChallengeVisible] = useState(false);
@@ -132,6 +133,7 @@ export default function useGroupDetail({
   const refreshGroup = useCallback(async () => {
     if (!groupId) return;
     setLoading(true);
+    setDataLoading(true);
     setLoadError('');
     try {
       const groupResult = await authenticatedRequest<{
@@ -214,6 +216,7 @@ export default function useGroupDetail({
               id: string;
               rank: number;
               name: string;
+              profileImageUrl?: string;
               steps: number;
               initials: string;
               streak: string;
@@ -302,6 +305,7 @@ export default function useGroupDetail({
             steps: item.steps,
             streak: Number.parseInt(item.streak, 10) || 0,
             color: item.color,
+            profileImageUrl: item.profileImageUrl?.trim() || undefined,
           })),
         );
       } else {
@@ -317,6 +321,7 @@ export default function useGroupDetail({
       showAppToast('error', 'Could not load group', message);
     } finally {
       setLoading(false);
+      setDataLoading(false);
     }
   }, [groupId, primaryColor]);
 
@@ -689,6 +694,7 @@ export default function useGroupDetail({
     members,
     messages,
     loading,
+    dataLoading: dataLoading || loading,
     loadError,
     messageDraft,
     setMessageDraft,

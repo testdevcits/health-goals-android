@@ -10,6 +10,7 @@ export interface Member {
   steps: number;
   streak: number;
   color: string;
+  profileImageUrl?: string;
 }
 
 export interface GroupMessage {

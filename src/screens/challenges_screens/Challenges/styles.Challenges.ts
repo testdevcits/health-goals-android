@@ -350,7 +350,7 @@ const createStyles = ({ colors, spacing, radius }: AppTheme) =>
       marginBottom: spacing.sm,
     },
     badgeEmoji: {
-      fontSize: 27,
+      // fontSize: 27,
     },
     lockedBadge: {
       opacity: 0.55,

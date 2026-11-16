@@ -1,22 +1,34 @@
-import React, { memo } from 'react';
+import React, { memo, useMemo } from 'react';
 import { View } from 'react-native';
 import { AppEmptyState, AppText } from '../../../../../components';
 import { Member } from '../../constants';
-import { MemberRow } from '../group_overview/GroupOverview';
+import { MemberRow } from '../group_overview/MemberRow';
 import { useTheme } from '../../../../../theme/useTheme';
 import createGroupOverviewStyles from '../group_overview/styles.GroupOverview';
+import { LeaderboardShimmer } from '../group_detail_shimmer/GroupDetailShimmer';
+import { createGroupDetailShimmerStyles } from '../group_detail_shimmer/styles.GroupDetailShimmer';
 import styles from './styles.GroupLeaderboard';
 
 interface Props {
   members: Member[];
+  loading?: boolean;
 }
 
-export const GroupLeaderboard: React.FC<Props> = memo(({ members }) => {
-  const { theme } = useTheme();
-  const { colors, spacing, radius } = theme;
-  const overviewStyles = createGroupOverviewStyles(colors, spacing, radius);
+export const GroupLeaderboard: React.FC<Props> = memo(
+  ({ members, loading = false }) => {
+    const { theme } = useTheme();
+    const { colors, spacing, radius } = theme;
+    const overviewStyles = createGroupOverviewStyles(colors, spacing, radius);
+    const shimmerStyles = useMemo(
+      () => createGroupDetailShimmerStyles(colors, spacing),
+      [colors, spacing],
+    );
 
-  return (
+    if (loading) {
+      return <LeaderboardShimmer styles={shimmerStyles} />;
+    }
+
+    return (
     <>
       <View style={styles.leaderboardIntro}>
         <AppText variant="caption" secondary center>
