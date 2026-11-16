@@ -47,7 +47,11 @@ export const getTodayCalendarString = () => {
 
 export const getMaxBirthDateCalendarString = () => {
   const today = new Date();
-  const max = new Date(today.getFullYear() - 18, today.getMonth(), today.getDate());
+  const max = new Date(
+    today.getFullYear() - 18,
+    today.getMonth(),
+    today.getDate(),
+  );
   return `${max.getFullYear()}-${String(max.getMonth() + 1).padStart(
     2,
     '0',
@@ -63,7 +67,11 @@ export const isAtLeast18 = (value: string) => {
   if (!year || !month || !day) return false;
   const date = new Date(year, month - 1, day);
   const today = new Date();
-  const maxAllowed = new Date(today.getFullYear() - 18, today.getMonth(), today.getDate());
+  const maxAllowed = new Date(
+    today.getFullYear() - 18,
+    today.getMonth(),
+    today.getDate(),
+  );
   const minAllowed = new Date(1900, 0, 1);
   return date <= maxAllowed && date >= minAllowed;
 };

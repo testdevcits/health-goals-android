@@ -61,7 +61,9 @@ export const rewardIcon = (title: string) =>
 export default function useRewards() {
   const [points, setPoints] = useState(0);
   const [wallet, setWallet] = useState<Wallet | null>(null);
-  const [dailyActivity, setDailyActivity] = useState<DailyActivity | null>(null);
+  const [dailyActivity, setDailyActivity] = useState<DailyActivity | null>(
+    null,
+  );
   const [rewards, setRewards] = useState<Reward[]>([]);
   const [redemptions, setRedemptions] = useState<Redemption[]>([]);
   const [transactions, setTransactions] = useState<WalletTransaction[]>([]);
@@ -87,21 +89,21 @@ export default function useRewards() {
       ticketsResult,
       transactionsResult,
     ] = await Promise.allSettled([
-        fetchWallet(),
-        authenticatedRequest<{ rewards: Reward[] }>(
-          'GET',
-          API_ENDPOINTS.REWARDS.LIST,
-        ),
-        authenticatedRequest<{ redemptions: Redemption[] }>(
-          'GET',
-          API_ENDPOINTS.REWARDS.REDEMPTIONS,
-        ),
-        authenticatedRequest<{ items: TicketClaim[] }>(
-          'GET',
-          API_ENDPOINTS.REWARDS.LEADERBOARD_TICKETS,
-        ),
-        fetchActivityTransactions(1),
-      ]);
+      fetchWallet(),
+      authenticatedRequest<{ rewards: Reward[] }>(
+        'GET',
+        API_ENDPOINTS.REWARDS.LIST,
+      ),
+      authenticatedRequest<{ redemptions: Redemption[] }>(
+        'GET',
+        API_ENDPOINTS.REWARDS.REDEMPTIONS,
+      ),
+      authenticatedRequest<{ items: TicketClaim[] }>(
+        'GET',
+        API_ENDPOINTS.REWARDS.LEADERBOARD_TICKETS,
+      ),
+      fetchActivityTransactions(1),
+    ]);
     if (walletResult.status === 'fulfilled') {
       setWallet(walletResult.value.wallet);
       setDailyActivity(walletResult.value.dailyActivity);

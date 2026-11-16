@@ -54,10 +54,7 @@ test('loads active profile questions in server-defined order', async () => {
     questions[1],
     questions[0],
   ]);
-  expect(requestMock).toHaveBeenCalledWith(
-    'GET',
-    '/auth/me/profile-questions',
-  );
+  expect(requestMock).toHaveBeenCalledWith('GET', '/auth/me/profile-questions');
 });
 
 test('submits keyed answers and validates returned pending questions', async () => {

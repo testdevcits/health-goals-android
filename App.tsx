@@ -38,7 +38,10 @@ function ThemedRoot() {
   const { theme } = useTheme();
 
   useEffect(() => {
-    StatusBar.setBarStyle(theme.isDark ? 'light-content' : 'dark-content', true);
+    StatusBar.setBarStyle(
+      theme.isDark ? 'light-content' : 'dark-content',
+      true,
+    );
   }, [theme.isDark]);
 
   return (

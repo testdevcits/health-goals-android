@@ -123,9 +123,7 @@ const HealthReportsScreen: React.FC<{
         subtitle="Your weekly and monthly summaries"
         onBackPress={() => navigation.goBack()}
       />
-      <ScrollView
-        contentContainerStyle={styles.scrollContent}
-      >
+      <ScrollView contentContainerStyle={styles.scrollContent}>
         <MetricReportCard
           from={from}
           to={to}

@@ -112,7 +112,9 @@ const EnergyCard: React.FC<{ healthRefreshKey?: number }> = ({
     );
   });
   const [loading, setLoading] = React.useState(() => {
-    return !storageService.getObject<CachedEnergyCardData>(CACHE_KEY_ENERGY_CARD);
+    return !storageService.getObject<CachedEnergyCardData>(
+      CACHE_KEY_ENERGY_CARD,
+    );
   });
   const [loadError, setLoadError] = React.useState(false);
   const [hasActivity, setHasActivity] = React.useState(() => {
@@ -258,10 +260,7 @@ const EnergyCard: React.FC<{ healthRefreshKey?: number }> = ({
           />
           <View style={styles.energyLoadingText}>
             <View
-              style={[
-                styles.energyLoadingLine,
-                styles.energyLoadingLineTitle,
-              ]}
+              style={[styles.energyLoadingLine, styles.energyLoadingLineTitle]}
             />
             <View
               style={[

@@ -62,8 +62,8 @@ const CommunityGuidelines: React.FC<Props> = ({ navigation }) => {
             Community Guidelines
           </AppText>
           <AppText variant="body2" style={styles.heroDescription}>
-            Be supportive. Celebrate wins. Never share someone else&apos;s health
-            data. Keep challenges friendly and inclusive.
+            Be supportive. Celebrate wins. Never share someone else&apos;s
+            health data. Keep challenges friendly and inclusive.
           </AppText>
         </View>
 

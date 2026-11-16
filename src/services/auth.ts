@@ -268,7 +268,7 @@ export async function logout() {
         {},
         { headers: { Authorization: `Bearer ${session.accessToken}` } },
       )
-      .catch(() => { });
+      .catch(() => {});
   }
 }
 

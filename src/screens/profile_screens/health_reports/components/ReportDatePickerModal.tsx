@@ -54,7 +54,9 @@ export const ReportDatePickerModal: React.FC<ReportDatePickerModalProps> = ({
           onPress={onClose}
           accessibilityLabel="Close date range picker"
         />
-        <View style={[styles.calendarCard, { backgroundColor: colors.surface }]}>
+        <View
+          style={[styles.calendarCard, { backgroundColor: colors.surface }]}
+        >
           <AppText variant="subtitle2" bold style={styles.calendarTitle}>
             Choose report period
           </AppText>

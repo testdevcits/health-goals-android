@@ -71,90 +71,94 @@ export const OverviewShimmer: React.FC<TabShimmerProps> = memo(({ styles }) => (
   </>
 ));
 
-export const LeaderboardShimmer: React.FC<TabShimmerProps> = memo(({ styles }) => (
-  <>
-    {/* 1. Leaderboard Ranking Intro */}
-    <AppShimmer>
-      <View style={styles.leaderboardIntro} />
-    </AppShimmer>
+export const LeaderboardShimmer: React.FC<TabShimmerProps> = memo(
+  ({ styles }) => (
+    <>
+      {/* 1. Leaderboard Ranking Intro */}
+      <AppShimmer>
+        <View style={styles.leaderboardIntro} />
+      </AppShimmer>
 
-    {/* 2. Section Heading */}
-    <AppShimmer>
-      <View style={styles.sectionTitle} />
-    </AppShimmer>
+      {/* 2. Section Heading */}
+      <AppShimmer>
+        <View style={styles.sectionTitle} />
+      </AppShimmer>
 
-    {/* 3. Contributors Ranked Card with 5 rows */}
-    <AppShimmer>
-      <View style={styles.contributorsCard}>
-        {[1, 2, 3, 4, 5].map(item => (
-          <View key={item} style={styles.memberRow}>
-            <View style={styles.memberRowLeft}>
-              <View style={styles.memberRank} />
-              <View style={styles.memberAvatar} />
-              <View style={styles.memberTextCol}>
-                <View style={styles.memberName} />
-                <View style={styles.memberSubtext} />
+      {/* 3. Contributors Ranked Card with 5 rows */}
+      <AppShimmer>
+        <View style={styles.contributorsCard}>
+          {[1, 2, 3, 4, 5].map(item => (
+            <View key={item} style={styles.memberRow}>
+              <View style={styles.memberRowLeft}>
+                <View style={styles.memberRank} />
+                <View style={styles.memberAvatar} />
+                <View style={styles.memberTextCol}>
+                  <View style={styles.memberName} />
+                  <View style={styles.memberSubtext} />
+                </View>
               </View>
+              <View style={styles.memberSteps} />
             </View>
-            <View style={styles.memberSteps} />
-          </View>
-        ))}
-      </View>
-    </AppShimmer>
-  </>
-));
+          ))}
+        </View>
+      </AppShimmer>
+    </>
+  ),
+);
 
-export const ChallengesShimmer: React.FC<TabShimmerProps> = memo(({ styles }) => (
-  <>
-    {/* 1. Challenge Card 1 */}
-    <AppShimmer>
-      <View style={styles.challengeFullCard}>
-        <View style={styles.cardHeaderRow}>
-          <View style={styles.cardHeaderLeft}>
-            <View style={styles.cardIcon} />
-            <View style={styles.cardTitle} />
+export const ChallengesShimmer: React.FC<TabShimmerProps> = memo(
+  ({ styles }) => (
+    <>
+      {/* 1. Challenge Card 1 */}
+      <AppShimmer>
+        <View style={styles.challengeFullCard}>
+          <View style={styles.cardHeaderRow}>
+            <View style={styles.cardHeaderLeft}>
+              <View style={styles.cardIcon} />
+              <View style={styles.cardTitle} />
+            </View>
+            <View style={styles.cardBadge} />
           </View>
-          <View style={styles.cardBadge} />
-        </View>
-        <View style={styles.challengeDescLine} />
-        <View style={styles.challengeDescLine2} />
-        <View style={styles.cardProgressBar} />
-        <View style={styles.cardFooterRow}>
-          <View style={styles.cardFooterText} />
-          <View style={styles.cardBadge} />
-        </View>
-        <View style={styles.challengeFullBtn} />
-      </View>
-    </AppShimmer>
-
-    {/* 2. Challenge Card 2 */}
-    <AppShimmer>
-      <View style={styles.challengeFullCard}>
-        <View style={styles.cardHeaderRow}>
-          <View style={styles.cardHeaderLeft}>
-            <View style={styles.cardIcon} />
-            <View style={styles.cardTitle} />
+          <View style={styles.challengeDescLine} />
+          <View style={styles.challengeDescLine2} />
+          <View style={styles.cardProgressBar} />
+          <View style={styles.cardFooterRow}>
+            <View style={styles.cardFooterText} />
+            <View style={styles.cardBadge} />
           </View>
-          <View style={styles.cardBadge} />
+          <View style={styles.challengeFullBtn} />
         </View>
-        <View style={styles.challengeDescLine} />
-        <View style={styles.cardProgressBar} />
-        <View style={styles.cardFooterRow}>
-          <View style={styles.cardFooterText} />
-          <View style={styles.cardBadge} />
-        </View>
-        <View style={styles.challengeFullBtn} />
-      </View>
-    </AppShimmer>
+      </AppShimmer>
 
-    {/* 3. New Challenge Button Placeholder */}
-    <AppShimmer>
-      <View style={styles.newChallengeButton}>
-        <View style={styles.newChallengeText} />
-      </View>
-    </AppShimmer>
-  </>
-));
+      {/* 2. Challenge Card 2 */}
+      <AppShimmer>
+        <View style={styles.challengeFullCard}>
+          <View style={styles.cardHeaderRow}>
+            <View style={styles.cardHeaderLeft}>
+              <View style={styles.cardIcon} />
+              <View style={styles.cardTitle} />
+            </View>
+            <View style={styles.cardBadge} />
+          </View>
+          <View style={styles.challengeDescLine} />
+          <View style={styles.cardProgressBar} />
+          <View style={styles.cardFooterRow}>
+            <View style={styles.cardFooterText} />
+            <View style={styles.cardBadge} />
+          </View>
+          <View style={styles.challengeFullBtn} />
+        </View>
+      </AppShimmer>
+
+      {/* 3. New Challenge Button Placeholder */}
+      <AppShimmer>
+        <View style={styles.newChallengeButton}>
+          <View style={styles.newChallengeText} />
+        </View>
+      </AppShimmer>
+    </>
+  ),
+);
 
 export interface GroupDetailShimmerProps {
   activeTab?: DetailTab;

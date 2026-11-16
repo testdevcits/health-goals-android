@@ -387,9 +387,7 @@ export const readStepsHistory = async (
     Date.parse(`${firstDay}T00:00:00.000Z`) - IST_OFFSET_MS,
   );
   const end = new Date(
-    Date.parse(
-      `${shiftDateKey(lastDay, 1)}T00:00:00.000Z`,
-    ) - IST_OFFSET_MS,
+    Date.parse(`${shiftDateKey(lastDay, 1)}T00:00:00.000Z`) - IST_OFFSET_MS,
   );
 
   const grouped = await aggregateGroupByDuration({
@@ -451,9 +449,7 @@ export const readSleepHistory = async (
     Date.parse(`${firstDay}T00:00:00.000Z`) - IST_OFFSET_MS,
   );
   const end = new Date(
-    Date.parse(
-      `${shiftDateKey(lastDay, 1)}T00:00:00.000Z`,
-    ) - IST_OFFSET_MS,
+    Date.parse(`${shiftDateKey(lastDay, 1)}T00:00:00.000Z`) - IST_OFFSET_MS,
   );
 
   const totals = new Map<string, number>();
@@ -474,7 +470,10 @@ export const readSleepHistory = async (
       totals.set(key, (totals.get(key) || 0) + minutes);
     });
   } catch (err) {
-    console.warn('[HealthConnect] aggregateGroupByDuration SleepSession error:', err);
+    console.warn(
+      '[HealthConnect] aggregateGroupByDuration SleepSession error:',
+      err,
+    );
   }
 
   const hasAggregated = Array.from(totals.values()).some(v => v > 0);
@@ -544,9 +543,7 @@ export const readActiveMinutesHistory = async (
     Date.parse(`${firstDay}T00:00:00.000Z`) - IST_OFFSET_MS,
   );
   const end = new Date(
-    Date.parse(
-      `${shiftDateKey(lastDay, 1)}T00:00:00.000Z`,
-    ) - IST_OFFSET_MS,
+    Date.parse(`${shiftDateKey(lastDay, 1)}T00:00:00.000Z`) - IST_OFFSET_MS,
   );
 
   const totals = new Map<string, number>();
@@ -569,7 +566,10 @@ export const readActiveMinutesHistory = async (
       totals.set(key, (totals.get(key) || 0) + minutes);
     });
   } catch (err) {
-    console.warn('[HealthConnect] aggregateGroupByDuration ExerciseSession error:', err);
+    console.warn(
+      '[HealthConnect] aggregateGroupByDuration ExerciseSession error:',
+      err,
+    );
   }
 
   const hasAggregated = Array.from(totals.values()).some(v => v > 0);
@@ -593,7 +593,10 @@ export const readActiveMinutesHistory = async (
         totals.set(key, (totals.get(key) || 0) + durationMins);
       });
     } catch (readErr) {
-      console.warn('[HealthConnect] readRecords ExerciseSession error:', readErr);
+      console.warn(
+        '[HealthConnect] readRecords ExerciseSession error:',
+        readErr,
+      );
     }
   }
 

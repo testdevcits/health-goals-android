@@ -40,7 +40,10 @@ export const getMaxBirthDate = () => {
 
 export const maxBirthDateCalendarKey = () => {
   const max = getMaxBirthDate();
-  return `${max.getFullYear()}-${String(max.getMonth() + 1).padStart(2, '0')}-${String(max.getDate()).padStart(2, '0')}`;
+  return `${max.getFullYear()}-${String(max.getMonth() + 1).padStart(
+    2,
+    '0',
+  )}-${String(max.getDate()).padStart(2, '0')}`;
 };
 
 export const isAtLeast18 = (value: string) => {
@@ -105,7 +108,10 @@ export const useProfileQuestions = (enabled = true) => {
         reloadAfterLoadingRef.current = false;
         if (focusedRef.current) {
           loadQuestionsRef.current().catch(cause => {
-            console.error('Unexpected profile-question loading failure:', cause);
+            console.error(
+              'Unexpected profile-question loading failure:',
+              cause,
+            );
           });
         }
       }
@@ -144,7 +150,10 @@ export const useProfileQuestions = (enabled = true) => {
     ) {
       return 'Select one of the available options.';
     }
-    if (currentQuestion.type === 'number' && !Number.isFinite(Number(trimmed))) {
+    if (
+      currentQuestion.type === 'number' &&
+      !Number.isFinite(Number(trimmed))
+    ) {
       return 'Enter a valid number.';
     }
     if (currentQuestion.type === 'date') {

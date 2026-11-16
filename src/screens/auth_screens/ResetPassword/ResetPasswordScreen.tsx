@@ -72,7 +72,8 @@ const ResetPasswordScreen: React.FC<Props> = ({ navigation, route }) => {
               center
               style={styles.subtitleText}
             >
-              Your identity has been verified. Create a new, strong password for your account.
+              Your identity has been verified. Create a new, strong password for
+              your account.
             </AppText>
           </View>
 

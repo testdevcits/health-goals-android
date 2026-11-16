@@ -72,8 +72,7 @@ export const PointsActivitySection: React.FC<PointsActivitySectionProps> = ({
                 key={transaction.id}
                 icon={TRANSACTION_ICONS[transaction.type]}
                 title={
-                  transaction.description ||
-                  transaction.type.replace(/_/g, ' ')
+                  transaction.description || transaction.type.replace(/_/g, ' ')
                 }
                 detail={`${transaction.type}${date ? ` · ${date}` : ''}${
                   transaction.referenceType

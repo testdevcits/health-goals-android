@@ -62,16 +62,11 @@ const ProfileScreen: React.FC = () => {
         backgroundColor={colors.surface}
       />
 
-
-
-
       <AppHeader
         title="Profile"
         subtitle="Your account, rewards, and settings"
         isBack={false}
       />
-
-
 
       <ScrollView
         showsVerticalScrollIndicator={false}
@@ -93,7 +88,10 @@ const ProfileScreen: React.FC = () => {
           <>
             {/* Profile information */}
             <View style={styles.profileSection}>
-              <Pressable style={styles.largeAvatar} onPress={() => navigation.navigate('EditProfile')}>
+              <Pressable
+                style={styles.largeAvatar}
+                onPress={() => navigation.navigate('EditProfile')}
+              >
                 {profileImageUrl ? (
                   <Image
                     source={{ uri: profileImageUrl }}

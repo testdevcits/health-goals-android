@@ -156,9 +156,7 @@ export const GroupedActivityCard: React.FC<GroupedActivityCardProps> = ({
       </Pressable>
 
       {/* Primary Metrics Row */}
-      <View
-        style={[styles.metricsRow, { borderTopColor: colors.border }]}
-      >
+      <View style={[styles.metricsRow, { borderTopColor: colors.border }]}>
         {/* Duration / Main Value Pill */}
         <View
           style={[
@@ -183,11 +181,7 @@ export const GroupedActivityCard: React.FC<GroupedActivityCardProps> = ({
             ]}
           >
             <AppText variant="caption">🔥</AppText>
-            <AppText
-              variant="caption"
-              bold
-              style={{ color: colors.warning }}
-            >
+            <AppText variant="caption" bold style={{ color: colors.warning }}>
               {group.totalCalories} kcal
             </AppText>
           </View>
@@ -202,11 +196,7 @@ export const GroupedActivityCard: React.FC<GroupedActivityCardProps> = ({
             ]}
           >
             <AppIcon name="MapPin" size={12} color={colors.info} />
-            <AppText
-              variant="caption"
-              bold
-              style={{ color: colors.info }}
-            >
+            <AppText variant="caption" bold style={{ color: colors.info }}>
               {group.totalDistanceKm.toFixed(2)} km
             </AppText>
           </View>
@@ -247,10 +237,7 @@ export const GroupedActivityCard: React.FC<GroupedActivityCardProps> = ({
       {hasMultipleSessions ? (
         <Pressable
           onPress={onToggleExpand}
-          style={[
-            styles.expandToggleBtn,
-            { borderTopColor: colors.border },
-          ]}
+          style={[styles.expandToggleBtn, { borderTopColor: colors.border }]}
         >
           <AppText variant="caption" bold secondary>
             {isExpanded
@@ -279,9 +266,7 @@ export const GroupedActivityCard: React.FC<GroupedActivityCardProps> = ({
             const sessionDist = session.metadata?.estimatedDistanceKm;
             const sessionTime =
               formatTimeOnly(
-                session.startTime ||
-                  session.recordedAt ||
-                  session.createdAt,
+                session.startTime || session.recordedAt || session.createdAt,
               ) || `Session #${group.sessions.length - index}`;
 
             return (
@@ -326,10 +311,7 @@ export const GroupedActivityCard: React.FC<GroupedActivityCardProps> = ({
                     </AppText>
                   ) : null}
                   {sessionDist != null && sessionDist > 0 ? (
-                    <AppText
-                      variant="caption"
-                      style={{ color: colors.info }}
-                    >
+                    <AppText variant="caption" style={{ color: colors.info }}>
                       {sessionDist.toFixed(2)} km
                     </AppText>
                   ) : null}

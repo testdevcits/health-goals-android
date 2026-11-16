@@ -33,8 +33,7 @@ const BannerAvatarItem: React.FC<{
       style={[
         styles.bannerAvatar,
         {
-          backgroundColor:
-            AVATAR_PALETTE[index % AVATAR_PALETTE.length],
+          backgroundColor: AVATAR_PALETTE[index % AVATAR_PALETTE.length],
           borderColor: colors.white,
           zIndex: 10 - index,
         },
@@ -75,7 +74,10 @@ export const GroupBanner: React.FC<Props> = memo(
         style={[styles.bannerContainer, { backgroundColor: colors.primary }]}
       >
         <View
-          style={[styles.iconContainer, { backgroundColor: colors.whiteOverlay17 }]}
+          style={[
+            styles.iconContainer,
+            { backgroundColor: colors.whiteOverlay17 },
+          ]}
         >
           {imageUrl ? (
             <Image
@@ -97,7 +99,8 @@ export const GroupBanner: React.FC<Props> = memo(
             variant="subtitle2"
             style={[styles.description, { color: colors.white }]}
           >
-            {groupDescription} · {isPrivate ? 'Private' : 'Public'} · {memberCount}/10 members
+            {groupDescription} · {isPrivate ? 'Private' : 'Public'} ·{' '}
+            {memberCount}/10 members
           </AppText>
 
           <View style={styles.bannerMemberAvatars}>

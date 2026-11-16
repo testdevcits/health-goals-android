@@ -970,7 +970,9 @@ export interface FetchSyncedRecordsResponse {
   };
 }
 
-export async function fetchSyncedHealthRecords(): Promise<SyncedHealthRecord[]> {
+export async function fetchSyncedHealthRecords(): Promise<
+  SyncedHealthRecord[]
+> {
   try {
     const response = await authenticatedRequest<any>(
       'GET',

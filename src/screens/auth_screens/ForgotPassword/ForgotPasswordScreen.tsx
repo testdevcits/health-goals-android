@@ -68,7 +68,8 @@ const ForgotPasswordScreen: React.FC<Props> = ({ navigation }) => {
               center
               style={styles.subtitleText}
             >
-              Enter your registered email address and we will send you a verification code to reset your password.
+              Enter your registered email address and we will send you a
+              verification code to reset your password.
             </AppText>
           </View>
 

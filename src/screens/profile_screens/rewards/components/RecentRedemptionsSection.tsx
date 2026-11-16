@@ -45,8 +45,7 @@ export const RecentRedemptionsSection: React.FC<
             key={redemption.id}
             icon="🎁"
             title={
-              redemption.redemptionCode &&
-              revealedCodes.includes(redemption.id)
+              redemption.redemptionCode && revealedCodes.includes(redemption.id)
                 ? redemption.redemptionCode
                 : redemption.rewardTitle ||
                   redemption.reward?.title ||

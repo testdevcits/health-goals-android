@@ -69,12 +69,7 @@ export const BluetoothScanControl: React.FC<BluetoothScanControlProps> = ({
       </AppText>
 
       {!isScanning && discoveredCount === 0 && !hasConnectedDevice ? (
-        <AppText
-          variant="caption"
-          secondary
-          center
-          style={styles.emptyDevices}
-        >
+        <AppText variant="caption" secondary center style={styles.emptyDevices}>
           Scan to find nearby Bluetooth devices.
         </AppText>
       ) : null}

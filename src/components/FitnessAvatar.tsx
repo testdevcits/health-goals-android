@@ -1,12 +1,6 @@
 import React, { memo } from 'react';
 import { View } from 'react-native';
-import Svg, {
-  Circle,
-  Ellipse,
-  G,
-  Path,
-  Rect,
-} from 'react-native-svg';
+import Svg, { Circle, Ellipse, G, Path, Rect } from 'react-native-svg';
 
 interface FitnessAvatarProps {
   height?: number;
@@ -19,13 +13,10 @@ const FitnessAvatar: React.FC<FitnessAvatarProps> = ({
   width = 130,
 }) => {
   return (
-    <View style={{ width, height, alignItems: 'center', justifyContent: 'center' }}>
-      <Svg
-        width={width}
-        height={height}
-        viewBox="0 0 130 240"
-        fill="none"
-      >
+    <View
+      style={{ width, height, alignItems: 'center', justifyContent: 'center' }}
+    >
+      <Svg width={width} height={height} viewBox="0 0 130 240" fill="none">
         {/* Shadow under feet */}
         <Ellipse
           cx="65"
@@ -53,57 +44,30 @@ const FitnessAvatar: React.FC<FitnessAvatarProps> = ({
         {/* Pants / Legs */}
         <G id="legs">
           {/* Left Leg */}
-          <Path
-            d="M49 140 L45 228 L56 228 L62 144 Z"
-            fill="#1E3A8A"
-          />
+          <Path d="M49 140 L45 228 L56 228 L62 144 Z" fill="#1E3A8A" />
           {/* Right Leg */}
-          <Path
-            d="M81 140 L85 228 L74 228 L68 144 Z"
-            fill="#1E3A8A"
-          />
+          <Path d="M81 140 L85 228 L74 228 L68 144 Z" fill="#1E3A8A" />
         </G>
 
         {/* Torso / Blazer Jacket */}
         <G id="torso">
           {/* Jacket Body */}
-          <Path
-            d="M40 76 L90 76 L95 146 L35 146 Z"
-            fill="#0D9488"
-          />
+          <Path d="M40 76 L90 76 L95 146 L35 146 Z" fill="#0D9488" />
           {/* Shirt / Tie Inlay */}
-          <Path
-            d="M58 76 L65 110 L72 76 Z"
-            fill="#F8FAFC"
-          />
+          <Path d="M58 76 L65 110 L72 76 Z" fill="#F8FAFC" />
           {/* Tie */}
-          <Path
-            d="M63 86 L65 120 L67 86 Z"
-            fill="#1E293B"
-          />
+          <Path d="M63 86 L65 120 L67 86 Z" fill="#1E293B" />
           {/* Blazer Lapels */}
-          <Path
-            d="M40 76 L58 116 L54 116 L38 88 Z"
-            fill="#0F766E"
-          />
-          <Path
-            d="M90 76 L72 116 L76 116 L92 88 Z"
-            fill="#0F766E"
-          />
+          <Path d="M40 76 L58 116 L54 116 L38 88 Z" fill="#0F766E" />
+          <Path d="M90 76 L72 116 L76 116 L92 88 Z" fill="#0F766E" />
         </G>
 
         {/* Crossed Arms */}
         <G id="arms">
           {/* Left Upper Arm */}
-          <Path
-            d="M38 78 L26 112 L44 126 L48 110 Z"
-            fill="#0D9488"
-          />
+          <Path d="M38 78 L26 112 L44 126 L48 110 Z" fill="#0D9488" />
           {/* Right Upper Arm */}
-          <Path
-            d="M92 78 L104 112 L86 126 L82 110 Z"
-            fill="#0D9488"
-          />
+          <Path d="M92 78 L104 112 L86 126 L82 110 Z" fill="#0D9488" />
           {/* Crossed Forearms */}
           <Path
             d="M32 114 Q65 130 98 114 L94 126 Q65 142 36 126 Z"

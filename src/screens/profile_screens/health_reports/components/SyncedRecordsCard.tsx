@@ -65,8 +65,7 @@ export const SyncedRecordsCard: React.FC<SyncedRecordsCardProps> = ({
             <View key={record.id} style={styles.recordRow}>
               <View style={styles.recordCopy}>
                 <AppText variant="subtitle2" bold>
-                  {record.activityType ||
-                    record.metricType.replace(/_/g, ' ')}
+                  {record.activityType || record.metricType.replace(/_/g, ' ')}
                 </AppText>
                 <AppText variant="caption" secondary>
                   {new Date(record.recordedAt).toLocaleString()} ·{' '}

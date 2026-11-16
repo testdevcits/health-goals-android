@@ -23,12 +23,9 @@ interface AvailableRewardsSectionProps {
   onRedeem: (reward: RewardItem) => void;
 }
 
-export const AvailableRewardsSection: React.FC<AvailableRewardsSectionProps> = ({
-  rewards,
-  points,
-  redeemingRewardId,
-  onRedeem,
-}) => {
+export const AvailableRewardsSection: React.FC<
+  AvailableRewardsSectionProps
+> = ({ rewards, points, redeemingRewardId, onRedeem }) => {
   const { theme } = useTheme();
   const styles = createStyles(theme.colors);
 
@@ -47,7 +44,9 @@ export const AvailableRewardsSection: React.FC<AvailableRewardsSectionProps> = (
               reward.stock === 0 || reward.availableVoucherCount === 0;
             const notEnoughPoints = points < reward.pointsRequired;
             const isDisabled =
-              notEnoughPoints || isOutOfStock || redeemingRewardId === reward.id;
+              notEnoughPoints ||
+              isOutOfStock ||
+              redeemingRewardId === reward.id;
 
             return (
               <ProfileCard key={reward.id}>

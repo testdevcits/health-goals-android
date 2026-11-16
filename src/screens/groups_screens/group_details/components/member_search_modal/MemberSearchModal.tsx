@@ -47,9 +47,7 @@ export const MemberSearchModal: React.FC<MemberSearchModalProps> = ({
           onPress={onClose}
           accessibilityLabel="Close member search"
         />
-        <View
-          style={[styles.modalSheet, { backgroundColor: colors.surface }]}
-        >
+        <View style={[styles.modalSheet, { backgroundColor: colors.surface }]}>
           {/* Header with Title and Cancel Close Icon */}
           <View style={styles.header}>
             <AppText variant="h3" bold>
@@ -85,7 +83,11 @@ export const MemberSearchModal: React.FC<MemberSearchModalProps> = ({
                   accessibilityRole="button"
                   accessibilityLabel="Clear search"
                 >
-                  <AppIcon name="XCircle" size={18} color={colors.textTertiary} />
+                  <AppIcon
+                    name="XCircle"
+                    size={18}
+                    color={colors.textTertiary}
+                  />
                 </Pressable>
               ) : undefined
             }
@@ -124,8 +126,8 @@ export const MemberSearchModal: React.FC<MemberSearchModalProps> = ({
               </Pressable>
             ))}
             {searchQuery.trim().length >= 2 &&
-              !loading &&
-              searchResults.length === 0 ? (
+            !loading &&
+            searchResults.length === 0 ? (
               <AppText variant="body2" secondary style={styles.emptyText}>
                 No matching users found.
               </AppText>

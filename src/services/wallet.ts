@@ -116,7 +116,9 @@ export async function fetchWallet(): Promise<WalletResponse> {
     typeof wallet.updatedAt !== 'string' ||
     !isValidDate(wallet.updatedAt) ||
     !Array.isArray(result.transactions) ||
-    result.transactions.some(transaction => !isWalletTransaction(transaction)) ||
+    result.transactions.some(
+      transaction => !isWalletTransaction(transaction),
+    ) ||
     !activity ||
     typeof activity.day !== 'string' ||
     !/^\d{4}-\d{2}-\d{2}$/.test(activity.day) ||

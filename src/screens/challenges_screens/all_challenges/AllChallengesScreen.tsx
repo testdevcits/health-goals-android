@@ -10,9 +10,7 @@ import {
   AppText,
 } from '../../../components';
 import { createStyles } from './styles.AllChallenges';
-import useAllChallenges, {
-  challengeGroupCategories,
-} from './useAllChallenges';
+import useAllChallenges, { challengeGroupCategories } from './useAllChallenges';
 import AppIcon from '../../../assets/appicon/AppIcon';
 import { authenticatedRequest } from '../../../services/authenticatedApi';
 import { API_ENDPOINTS } from '../../../constants';

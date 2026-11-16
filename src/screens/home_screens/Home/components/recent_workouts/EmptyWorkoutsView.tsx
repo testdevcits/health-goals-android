@@ -33,9 +33,7 @@ export const EmptyWorkoutsView: React.FC<EmptyWorkoutsViewProps> = ({
           { backgroundColor: colors.backgroundSecondary },
         ]}
       >
-        <AppText variant="h2">
-          {activeTab === 'workouts' ? '🏃' : '📊'}
-        </AppText>
+        <AppText variant="h2">{activeTab === 'workouts' ? '🏃' : '📊'}</AppText>
       </View>
       <AppText variant="subtitle1" bold color="textPrimary" mb={4}>
         {activeTab === 'workouts'

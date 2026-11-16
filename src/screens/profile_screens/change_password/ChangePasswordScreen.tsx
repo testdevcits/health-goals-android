@@ -52,7 +52,11 @@ const ChangePasswordScreen: React.FC<{
       );
       navigationRef.resetRoot({ index: 0, routes: [{ name: 'Login' }] });
     } catch (error) {
-      showAppToast('error', 'Could not update password', apiErrorMessage(error));
+      showAppToast(
+        'error',
+        'Could not update password',
+        apiErrorMessage(error),
+      );
     } finally {
       setLoading(false);
     }

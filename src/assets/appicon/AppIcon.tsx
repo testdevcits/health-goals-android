@@ -59,7 +59,7 @@ import {
   LockKeyhole,
   Send,
   Dumbbell,
-  Pencil
+  Pencil,
 } from 'lucide-react-native';
 import { useTheme } from '../../theme/useTheme';
 
@@ -122,7 +122,7 @@ export const ICONS = {
   LockKeyhole,
   Send,
   Dumbbell,
-  Pencil
+  Pencil,
 } as const;
 
 export type IconName = keyof typeof ICONS;

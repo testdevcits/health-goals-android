@@ -8,4 +8,3 @@ export type NotificationItem = {
   unread: boolean;
   bgColor: keyof AppColors;
 };
-

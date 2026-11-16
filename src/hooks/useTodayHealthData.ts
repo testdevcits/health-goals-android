@@ -24,7 +24,9 @@ export const useTodayHealthData = (
 ) => {
   const isFocused = useIsFocused();
   const [state, setState] = useState<HealthDataState>(() => {
-    const cached = storageService.getObject<TodayHealthData>(CACHE_KEY_TODAY_HEALTH);
+    const cached = storageService.getObject<TodayHealthData>(
+      CACHE_KEY_TODAY_HEALTH,
+    );
     return {
       loading: !cached,
       data: cached || null,

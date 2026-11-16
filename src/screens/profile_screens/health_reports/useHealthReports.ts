@@ -123,9 +123,9 @@ export default function useHealthReports() {
         ? readStepsHistory(7, { from, to })
         : authenticatedRequest<{ history: DailyValue[] }>(
             'GET',
-            `${API_ENDPOINTS.HEALTH.HISTORY}?metricType=${metricType}&from=${dateKey(
-              from,
-            )}&to=${dateKey(to)}`,
+            `${
+              API_ENDPOINTS.HEALTH.HISTORY
+            }?metricType=${metricType}&from=${dateKey(from)}&to=${dateKey(to)}`,
           ).then(result => result.history),
       fetchActivityHistory(from, to),
     ])

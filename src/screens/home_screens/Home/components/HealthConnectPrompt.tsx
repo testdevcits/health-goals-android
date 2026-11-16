@@ -1,11 +1,7 @@
 import React, { useCallback, useState } from 'react';
 import { Platform, Pressable, View } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
-import {
-  ArrowRight,
-  HeartPulse,
-  RefreshCw,
-} from 'lucide-react-native';
+import { ArrowRight, HeartPulse, RefreshCw } from 'lucide-react-native';
 import {
   getGrantedPermissions,
   getSdkStatus,
@@ -81,7 +77,9 @@ const HealthConnectPrompt: React.FC<{
         (permission): permission is Permission =>
           'accessType' in permission && 'recordType' in permission,
       );
-      setStatus(hasHealthReadAccess(permissions) ? 'connected' : 'needs-connect');
+      setStatus(
+        hasHealthReadAccess(permissions) ? 'connected' : 'needs-connect',
+      );
     } catch (error) {
       console.error('Unable to check Health Connect access:', error);
       setStatus('error');

@@ -104,13 +104,18 @@ const ChallengeCard: React.FC<ChallengeCardProps> = ({
       {/* Continue action */}
       <Pressable
         accessibilityRole="button"
-        accessibilityState={{ disabled: loading || challenge?.joined || challenge?.joinable === false }}
+        accessibilityState={{
+          disabled:
+            loading || challenge?.joined || challenge?.joinable === false,
+        }}
         onPress={() => {
           if (!loading && !challenge?.joined && challenge?.joinable !== false) {
             onContinue?.(challenge?.id);
           }
         }}
-        disabled={loading || Boolean(challenge?.joined) || challenge?.joinable === false}
+        disabled={
+          loading || Boolean(challenge?.joined) || challenge?.joinable === false
+        }
         style={[
           styles.continueButton,
           {
@@ -128,10 +133,10 @@ const ChallengeCard: React.FC<ChallengeCardProps> = ({
             {challenge?.joined
               ? 'Joined'
               : challenge?.joinable === false
-                ? 'Not open to join'
-                : onContinue
-                  ? 'Join challenge'
-                  : 'Continue'}
+              ? 'Not open to join'
+              : onContinue
+              ? 'Join challenge'
+              : 'Continue'}
           </AppText>
         )}
       </Pressable>

@@ -31,9 +31,7 @@ export const BirthDateField: React.FC<BirthDateFieldProps> = ({
           styles.dateField,
           {
             backgroundColor: colors.inputBg,
-            borderColor: isInvalidBirthDate
-              ? colors.error
-              : colors.inputBorder,
+            borderColor: isInvalidBirthDate ? colors.error : colors.inputBorder,
           },
         ]}
         accessibilityRole="button"

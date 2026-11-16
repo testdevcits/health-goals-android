@@ -55,7 +55,10 @@ export const MetricReportCard: React.FC<MetricReportCardProps> = ({
         </AppText>
         <Pressable
           onPress={openDatePicker}
-          style={[styles.dateRangeButton, { backgroundColor: colors.primaryLight }]}
+          style={[
+            styles.dateRangeButton,
+            { backgroundColor: colors.primaryLight },
+          ]}
           accessibilityRole="button"
           accessibilityLabel={`Choose report date range, ${from.toLocaleDateString()} to ${to.toLocaleDateString()}`}
           accessibilityHint="Opens a calendar to choose the report start and end dates"
@@ -169,9 +172,7 @@ export const MetricReportCard: React.FC<MetricReportCardProps> = ({
                   'Daily Avg',
                 ],
                 [
-                  history
-                    .filter(item => item.value >= 10000)
-                    .length.toString(),
+                  history.filter(item => item.value >= 10000).length.toString(),
                   'Days >10K',
                 ],
               ]
@@ -184,10 +185,7 @@ export const MetricReportCard: React.FC<MetricReportCardProps> = ({
                           history.length /
                           60,
                       )}h ${Math.round(
-                        (history.reduce(
-                          (sum, item) => sum + item.value,
-                          0,
-                        ) /
+                        (history.reduce((sum, item) => sum + item.value, 0) /
                           history.length) %
                           60,
                       )}m`
@@ -199,9 +197,7 @@ export const MetricReportCard: React.FC<MetricReportCardProps> = ({
               ]
             : [
                 [
-                  history
-                    .reduce((sum, item) => sum + item.count, 0)
-                    .toString(),
+                  history.reduce((sum, item) => sum + item.count, 0).toString(),
                   'Workouts',
                 ],
                 [

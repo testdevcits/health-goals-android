@@ -49,7 +49,9 @@ export const API_ENDPOINTS = {
     GROUP_CHALLENGES: (groupId: string) =>
       `/community/groups/${encodeURIComponent(groupId)}/challenges`,
     JOIN_GROUP_CHALLENGE: (groupId: string, challengeId: string) =>
-      `/community/groups/${encodeURIComponent(groupId)}/challenges/${encodeURIComponent(challengeId)}/join`,
+      `/community/groups/${encodeURIComponent(
+        groupId,
+      )}/challenges/${encodeURIComponent(challengeId)}/join`,
     USERS_SEARCH: (query: string) =>
       `/community/users/search?q=${encodeURIComponent(query)}`,
   },

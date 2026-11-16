@@ -38,8 +38,7 @@ const INITIAL_MESSAGES: ChatMessage[] = [
   {
     id: 'welcome-msg',
     sender: 'assistant',
-    text:
-      'Hello! I am your Vitality AI Assistant. I can help answer questions regarding your health privacy, data synchronization, terms of service, and community guidelines. How can I assist you today?',
+    text: 'Hello! I am your Vitality AI Assistant. I can help answer questions regarding your health privacy, data synchronization, terms of service, and community guidelines. How can I assist you today?',
     time: 'Just now',
   },
 ];
@@ -47,31 +46,62 @@ const INITIAL_MESSAGES: ChatMessage[] = [
 function generateAssistantResponse(prompt: string): string {
   const query = prompt.toLowerCase();
 
-  if (query.includes('protect') || query.includes('privacy') || query.includes('security')) {
+  if (
+    query.includes('protect') ||
+    query.includes('privacy') ||
+    query.includes('security')
+  ) {
     return 'Your health data is protected using end-to-end industry-standard encryption in transit and at rest. Vitality accesses metrics strictly via Android Health Connect with your explicit permission. We never sell your personal or biometric information to third parties, and you can revoke access at any time from your system settings.';
   }
 
-  if (query.includes('employer') || query.includes('company') || query.includes('corporate')) {
+  if (
+    query.includes('employer') ||
+    query.includes('company') ||
+    query.includes('corporate')
+  ) {
     return 'Yes, employer and team reports are 100% anonymous and aggregated. Your company only sees high-level team averages (such as total team steps or challenge participation percentages). Your individual daily logs, heart rate, sleep history, and personal activities are never visible to your employer.';
   }
 
-  if (query.includes('export') || query.includes('delete') || query.includes('remove data')) {
+  if (
+    query.includes('export') ||
+    query.includes('delete') ||
+    query.includes('remove data')
+  ) {
     return 'You have full sovereignty over your data. Under Settings > Privacy & Permissions, you can tap "Export My Data" to receive a copy of your health records, or choose "Delete My Account" to permanently erase your profile, points, group memberships, and historical health metrics.';
   }
 
-  if (query.includes('reward') || query.includes('coin') || query.includes('point') || query.includes('wallet')) {
+  if (
+    query.includes('reward') ||
+    query.includes('coin') ||
+    query.includes('point') ||
+    query.includes('wallet')
+  ) {
     return 'Points and coins are earned by reaching daily activity goals (like 10,000 steps), maintaining active streaks, and participating in community challenges. Once verified by Health Connect, points are credited to your Vitality Wallet and can be redeemed for gift cards and partner rewards in the Rewards section.';
   }
 
-  if (query.includes('rule') || query.includes('guideline') || query.includes('community')) {
+  if (
+    query.includes('rule') ||
+    query.includes('guideline') ||
+    query.includes('community')
+  ) {
     return 'Our community guidelines focus on four core pillars: Mutual Support, Health Privacy (never sharing someone else’s data), Fair Play (honest activity logging), and a Safe & Respectful environment with zero tolerance for harassment or inappropriate conduct.';
   }
 
-  if (query.includes('device') || query.includes('sync') || query.includes('bluetooth') || query.includes('watch')) {
+  if (
+    query.includes('device') ||
+    query.includes('sync') ||
+    query.includes('bluetooth') ||
+    query.includes('watch')
+  ) {
     return 'Vitality connects with Android Health Connect to automatically sync readings from compatible smartwatches and fitness trackers (Samsung Health, Google Fit, Garmin, etc.). You can also scan for nearby Bluetooth devices directly from the Connected Devices screen.';
   }
 
-  if (query.includes('support') || query.includes('contact') || query.includes('email') || query.includes('help')) {
+  if (
+    query.includes('support') ||
+    query.includes('contact') ||
+    query.includes('email') ||
+    query.includes('help')
+  ) {
     return 'For specific account investigations or billing questions, our human support team is available at support@vitality.app and responds within 24 hours Monday through Friday.';
   }
 
@@ -134,10 +164,7 @@ const AiChatBot: React.FC<Props> = ({ navigation }) => {
 
       return (
         <View
-          style={[
-            styles.messageRow,
-            isUser ? styles.userRow : styles.botRow,
-          ]}
+          style={[styles.messageRow, isUser ? styles.userRow : styles.botRow]}
         >
           {!isUser && (
             <View style={styles.botAvatar}>

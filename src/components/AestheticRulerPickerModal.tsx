@@ -1,4 +1,11 @@
-import React, { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import React, {
+  memo,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
 import {
   Dimensions,
   FlatList,
@@ -102,9 +109,7 @@ const AestheticRulerPickerModal: React.FC<AestheticRulerPickerModalProps> = ({
     }
   }, [visible, isHeight, min, max, getDefaultVal]);
 
-  const handleVerticalScroll = (
-    e: NativeSyntheticEvent<NativeScrollEvent>,
-  ) => {
+  const handleVerticalScroll = (e: NativeSyntheticEvent<NativeScrollEvent>) => {
     const y = e.nativeEvent.contentOffset.y;
     const computed = max - Math.round(y / TICK_SPACING);
     const clamped = Math.max(min, Math.min(max, computed));
@@ -144,8 +149,8 @@ const AestheticRulerPickerModal: React.FC<AestheticRulerPickerModalProps> = ({
               backgroundColor: isSelected
                 ? '#EF4444'
                 : isMajor
-                  ? colors.textPrimary
-                  : colors.border,
+                ? colors.textPrimary
+                : colors.border,
               height: isMajor ? 2 : 1.5,
             },
           ]}
@@ -182,8 +187,8 @@ const AestheticRulerPickerModal: React.FC<AestheticRulerPickerModalProps> = ({
               backgroundColor: isSelected
                 ? '#EF4444'
                 : isMajor
-                  ? colors.textPrimary
-                  : colors.border,
+                ? colors.textPrimary
+                : colors.border,
               width: isMajor ? 2 : 1.5,
             },
           ]}

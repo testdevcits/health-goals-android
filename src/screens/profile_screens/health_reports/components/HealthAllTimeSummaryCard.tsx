@@ -1,5 +1,10 @@
 import React from 'react';
-import { AppErrorView, AppLoader, AppText, ProfileCard } from '../../../../components';
+import {
+  AppErrorView,
+  AppLoader,
+  AppText,
+  ProfileCard,
+} from '../../../../components';
 import { useTheme } from '../../../../theme/useTheme';
 import createStyles from '../styles.HealthReport';
 import type { HealthReportTab } from '../useHealthReports';
@@ -13,19 +18,19 @@ interface HealthAllTimeSummaryCardProps {
   healthSummary?: HealthSummary | null;
 }
 
-export const HealthAllTimeSummaryCard: React.FC<HealthAllTimeSummaryCardProps> = ({
-  activeTab,
-  loading,
-  error,
-  refresh,
-  healthSummary,
-}) => {
+export const HealthAllTimeSummaryCard: React.FC<
+  HealthAllTimeSummaryCardProps
+> = ({ activeTab, loading, error, refresh, healthSummary }) => {
   const { theme } = useTheme();
   const { colors } = theme;
   const styles = createStyles(colors);
 
   const allTimeMetric =
-    activeTab === 'Workouts' ? 'workout' : activeTab === 'Sleep' ? 'sleep' : 'steps';
+    activeTab === 'Workouts'
+      ? 'workout'
+      : activeTab === 'Sleep'
+      ? 'sleep'
+      : 'steps';
   const allTimeValue = healthSummary?.[allTimeMetric];
   const allTimeValueLabel =
     allTimeValue === undefined

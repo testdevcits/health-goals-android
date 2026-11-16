@@ -58,11 +58,7 @@ export const EditGroupModal: React.FC<EditGroupModalProps> = ({
       }
     } catch (error: any) {
       if (error?.code !== 'E_PICKER_CANCELLED') {
-        showAppToast(
-          'error',
-          'Could not choose image',
-          apiErrorMessage(error),
-        );
+        showAppToast('error', 'Could not choose image', apiErrorMessage(error));
       }
     }
   };
@@ -80,9 +76,7 @@ export const EditGroupModal: React.FC<EditGroupModalProps> = ({
           onPress={onClose}
           accessibilityLabel="Close group options"
         />
-        <View
-          style={[styles.modalSheet, { backgroundColor: colors.surface }]}
-        >
+        <View style={[styles.modalSheet, { backgroundColor: colors.surface }]}>
           {/* Header with Title and Cancel Close Icon Button */}
           <View style={styles.header}>
             <AppText variant="h3" bold>
@@ -173,7 +167,8 @@ export const EditGroupModal: React.FC<EditGroupModalProps> = ({
                   {displayImageUri ? (
                     <>
                       <AppText variant="caption" secondary>
-                        {' '}·{' '}
+                        {' '}
+                        ·{' '}
                       </AppText>
                       <Pressable
                         onPress={() => setGroupImage(null)}

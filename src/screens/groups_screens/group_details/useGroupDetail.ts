@@ -165,8 +165,7 @@ export default function useGroupDetail({
             ),
           )
           .map(
-            member =>
-              relatedUserId(member.user) || member.userId || member.id,
+            member => relatedUserId(member.user) || member.userId || member.id,
           ),
       ].filter((id): id is string => Boolean(id));
       const currentRole = String(
@@ -174,9 +173,9 @@ export default function useGroupDetail({
       ).toUpperCase();
       setIsLeader(
         group.isLeader === true ||
-        group.isCurrentUserLeader === true ||
-        ['LEADER', 'OWNER', 'GL', 'GROUP_LEADER'].includes(currentRole) ||
-        Boolean(userId && leaderIds.includes(userId)),
+          group.isCurrentUserLeader === true ||
+          ['LEADER', 'OWNER', 'GL', 'GROUP_LEADER'].includes(currentRole) ||
+          Boolean(userId && leaderIds.includes(userId)),
       );
       setMemberCount(
         Array.isArray(group.members) ? group.members.length : group.members,
@@ -203,10 +202,7 @@ export default function useGroupDetail({
               startsAt?: string;
               endsAt?: string;
             }>;
-          }>(
-            'GET',
-            API_ENDPOINTS.COMMUNITY.GROUP_CHALLENGES(groupId),
-          ),
+          }>('GET', API_ENDPOINTS.COMMUNITY.GROUP_CHALLENGES(groupId)),
           authenticatedRequest<{ messages: any[] }>(
             'GET',
             API_ENDPOINTS.COMMUNITY.GROUP_MESSAGES(groupId),
@@ -222,10 +218,7 @@ export default function useGroupDetail({
               streak: string;
               color: string;
             }>;
-          }>(
-            'GET',
-            API_ENDPOINTS.COMMUNITY.GROUP_MEMBER_LEADERBOARD(groupId),
-          ),
+          }>('GET', API_ENDPOINTS.COMMUNITY.GROUP_MEMBER_LEADERBOARD(groupId)),
         ]);
 
       if (challengeResult.status === 'fulfilled') {
@@ -235,7 +228,7 @@ export default function useGroupDetail({
             const currentValue = Number(item.currentValue || 0);
             const progress = Number(
               item.progress ??
-              (targetValue > 0 ? (currentValue / targetValue) * 100 : 0),
+                (targetValue > 0 ? (currentValue / targetValue) * 100 : 0),
             );
             const joined = Boolean(item.joined);
             const status = String(item.status || 'UPCOMING').toUpperCase();
@@ -244,9 +237,9 @@ export default function useGroupDetail({
               (!item.endsAt || Date.parse(item.endsAt) >= Date.now());
             const joinable = Boolean(
               item.joinable ??
-              (!joined &&
-                inWindow &&
-                ['ACTIVE', 'LIVE', 'PUBLISHED'].includes(status)),
+                (!joined &&
+                  inWindow &&
+                  ['ACTIVE', 'LIVE', 'PUBLISHED'].includes(status)),
             );
             const participants = Number(
               item.participantCount ?? item.participants ?? item.joinCount ?? 0,
@@ -257,7 +250,11 @@ export default function useGroupDetail({
             return {
               id: item.id,
               title: item.title,
-              description: `${item.description || item.metricType || 'Group challenge'}${targetValue ? ` · Target ${targetValue.toLocaleString()}` : ''}${endsLabel}`,
+              description: `${
+                item.description || item.metricType || 'Group challenge'
+              }${
+                targetValue ? ` · Target ${targetValue.toLocaleString()}` : ''
+              }${endsLabel}`,
               status: joined ? 'JOINED' : joinable ? 'OPEN' : 'CLOSED',
               progress: Math.min(100, Math.max(0, progress)),
               progressLabel: joined
@@ -401,10 +398,7 @@ export default function useGroupDetail({
 
   const handleCreateChallenge = useCallback(async () => {
     if (!challengeName.trim()) {
-      Alert.alert(
-        'Missing details',
-        'Enter a challenge title to continue.',
-      );
+      Alert.alert('Missing details', 'Enter a challenge title to continue.');
       return;
     }
     const targetValue = Number(challengeGoal.replace(/[^0-9.]/g, ''));
@@ -418,9 +412,7 @@ export default function useGroupDetail({
     setCreateChallengeLoading(true);
     try {
       const days = Number.parseInt(duration, 10) || 7;
-      const endsAt = new Date(
-        Date.now() + days * 86400000,
-      ).toISOString();
+      const endsAt = new Date(Date.now() + days * 86400000).toISOString();
       const points = Number(rewardPoints) || 0;
       await authenticatedRequest(
         'POST',
@@ -429,7 +421,10 @@ export default function useGroupDetail({
           title: challengeName.trim(),
           description:
             challengeDescription.trim() ||
-            `${targetValue.toLocaleString()} ${metricType.replace(/_/g, ' ')} challenge`,
+            `${targetValue.toLocaleString()} ${metricType.replace(
+              /_/g,
+              ' ',
+            )} challenge`,
           metricType: metricType || 'steps',
           targetValue,
           startsAt: new Date().toISOString(),
@@ -460,7 +455,16 @@ export default function useGroupDetail({
     } finally {
       setCreateChallengeLoading(false);
     }
-  }, [challengeName, challengeDescription, challengeGoal, metricType, duration, rewardPoints, groupId, refreshGroup]);
+  }, [
+    challengeName,
+    challengeDescription,
+    challengeGoal,
+    metricType,
+    duration,
+    rewardPoints,
+    groupId,
+    refreshGroup,
+  ]);
 
   const joinGroupChallenge = useCallback(
     async (challengeId: string) => {
@@ -547,10 +551,7 @@ export default function useGroupDetail({
     try {
       const result = await authenticatedRequest<{
         users: GroupUserSearchResult[];
-      }>(
-        'GET',
-        API_ENDPOINTS.COMMUNITY.USERS_SEARCH(query.trim()),
-      );
+      }>('GET', API_ENDPOINTS.COMMUNITY.USERS_SEARCH(query.trim()));
       if (requestId === memberSearchRequestRef.current) {
         setMemberSearchResults(result.users || []);
       }
@@ -626,8 +627,8 @@ export default function useGroupDetail({
           image === null
             ? undefined
             : result.group?.imageUrl ||
-            result.group?.image ||
-            (typeof image === 'string' ? image : groupImageUrl),
+                result.group?.image ||
+                (typeof image === 'string' ? image : groupImageUrl),
         );
         setGroupEditVisible(false);
         showAppToast('success', 'Group updated');

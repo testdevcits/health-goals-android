@@ -69,7 +69,9 @@ const AppInput = forwardRef<TextInput, AppInputProps>(
           ]}
         >
           {leftIcon ? (
-            <View style={[styles.leftIconContainer, { marginRight: spacing.sm }]}>
+            <View
+              style={[styles.leftIconContainer, { marginRight: spacing.sm }]}
+            >
               {leftIcon}
             </View>
           ) : null}

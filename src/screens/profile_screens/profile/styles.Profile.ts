@@ -9,8 +9,6 @@ const createStyles = (colors: AppColors) =>
       flex: 1,
     },
 
-
-
     editIconContainer: {
       position: 'absolute',
       bottom: -2,

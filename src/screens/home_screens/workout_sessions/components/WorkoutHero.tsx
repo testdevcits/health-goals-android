@@ -24,10 +24,7 @@ const WorkoutHero: React.FC<WorkoutHeroProps> = ({
 }) => {
   return (
     <View
-      style={[
-        styles.workoutHero,
-        { backgroundColor: currentActivity.color },
-      ]}
+      style={[styles.workoutHero, { backgroundColor: currentActivity.color }]}
     >
       <AppText style={styles.heroEmoji}>{currentActivity.emoji}</AppText>
 
@@ -44,8 +41,8 @@ const WorkoutHero: React.FC<WorkoutHeroProps> = ({
         {isRunning
           ? 'Workout in progress'
           : hasStarted
-            ? 'Workout paused'
-            : 'Ready to start'}
+          ? 'Workout paused'
+          : 'Ready to start'}
       </AppText>
     </View>
   );

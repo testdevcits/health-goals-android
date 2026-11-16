@@ -86,11 +86,15 @@ export const formatGroupDateLabel = (dateKey: string): string => {
     if (!y || !m || !d) return dateKey;
 
     const now = new Date();
-    const todayKey = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+    const todayKey = `${now.getFullYear()}-${String(
+      now.getMonth() + 1,
+    ).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
 
     const yesterday = new Date();
     yesterday.setDate(now.getDate() - 1);
-    const yesterdayKey = `${yesterday.getFullYear()}-${String(yesterday.getMonth() + 1).padStart(2, '0')}-${String(yesterday.getDate()).padStart(2, '0')}`;
+    const yesterdayKey = `${yesterday.getFullYear()}-${String(
+      yesterday.getMonth() + 1,
+    ).padStart(2, '0')}-${String(yesterday.getDate()).padStart(2, '0')}`;
 
     if (dateKey === todayKey) return 'Today';
     if (dateKey === yesterdayKey) return 'Yesterday';
@@ -238,7 +242,8 @@ export const groupRecordsByActivityAndDate = (
     if (isWorkout) {
       group.totalDurationMin += Number(record.value) || 0;
       group.totalCalories += Number(record.metadata?.estimatedCalories) || 0;
-      group.totalDistanceKm += Number(record.metadata?.estimatedDistanceKm) || 0;
+      group.totalDistanceKm +=
+        Number(record.metadata?.estimatedDistanceKm) || 0;
     } else {
       const val = Number(record.value) || 0;
       if (val > group.totalDurationMin) {
@@ -265,7 +270,11 @@ export const groupRecordsByActivityAndDate = (
 
     const allApp = group.sessions.every(s => s.source === 'app');
     const allHC = group.sessions.every(s => s.source === 'health_connect');
-    group.source = allApp ? 'Vitality App' : allHC ? 'Health Connect' : 'Synced';
+    group.source = allApp
+      ? 'Vitality App'
+      : allHC
+      ? 'Health Connect'
+      : 'Synced';
 
     result.push(group);
   }
@@ -290,7 +299,9 @@ export const useRecentWorkouts = (healthRefreshKey?: number) => {
   });
   const [activeTab, setActiveTab] = useState<FilterTab>('all');
   const [showAllItems, setShowAllItems] = useState(false);
-  const [expandedCards, setExpandedCards] = useState<Record<string, boolean>>({});
+  const [expandedCards, setExpandedCards] = useState<Record<string, boolean>>(
+    {},
+  );
 
   const toggleExpand = (cardId: string) => {
     setExpandedCards(prev => ({

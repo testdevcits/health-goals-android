@@ -43,7 +43,10 @@ const RecentWorkoutsSection: React.FC<RecentWorkoutsSectionProps> = ({
   } = useRecentWorkouts(healthRefreshKey);
 
   const handleNavigateWorkout = (activityId?: string) => {
-    navigation.navigate('WorkoutSession', activityId ? { activityId } : undefined);
+    navigation.navigate(
+      'WorkoutSession',
+      activityId ? { activityId } : undefined,
+    );
   };
 
   return (

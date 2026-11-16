@@ -48,8 +48,6 @@ const ChallengesTab: React.FC<ChallengesTabProps> = ({
 
   return (
     <View style={styles.section}>
-
-
       {challenges.length === 0 ? (
         <AppEmptyState
           title="No group challenges yet"

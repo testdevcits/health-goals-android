@@ -1,11 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import {
-  Modal,
-  Pressable,
-  ScrollView,
-  StyleSheet,
-  View,
-} from 'react-native';
+import { Modal, Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { Calendar } from 'react-native-calendars';
 import AppIcon from '../../assets/appicon/AppIcon';
 import AppButton from '../AppButton';
@@ -216,11 +210,7 @@ export const QuestionDatePickerModal: React.FC<
               onPress={() => setIsYearPickerOpen(false)}
             />
           ) : (
-            <AppButton
-              title="Cancel"
-              variant="ghost"
-              onPress={onClose}
-            />
+            <AppButton title="Cancel" variant="ghost" onPress={onClose} />
           )}
         </View>
       </View>

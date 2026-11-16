@@ -5,5 +5,4 @@ export default StyleSheet.create({
   section: {
     marginBottom: spacing.lg,
   },
-
 });

@@ -16,12 +16,7 @@ import { CreateChallengeModal } from './components/create_challenge_modal/Create
 import { EditGroupModal } from './components/edit_group_modal/EditGroupModal';
 import { MemberSearchModal } from './components/member_search_modal/MemberSearchModal';
 import { GroupDetailShimmer } from './components/group_detail_shimmer/GroupDetailShimmer';
-import {
-
-  AppErrorView,
-  AppHeader,
-  AppText,
-} from '../../../components';
+import { AppErrorView, AppHeader, AppText } from '../../../components';
 import ChallengesTab from './components/challengestab/ChallengesTab';
 import type { RootStackParamList } from '../../../navigations/GroupsStack';
 // import { GroupChat } from './components/group_chats/GroupChat';
@@ -187,10 +182,7 @@ const GroupDetailScreen: React.FC<GroupDetailScreenProps> = ({
               />
             )}
             {activeTab === 'Leaderboard' && (
-              <GroupLeaderboard
-                members={members}
-                loading={dataLoading}
-              />
+              <GroupLeaderboard members={members} loading={dataLoading} />
             )}
             {activeTab === 'Challenges' && (
               <ChallengesTab
@@ -222,7 +214,9 @@ const GroupDetailScreen: React.FC<GroupDetailScreenProps> = ({
         rewardPoints={rewardPoints}
         bottomInset={insets.bottom}
         loading={createChallengeLoading}
-        onClose={() => !createChallengeLoading && setCreateChallengeVisible(false)}
+        onClose={() =>
+          !createChallengeLoading && setCreateChallengeVisible(false)
+        }
         onChangeName={setChallengeName}
         onChangeDescription={setChallengeDescription}
         onChangeGoal={setChallengeGoal}

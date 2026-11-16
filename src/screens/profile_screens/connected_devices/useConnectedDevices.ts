@@ -579,7 +579,10 @@ export default function useConnectedDevices() {
       setConnectedDevice(discoveredConnection);
       void readWatchTelemetry(discoveredConnection);
     } catch (reconnectError) {
-      console.log('Watch auto-reconnect skipped or watch not in range:', reconnectError);
+      console.log(
+        'Watch auto-reconnect skipped or watch not in range:',
+        reconnectError,
+      );
     }
   }, [bleManager, readWatchTelemetry]);
 

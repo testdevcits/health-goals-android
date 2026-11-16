@@ -31,7 +31,10 @@ const ChallengesTab: React.FC<ChallengesTabProps> = ({
         return (
           <View
             key={challenge?.id}
-            style={[styles.challengeCard, { borderLeftColor: challenge?.color }]}
+            style={[
+              styles.challengeCard,
+              { borderLeftColor: challenge?.color },
+            ]}
           >
             <View style={styles.challengeHeading}>
               <View style={styles.challengeTitleRow}>
@@ -63,18 +66,18 @@ const ChallengesTab: React.FC<ChallengesTabProps> = ({
             {(challenge?.metricLabel ||
               challenge?.targetLabel ||
               challenge?.dateLabel) && (
-                <AppText variant="caption" secondary>
-                  {[
-                    challenge?.metricLabel,
-                    challenge?.targetLabel
-                      ? `Target ${challenge?.targetLabel}`
-                      : undefined,
-                    challenge?.dateLabel,
-                  ]
-                    .filter(Boolean)
-                    .join(' · ')}
-                </AppText>
-              )}
+              <AppText variant="caption" secondary>
+                {[
+                  challenge?.metricLabel,
+                  challenge?.targetLabel
+                    ? `Target ${challenge?.targetLabel}`
+                    : undefined,
+                  challenge?.dateLabel,
+                ]
+                  .filter(Boolean)
+                  .join(' · ')}
+              </AppText>
+            )}
 
             {challenge?.joined ? (
               <>
@@ -149,7 +152,7 @@ const ChallengesTab: React.FC<ChallengesTabProps> = ({
                     marginTop: 12,
                     opacity:
                       challenge?.joinable &&
-                        joiningChallengeId !== challenge?.id
+                      joiningChallengeId !== challenge?.id
                         ? 1
                         : 0.55,
                   },
@@ -162,7 +165,9 @@ const ChallengesTab: React.FC<ChallengesTabProps> = ({
                   />
                 ) : (
                   <AppText variant="buttonSm" primary>
-                    {challenge?.joinable ? 'Join challenge' : 'Not open to join'}
+                    {challenge?.joinable
+                      ? 'Join challenge'
+                      : 'Not open to join'}
                   </AppText>
                 )}
               </Pressable>

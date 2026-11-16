@@ -43,11 +43,7 @@ export const AvatarUploader: React.FC<AvatarUploaderProps> = ({
             },
           ]}
         >
-          <AppIcon
-            name="UserRound"
-            size={42}
-            color={colors.textSecondary}
-          />
+          <AppIcon name="UserRound" size={42} color={colors.textSecondary} />
         </View>
       )}
 

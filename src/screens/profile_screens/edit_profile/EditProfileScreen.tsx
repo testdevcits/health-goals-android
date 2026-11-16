@@ -67,7 +67,9 @@ const EditProfileScreen: React.FC<{ navigation: ProfileScreenNavigation }> = ({
 
   const isInvalidHeight = Boolean(height.trim() && !isValidHeight(height));
   const isInvalidWeight = Boolean(weight.trim() && !isValidWeight(weight));
-  const isInvalidBirthDate = Boolean(birthDate.trim() && !isAtLeast18(birthDate));
+  const isInvalidBirthDate = Boolean(
+    birthDate.trim() && !isAtLeast18(birthDate),
+  );
 
   return (
     <View style={{ flex: 1, backgroundColor: colors.backgroundSecondary }}>

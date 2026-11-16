@@ -1,11 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import {
-  Modal,
-  Pressable,
-  ScrollView,
-  StyleSheet,
-  View,
-} from 'react-native';
+import { Modal, Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { Calendar } from 'react-native-calendars';
 import AppIcon from '../../../../assets/appicon/AppIcon';
 import { AppButton, AppText } from '../../../../components';

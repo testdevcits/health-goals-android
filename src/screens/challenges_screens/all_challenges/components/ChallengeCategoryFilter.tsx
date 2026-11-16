@@ -13,8 +13,8 @@ interface ChallengeCategoryFilterProps {
   colors: any;
 }
 
-export const ChallengeCategoryFilter: React.FC<ChallengeCategoryFilterProps> = memo(
-  ({ selectedCategory, onSelectCategory, styles, colors }) => {
+export const ChallengeCategoryFilter: React.FC<ChallengeCategoryFilterProps> =
+  memo(({ selectedCategory, onSelectCategory, styles, colors }) => {
     return (
       <View style={styles.categoryContainer}>
         {challengeCategories.map(category => {
@@ -37,9 +37,7 @@ export const ChallengeCategoryFilter: React.FC<ChallengeCategoryFilterProps> = m
                 variant="label"
                 center
                 style={{
-                  color: isSelected
-                    ? colors.textPrimary
-                    : colors.textSecondary,
+                  color: isSelected ? colors.textPrimary : colors.textSecondary,
                 }}
                 medium={isSelected}
               >
@@ -50,7 +48,6 @@ export const ChallengeCategoryFilter: React.FC<ChallengeCategoryFilterProps> = m
         })}
       </View>
     );
-  },
-);
+  });
 
 export default ChallengeCategoryFilter;

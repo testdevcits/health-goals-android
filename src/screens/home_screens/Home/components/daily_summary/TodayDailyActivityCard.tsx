@@ -11,8 +11,8 @@ interface TodayDailyActivityCardProps {
   healthRefreshKey?: number;
 }
 
-export const TodayDailyActivityCard: React.FC<TodayDailyActivityCardProps> = memo(
-  ({ onViewDetails, healthRefreshKey = 0 }) => {
+export const TodayDailyActivityCard: React.FC<TodayDailyActivityCardProps> =
+  memo(({ onViewDetails, healthRefreshKey = 0 }) => {
     const { theme } = useTheme();
     const { colors } = theme;
     const styles = createDailySummaryStyles(theme);
@@ -70,7 +70,6 @@ export const TodayDailyActivityCard: React.FC<TodayDailyActivityCardProps> = mem
         </View>
       </TouchableOpacity>
     );
-  },
-);
+  });
 
 export default TodayDailyActivityCard;

@@ -115,10 +115,7 @@ export const ActivityRewardsCard: React.FC<ActivityRewardsCardProps> = ({
         <>
           <View style={styles.rewardMetrics}>
             <View
-              style={[
-                styles.rewardMetric,
-                { borderRightColor: colors.border },
-              ]}
+              style={[styles.rewardMetric, { borderRightColor: colors.border }]}
             >
               <View
                 style={[
@@ -136,10 +133,7 @@ export const ActivityRewardsCard: React.FC<ActivityRewardsCardProps> = ({
               </AppText>
             </View>
             <View
-              style={[
-                styles.rewardMetric,
-                { borderRightColor: colors.border },
-              ]}
+              style={[styles.rewardMetric, { borderRightColor: colors.border }]}
             >
               <View
                 style={[
@@ -269,9 +263,7 @@ export const ActivityRewardsCard: React.FC<ActivityRewardsCardProps> = ({
                       <AppText
                         variant="caption"
                         style={{
-                          color: settled
-                            ? colors.textSuccess
-                            : colors.warning,
+                          color: settled ? colors.textSuccess : colors.warning,
                         }}
                         bold
                       >
@@ -356,8 +348,7 @@ export const ActivityRewardsCard: React.FC<ActivityRewardsCardProps> = ({
                         style={{ color: colors.primary }}
                       >
                         {(
-                          (item.creditedCoins ?? 0) +
-                          (item.pendingCoins ?? 0)
+                          (item.creditedCoins ?? 0) + (item.pendingCoins ?? 0)
                         ).toLocaleString()}{' '}
                         coins
                       </AppText>

@@ -1,5 +1,12 @@
 import React, { Suspense } from 'react';
-import { Modal, Pressable, Platform, ScrollView, View, StatusBar } from 'react-native';
+import {
+  Modal,
+  Pressable,
+  Platform,
+  ScrollView,
+  View,
+  StatusBar,
+} from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { AppHeader, AppSettingsRow, AppText } from '../../../components';
 import { useTheme } from '../../../theme/useTheme';

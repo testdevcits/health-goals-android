@@ -72,7 +72,8 @@ export const GroupOverview: React.FC<Props> = memo(
                 Exit group
               </AppText>
               <AppText variant="caption" secondary center>
-                This group will be removed from active groups and cannot be restored in the app.
+                This group will be removed from active groups and cannot be
+                restored in the app.
               </AppText>
             </Pressable>
           </View>

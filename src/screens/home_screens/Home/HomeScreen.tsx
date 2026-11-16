@@ -3,10 +3,7 @@ import { AppState, ScrollView, View } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { HomeStackParamList } from '../../../navigations/HomeStack';
-import {
-  OnboardingModal,
-  ProfileQuestionsModal,
-} from '../../../components';
+import { OnboardingModal, ProfileQuestionsModal } from '../../../components';
 import { useTheme } from '../../../theme/useTheme';
 import { getNotificationPermission } from '../../../utils/AppPermissions';
 import ActivityTrends from './components/ActivityTrends';

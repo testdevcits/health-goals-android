@@ -12,7 +12,12 @@ import {
 
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { AppButton, AppInput, AppText, CustomSwitch } from '../../../../components';
+import {
+  AppButton,
+  AppInput,
+  AppText,
+  CustomSwitch,
+} from '../../../../components';
 import { useTheme } from '../../../../theme/useTheme';
 import createStyles from './styles.CreateGroupMOdal';
 import AppIcon from '../../../../assets/appicon/AppIcon';
@@ -243,7 +248,7 @@ const CreateGroupModal: React.FC<CreateGroupModalProps> = ({
               <AppText variant="caption" secondary style={styles.capacityNote}>
                 Groups can have up to 10 members, including their creator.
               </AppText>
- 
+
               <AppButton
                 loading={createLoading}
                 disabled={createLoading}

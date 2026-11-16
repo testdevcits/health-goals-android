@@ -104,8 +104,8 @@ export default function useProfile(
   const device = user?.deviceProfile;
   const phone = device
     ? [device.brand || device.manufacturer, device.model]
-      .filter(Boolean)
-      .join(' ')
+        .filter(Boolean)
+        .join(' ')
     : '';
   const initials =
     name

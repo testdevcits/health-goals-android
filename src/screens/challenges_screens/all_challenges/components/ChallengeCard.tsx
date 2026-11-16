@@ -14,14 +14,7 @@ interface ChallengeCardProps {
 }
 
 export const ChallengeCard: React.FC<ChallengeCardProps> = memo(
-  ({
-    challenge,
-    isJoining = false,
-    onContinue,
-    colors,
-    spacing,
-    radius,
-  }) => {
+  ({ challenge, isJoining = false, onContinue, colors, spacing, radius }) => {
     const styles = createCardStyles(colors, spacing, radius);
 
     return (
@@ -77,8 +70,8 @@ export const ChallengeCard: React.FC<ChallengeCardProps> = memo(
               {challenge?.joined
                 ? 'Joined'
                 : challenge?.joinable
-                  ? 'Join challenge'
-                  : 'Not available'}
+                ? 'Join challenge'
+                : 'Not available'}
             </AppText>
           )}
         </Pressable>

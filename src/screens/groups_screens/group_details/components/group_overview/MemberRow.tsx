@@ -41,8 +41,8 @@ export const MemberRow: React.FC<MemberRowProps> = memo(
                 index === 0
                   ? colors.warning
                   : index === 2
-                    ? colors.coral
-                    : colors.textSecondary,
+                  ? colors.coral
+                  : colors.textSecondary,
             }}
             bold
           >

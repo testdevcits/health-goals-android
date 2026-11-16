@@ -20,9 +20,7 @@ export const InviteMemberModal: React.FC<InviteMemberModalProps> = memo(
         onClose={loading ? () => {} : onClose}
         title="Invite this member?"
         message={
-          user
-            ? `Add ${user.name} (${user.publicId}) to ${groupName}?`
-            : ''
+          user ? `Add ${user.name} (${user.publicId}) to ${groupName}?` : ''
         }
         position="bottom"
       >

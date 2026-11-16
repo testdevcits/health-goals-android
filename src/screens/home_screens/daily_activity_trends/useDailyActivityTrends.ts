@@ -182,7 +182,10 @@ export default function useDailyActivityTrends() {
                         value: `${(lowestObserved / 60).toFixed(1)}h`,
                         label: 'Shortest day',
                       },
-                      { value: String(positiveValues.length), label: 'Days synced' },
+                      {
+                        value: String(positiveValues.length),
+                        label: 'Days synced',
+                      },
                     ]
                   : [
                       { value: averageLabel, label: 'Daily avg' },
@@ -194,7 +197,10 @@ export default function useDailyActivityTrends() {
                         value: String(lowestObserved),
                         label: 'Lowest daily avg',
                       },
-                      { value: String(positiveValues.length), label: 'Days synced' },
+                      {
+                        value: String(positiveValues.length),
+                        label: 'Days synced',
+                      },
                     ],
               insight: `${
                 positiveValues.length

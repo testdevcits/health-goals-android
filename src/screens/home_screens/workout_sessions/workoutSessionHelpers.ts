@@ -20,10 +20,12 @@ export const generateActivityColor = (seed: number): string => {
   return `hsl(${hue} ${saturation}% ${lightness}%)`;
 };
 
-export const activities: Activity[] = WORKOUT_ACTIVITIES.map((activity, index) => ({
-  ...activity,
-  color: generateActivityColor(index + 1),
-}));
+export const activities: Activity[] = WORKOUT_ACTIVITIES.map(
+  (activity, index) => ({
+    ...activity,
+    color: generateActivityColor(index + 1),
+  }),
+);
 
 export const formatTime = (totalSeconds: number): string => {
   const hours = Math.floor(totalSeconds / 3600);

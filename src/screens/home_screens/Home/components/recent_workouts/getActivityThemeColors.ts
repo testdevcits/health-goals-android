@@ -5,7 +5,10 @@ export const getActivityThemeColors = (
 ) => {
   const key = `${activityKey}_${metricType}`.toLowerCase();
   if (key.includes('run')) {
-    return { bg: themeColors.primaryLight || '#FFEDE8', accent: themeColors.primary };
+    return {
+      bg: themeColors.primaryLight || '#FFEDE8',
+      accent: themeColors.primary,
+    };
   }
   if (key.includes('walk')) {
     return { bg: '#E8F5E9', accent: '#2E7D32' };

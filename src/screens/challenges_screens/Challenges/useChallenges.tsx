@@ -95,7 +95,10 @@ const useChallenges = () => {
           challenges?: CommunityChallenge[];
           items?: CommunityChallenge[];
         }>('GET', API_ENDPOINTS.CHALLENGES.LIST),
-        authenticatedRequest<{ badges: Badge[] }>('GET', API_ENDPOINTS.CHALLENGES.BADGES),
+        authenticatedRequest<{ badges: Badge[] }>(
+          'GET',
+          API_ENDPOINTS.CHALLENGES.BADGES,
+        ),
         authenticatedRequest<{
           competitions: Competition[];
           achievements: Achievement[];
@@ -270,11 +273,7 @@ const useChallenges = () => {
       if (challengeResult.status === 'rejected') {
         const message = apiErrorMessage(challengeResult.reason);
         setLoadError(message);
-        showAppToast(
-          'error',
-          'Could not load challenges',
-          message,
-        );
+        showAppToast('error', 'Could not load challenges', message);
       } else {
         const optionalFailure = [
           badgeResult,
@@ -317,10 +316,7 @@ const useChallenges = () => {
     async (id: string) => {
       try {
         setJoiningChallengeId(id);
-        await authenticatedRequest(
-          'POST',
-          API_ENDPOINTS.CHALLENGES.JOIN(id),
-        );
+        await authenticatedRequest('POST', API_ENDPOINTS.CHALLENGES.JOIN(id));
         await refresh();
         showAppToast(
           'success',

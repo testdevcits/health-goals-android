@@ -52,11 +52,7 @@ export const HeightWeightFieldRow: React.FC<HeightWeightFieldRowProps> = ({
           >
             {height ? `${height} cm` : 'Select height'}
           </AppText>
-          <AppIcon
-            name="ChevronDown"
-            size={18}
-            color={colors.textSecondary}
-          />
+          <AppIcon name="ChevronDown" size={18} color={colors.textSecondary} />
         </Pressable>
         {isInvalidHeight ? (
           <AppText variant="caption" error mt={4}>
@@ -89,11 +85,7 @@ export const HeightWeightFieldRow: React.FC<HeightWeightFieldRowProps> = ({
           >
             {weight ? `${weight} kg` : 'Select weight'}
           </AppText>
-          <AppIcon
-            name="ChevronDown"
-            size={18}
-            color={colors.textSecondary}
-          />
+          <AppIcon name="ChevronDown" size={18} color={colors.textSecondary} />
         </Pressable>
         {isInvalidWeight ? (
           <AppText variant="caption" error mt={4}>

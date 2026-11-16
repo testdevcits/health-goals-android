@@ -12,11 +12,18 @@ import {
   subscribeToWorkoutSession,
   type WorkoutSession,
 } from './workoutSessionStore';
-import { activities, type Activity, type WorkoutConfirmation } from './workoutSessionHelpers';
+import {
+  activities,
+  type Activity,
+  type WorkoutConfirmation,
+} from './workoutSessionHelpers';
 import { authenticatedRequest } from '../../../services/authenticatedApi';
 import { API_ENDPOINTS } from '../../../constants';
 
-type NavigationProp = NativeStackNavigationProp<HomeStackParamList, 'WorkoutSession'>;
+type NavigationProp = NativeStackNavigationProp<
+  HomeStackParamList,
+  'WorkoutSession'
+>;
 
 export default function useWorkoutSession(
   navigation: NavigationProp,
@@ -25,10 +32,15 @@ export default function useWorkoutSession(
   const requestedActivity =
     activities.find(activity => activity.id === routeParams?.activityId) ??
     activities[0];
-  const [selectedActivity, setSelectedActivity] = useState<Activity>(requestedActivity);
-  const [workoutSession, setWorkoutSession] = useState<WorkoutSession | null>(null);
+  const [selectedActivity, setSelectedActivity] =
+    useState<Activity>(requestedActivity);
+  const [workoutSession, setWorkoutSession] = useState<WorkoutSession | null>(
+    null,
+  );
   const [elapsedSeconds, setElapsedSeconds] = useState(0);
-  const [confirmation, setConfirmation] = useState<WorkoutConfirmation | null>(null);
+  const [confirmation, setConfirmation] = useState<WorkoutConfirmation | null>(
+    null,
+  );
   const [savingWorkout, setSavingWorkout] = useState(false);
   const finishLock = useRef(false);
   const pendingWorkoutUpload = useRef<{
@@ -262,7 +274,7 @@ export default function useWorkoutSession(
                     metadata: {
                       estimatedCalories: Math.floor(
                         ((end - cursor) / 60000) *
-                        currentActivity.caloriesPerMinute,
+                          currentActivity.caloriesPerMinute,
                       ),
                       estimatedDistanceKm: Number(
                         (

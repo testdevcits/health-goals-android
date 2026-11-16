@@ -30,10 +30,7 @@ const WorkoutControls: React.FC<WorkoutControlsProps> = ({
         title={isRunning ? 'Pause' : hasStarted ? 'Resume' : 'Start'}
         onPress={onStartPause}
         disabled={savingWorkout}
-        style={[
-          styles.startButton,
-          { backgroundColor: activityColor },
-        ]}
+        style={[styles.startButton, { backgroundColor: activityColor }]}
       />
 
       <Pressable

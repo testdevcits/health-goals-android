@@ -61,7 +61,11 @@ export async function syncPhoneProfile(): Promise<string> {
       })`,
       appVersion: '1.0',
     };
-    await authenticatedRequest('POST', API_ENDPOINTS.AUTH.DEVICE_REGISTER, phone);
+    await authenticatedRequest(
+      'POST',
+      API_ENDPOINTS.AUTH.DEVICE_REGISTER,
+      phone,
+    );
     return deviceIdentifier;
   })();
   profileSync = { userId: session.user.id, promise };

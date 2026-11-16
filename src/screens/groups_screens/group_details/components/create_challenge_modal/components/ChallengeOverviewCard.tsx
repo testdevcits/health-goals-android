@@ -37,7 +37,9 @@ export const ChallengeOverviewCard: React.FC<ChallengeOverviewCardProps> = ({
       <View style={styles.summaryGrid}>
         <View style={styles.summaryItem}>
           <AppText style={styles.summaryItemLabel}>Metric Type</AppText>
-          <AppText style={styles.summaryItemValue}>{currentMetric.label}</AppText>
+          <AppText style={styles.summaryItemValue}>
+            {currentMetric.label}
+          </AppText>
         </View>
         <View style={styles.summaryItem}>
           <AppText style={styles.summaryItemLabel}>Target Goal</AppText>

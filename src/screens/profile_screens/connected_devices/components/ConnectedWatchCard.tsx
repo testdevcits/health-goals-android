@@ -67,10 +67,7 @@ export const ConnectedWatchCard: React.FC<ConnectedWatchCardProps> = ({
             </AppText>
             <View style={styles.statusIndicatorRow}>
               <View
-                style={[
-                  styles.statusDot,
-                  { backgroundColor: colors.success },
-                ]}
+                style={[styles.statusDot, { backgroundColor: colors.success }]}
               />
               <AppText variant="caption" color="textSuccess" bold>
                 Connected
@@ -153,9 +150,7 @@ export const ConnectedWatchCard: React.FC<ConnectedWatchCardProps> = ({
           </AppText>
           <AppText
             variant="caption"
-            color={
-              watchMetrics.liveHeartRate ? 'textSuccess' : 'textTertiary'
-            }
+            color={watchMetrics.liveHeartRate ? 'textSuccess' : 'textTertiary'}
           >
             {watchMetrics.liveHeartRate ? '● Live sensor' : 'Resting pulse'}
           </AppText>
@@ -223,9 +218,7 @@ export const ConnectedWatchCard: React.FC<ConnectedWatchCardProps> = ({
       </View>
 
       {/* Watch Footer: Last Sync & Sync Button */}
-      <View
-        style={[styles.watchFooter, { borderTopColor: colors.border }]}
-      >
+      <View style={[styles.watchFooter, { borderTopColor: colors.border }]}>
         <AppText variant="caption" secondary>
           {watchMetrics.lastSyncedAt
             ? `Last synced at ${watchMetrics.lastSyncedAt}`
