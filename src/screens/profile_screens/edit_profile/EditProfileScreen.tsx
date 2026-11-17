@@ -72,7 +72,7 @@ const EditProfileScreen: React.FC<{ navigation: ProfileScreenNavigation }> = ({
   );
 
   return (
-    <View style={{ flex: 1, backgroundColor: colors.backgroundSecondary }}>
+    <View style={styles.container}>
       <AppHeader
         title="Edit Profile"
         subtitle="Update your personal details"

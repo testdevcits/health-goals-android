@@ -10,7 +10,7 @@ export const createGroupDetailShimmerStyles = (colors: any, spacing: any) =>
       flexDirection: 'row',
       alignItems: 'center',
       borderRadius: 26,
-      padding: 20,
+      padding: spacing.lg,
       minHeight: 132,
       borderWidth: 1,
       borderColor: colors.border,
@@ -21,7 +21,7 @@ export const createGroupDetailShimmerStyles = (colors: any, spacing: any) =>
       height: 70,
       borderRadius: 22,
       backgroundColor: colors.surfaceElevated,
-      marginRight: 16,
+      marginRight: spacing.base,
     },
     bannerContent: {
       flex: 1,
@@ -30,20 +30,20 @@ export const createGroupDetailShimmerStyles = (colors: any, spacing: any) =>
     bannerTitle: {
       width: 140,
       height: 22,
-      borderRadius: 6,
+      borderRadius: spacing.s,
       backgroundColor: colors.surfaceElevated,
     },
     bannerSubtitle: {
       width: 190,
       height: 14,
-      borderRadius: 4,
+      borderRadius: spacing.xs,
       backgroundColor: colors.surfaceElevated,
-      marginTop: 8,
+      marginTop: spacing.sm,
     },
     avatarStack: {
       flexDirection: 'row',
       alignItems: 'center',
-      marginTop: 10,
+      marginTop: spacing.ms,
     },
     stackAvatar: {
       width: 28,
@@ -62,7 +62,7 @@ export const createGroupDetailShimmerStyles = (colors: any, spacing: any) =>
     sectionTitle: {
       width: 130,
       height: 18,
-      borderRadius: 4,
+      borderRadius: spacing.xs,
       backgroundColor: colors.surfaceElevated,
       marginBottom: spacing.sm,
       marginTop: spacing.xs,
@@ -71,7 +71,7 @@ export const createGroupDetailShimmerStyles = (colors: any, spacing: any) =>
     goalCard: {
       flexDirection: 'row',
       alignItems: 'center',
-      padding: 18,
+      padding: spacing.sl,
       borderRadius: 20,
       borderWidth: 1,
       borderColor: colors.border,
@@ -82,7 +82,7 @@ export const createGroupDetailShimmerStyles = (colors: any, spacing: any) =>
       height: 86,
       borderRadius: 43,
       backgroundColor: colors.surfaceElevated,
-      marginRight: 18,
+      marginRight: spacing.sl,
     },
     goalContent: {
       flex: 1,
@@ -91,30 +91,30 @@ export const createGroupDetailShimmerStyles = (colors: any, spacing: any) =>
     goalLabel: {
       width: 80,
       height: 14,
-      borderRadius: 4,
+      borderRadius: spacing.xs,
       backgroundColor: colors.surfaceElevated,
     },
     goalValue: {
       width: 130,
       height: 24,
-      borderRadius: 6,
+      borderRadius: spacing.s,
       backgroundColor: colors.surfaceElevated,
-      marginVertical: 6,
+      marginVertical: spacing.s,
     },
     goalSubtext: {
       width: 110,
       height: 12,
-      borderRadius: 4,
+      borderRadius: spacing.xs,
       backgroundColor: colors.surfaceElevated,
     },
     // Overview: Preview Card skeleton
     cardContainer: {
-      padding: 16,
+      padding: spacing.base,
       borderRadius: 20,
       borderWidth: 1,
       borderColor: colors.border,
       backgroundColor: colors.surface,
-      gap: 12,
+      gap: spacing.md,
     },
     cardHeaderRow: {
       flexDirection: 'row',
@@ -124,29 +124,29 @@ export const createGroupDetailShimmerStyles = (colors: any, spacing: any) =>
     cardHeaderLeft: {
       flexDirection: 'row',
       alignItems: 'center',
-      gap: 10,
+      gap: spacing.ms,
     },
     cardIcon: {
       width: 36,
       height: 36,
-      borderRadius: 10,
+      borderRadius: spacing.ms,
       backgroundColor: colors.surfaceElevated,
     },
     cardTitle: {
       width: 130,
       height: 16,
-      borderRadius: 4,
+      borderRadius: spacing.xs,
       backgroundColor: colors.surfaceElevated,
     },
     cardBadge: {
       width: 60,
       height: 20,
-      borderRadius: 10,
+      borderRadius: spacing.ms,
       backgroundColor: colors.surfaceElevated,
     },
     cardProgressBar: {
-      height: 6,
-      borderRadius: 3,
+      height: spacing.s,
+      borderRadius: spacing.xs - 1,
       backgroundColor: colors.surfaceElevated,
       width: '100%',
     },
@@ -158,7 +158,7 @@ export const createGroupDetailShimmerStyles = (colors: any, spacing: any) =>
     cardFooterText: {
       width: 90,
       height: 12,
-      borderRadius: 4,
+      borderRadius: spacing.xs,
       backgroundColor: colors.surfaceElevated,
     },
     cardFooterBtn: {
@@ -171,18 +171,18 @@ export const createGroupDetailShimmerStyles = (colors: any, spacing: any) =>
     leaderboardIntro: {
       width: 160,
       height: 14,
-      borderRadius: 4,
+      borderRadius: spacing.xs,
       backgroundColor: colors.surfaceElevated,
       alignSelf: 'center',
       marginVertical: spacing.xs,
     },
     contributorsCard: {
-      padding: 16,
+      padding: spacing.base,
       borderRadius: 20,
       borderWidth: 1,
       borderColor: colors.border,
       backgroundColor: colors.surface,
-      gap: 14,
+      gap: spacing.ml,
     },
     memberRow: {
       flexDirection: 'row',
@@ -192,7 +192,7 @@ export const createGroupDetailShimmerStyles = (colors: any, spacing: any) =>
     memberRowLeft: {
       flexDirection: 'row',
       alignItems: 'center',
-      gap: 10,
+      gap: spacing.ms,
     },
     memberRank: {
       width: 24,
@@ -207,47 +207,47 @@ export const createGroupDetailShimmerStyles = (colors: any, spacing: any) =>
       backgroundColor: colors.surfaceElevated,
     },
     memberTextCol: {
-      gap: 4,
+      gap: spacing.xs,
     },
     memberName: {
       width: 110,
       height: 14,
-      borderRadius: 4,
+      borderRadius: spacing.xs,
       backgroundColor: colors.surfaceElevated,
     },
     memberSubtext: {
       width: 60,
       height: 10,
-      borderRadius: 4,
+      borderRadius: spacing.xs,
       backgroundColor: colors.surfaceElevated,
     },
     memberSteps: {
       width: 68,
       height: 20,
-      borderRadius: 10,
+      borderRadius: spacing.ms,
       backgroundColor: colors.surfaceElevated,
     },
     // Challenges Tab Skeleton
     challengeFullCard: {
-      padding: 18,
+      padding: spacing.sl,
       borderRadius: 20,
       borderWidth: 1,
       borderColor: colors.border,
-      borderLeftWidth: 4,
+      borderLeftWidth: spacing.xs,
       borderLeftColor: colors.primary,
       backgroundColor: colors.surface,
-      gap: 12,
+      gap: spacing.md,
     },
     challengeDescLine: {
       width: '90%',
       height: 13,
-      borderRadius: 4,
+      borderRadius: spacing.xs,
       backgroundColor: colors.surfaceElevated,
     },
     challengeDescLine2: {
       width: '65%',
       height: 13,
-      borderRadius: 4,
+      borderRadius: spacing.xs,
       backgroundColor: colors.surfaceElevated,
     },
     challengeFullBtn: {
@@ -255,11 +255,11 @@ export const createGroupDetailShimmerStyles = (colors: any, spacing: any) =>
       borderRadius: 22,
       backgroundColor: colors.surfaceElevated,
       width: '100%',
-      marginTop: 4,
+      marginTop: spacing.xs,
     },
     newChallengeButton: {
       height: 46,
-      borderRadius: 14,
+      borderRadius: spacing.ml,
       borderWidth: 1.5,
       borderStyle: 'dashed',
       borderColor: colors.border,
@@ -270,7 +270,7 @@ export const createGroupDetailShimmerStyles = (colors: any, spacing: any) =>
     newChallengeText: {
       width: 120,
       height: 14,
-      borderRadius: 4,
+      borderRadius: spacing.xs,
       backgroundColor: colors.surfaceElevated,
     },
   });

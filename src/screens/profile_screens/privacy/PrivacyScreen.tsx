@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Alert, Pressable, ScrollView, View } from 'react-native';
+import { Alert, Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import {
   ProfileScreenNavigation,
   ProfileSectionLabel,
@@ -13,6 +13,7 @@ import {
   ProfileToggleRow,
 } from '../../../components';
 import { useTheme } from '../../../theme/useTheme';
+import { spacing } from '../../../theme/spacing';
 
 const PrivacyScreen: React.FC<{ navigation: ProfileScreenNavigation }> = ({
   navigation,
@@ -23,7 +24,7 @@ const PrivacyScreen: React.FC<{ navigation: ProfileScreenNavigation }> = ({
   const [employer, setEmployer] = useState(true);
   const [research, setResearch] = useState(false);
   const { theme } = useTheme();
-  const { colors, spacing } = theme;
+  const { colors, radius } = theme;
   const [deleteAccount, setDeleteAccount] = useState(false);
 
   const handleDeleteConfirmation = () => {
@@ -35,33 +36,31 @@ const PrivacyScreen: React.FC<{ navigation: ProfileScreenNavigation }> = ({
   };
 
   return (
-    <View style={{ flex: 1, backgroundColor: colors.backgroundSecondary }}>
+    <View style={[styles.container, { backgroundColor: colors.backgroundSecondary }]}>
       <AppHeader
         title="Privacy & Permissions"
         subtitle="Control who sees your data"
         onBackPress={() => navigation.goBack()}
       />
-      <ScrollView
-        contentContainerStyle={{ flexGrow: 1, paddingBottom: 100, padding: 16 }}
-      >
+      <ScrollView contentContainerStyle={styles.scrollContent}>
         <ProfileSectionLabel>Profile Visibility</ProfileSectionLabel>
         <ProfileCard>
           <ProfileToggleRow
-            icon="🏆"
+            icon="Trophy"
             title="Show on Leaderboards"
             detail="Appear to friends and teammates"
             value={leaderboards}
             onChange={setLeaderboards}
           />
           <ProfileToggleRow
-            icon="▤"
+            icon="SlidersHorizontal"
             title="Show Activity in Feed"
             detail="Let friends see workouts and milestones"
             value={activity}
             onChange={setActivity}
           />
           <ProfileToggleRow
-            icon="👀"
+            icon="Eye"
             title="Friends Can View My Stats"
             detail="Steps, sleep, and heart-rate summaries"
             value={stats}
@@ -72,52 +71,38 @@ const PrivacyScreen: React.FC<{ navigation: ProfileScreenNavigation }> = ({
         <ProfileSectionLabel>Data Sharing</ProfileSectionLabel>
         <ProfileCard>
           <ProfileToggleRow
-            icon="▦"
+            icon="UsersRound"
             title="Share with Employer (Anonymous)"
             detail="Only aggregated team data is shared"
             value={employer}
             onChange={setEmployer}
           />
           <ProfileToggleRow
-            icon="🔬"
+            icon="Search"
             title="Research Participation"
             detail="Contribute de-identified data to studies"
             value={research}
             onChange={setResearch}
           />
           <ProfileListRow
-            icon="📤"
+            icon="Upload"
             title="Export My Data"
             detail="Download a copy of your health records"
             onPress={() =>
               Alert.alert(
                 'Data export requested',
-                'We’ll notify you when your export is ready.',
+                'We will notify you when your export is ready.',
               )
             }
             last
           />
         </ProfileCard>
-        {/* <ProfileSectionLabel>App Permissions</ProfileSectionLabel> */}
-        {/* <ProfileCard style={styles.permissionCard}>
-          <ProfileListRow
-            icon="❤️"
-            title="Health Data Access"
-            action="Allowed"
-          />
-          <ProfileListRow icon="🔔" title="Notifications" action="Not set" />
-          <ProfileListRow
-            icon="📍"
-            title="Location"
-            action="While Using"
-            last
-          />
-        </ProfileCard> */}
+
         <AppText
           onPress={() => setDeleteAccount(true)}
           variant="body2"
           bold
-          style={{ color: colors.error, alignSelf: 'center', marginTop: 20 }}
+          style={[styles.deleteButtonText, { color: colors.error }]}
         >
           Delete My Account
         </AppText>
@@ -132,13 +117,7 @@ const PrivacyScreen: React.FC<{ navigation: ProfileScreenNavigation }> = ({
         <Pressable
           onPress={handleDeleteConfirmation}
           accessibilityRole="button"
-          style={{
-            minHeight: 48,
-            alignItems: 'center',
-            justifyContent: 'center',
-            backgroundColor: colors.coral,
-            borderRadius: theme.radius.md,
-          }}
+          style={[styles.deleteModalButton, { backgroundColor: colors.coral, borderRadius: radius.md }]}
         >
           <AppText variant="button" color="textInverse">
             Delete Forever
@@ -147,14 +126,13 @@ const PrivacyScreen: React.FC<{ navigation: ProfileScreenNavigation }> = ({
         <Pressable
           onPress={() => setDeleteAccount(false)}
           accessibilityRole="button"
-          style={{
-            marginTop: spacing.sm,
-            minHeight: 48,
-            alignItems: 'center',
-            justifyContent: 'center',
-            backgroundColor: colors.backgroundSecondary,
-            borderRadius: theme.radius.md,
-          }}
+          style={[
+            styles.keepModalButton,
+            {
+              backgroundColor: colors.backgroundSecondary,
+              borderRadius: radius.md,
+            },
+          ]}
         >
           <AppText variant="button" color="textPrimary">
             Keep My Account
@@ -164,5 +142,31 @@ const PrivacyScreen: React.FC<{ navigation: ProfileScreenNavigation }> = ({
     </View>
   );
 };
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+  },
+  scrollContent: {
+    flexGrow: 1,
+    paddingBottom: spacing.huge + spacing.xxxl,
+    padding: spacing.base,
+  },
+  deleteButtonText: {
+    alignSelf: 'center',
+    marginTop: spacing.lg,
+  },
+  deleteModalButton: {
+    minHeight: 48,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  keepModalButton: {
+    marginTop: spacing.sm,
+    minHeight: 48,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+});
 
 export default PrivacyScreen;

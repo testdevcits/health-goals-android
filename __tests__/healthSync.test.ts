@@ -1,4 +1,8 @@
-import { syncRecentHealthData } from '../src/services/healthSync';
+import {
+  syncRecentHealthData,
+  fetchSyncedHealthRecords,
+  fetchSyncedHealthRecordsPage,
+} from '../src/services/healthSync';
 import {
   aggregateGroupByDuration,
   getGrantedPermissions,
@@ -441,4 +445,98 @@ test('manual sync queued during a failing automatic sync still retries', async (
   expect(first.status).toBe('rejected');
   expect(second.status).toBe('fulfilled');
   expect(authenticatedRequest).toHaveBeenCalledTimes(2);
+});
+
+describe('fetchSyncedHealthRecords & fetchSyncedHealthRecordsPage', () => {
+  test('fetchSyncedHealthRecordsPage calls GET /health/sync with page and limit query params', async () => {
+    (authenticatedRequest as jest.Mock).mockResolvedValueOnce({
+      records: [
+        { id: 'rec-1', metricType: 'steps', value: 1000, unit: 'count', deleted: false },
+        { id: 'rec-del', metricType: 'steps', value: 500, unit: 'count', deleted: true },
+      ],
+      page: 1,
+      limit: 100,
+      hasMore: true,
+      nextPage: 2,
+      total: 150,
+    });
+
+    const result = await fetchSyncedHealthRecordsPage(1, 100);
+
+    expect(authenticatedRequest).toHaveBeenCalledWith(
+      'GET',
+      '/health/sync?page=1&limit=100',
+    );
+    expect(result.page).toBe(1);
+    expect(result.limit).toBe(100);
+    expect(result.hasMore).toBe(true);
+    expect(result.nextPage).toBe(2);
+    // Soft deleted record filtered out
+    expect(result.records).toHaveLength(1);
+    expect(result.records[0].id).toBe('rec-1');
+  });
+
+  test('fetchSyncedHealthRecords auto-paginates when fetchAll is true', async () => {
+    (authenticatedRequest as jest.Mock)
+      .mockResolvedValueOnce({
+        records: [
+          { id: 'rec-1', metricType: 'workout', value: 30, unit: 'min' },
+        ],
+        page: 1,
+        limit: 100,
+        hasMore: true,
+        nextPage: 2,
+      })
+      .mockResolvedValueOnce({
+        records: [
+          { id: 'rec-2', metricType: 'workout', value: 45, unit: 'min' },
+        ],
+        page: 2,
+        limit: 100,
+        hasMore: false,
+        nextPage: null,
+      });
+
+    const records = await fetchSyncedHealthRecords({ fetchAll: true, limit: 100 });
+
+    expect(authenticatedRequest).toHaveBeenCalledTimes(2);
+    expect(authenticatedRequest).toHaveBeenNthCalledWith(
+      1,
+      'GET',
+      '/health/sync?page=1&limit=100',
+    );
+    expect(authenticatedRequest).toHaveBeenNthCalledWith(
+      2,
+      'GET',
+      '/health/sync?page=2&limit=100',
+    );
+    expect(records).toHaveLength(2);
+    expect(records.map(r => r.id)).toEqual(['rec-1', 'rec-2']);
+  });
+
+  test('fetchSyncedHealthRecords respects fetchAll: false and single page request', async () => {
+    (authenticatedRequest as jest.Mock).mockResolvedValueOnce({
+      records: [
+        { id: 'rec-1', metricType: 'steps', value: 2000, unit: 'count' },
+      ],
+      page: 2,
+      limit: 50,
+      hasMore: true,
+      nextPage: 3,
+    });
+
+    const records = await fetchSyncedHealthRecords({
+      page: 2,
+      limit: 50,
+      fetchAll: false,
+    });
+
+    expect(authenticatedRequest).toHaveBeenCalledTimes(1);
+    expect(authenticatedRequest).toHaveBeenCalledWith(
+      'GET',
+      '/health/sync?page=2&limit=50',
+    );
+    expect(records).toHaveLength(1);
+    expect(records[0].id).toBe('rec-1');
+  });
 });

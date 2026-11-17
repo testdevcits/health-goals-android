@@ -3,7 +3,7 @@ import React, { memo } from 'react';
 import { useTheme } from '../theme/useTheme';
 import { spacing } from '../theme/spacing';
 import AppText from './AppText';
-import AppIcon from '../assets/appicon/AppIcon';
+import AppIcon, { ICONS, type IconName } from '../assets/appicon/AppIcon';
 
 const ProfileListRow: React.FC<{
   icon: string;
@@ -15,6 +15,8 @@ const ProfileListRow: React.FC<{
 }> = ({ icon, title, detail, action, onPress, last }) => {
   const { theme } = useTheme();
   const { colors, radius } = theme;
+  const isNamedIcon = typeof icon === 'string' && icon in ICONS;
+
   return (
     <Pressable
       onPress={onPress}
@@ -34,7 +36,15 @@ const ProfileListRow: React.FC<{
           { backgroundColor: colors.primaryLight, borderRadius: radius.sm },
         ]}
       >
-        <AppText variant="body1">{icon}</AppText>
+        {isNamedIcon ? (
+          <AppIcon
+            name={icon as IconName}
+            size={18}
+            color={colors.primary}
+          />
+        ) : (
+          <AppText variant="body1">{icon}</AppText>
+        )}
       </View>
       <View style={styles.rowCopy}>
         <AppText variant="subtitle2" bold numberOfLines={1}>

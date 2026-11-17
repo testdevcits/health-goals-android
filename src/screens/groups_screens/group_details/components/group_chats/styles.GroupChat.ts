@@ -1,4 +1,5 @@
 import { StyleSheet } from 'react-native';
+import { typography } from '../../../../../theme/typography';
 
 const createGroupChatStyles = (colors: any, spacing: any, radius: any) =>
   StyleSheet.create({
@@ -88,7 +89,7 @@ const createGroupChatStyles = (colors: any, spacing: any, radius: any) =>
       maxHeight: 100,
       paddingHorizontal: spacing.sm,
       paddingVertical: spacing.xs,
-      fontSize: 14,
+      fontSize: typography.body2.fontSize,
       color: colors.textPrimary,
     },
     sendButton: {

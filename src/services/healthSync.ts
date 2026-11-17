@@ -670,20 +670,20 @@ async function collectDailySnapshots(
   try {
     const rawDailySteps = hasReadPermission(successfulPermissions, 'Steps')
       ? range.dates.map(date => {
-          const group = stepsByDate.get(date);
-          const steps = Number(group?.result.COUNT_TOTAL ?? 0);
-          if (!Number.isSafeInteger(steps) || steps < 0 || steps > 200_000) {
-            throw new Error(`Invalid Health Connect step total for ${date}.`);
-          }
-          const dataOrigins = group?.result.dataOrigins || [];
-          return {
-            date,
-            steps,
-            dataOrigin: [...dataOrigins].sort()[0] || 'com.vitality',
-            recordingMethod: 'automatic' as const,
-            deviceId,
-          };
-        })
+        const group = stepsByDate.get(date);
+        const steps = Number(group?.result.COUNT_TOTAL ?? 0);
+        if (!Number.isSafeInteger(steps) || steps < 0 || steps > 200_000) {
+          throw new Error(`Invalid Health Connect step total for ${date}.`);
+        }
+        const dataOrigins = group?.result.dataOrigins || [];
+        return {
+          date,
+          steps,
+          dataOrigin: [...dataOrigins].sort()[0] || 'com.vitality',
+          recordingMethod: 'automatic' as const,
+          deviceId,
+        };
+      })
       : [];
     stepSnapshots = rawDailySteps.map(record => {
       const start = Date.parse(`${record.date}T00:00:00.000Z`) - IST_OFFSET_MS;
@@ -944,47 +944,146 @@ export interface SyncedHealthRecord {
   recordedAt?: string;
   source?: string;
   sourceRecordId?: string;
+  deviceId?: string;
   activityDate?: string;
   startTime?: string;
   endTime?: string;
   activityType?: string;
+  dataOrigin?: string;
+  recordingMethod?: string;
   sourceVersion?: number;
   deleted?: boolean;
   metadata?: {
     estimatedCalories?: number;
     estimatedDistanceKm?: number;
+    aggregation?: string;
+    aggregationScope?: string;
+    timezone?: string;
+    origin?: string;
+    [key: string]: unknown;
   };
   createdAt?: string;
 }
 
 export interface FetchSyncedRecordsResponse {
-  records?: SyncedHealthRecord[];
+  records: SyncedHealthRecord[];
   total?: number;
-  page?: number;
-  limit?: number;
-  hasMore?: boolean;
-  nextPage?: number | null;
-  data?: {
-    records?: SyncedHealthRecord[];
-    total?: number;
-  };
+  page: number;
+  limit: number;
+  hasMore: boolean;
+  nextPage: number | null;
 }
 
-export async function fetchSyncedHealthRecords(): Promise<
-  SyncedHealthRecord[]
-> {
+export interface FetchSyncedRecordsOptions {
+  page?: number;
+  limit?: number;
+  fetchAll?: boolean;
+  maxPages?: number;
+}
+
+export async function fetchSyncedHealthRecordsPage(
+  page = 1,
+  limit = 100,
+): Promise<FetchSyncedRecordsResponse> {
   try {
-    const response = await authenticatedRequest<any>(
-      'GET',
-      API_ENDPOINTS.HEALTH.SYNC,
-    );
-    // authenticatedRequest automatically unwraps response.data.data.
-    // We check both direct response.records and response.data.records for backwards/direct compatibility.
-    const records: SyncedHealthRecord[] =
+    const queryParams = `?page=${encodeURIComponent(page)}&limit=${encodeURIComponent(limit)}`;
+    const path = `${API_ENDPOINTS.HEALTH.SYNC}${queryParams}`;
+    const response = await authenticatedRequest<any>('GET', path);
+
+    const rawRecords =
       response?.records ||
       response?.data?.records ||
       (Array.isArray(response) ? response : []);
-    return records;
+
+    const records: SyncedHealthRecord[] = Array.isArray(rawRecords)
+      ? rawRecords.filter((r: SyncedHealthRecord) => !r?.deleted)
+      : [];
+
+    const respPage = Number(response?.page ?? response?.data?.page ?? page);
+    const respLimit = Number(response?.limit ?? response?.data?.limit ?? limit);
+    const hasMore = Boolean(response?.hasMore ?? response?.data?.hasMore ?? false);
+    const nextPage =
+      response?.nextPage !== undefined
+        ? response.nextPage
+        : response?.data?.nextPage !== undefined
+          ? response.data.nextPage
+          : hasMore
+            ? respPage + 1
+            : null;
+    const total = response?.total ?? response?.data?.total;
+
+    return {
+      records,
+      page: respPage,
+      limit: respLimit,
+      hasMore,
+      nextPage,
+      total,
+    };
+  } catch (error) {
+    console.warn(
+      `Could not fetch synced health records for page ${page}:`,
+      error,
+    );
+    return {
+      records: [],
+      page,
+      limit,
+      hasMore: false,
+      nextPage: null,
+      total: 0,
+    };
+  }
+}
+
+export async function fetchSyncedHealthRecords(
+  options: FetchSyncedRecordsOptions = {},
+): Promise<SyncedHealthRecord[]> {
+  const {
+    page = 1,
+    limit = 100,
+    fetchAll = true,
+    maxPages = 5,
+  } = options;
+
+  try {
+    const firstPage = await fetchSyncedHealthRecordsPage(page, limit);
+    let allRecords = [...firstPage.records];
+
+    if (fetchAll && firstPage.hasMore && firstPage.nextPage) {
+      let currentPage: number | null = firstPage.nextPage;
+      let pagesFetched = 1;
+
+      while (currentPage && pagesFetched < maxPages) {
+        const nextPageData = await fetchSyncedHealthRecordsPage(
+          currentPage,
+          limit,
+        );
+        if (!nextPageData.records.length) {
+          break;
+        }
+        allRecords = allRecords.concat(nextPageData.records);
+        pagesFetched += 1;
+
+        if (nextPageData.hasMore && nextPageData.nextPage) {
+          currentPage = nextPageData.nextPage;
+        } else {
+          break;
+        }
+      }
+    }
+
+    const seenIds = new Set<string>();
+    const deduplicated: SyncedHealthRecord[] = [];
+    for (const record of allRecords) {
+      if (record.id) {
+        if (seenIds.has(record.id)) continue;
+        seenIds.add(record.id);
+      }
+      deduplicated.push(record);
+    }
+
+    return deduplicated;
   } catch (error) {
     console.warn('Could not fetch synced health records:', error);
     return [];

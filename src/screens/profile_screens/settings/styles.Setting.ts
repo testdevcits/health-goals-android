@@ -1,5 +1,6 @@
 import { StyleSheet } from 'react-native';
 import type { AppColors } from '../../../theme/colors';
+import { spacing } from '../../../theme/spacing';
 
 const createStyles = (colors: AppColors) =>
   StyleSheet.create({
@@ -8,20 +9,20 @@ const createStyles = (colors: AppColors) =>
     },
 
     scrollContent: {
-      paddingHorizontal: 16,
-      paddingTop: 20,
+      paddingHorizontal: spacing.base,
+      paddingTop: spacing.lg,
     },
     section: {
-      marginBottom: 18,
+      marginBottom: spacing.sl,
     },
     sectionTitle: {
-      marginLeft: 4,
-      marginBottom: 8,
+      marginLeft: spacing.xs,
+      marginBottom: spacing.sm,
       letterSpacing: 0.6,
       textTransform: 'uppercase',
     },
     card: {
-      borderRadius: 16,
+      borderRadius: spacing.base,
       overflow: 'hidden',
       elevation: 2,
       shadowColor: colors.black,
@@ -35,22 +36,22 @@ const createStyles = (colors: AppColors) =>
       justifyContent: 'flex-end',
     },
     sheet: {
-      paddingTop: 12,
-      paddingHorizontal: 20,
+      paddingTop: spacing.md,
+      paddingHorizontal: spacing.lg,
       maxHeight: '65%',
     },
     handle: {
-      width: 40,
-      height: 4,
-      borderRadius: 2,
+      width: spacing.xxxl,
+      height: spacing.xs,
+      borderRadius: spacing.xxs,
       alignSelf: 'center',
-      marginBottom: 16,
+      marginBottom: spacing.base,
     },
     sheetHeader: {
       flexDirection: 'row',
       alignItems: 'center',
       justifyContent: 'space-between',
-      paddingBottom: 8,
+      paddingBottom: spacing.sm,
     },
     closeButton: {
       width: 34,
@@ -74,7 +75,7 @@ const createStyles = (colors: AppColors) =>
       minHeight: 48,
       alignItems: 'center',
       justifyContent: 'center',
-      borderRadius: 12,
+      borderRadius: spacing.md,
       borderWidth: 1,
       borderColor: colors.border,
     },
@@ -84,8 +85,12 @@ const createStyles = (colors: AppColors) =>
       minHeight: 48,
       alignItems: 'center',
       justifyContent: 'center',
-      borderRadius: 12,
+      borderRadius: spacing.md,
       backgroundColor: colors.info,
+    },
+    modalActionsRow: {
+      flexDirection: 'row',
+      gap: spacing.md,
     },
   });
 

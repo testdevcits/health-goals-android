@@ -1,15 +1,17 @@
 import { StyleSheet } from 'react-native';
+import { spacing } from '../../../../../theme/spacing';
+import { typography } from '../../../../../theme/typography';
 
 export default StyleSheet.create({
   bannerContainer: {
     flexDirection: 'row',
     alignItems: 'center',
     borderRadius: 26,
-    padding: 20,
+    padding: spacing.lg,
     minHeight: 132,
     overflow: 'hidden',
     position: 'relative',
-    marginBottom: 15,
+    marginBottom: spacing.base - 1,
   },
   iconContainer: {
     width: 70,
@@ -17,7 +19,7 @@ export default StyleSheet.create({
     borderRadius: 22,
     alignItems: 'center',
     justifyContent: 'center',
-    marginRight: 16,
+    marginRight: spacing.base,
   },
   groupIcon: {
     fontSize: 32,
@@ -27,18 +29,18 @@ export default StyleSheet.create({
     justifyContent: 'center',
   },
   description: {
-    marginTop: 3,
+    marginTop: spacing.xxs + 1,
   },
   bannerMemberAvatars: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginTop: 10,
+    marginTop: spacing.ms,
   },
   bannerAvatar: {
     width: 29,
     height: 29,
     borderRadius: 15,
-    borderWidth: 2,
+    borderWidth: spacing.xxs,
     alignItems: 'center',
     justifyContent: 'center',
     marginRight: -7,
@@ -49,24 +51,24 @@ export default StyleSheet.create({
     height: '100%',
   },
   bannerAvatarText: {
-    fontSize: 11,
+    fontSize: typography.caption.fontSize - 1,
   },
   bannerMoreMembers: {
     width: 29,
     height: 29,
     borderRadius: 15,
-    borderWidth: 2,
+    borderWidth: spacing.xxs,
     alignItems: 'center',
     justifyContent: 'center',
     marginLeft: 1,
   },
   bannerMoreMembersText: {
-    fontSize: 10,
+    fontSize: typography.tabLabel.fontSize,
   },
   settingsButton: {
     position: 'absolute',
-    top: 15,
-    right: 14,
+    top: spacing.base - 1,
+    right: spacing.ml,
     width: 38,
     height: 38,
     borderRadius: 20,

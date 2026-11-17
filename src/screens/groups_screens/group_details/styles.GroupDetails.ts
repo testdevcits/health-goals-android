@@ -14,8 +14,8 @@ const createStyles = (colors: any, spacing: any) =>
     },
     modalActions: {
       flexDirection: 'row',
-      gap: 12,
-      marginTop: 8,
+      gap: spacing.md,
+      marginTop: spacing.sm,
     },
     modalActionButton: {
       flex: 1,
@@ -27,11 +27,11 @@ const createStyles = (colors: any, spacing: any) =>
       flexDirection: 'row',
       alignItems: 'center',
       alignSelf: 'flex-end',
-      gap: 6,
+      gap: spacing.s,
       backgroundColor: colors.primaryLight,
-      paddingVertical: 7,
-      paddingHorizontal: 13,
-      borderRadius: 20,
+      paddingVertical: spacing.s + 1,
+      paddingHorizontal: spacing.md + 1,
+      borderRadius: spacing.lg,
       marginBottom: spacing.xs,
     },
     addMemberText: {

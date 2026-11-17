@@ -57,15 +57,13 @@ const HelpSupportScreen: React.FC<Props> = ({ navigation }) => {
   const { colors } = theme;
   const styles = createStyles(colors);
   return (
-    <View style={{ flex: 1, backgroundColor: colors.backgroundSecondary }}>
+    <View style={styles.container}>
       <AppHeader
         title="Help & Support"
         subtitle="We're here to help"
         onBackPress={() => navigation.goBack()}
       />
-      <ScrollView
-        contentContainerStyle={{ flexGrow: 1, paddingBottom: 100, padding: 16 }}
-      >
+      <ScrollView contentContainerStyle={styles.scrollContent}>
         <View
           style={[styles.searchBox, { backgroundColor: theme.colors.surface }]}
         >
@@ -87,25 +85,25 @@ const HelpSupportScreen: React.FC<Props> = ({ navigation }) => {
         </View>
         <ProfileCard style={styles.supportCard}>
           <ProfileListRow
-            icon="🤖"
+            icon="CircleHelp"
             title="AI Legal & Health Assistant"
             detail="Instant answers on privacy, terms & disclaimers"
             onPress={() => navigation.navigate('AiChatBot')}
           />
           <ProfileListRow
-            icon="📧"
+            icon="Mail"
             title="Email Support"
             detail="support@vitality.app"
             onPress={() => navigation.navigate('EmailSupport')}
           />
           {/* <ProfileListRow
-            icon="🐞"
+            icon="AlertCircle"
             title="Report a Bug"
             detail="Help us improve the app"
             onPress={() => navigation.navigate('AiChatBot')}
           /> */}
           <ProfileListRow
-            icon="📜"
+            icon="Info"
             title="Community Guidelines"
             onPress={() => navigation.navigate('CommunityGuidelines')}
             last

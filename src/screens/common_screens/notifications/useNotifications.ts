@@ -85,7 +85,12 @@ export default function useNotifications() {
                 id: item.id,
                 title: item.title,
                 body: item.body,
-                android: { channelId, pressAction: { id: 'default' } },
+                android: {
+                  channelId,
+                  smallIcon: 'ic_notification',
+                  color: '#00C6A2',
+                  pressAction: { id: 'default' },
+                },
               }),
             ),
           ]);

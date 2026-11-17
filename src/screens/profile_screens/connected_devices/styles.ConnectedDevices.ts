@@ -1,5 +1,6 @@
 import { StyleSheet } from 'react-native';
 import type { AppColors } from '../../../theme/colors';
+import { spacing } from '../../../theme/spacing';
 
 const createStyles = (colors: AppColors) =>
   StyleSheet.create({
@@ -9,23 +10,23 @@ const createStyles = (colors: AppColors) =>
     },
     scrollContent: {
       flexGrow: 1,
-      paddingBottom: 100,
-      padding: 16,
+      paddingBottom: spacing.huge + spacing.xxxl,
+      padding: spacing.base,
     },
     contentWrapper: {
       flex: 1,
     },
     sectionLabel: {
-      marginBottom: 8,
+      marginBottom: spacing.sm,
     },
     healthSectionLabel: {
-      marginTop: 24,
+      marginTop: spacing.xl,
     },
     watchCard: {
-      padding: 16,
-      borderRadius: 16,
+      padding: spacing.base,
+      borderRadius: spacing.base,
       borderWidth: 1,
-      marginBottom: 16,
+      marginBottom: spacing.base,
       backgroundColor: colors.surface,
       borderColor: colors.border,
     },
@@ -33,7 +34,7 @@ const createStyles = (colors: AppColors) =>
       flexDirection: 'row',
       alignItems: 'center',
       justifyContent: 'space-between',
-      marginBottom: 14,
+      marginBottom: spacing.ml,
     },
     watchInfoRow: {
       flexDirection: 'row',
@@ -46,7 +47,7 @@ const createStyles = (colors: AppColors) =>
       borderRadius: 22,
       alignItems: 'center',
       justifyContent: 'center',
-      marginRight: 12,
+      marginRight: spacing.md,
       backgroundColor: colors.backgroundSecondary,
     },
     watchTitleCol: {
@@ -55,33 +56,33 @@ const createStyles = (colors: AppColors) =>
     statusIndicatorRow: {
       flexDirection: 'row',
       alignItems: 'center',
-      marginTop: 2,
-      gap: 6,
+      marginTop: spacing.xxs,
+      gap: spacing.s,
     },
     statusDot: {
-      width: 8,
-      height: 8,
-      borderRadius: 4,
+      width: spacing.sm,
+      height: spacing.sm,
+      borderRadius: spacing.xs,
       backgroundColor: colors.success,
     },
     disconnectButton: {
-      paddingHorizontal: 12,
-      paddingVertical: 6,
-      borderRadius: 8,
+      paddingHorizontal: spacing.md,
+      paddingVertical: spacing.s,
+      borderRadius: spacing.sm,
       borderWidth: 1,
       borderColor: colors.border,
     },
     metricsGrid: {
       flexDirection: 'row',
       flexWrap: 'wrap',
-      gap: 10,
-      marginBottom: 14,
+      gap: spacing.ms,
+      marginBottom: spacing.ml,
     },
     metricTile: {
       flex: 1,
       minWidth: '45%',
-      padding: 12,
-      borderRadius: 12,
+      padding: spacing.md,
+      borderRadius: spacing.md,
       borderWidth: 1,
       backgroundColor: colors.backgroundSecondary,
       borderColor: colors.border,
@@ -89,43 +90,43 @@ const createStyles = (colors: AppColors) =>
     metricTileHeader: {
       flexDirection: 'row',
       alignItems: 'center',
-      gap: 6,
-      marginBottom: 4,
+      gap: spacing.s,
+      marginBottom: spacing.xs,
     },
     metricTileValue: {
-      marginVertical: 2,
+      marginVertical: spacing.xxs,
     },
     watchFooter: {
       flexDirection: 'row',
       justifyContent: 'space-between',
       alignItems: 'center',
-      paddingTop: 10,
+      paddingTop: spacing.ms,
       borderTopWidth: StyleSheet.hairlineWidth,
       borderTopColor: colors.border,
     },
     syncButton: {
-      paddingHorizontal: 14,
-      paddingVertical: 6,
-      borderRadius: 8,
+      paddingHorizontal: spacing.ml,
+      paddingVertical: spacing.s,
+      borderRadius: spacing.sm,
       backgroundColor: colors.primary,
     },
     filterRow: {
       flexDirection: 'row',
       justifyContent: 'space-between',
       alignItems: 'center',
-      marginVertical: 8,
+      marginVertical: spacing.sm,
     },
     filterText: {
       width: '50%',
     },
     filterChip: {
-      paddingHorizontal: 10,
-      paddingVertical: 4,
-      borderRadius: 12,
+      paddingHorizontal: spacing.ms,
+      paddingVertical: spacing.xs,
+      borderRadius: spacing.md,
       borderWidth: 1,
     },
     deviceCard: {
-      marginTop: 8,
+      marginTop: spacing.sm,
     },
     scanButton: {
       minHeight: 48,
@@ -137,18 +138,18 @@ const createStyles = (colors: AppColors) =>
       opacity: 0.6,
     },
     deviceNote: {
-      marginTop: 12,
+      marginTop: spacing.md,
       textAlign: 'center',
     },
     emptyDevices: {
-      marginTop: 12,
+      marginTop: spacing.md,
     },
     errorMessage: {
-      marginTop: 12,
+      marginTop: spacing.md,
       textAlign: 'center',
     },
     spacer: {
-      height: 10,
+      height: spacing.ms,
     },
     settingsButton: {
       minHeight: 48,
@@ -165,8 +166,8 @@ const createStyles = (colors: AppColors) =>
     },
     modalActions: {
       flexDirection: 'row',
-      gap: 12,
-      marginTop: 16,
+      gap: spacing.md,
+      marginTop: spacing.base,
     },
     modalActionButton: {
       flex: 1,

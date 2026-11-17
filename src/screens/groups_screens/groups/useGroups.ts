@@ -6,7 +6,9 @@ import { apiErrorMessage } from '../../../services/api';
 import { showAppToast } from '../../../utils/appToast';
 import { useFocusEffect } from '@react-navigation/native';
 import { FeedPost, Group } from './data';
-export type GroupTab = 'My Groups' | 'Discover' | 'Feed';
+export type GroupTab = 'My Groups' |
+  'Discover' |
+  'Feed';
 
 const useGroups = () => {
   const [activeTab, setActiveTab] = useState<GroupTab>('My Groups');

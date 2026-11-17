@@ -2,7 +2,7 @@ import { StyleSheet } from 'react-native';
 import type { AppTheme } from '../../../../../theme';
 
 export const createAiChatBotStyles = (theme: AppTheme) => {
-  const { colors, spacing, radius } = theme;
+  const { colors, spacing, radius, typography } = theme;
 
   return StyleSheet.create({
     container: {
@@ -92,7 +92,7 @@ export const createAiChatBotStyles = (theme: AppTheme) => {
       color: colors.textPrimary,
     },
     messageTime: {
-      fontSize: 10,
+      fontSize: typography.tabLabel.fontSize,
       marginTop: spacing.xs,
       alignSelf: 'flex-end',
     },
@@ -152,7 +152,7 @@ export const createAiChatBotStyles = (theme: AppTheme) => {
       borderRadius: radius.lg,
       paddingHorizontal: spacing.base,
       paddingVertical: spacing.sm,
-      fontSize: 14,
+      fontSize: typography.body2.fontSize,
       fontFamily: theme.fonts.regular,
       color: colors.textPrimary,
       borderWidth: 1,

@@ -1,8 +1,8 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { DeviceEventEmitter } from 'react-native';
 import { useIsFocused } from '@react-navigation/native';
 import {
-  fetchSyncedHealthRecords,
+  fetchSyncedHealthRecordsPage,
   type SyncedHealthRecord,
 } from '../../../../../services/healthSync';
 import { getWorkoutActivity } from '../../../workout_sessions/workoutActivities';
@@ -200,8 +200,18 @@ export const groupRecordsByActivityAndDate = (
   const groupsMap = new Map<string, GroupedActivityItem>();
 
   for (const record of records) {
+    if (!record || !record.metricType || record.deleted) {
+      continue;
+    }
+
     const isWorkout =
       record.metricType === 'workout' || Boolean(record.activityType);
+
+    // Skip daily aggregate metrics with 0 or negative value (e.g. 0 min sleep or 0 active minutes)
+    if (!isWorkout && (Number(record.value) || 0) <= 0) {
+      continue;
+    }
+
     const dateKey = getRecordDateKey(record);
     const activityKey = getRecordActivityKey(record);
     const groupKey = `${dateKey}_${activityKey}`;
@@ -284,6 +294,11 @@ export const groupRecordsByActivityAndDate = (
 
 export const useRecentWorkouts = (healthRefreshKey?: number) => {
   const isFocused = useIsFocused();
+  const [page, setPage] = useState<number>(1);
+  const [limit] = useState<number>(100);
+  const [hasMore, setHasMore] = useState<boolean>(false);
+  const [nextPage, setNextPage] = useState<number | null>(null);
+  const [loadingMore, setLoadingMore] = useState<boolean>(false);
   const [allRecords, setAllRecords] = useState<SyncedHealthRecord[]>(() => {
     return (
       storageService.getObject<SyncedHealthRecord[]>(
@@ -310,37 +325,98 @@ export const useRecentWorkouts = (healthRefreshKey?: number) => {
     }));
   };
 
-  const loadRecords = useCallback(async () => {
-    try {
-      const data = await fetchSyncedHealthRecords();
-      setAllRecords(data);
-      if (data && data.length > 0) {
-        storageService.setObject(CACHE_KEY_SYNCED_RECORDS, data);
-      }
-    } catch (error) {
-      console.warn('Could not load synced health records:', error);
-    } finally {
-      setLoading(false);
-    }
-  }, []);
+  const loadRecords = useCallback(
+    async (targetPage: number = 1) => {
+      try {
+        if (targetPage > 1) {
+          setLoadingMore(true);
+        } else {
+          setLoading(true);
+        }
 
+        const response = await fetchSyncedHealthRecordsPage(targetPage, limit);
+        const newRecords = response.records;
+        setHasMore(response.hasMore);
+        setNextPage(response.nextPage);
+
+        setAllRecords(prev => {
+          if (targetPage === 1) {
+            if (newRecords.length > 0) {
+              storageService.setObject(CACHE_KEY_SYNCED_RECORDS, newRecords);
+            }
+            return newRecords;
+          }
+
+          // Target page > 1: Append and deduplicate by id
+          const seenIds = new Set(prev.map(r => r.id));
+          const toAppend = newRecords.filter(r => !r.id || !seenIds.has(r.id));
+          const combined = [...prev, ...toAppend];
+          if (combined.length > 0) {
+            storageService.setObject(CACHE_KEY_SYNCED_RECORDS, combined);
+          }
+          return combined;
+        });
+      } catch (error) {
+        console.warn('Could not load synced health records:', error);
+      } finally {
+        setLoading(false);
+        setLoadingMore(false);
+      }
+    },
+    [limit],
+  );
+
+  const lastRefreshKeyRef = useRef(healthRefreshKey);
+
+  // When page state changes, load that dynamic page
   useEffect(() => {
     if (isFocused) {
-      loadRecords();
+      loadRecords(page);
     }
-  }, [isFocused, loadRecords, healthRefreshKey]);
+  }, [page, isFocused, loadRecords]);
+
+  // When refresh key changes, reset page to 1
+  useEffect(() => {
+    if (lastRefreshKeyRef.current !== healthRefreshKey) {
+      lastRefreshKeyRef.current = healthRefreshKey;
+      if (isFocused) {
+        if (page !== 1) {
+          setPage(1);
+        } else {
+          loadRecords(1);
+        }
+      }
+    }
+  }, [isFocused, healthRefreshKey, page, loadRecords]);
+
+  const pageRef = useRef(page);
+  pageRef.current = page;
 
   useEffect(() => {
     const subscription = DeviceEventEmitter.addListener(
       'activitySyncCompleted',
       () => {
-        loadRecords();
+        if (pageRef.current !== 1) {
+          setPage(1);
+        } else {
+          loadRecords(1);
+        }
       },
     );
     return () => {
       subscription.remove();
     };
   }, [loadRecords]);
+
+  const loadMore = useCallback(() => {
+    if (!loading && !loadingMore && hasMore) {
+      if (nextPage) {
+        setPage(nextPage);
+      } else {
+        setPage(prev => prev + 1);
+      }
+    }
+  }, [loading, loadingMore, hasMore, nextPage]);
 
   const groupedActivities = useMemo(() => {
     return groupRecordsByActivityAndDate(allRecords);
@@ -394,7 +470,14 @@ export const useRecentWorkouts = (healthRefreshKey?: number) => {
   }, [groupedActivities]);
 
   return {
+    page,
+    setPage,
+    hasMore,
+    nextPage,
     loading,
+    loadingMore,
+    loadMore,
+    loadRecords,
     activeTab,
     setActiveTab,
     showAllItems,

@@ -64,6 +64,19 @@
                 android:name="android.support.FILE_PROVIDER_PATHS"
                 android:resource="@xml/file_paths" />
         </provider>
+
+        <meta-data
+            android:name="app.notifee.core.notification.default_icon"
+            android:resource="@drawable/ic_notification" />
+        <meta-data
+            android:name="app.notifee.core.notification.default_color"
+            android:resource="@color/notification_icon_color" />
+        <meta-data
+            android:name="com.google.firebase.messaging.default_notification_icon"
+            android:resource="@drawable/ic_notification" />
+        <meta-data
+            android:name="com.google.firebase.messaging.default_notification_color"
+            android:resource="@color/notification_icon_color" />
         <activity
             android:name=".MainActivity"
             android:label="@string/app_name"

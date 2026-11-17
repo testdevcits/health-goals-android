@@ -1,5 +1,6 @@
 import { StyleSheet } from 'react-native';
 import type { AppColors } from '../../../theme/colors';
+import { spacing } from '../../../theme/spacing';
 
 const createStyles = (colors: AppColors) =>
   StyleSheet.create({
@@ -9,76 +10,76 @@ const createStyles = (colors: AppColors) =>
     },
     scrollContent: {
       flexGrow: 1,
-      paddingBottom: 100,
-      padding: 16,
+      paddingBottom: spacing.huge + spacing.xxxl,
+      padding: spacing.base,
     },
     pointsCard: {
       backgroundColor: colors.primary,
       borderRadius: 22,
-      padding: 20,
-      marginBottom: 12,
+      padding: spacing.lg,
+      marginBottom: spacing.md,
     },
     pointsValue: {
-      marginVertical: 2,
+      marginVertical: spacing.xxs,
     },
     lifetimeRow: {
       flexDirection: 'row',
       alignItems: 'center',
-      marginTop: 16,
-      paddingTop: 12,
+      marginTop: spacing.base,
+      paddingTop: spacing.md,
       borderTopWidth: StyleSheet.hairlineWidth,
-      borderTopColor: 'rgba(255,255,255,0.35)',
+      borderTopColor: colors.whiteOverlay35,
     },
     lifetimeMetric: {
       flex: 1,
-      gap: 2,
+      gap: spacing.xxs,
     },
     lifetimeDivider: {
       width: StyleSheet.hairlineWidth,
       height: 34,
-      marginHorizontal: 16,
-      backgroundColor: 'rgba(255,255,255,0.35)',
+      marginHorizontal: spacing.base,
+      backgroundColor: colors.whiteOverlay35,
     },
     dailyActivityCard: {
-      padding: 16,
-      marginBottom: 4,
-      gap: 14,
+      padding: spacing.base,
+      marginBottom: spacing.xs,
+      gap: spacing.ml,
     },
     dailyActivityHeading: {
       flexDirection: 'row',
       alignItems: 'center',
       justifyContent: 'space-between',
-      gap: 10,
+      gap: spacing.ms,
     },
     dailyActivityTitle: {
-      gap: 2,
+      gap: spacing.xxs,
     },
     activityStateBadge: {
-      borderRadius: 12,
-      paddingHorizontal: 10,
-      paddingVertical: 5,
+      borderRadius: spacing.md,
+      paddingHorizontal: spacing.ms,
+      paddingVertical: spacing.s - 1,
     },
     dailyActivityMetrics: {
       flexDirection: 'row',
     },
     dailyActivityMetric: {
       flex: 1,
-      gap: 2,
+      gap: spacing.xxs,
     },
     rewardList: {
-      gap: 10,
+      gap: spacing.ms,
     },
     rewardRow: {
       minHeight: 74,
       flexDirection: 'row',
       alignItems: 'center',
-      paddingHorizontal: 14,
-      gap: 12,
+      paddingHorizontal: spacing.ml,
+      gap: spacing.md,
     },
     rewardIcon: {
       width: 42,
       height: 42,
-      borderRadius: 12,
+      borderRadius: spacing.md,
       backgroundColor: colors.primaryLight,
       alignItems: 'center',
       justifyContent: 'center',
@@ -90,17 +91,17 @@ const createStyles = (colors: AppColors) =>
       alignItems: 'flex-end',
     },
     ticketCard: {
-      gap: 6,
-      padding: 14,
+      gap: spacing.s,
+      padding: spacing.ml,
     },
     ticketImage: {
       width: '100%',
       height: 180,
-      marginTop: 8,
+      marginTop: spacing.sm,
     },
     loadMoreButton: {
       alignItems: 'center',
-      paddingVertical: 14,
+      paddingVertical: spacing.ml,
     },
   });
 

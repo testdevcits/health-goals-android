@@ -27,7 +27,11 @@ const RecentWorkoutsSection: React.FC<RecentWorkoutsSectionProps> = ({
   const { colors, radius } = theme;
 
   const {
+    page,
+    hasMore,
     loading,
+    loadingMore,
+    loadMore,
     activeTab,
     setActiveTab,
     showAllItems,
@@ -131,6 +135,26 @@ const RecentWorkoutsSection: React.FC<RecentWorkoutsSectionProps> = ({
                 {showAllItems
                   ? 'Show Less'
                   : `Show All (${filteredGroups.length} days / activities)`}
+              </AppText>
+            </Pressable>
+          ) : null}
+
+          {hasMore ? (
+            <Pressable
+              onPress={loadMore}
+              disabled={loadingMore}
+              style={[
+                styles.showMoreButton,
+                {
+                  borderColor: colors.border,
+                  backgroundColor: colors.surface,
+                },
+              ]}
+            >
+              <AppText variant="caption" bold color="primary">
+                {loadingMore
+                  ? 'Loading next page...'
+                  : `Load More Activities (Page ${page + 1})`}
               </AppText>
             </Pressable>
           ) : null}

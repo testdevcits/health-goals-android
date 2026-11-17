@@ -274,7 +274,7 @@ const Settings = ({ navigation }: { navigation: SettingsNavigation }) => {
           closeOnBackdropPress={false}
           showCloseButton
         >
-          <View style={{ flexDirection: 'row', gap: 12 }}>
+          <View style={styles.modalActionsRow}>
             <Pressable
               onPress={() => setShowLocationConfirmation(false)}
               style={styles.cancelButton}

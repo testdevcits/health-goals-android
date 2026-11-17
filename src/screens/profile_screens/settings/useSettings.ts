@@ -92,6 +92,8 @@ export default function useSettings() {
               sticky: true,
               channelName: 'Location tracking',
               channelId: 'location-tracking',
+              smallIcon: 'drawable/ic_notification',
+              color: '#00C6A2',
             },
           },
         }),

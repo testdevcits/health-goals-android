@@ -48,6 +48,12 @@ const createStyles = (colors: AppColors) =>
       shadowOffset: { width: 0, height: 3 },
     },
 
+    avatarImage: {
+      width: '100%',
+      height: '100%',
+      borderRadius: radius.full,
+    },
+
     emailText: {
       marginTop: spacing.xxs,
     },

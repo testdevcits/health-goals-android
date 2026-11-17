@@ -58,7 +58,7 @@ const GroupsScreen: React.FC = () => {
 
       {/* My Groups / Feed selector */}
       <View style={styles.tabs}>
-        {(['My Groups', 'Discover', 'Feed'] as GroupTab[]).map(tab => {
+        {(['My Groups', 'Feed'] as GroupTab[]).map(tab => {
           const selected = activeTab === tab;
 
           return (

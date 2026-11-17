@@ -95,7 +95,7 @@ const ProfileScreen: React.FC = () => {
                 {profileImageUrl ? (
                   <Image
                     source={{ uri: profileImageUrl }}
-                    style={{ width: '100%', height: '100%', borderRadius: 44 }}
+                    style={styles.avatarImage}
                   />
                 ) : (
                   <AppText variant="display" color="white">

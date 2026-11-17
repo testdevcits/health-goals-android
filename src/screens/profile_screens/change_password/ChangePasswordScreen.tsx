@@ -3,6 +3,7 @@ import { StyleSheet, View } from 'react-native';
 import { AppButton, AppHeader, AppInput, AppText } from '../../../components';
 import { ProfileScreenNavigation } from '../components/ProfileScreenLayout';
 import { useTheme } from '../../../theme/useTheme';
+import { spacing } from '../../../theme/spacing';
 import { apiErrorMessage } from '../../../services/api';
 import { changePassword, clearSession } from '../../../services/auth';
 import { navigationRef } from '../../../navigations/AppNavigation';
@@ -63,7 +64,7 @@ const ChangePasswordScreen: React.FC<{
   };
 
   return (
-    <View style={{ flex: 1, backgroundColor: colors.backgroundSecondary }}>
+    <View style={[styles.container, { backgroundColor: colors.backgroundSecondary }]}>
       <AppHeader
         title="Change Password"
         subtitle="Keep your account secure"
@@ -129,16 +130,19 @@ const ChangePasswordScreen: React.FC<{
 };
 
 const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+  },
   form: {
-    paddingTop: 16,
-    padding: 16,
+    paddingTop: spacing.base,
+    padding: spacing.base,
   },
   updateButton: {
     width: '100%',
-    borderRadius: 14,
+    borderRadius: spacing.ml,
   },
   hint: {
-    marginTop: 8,
+    marginTop: spacing.sm,
   },
 });
 

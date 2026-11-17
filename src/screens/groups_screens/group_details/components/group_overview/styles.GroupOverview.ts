@@ -1,4 +1,5 @@
 import { StyleSheet } from 'react-native';
+import { typography } from '../../../../../theme/typography';
 
 const createGroupOverviewStyles = (colors: any, spacing: any, radius: any) =>
   StyleSheet.create({
@@ -129,8 +130,8 @@ const createGroupOverviewStyles = (colors: any, spacing: any, radius: any) =>
       position: 'absolute',
       left: -4,
       right: -4,
-      marginBottom: 4,
-      fontSize: 10,
+      marginBottom: spacing.xs,
+      fontSize: typography.tabLabel.fontSize,
     },
     chartLabels: {
       flexDirection: 'row',
@@ -143,7 +144,7 @@ const createGroupOverviewStyles = (colors: any, spacing: any, radius: any) =>
     chartMemberLabel: {
       flex: 1,
       maxWidth: 44,
-      fontSize: 10,
+      fontSize: typography.tabLabel.fontSize,
       paddingHorizontal: 1,
     },
     chartEmpty: {
@@ -235,7 +236,7 @@ const createGroupOverviewStyles = (colors: any, spacing: any, radius: any) =>
       gap: spacing.xs,
     },
     challengeEmoji: {
-      fontSize: 16,
+      fontSize: typography.body1.fontSize,
     },
     challengeTitle: {
       flexShrink: 1,

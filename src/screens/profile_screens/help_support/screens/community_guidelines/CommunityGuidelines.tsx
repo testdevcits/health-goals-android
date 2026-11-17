@@ -2,6 +2,7 @@ import React from 'react';
 import { ScrollView, StatusBar, View } from 'react-native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { AppButton, AppHeader, AppText } from '../../../../../components';
+import AppIcon from '../../../../../assets/appicon/AppIcon';
 import type { RootStackParamList } from '../../../../../navigations/ProfileStack';
 import { useTheme } from '../../../../../theme/useTheme';
 import { createCommunityGuidelinesStyles } from './styles.CommunityGuidelines';
@@ -57,7 +58,7 @@ const CommunityGuidelines: React.FC<Props> = ({ navigation }) => {
       >
         {/* Hero Card matching the design */}
         <View style={styles.heroCard}>
-          <AppText style={styles.iconText}>📜</AppText>
+          <AppIcon name="Info" size={36} color={theme.colors.primary} />
           <AppText variant="h3" bold style={styles.heroTitle}>
             Community Guidelines
           </AppText>

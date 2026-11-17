@@ -1,36 +1,48 @@
 import { StyleSheet } from 'react-native';
 import type { AppColors } from '../../../theme/colors';
+import { spacing } from '../../../theme/spacing';
+import { typography } from '../../../theme/typography';
 
 const createStyles = (colors: AppColors) =>
   StyleSheet.create({
+    container: { flex: 1, backgroundColor: colors.backgroundSecondary },
+    scrollContent: {
+      flexGrow: 1,
+      paddingBottom: spacing.huge + spacing.xxxl,
+      padding: spacing.base,
+    },
     searchBox: {
       minHeight: 46,
-      borderRadius: 12,
+      borderRadius: spacing.md,
       flexDirection: 'row',
       alignItems: 'center',
-      paddingHorizontal: 14,
-      gap: 10,
-      marginBottom: 14,
+      paddingHorizontal: spacing.ml,
+      gap: spacing.ms,
+      marginBottom: spacing.ml,
     },
-    searchInput: { flex: 1, paddingVertical: 10, fontSize: 14 },
-    supportCard: { marginBottom: 2 },
-    faqList: { gap: 9 },
+    searchInput: {
+      flex: 1,
+      paddingVertical: spacing.ms,
+      fontSize: typography.body2.fontSize,
+    },
+    supportCard: { marginBottom: spacing.xxs },
+    faqList: { gap: spacing.ms - 1 },
     faqCard: {
-      borderRadius: 14,
-      paddingHorizontal: 14,
-      paddingVertical: 13,
+      borderRadius: spacing.ml,
+      paddingHorizontal: spacing.ml,
+      paddingVertical: spacing.md + 1,
       elevation: 1,
       shadowColor: colors.black,
       shadowOpacity: 0.035,
       shadowRadius: 5,
       shadowOffset: { width: 0, height: 2 },
     },
-    faqQuestion: { flexDirection: 'row', alignItems: 'center', gap: 8 },
+    faqQuestion: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm },
     faqText: { flex: 1 },
     chevronExpanded: { transform: [{ rotate: '180deg' }] },
-    faqAnswer: { marginTop: 9, paddingRight: 18 },
-    emptySearch: { paddingVertical: 20 },
-    responseTime: { marginTop: 16, marginBottom: 4 },
+    faqAnswer: { marginTop: spacing.ms - 1, paddingRight: spacing.sl },
+    emptySearch: { paddingVertical: spacing.lg },
+    responseTime: { marginTop: spacing.base, marginBottom: spacing.xs },
   });
 
 export default createStyles;

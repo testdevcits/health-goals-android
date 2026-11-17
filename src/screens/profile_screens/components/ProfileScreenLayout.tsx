@@ -2,6 +2,7 @@ import React from 'react';
 import { StyleSheet } from 'react-native';
 
 import { AppText } from '../../../components';
+import { spacing } from '../../../theme/spacing';
 
 export type ProfileScreenNavigation = {
   goBack: () => void;
@@ -17,9 +18,9 @@ export const ProfileSectionLabel: React.FC<{ children: string }> = ({
 
 const styles = StyleSheet.create({
   sectionLabel: {
-    marginLeft: 4,
-    marginTop: 18,
-    marginBottom: 8,
+    marginLeft: spacing.xs,
+    marginTop: spacing.sl,
+    marginBottom: spacing.sm,
     letterSpacing: 0.6,
   },
 });

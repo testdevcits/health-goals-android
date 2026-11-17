@@ -1,4 +1,5 @@
 import { StyleSheet } from 'react-native';
+import { typography } from '../../../../../theme/typography';
 
 const createChallengeModalStyles = (colors: any, spacing: any, radius: any) =>
   StyleSheet.create({
@@ -69,8 +70,8 @@ const createChallengeModalStyles = (colors: any, spacing: any, radius: any) =>
     metricPill: {
       flexDirection: 'row',
       alignItems: 'center',
-      gap: 6,
-      paddingVertical: spacing.xs + 2,
+      gap: spacing.s,
+      paddingVertical: spacing.s,
       paddingHorizontal: spacing.md,
       borderRadius: radius.full,
       backgroundColor: colors.backgroundSecondary,
@@ -86,14 +87,14 @@ const createChallengeModalStyles = (colors: any, spacing: any, radius: any) =>
     presetsRow: {
       flexDirection: 'row',
       flexWrap: 'wrap',
-      gap: spacing.xs + 2,
+      gap: spacing.s,
       marginTop: spacing.xs,
       marginBottom: spacing.sm,
     },
 
     presetChip: {
-      paddingVertical: 5,
-      paddingHorizontal: 10,
+      paddingVertical: spacing.s - 1,
+      paddingHorizontal: spacing.ms,
       borderRadius: radius.full,
       backgroundColor: colors.backgroundSecondary,
       borderWidth: 1,
@@ -116,8 +117,8 @@ const createChallengeModalStyles = (colors: any, spacing: any, radius: any) =>
     durationPill: {
       flexDirection: 'row',
       alignItems: 'center',
-      gap: 6,
-      paddingVertical: spacing.xs + 2,
+      gap: spacing.s,
+      paddingVertical: spacing.s,
       paddingHorizontal: spacing.md,
       borderRadius: radius.full,
       backgroundColor: colors.backgroundSecondary,
@@ -132,7 +133,7 @@ const createChallengeModalStyles = (colors: any, spacing: any, radius: any) =>
 
     durationHelper: {
       marginBottom: spacing.sm,
-      marginTop: 2,
+      marginTop: spacing.xxs,
     },
 
     summaryCard: {
@@ -148,7 +149,7 @@ const createChallengeModalStyles = (colors: any, spacing: any, radius: any) =>
     summaryHeader: {
       flexDirection: 'row',
       alignItems: 'center',
-      gap: 6,
+      gap: spacing.s,
       marginBottom: spacing.sm,
     },
 
@@ -163,17 +164,17 @@ const createChallengeModalStyles = (colors: any, spacing: any, radius: any) =>
       minWidth: '45%',
       backgroundColor: colors.surface,
       borderRadius: radius.sm,
-      padding: spacing.xs + 2,
+      padding: spacing.s,
     },
 
     summaryItemLabel: {
-      fontSize: 11,
+      fontSize: typography.caption.fontSize - 1,
       color: colors.textSecondary,
-      marginBottom: 2,
+      marginBottom: spacing.xxs,
     },
 
     summaryItemValue: {
-      fontSize: 13,
+      fontSize: typography.label.fontSize,
       fontWeight: '700',
       color: colors.textPrimary,
     },

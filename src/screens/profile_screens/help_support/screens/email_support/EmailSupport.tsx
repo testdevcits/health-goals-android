@@ -2,6 +2,7 @@ import React from 'react';
 import { Alert, Linking, ScrollView, StatusBar, View } from 'react-native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { AppButton, AppHeader, AppText } from '../../../../../components';
+import AppIcon from '../../../../../assets/appicon/AppIcon';
 import type { RootStackParamList } from '../../../../../navigations/ProfileStack';
 import { useTheme } from '../../../../../theme/useTheme';
 import { createEmailSupportStyles } from './styles.EmailSupport';
@@ -55,7 +56,7 @@ const EmailSupport: React.FC<Props> = ({ navigation }) => {
         {/* Hero Card matching the design */}
         <View style={styles.heroCard}>
           <View style={styles.iconBox}>
-            <AppText style={styles.iconText}>✉️</AppText>
+            <AppIcon name="Mail" size={28} color={theme.colors.primary} />
           </View>
           <AppText variant="h3" bold style={styles.heroTitle}>
             Email Support
