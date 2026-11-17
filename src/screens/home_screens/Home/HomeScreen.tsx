@@ -17,6 +17,8 @@ import RecentWorkoutsSection from './components/recent_workouts/RecentWorkoutsSe
 import { createHomeStyles } from './styles.Home';
 import QuickActions from './components/QuickActions';
 import { storageService } from '../../../storage/storageService';
+import useConnectedDevices from '../../profile_screens/connected_devices/useConnectedDevices';
+import { ConnectedWatchCard } from '../../profile_screens/connected_devices/components';
 
 type Props = NativeStackScreenProps<HomeStackParamList, 'Home'>;
 
@@ -28,6 +30,12 @@ const HomeScreen: React.FC<Props> = ({ navigation }) => {
   >(null);
   const [onboardingVisible, setOnboardingVisible] = useState(false);
   const [healthRefreshKey, setHealthRefreshKey] = useState(0);
+  const {
+    connectedDevice,
+    watchMetrics,
+    disconnectDevice,
+    syncWatchHealthData,
+  } = useConnectedDevices();
 
   useFocusEffect(
     useCallback(() => {
@@ -75,6 +83,11 @@ const HomeScreen: React.FC<Props> = ({ navigation }) => {
     setHealthRefreshKey(previous => previous + 1);
   }, []);
 
+  const handleWatchSync = useCallback(async () => {
+    await syncWatchHealthData();
+    handleSyncComplete();
+  }, [syncWatchHealthData, handleSyncComplete]);
+
   const handleDailyDetails = useCallback(() => {
     navigation.navigate('DailyActivities');
   }, [navigation]);
@@ -113,6 +126,21 @@ const HomeScreen: React.FC<Props> = ({ navigation }) => {
           <NotificationBanner onDismiss={handleNotificationDismiss} />
         ) : null}
         <HealthConnectPrompt onSyncComplete={handleSyncComplete} />
+        {connectedDevice ? (
+          <View
+            style={{
+              marginHorizontal: theme.spacing.xl,
+              marginTop: theme.spacing.md,
+            }}
+          >
+            <ConnectedWatchCard
+              connectedDevice={connectedDevice}
+              watchMetrics={watchMetrics}
+              onDisconnect={disconnectDevice}
+              onSync={handleWatchSync}
+            />
+          </View>
+        ) : null}
         <EnergyCard healthRefreshKey={healthRefreshKey} />
         <DailySummary
           onViewDetails={handleDailyDetails}
@@ -141,3 +169,5 @@ const HomeScreen: React.FC<Props> = ({ navigation }) => {
 };
 
 export default HomeScreen;
+
+
