@@ -1,3 +1,5 @@
+import { lightColors } from '../../../theme/colors';
+
 // ── Static data ────────────────────────────────────────────────────────────
 export const WORKOUT_CATEGORIES = [
   {
@@ -5,40 +7,40 @@ export const WORKOUT_CATEGORIES = [
     emoji: '🏃',
     name: 'Running',
     subtitle: 'Cardio & Endurance',
-    bg: '#FFE8E8',
-    accent: '#EF4444',
+    bg: lightColors.coralLight,
+    accent: lightColors.coral,
   },
   {
     id: '2',
     emoji: '🚶',
     name: 'Walking',
     subtitle: 'Low impact steps',
-    bg: '#E0FAF5',
-    accent: '#00C6A2',
+    bg: lightColors.primaryLight,
+    accent: lightColors.primary,
   },
   {
     id: '3',
     emoji: '🚴',
     name: 'Cycling',
     subtitle: 'Outdoor & Indoor',
-    bg: '#E0EEFF',
-    accent: '#3B82F6',
+    bg: lightColors.infoLight,
+    accent: lightColors.info,
   },
   {
     id: '4',
     emoji: '🏊',
     name: 'Swimming',
     subtitle: 'Full body workout',
-    bg: '#EDE9FE',
-    accent: '#7C3AED',
+    bg: lightColors.purpleLight,
+    accent: lightColors.primaryDark,
   },
   {
     id: '5',
     emoji: '🧘',
     name: 'Yoga',
     subtitle: 'Flexibility & calm',
-    bg: '#FEF3C7',
-    accent: '#D97706',
+    bg: lightColors.warningLight,
+    accent: lightColors.warning,
   },
 ];
 
@@ -57,7 +59,7 @@ export const TREND_DATA: Record<
 > = {
   Steps: {
     bars: [null, null, null, null, null, null, null],
-    color: '#00C6A2',
+    color: lightColors.primary,
     stats: [
       { value: '—', label: 'Total' },
       { value: '—', label: 'Daily Avg' },
@@ -66,7 +68,7 @@ export const TREND_DATA: Record<
   },
   Sleep: {
     bars: [null, null, null, null, null, null, null],
-    color: '#7C5CBF',
+    color: lightColors.primaryDark,
     stats: [
       { value: '—', label: 'Avg Sleep' },
       { value: '—', label: 'Quality' },
@@ -75,7 +77,7 @@ export const TREND_DATA: Record<
   },
   Active: {
     bars: [null, null, null, null, null, null, null],
-    color: '#3B82F6',
+    color: lightColors.info,
     stats: [
       { value: '—', label: 'Total Mins' },
       { value: '—', label: 'Daily Avg' },
@@ -89,16 +91,16 @@ export const QUICK_ACTIONS = [
     id: '1',
     emoji: '▶️',
     label: 'Start Workout',
-    bg: '#FFF3E0',
-    accent: '#F59E0B',
+    bg: lightColors.warningLight,
+    accent: lightColors.warning,
     screenName: 'WorkoutSession',
   },
   {
     id: '2',
     emoji: '🏆',
     label: 'Join Challenge',
-    bg: '#FFF9E0',
-    accent: '#D97706',
+    bg: lightColors.warningLight,
+    accent: lightColors.warning,
     screenName: 'Challenges',
   },
 ] as const;

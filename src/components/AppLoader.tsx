@@ -1,6 +1,7 @@
 import React, { memo } from 'react';
 import { StyleProp, StyleSheet, View, ViewStyle } from 'react-native';
 import { useTheme } from '../theme/useTheme';
+import { spacing } from '../theme/spacing';
 import AppShimmer from './AppShimmer';
 
 interface AppLoaderProps {
@@ -88,7 +89,7 @@ const styles = StyleSheet.create({
   skeleton: {
     flexGrow: 1,
     width: '100%',
-    gap: 16,
+    gap: spacing.base,
   },
   skeletonCard: {
     width: '100%',
@@ -96,7 +97,7 @@ const styles = StyleSheet.create({
   skeletonHeader: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 12,
+    gap: spacing.md,
   },
   skeletonAvatar: {
     width: 40,
@@ -105,7 +106,7 @@ const styles = StyleSheet.create({
   },
   skeletonText: {
     flex: 1,
-    gap: 8,
+    gap: spacing.sm,
   },
   skeletonLine: {
     height: 10,
@@ -125,7 +126,7 @@ const styles = StyleSheet.create({
   },
   skeletonFooter: {
     width: '58%',
-    marginTop: 14,
+    marginTop: spacing.ml,
   },
 });
 

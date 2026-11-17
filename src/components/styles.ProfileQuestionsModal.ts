@@ -1,5 +1,7 @@
 import { StyleSheet } from 'react-native';
+import { lightColors } from '../theme/colors';
 import type { AppColors } from '../theme/colors';
+import { spacing } from '../theme/spacing';
 
 const createStyles = (_colors?: AppColors) =>
   StyleSheet.create({
@@ -7,7 +9,7 @@ const createStyles = (_colors?: AppColors) =>
       flex: 1,
       justifyContent: 'center',
       alignItems: 'center',
-      paddingVertical: 24,
+      paddingVertical: spacing.xl,
     },
     card: {
       width: '90%',
@@ -15,7 +17,7 @@ const createStyles = (_colors?: AppColors) =>
       maxHeight: '90%',
       borderWidth: StyleSheet.hairlineWidth,
       elevation: 12,
-      shadowColor: '#000',
+      shadowColor: _colors?.black ?? lightColors.black,
       shadowOpacity: 0.2,
       shadowRadius: 24,
       shadowOffset: { width: 0, height: 12 },
@@ -26,10 +28,10 @@ const createStyles = (_colors?: AppColors) =>
       alignSelf: 'center',
       alignItems: 'center',
       justifyContent: 'center',
-      marginBottom: 16,
+      marginBottom: spacing.base,
     },
     progressTrack: {
-      height: 6,
+      height: spacing.s,
       borderRadius: 3,
       overflow: 'hidden',
     },
@@ -38,20 +40,20 @@ const createStyles = (_colors?: AppColors) =>
       borderRadius: 3,
     },
     stepLabel: {
-      marginTop: 8,
-      marginBottom: 20,
+      marginTop: spacing.sm,
+      marginBottom: spacing.lg,
     },
     options: {
-      gap: 8,
+      gap: spacing.sm,
     },
     dateLabel: {
-      marginBottom: 6,
+      marginBottom: spacing.s,
     },
     dateInput: {
       minHeight: 52,
       borderWidth: 1,
       borderRadius: 12,
-      paddingHorizontal: 14,
+      paddingHorizontal: spacing.ml,
       flexDirection: 'row',
       alignItems: 'center',
       justifyContent: 'space-between',
@@ -60,35 +62,35 @@ const createStyles = (_colors?: AppColors) =>
       flex: 1,
       justifyContent: 'center',
       alignItems: 'center',
-      padding: 20,
+      padding: spacing.lg,
     },
     calendarCard: {
       width: '100%',
       maxWidth: 440,
-      padding: 16,
+      padding: spacing.base,
       borderRadius: 20,
       elevation: 12,
     },
     calendarTitle: {
-      marginBottom: 8,
+      marginBottom: spacing.sm,
     },
     option: {
       minHeight: 48,
       flexDirection: 'row',
       alignItems: 'center',
       justifyContent: 'space-between',
-      paddingHorizontal: 14,
+      paddingHorizontal: spacing.ml,
       borderWidth: 1,
       borderRadius: 12,
     },
     error: {
-      marginTop: 2,
-      marginBottom: 8,
+      marginTop: spacing.xxs,
+      marginBottom: spacing.sm,
       textAlign: 'center',
     },
     privacyNote: {
-      marginTop: 14,
-      marginBottom: 16,
+      marginTop: spacing.ml,
+      marginBottom: spacing.base,
       lineHeight: 18,
     },
     primaryAction: {
@@ -96,7 +98,7 @@ const createStyles = (_colors?: AppColors) =>
     },
     skipAction: {
       width: '100%',
-      marginTop: 2,
+      marginTop: spacing.xxs,
     },
   });
 

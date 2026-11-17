@@ -2,6 +2,7 @@
 import React, { memo } from 'react';
 import { TouchableOpacity, View, StyleSheet, ViewStyle } from 'react-native';
 import { useTheme } from '../theme/useTheme';
+import { spacing } from '../theme/spacing';
 import AppText from './AppText';
 import AppIcon from '../assets/appicon/AppIcon';
 
@@ -81,7 +82,7 @@ const styles = StyleSheet.create({
   row: {
     flexDirection: 'row',
     alignItems: 'flex-start',
-    gap: 10,
+    gap: spacing.ms,
   },
   box: {
     width: 20,

@@ -8,6 +8,8 @@ import {
   TouchableOpacity,
 } from 'react-native';
 import { useTheme } from '../theme/useTheme';
+import { spacing } from '../theme/spacing';
+import { typography } from '../theme/typography';
 import AppText from './AppText';
 import AppButton from './AppButton';
 
@@ -42,7 +44,7 @@ const OnboardingModal: React.FC<OnboardingModalProps> = ({
   onDismiss,
 }) => {
   const { theme } = useTheme();
-  const { colors, spacing, radius } = theme;
+  const { colors, radius } = theme;
   const [step, setStep] = useState(0);
   const fadeAnim = useRef(new Animated.Value(1)).current;
 
@@ -168,13 +170,13 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 10 },
   },
   emoji: {
-    fontSize: 30,
-    marginBottom: 16,
+    fontSize: typography.h1.fontSize,
+    marginBottom: spacing.base,
     lineHeight: 35,
   },
   dots: {
     flexDirection: 'row',
-    gap: 6,
+    gap: spacing.s,
     alignItems: 'center',
   },
   dot: {

@@ -11,6 +11,7 @@ import type {
   ToastConfigParams,
 } from 'react-native-toast-message';
 import { useTheme } from '../theme/useTheme';
+import { spacing } from '../theme/spacing';
 import AppText from './AppText';
 
 type AppToastType = 'success' | 'error' | 'info' | 'warning';
@@ -27,7 +28,7 @@ const AppToastCard: React.FC<ToastConfigParams<unknown>> = ({
   onPress,
 }) => {
   const { theme } = useTheme();
-  const { colors, radius, spacing } = theme;
+  const { colors, radius } = theme;
   const variants: Record<AppToastType, ToastColors> = {
     success: {
       accent: colors.success,
@@ -131,7 +132,7 @@ const styles = StyleSheet.create({
   },
   content: {
     flex: 1,
-    marginHorizontal: 12,
+    marginHorizontal: spacing.md,
   },
   accent: {
     width: 3,

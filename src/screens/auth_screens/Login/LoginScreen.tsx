@@ -131,7 +131,11 @@ const LoginScreen: React.FC<Props> = ({ navigation }) => {
               title="Continue with Apple"
               onPress={() => {}}
               variant="outline"
-              leftIcon={<Text style={{ fontSize: 18 }}>🍎</Text>}
+              leftIcon={
+                <Text style={{ fontSize: theme.typography.h3.fontSize }}>
+                  🍎
+                </Text>
+              }
               style={styles.socialButton}
             />
           )}

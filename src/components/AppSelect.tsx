@@ -10,6 +10,7 @@ import {
   Pressable,
 } from 'react-native';
 import { useTheme } from '../theme/useTheme';
+import { spacing } from '../theme/spacing';
 import AppText from './AppText';
 import AppIcon from '../assets/appicon/AppIcon';
 
@@ -38,7 +39,7 @@ const AppSelect: React.FC<AppSelectProps> = ({
   containerStyle,
 }) => {
   const { theme } = useTheme();
-  const { colors, spacing, radius } = theme;
+  const { colors, radius } = theme;
   const [visible, setVisible] = useState(false);
 
   const selectedLabel = options.find(o => o.value === value)?.label;
@@ -171,20 +172,20 @@ const AppSelect: React.FC<AppSelectProps> = ({
 
 const styles = StyleSheet.create({
   wrapper: {
-    marginBottom: 16,
+    marginBottom: spacing.base,
   },
   trigger: {
     flexDirection: 'row',
     alignItems: 'center',
     borderWidth: 1.5,
-    gap: 8,
+    gap: spacing.sm,
   },
   backdrop: {
     flex: 1,
     justifyContent: 'flex-end',
   },
   sheet: {
-    paddingTop: 12,
+    paddingTop: spacing.md,
     maxHeight: '55%',
   },
   handle: {
@@ -192,7 +193,7 @@ const styles = StyleSheet.create({
     height: 4,
     borderRadius: 2,
     alignSelf: 'center',
-    marginBottom: 16,
+    marginBottom: spacing.base,
   },
   option: {
     flexDirection: 'row',

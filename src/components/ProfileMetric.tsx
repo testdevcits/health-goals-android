@@ -1,6 +1,7 @@
 import { StyleSheet, View } from 'react-native';
 import React, { memo } from 'react';
 import { useTheme } from '../theme/useTheme';
+import { spacing } from '../theme/spacing';
 import AppText from './AppText';
 
 const ProfileMetric: React.FC<{ value: string; label: string }> = ({
@@ -34,6 +35,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     borderRadius: 11,
-    paddingVertical: 5,
+    paddingVertical: spacing.s,
   },
 });

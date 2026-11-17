@@ -46,7 +46,7 @@ export const createHomeStyles = (theme: AppTheme) => {
 
     notificationBadge: {
       borderRadius: 8,
-      fontSize: 14,
+      fontSize: theme.typography.body2.fontSize,
       color: theme.colors.textInverse,
     },
     avatar: {
@@ -84,7 +84,7 @@ export const createHomeStyles = (theme: AppTheme) => {
     notifEnableBtnText: {
       backgroundColor: colors.white,
       color: colors.primary,
-      fontSize: 14,
+      fontSize: theme.typography.buttonSm.fontSize,
       fontWeight: 'bold',
       paddingHorizontal: spacing.md,
       paddingVertical: spacing.xs + 2,
@@ -93,7 +93,7 @@ export const createHomeStyles = (theme: AppTheme) => {
       borderColor: colors.white,
     },
     notificationEmoji: {
-      fontSize: 20,
+      fontSize: theme.typography.h3.fontSize,
     },
     notificationDescription: {
       opacity: 0.8,
@@ -223,10 +223,10 @@ export const createHomeStyles = (theme: AppTheme) => {
       paddingVertical: spacing.xxs + 2,
       borderRadius: radius.full,
       backgroundColor: colors.whiteOverlay18,
-      gap: 4,
+      gap: spacing.xs,
     },
     streakEmoji: {
-      fontSize: 14,
+      fontSize: theme.typography.body2.fontSize,
     },
 
     // ── Today's Summary card ───────────────────────
@@ -285,7 +285,7 @@ export const createHomeStyles = (theme: AppTheme) => {
       marginBottom: spacing.sm,
     },
     workoutEmoji: {
-      fontSize: 24,
+      fontSize: theme.typography.statValue.fontSize,
     },
     workoutAccentBar: {
       position: 'absolute',
@@ -314,7 +314,7 @@ export const createHomeStyles = (theme: AppTheme) => {
       flexDirection: 'row',
       backgroundColor: colors.surfaceElevated,
       borderRadius: radius.lg,
-      padding: 4,
+      padding: spacing.xs,
       marginBottom: spacing.base,
     },
     tabBtn: {
@@ -343,7 +343,7 @@ export const createHomeStyles = (theme: AppTheme) => {
     barWrapper: {
       flex: 1,
       alignItems: 'center',
-      gap: 6,
+      gap: spacing.s,
     },
     bar: {
       width: 20,
@@ -395,7 +395,7 @@ export const createHomeStyles = (theme: AppTheme) => {
       justifyContent: 'center',
     },
     quickActionEmoji: {
-      fontSize: 24,
+      fontSize: theme.typography.statValue.fontSize,
     },
   });
 };

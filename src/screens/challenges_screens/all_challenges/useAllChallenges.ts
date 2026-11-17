@@ -4,6 +4,7 @@ import { authenticatedRequest } from '../../../services/authenticatedApi';
 import { API_ENDPOINTS } from '../../../constants';
 import { apiErrorMessage } from '../../../services/api';
 import { showAppToast } from '../../../utils/appToast';
+import { lightColors } from '../../../theme/colors';
 
 export type ChallengeCategory = 'All' | 'Steps' | 'Mind' | 'Strength' | 'Other';
 
@@ -135,7 +136,7 @@ export default function useAllChallenges() {
             progressLabel: joined
               ? `${currentValue.toLocaleString()} / ${targetValue.toLocaleString()} · ${participants} participants`
               : `Not joined · ${participants} participants`,
-            color: '#00C6A2',
+            color: lightColors.primary,
             emoji:
               category === 'Steps'
                 ? '👟'

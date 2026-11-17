@@ -80,7 +80,7 @@ const createStyles = (theme: ReturnType<typeof useTheme>['theme']) => {
     },
     otpText: {
       color: colors.textPrimary,
-      fontSize: 22,
+      fontSize: theme.typography.h2.fontSize,
       fontWeight: '600',
     },
     otpPlaceholder: {

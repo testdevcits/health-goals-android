@@ -1,5 +1,6 @@
 import { spacing } from '../../../theme/spacing';
 import { radius } from '../../../theme/radius';
+import { typography } from '../../../theme/typography';
 import { StyleSheet } from 'react-native';
 const styles = StyleSheet.create({
   safeArea: {
@@ -41,21 +42,21 @@ const styles = StyleSheet.create({
     flexShrink: 0,
   },
   emoji: {
-    fontSize: 23,
+    fontSize: typography.h2.fontSize,
     lineHeight: 29,
   },
   categoryText: {
     flex: 1,
     minWidth: 0,
     justifyContent: 'center',
-    gap: 2,
+    gap: spacing.xxs,
   },
   categoryTitle: {
-    fontSize: 14,
+    fontSize: typography.body2.fontSize,
     lineHeight: 18,
   },
   categorySubtitle: {
-    fontSize: 11,
+    fontSize: typography.overline.fontSize,
     lineHeight: 14,
   },
 });

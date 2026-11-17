@@ -85,12 +85,14 @@ const AppButton: React.FC<AppButtonProps> = ({
         <ActivityIndicator color={spinnerColor} size={24} />
       ) : (
         <>
-          {leftIcon ? <View style={{ marginRight: 8 }}>{leftIcon}</View> : null}
+          {leftIcon ? (
+            <View style={{ marginRight: spacing.sm }}>{leftIcon}</View>
+          ) : null}
           <AppText variant="button" color={textColor as any}>
             {title}
           </AppText>
           {rightIcon ? (
-            <View style={{ marginLeft: 8 }}>{rightIcon}</View>
+            <View style={{ marginLeft: spacing.sm }}>{rightIcon}</View>
           ) : null}
         </>
       )}

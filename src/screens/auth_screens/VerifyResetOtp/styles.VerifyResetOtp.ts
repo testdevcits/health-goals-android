@@ -77,7 +77,7 @@ export const createVerifyResetOtpStyles = (theme: AppTheme) => {
     },
     otpText: {
       color: colors.textPrimary,
-      fontSize: 22,
+      fontSize: theme.typography.h2.fontSize,
       fontWeight: '600',
     },
     otpPlaceholder: {
@@ -95,7 +95,7 @@ export const createVerifyResetOtpStyles = (theme: AppTheme) => {
       alignItems: 'center',
       justifyContent: 'center',
       marginTop: spacing.lg,
-      gap: 6,
+      gap: spacing.s,
     },
   });
 };

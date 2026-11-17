@@ -35,7 +35,7 @@ export const createSplashStyles = (theme: AppTheme) => {
       borderRadius: radius.xxl,
     },
     iconEmoji: {
-      fontSize: 44,
+      fontSize: theme.typography.metricNumber.fontSize + 4,
     },
     textBlock: {
       alignItems: 'center',
@@ -43,8 +43,8 @@ export const createSplashStyles = (theme: AppTheme) => {
     },
     dots: {
       flexDirection: 'row',
-      marginTop: 48,
-      gap: 8,
+      marginTop: spacing.xxxl + spacing.sm,
+      gap: spacing.sm,
     },
     dot: {
       width: 8,

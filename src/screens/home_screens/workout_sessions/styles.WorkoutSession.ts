@@ -1,6 +1,7 @@
 import { StyleSheet } from 'react-native';
 import { spacing } from '../../../theme/spacing';
 import { radius } from '../../../theme/radius';
+import { typography } from '../../../theme/typography';
 
 export const createWorkoutSessionStyles = (colors: any) =>
   StyleSheet.create({
@@ -33,7 +34,7 @@ export const createWorkoutSessionStyles = (colors: any) =>
       shadowOffset: { width: 0, height: 2 },
     },
     activityEmoji: {
-      fontSize: 17,
+      fontSize: typography.h3.fontSize,
       lineHeight: 23,
     },
     workoutHero: {
@@ -50,7 +51,7 @@ export const createWorkoutSessionStyles = (colors: any) =>
       shadowRadius: 13,
     },
     heroEmoji: {
-      fontSize: 40,
+      fontSize: typography.display.fontSize,
       lineHeight: 49,
     },
     heroActivityName: {
@@ -90,7 +91,7 @@ export const createWorkoutSessionStyles = (colors: any) =>
       borderColor: colors.white,
       opacity: 0.7,
       transform: [{ skewY: '28deg' }],
-      marginTop: 8,
+      marginTop: spacing.sm,
     },
     heartbeatLineEnd: {
       flex: 0.77,
@@ -100,7 +101,7 @@ export const createWorkoutSessionStyles = (colors: any) =>
     },
     timer: {
       color: colors.white,
-      fontSize: 42,
+      fontSize: typography.metricNumber.fontSize,
       lineHeight: 50,
       fontWeight: '700',
       letterSpacing: 1,
@@ -140,7 +141,7 @@ export const createWorkoutSessionStyles = (colors: any) =>
       marginBottom: spacing.sm,
     },
     metricEmoji: {
-      fontSize: 21,
+      fontSize: typography.h2.fontSize,
       lineHeight: 27,
     },
     metricValueRow: {

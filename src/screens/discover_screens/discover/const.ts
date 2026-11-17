@@ -1,3 +1,5 @@
+import { lightColors } from '../../../theme/colors';
+
 export type Program = {
   id: string;
   emoji: string;
@@ -19,7 +21,7 @@ export const programs: Program[] = [
     title: 'Mindfulness & Yoga',
     subtitle: '7-day starter program to reduce stress and improve sleep',
     button: 'Start Program',
-    color: '#7660ED',
+    color: lightColors.primaryDark,
     description:
       'A gentle program to reduce stress and improve sleep quality through daily guided sessions.',
     duration: '7',
@@ -38,7 +40,7 @@ export const programs: Program[] = [
     title: 'Couch to 5K',
     subtitle: 'Adaptive run coaching — beginner to race day in 8 weeks',
     button: 'View Plan',
-    color: '#FF8D79',
+    color: lightColors.coral,
     description:
       'Build your endurance with a beginner-friendly running plan that gradually prepares you for a 5K.',
     duration: '8',
@@ -57,7 +59,7 @@ export const programs: Program[] = [
     title: 'Sleep Coaching',
     subtitle: 'Personalized sleep insights and wind-down routines',
     button: 'Get Started',
-    color: '#5DA4F5',
+    color: lightColors.info,
     description:
       'Build a relaxing nighttime routine and improve your sleep habits with guided coaching.',
     duration: '14',
@@ -76,7 +78,7 @@ export const programs: Program[] = [
     title: 'Nutrition Tracker',
     subtitle: 'Log meals, track macros, and get smart food suggestions',
     button: 'Explore',
-    color: '#FFBE32',
+    color: lightColors.warning,
     description:
       'Understand your daily food habits and build a balanced nutrition routine.',
     duration: '30',

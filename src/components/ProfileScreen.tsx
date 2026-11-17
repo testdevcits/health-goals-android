@@ -1,6 +1,7 @@
 import { ScrollView, StyleSheet, View } from 'react-native';
 import React, { memo } from 'react';
 import { useTheme } from '../theme/useTheme';
+import { spacing } from '../theme/spacing';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import AppHeader from './appHeader/AppHeader';
@@ -48,5 +49,5 @@ export default memo(ProfileScreen);
 const styles = StyleSheet.create({
   screen: { flex: 1 },
 
-  content: { paddingHorizontal: 16, paddingTop: 18 },
+  content: { paddingHorizontal: spacing.base, paddingTop: spacing.sl },
 });

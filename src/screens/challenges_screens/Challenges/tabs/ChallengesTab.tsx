@@ -149,7 +149,7 @@ const ChallengesTab: React.FC<ChallengesTabProps> = ({
                 style={[
                   styles.browseButton,
                   {
-                    marginTop: 12,
+                    marginTop: theme.spacing.md,
                     opacity:
                       challenge?.joinable &&
                       joiningChallengeId !== challenge?.id

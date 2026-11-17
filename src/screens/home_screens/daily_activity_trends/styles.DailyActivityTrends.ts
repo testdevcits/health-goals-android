@@ -19,7 +19,7 @@ export const createTrendStyles = (theme: AppTheme) => {
       minHeight: 42,
       flexDirection: 'row',
       alignItems: 'center',
-      padding: 4,
+      padding: spacing.xs,
       borderRadius: radius.md,
       marginBottom: spacing.md,
     },
@@ -161,7 +161,7 @@ export const createTrendStyles = (theme: AppTheme) => {
     },
     goalInput: {
       flex: 1,
-      fontSize: 18,
+      fontSize: theme.typography.h3.fontSize,
       paddingVertical: spacing.sm,
     },
     saveButton: {

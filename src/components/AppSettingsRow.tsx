@@ -1,6 +1,7 @@
 import React, { memo } from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
 import { useTheme } from '../theme/useTheme';
+import { spacing } from '../theme/spacing';
 import AppText from './AppText';
 import CustomSwitch from './CustomSwitch';
 import AppIcon from '../assets/appicon/AppIcon';
@@ -27,7 +28,7 @@ const AppSettingsRow: React.FC<AppSettingsRowProps> = ({
   showDivider = true,
 }) => {
   const { theme } = useTheme();
-  const { colors, spacing, radius } = theme;
+  const { colors, radius } = theme;
   const hasSwitch = onSwitchChange !== undefined;
   const isInteractive = onPress !== undefined || value !== undefined;
 
@@ -124,7 +125,7 @@ const styles = StyleSheet.create({
     minHeight: 62,
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 10,
+    gap: spacing.ms,
   },
   iconContainer: {
     width: 36,
@@ -134,12 +135,12 @@ const styles = StyleSheet.create({
   },
   copy: {
     flex: 1,
-    gap: 1,
+    gap: spacing.xxs,
   },
   valueContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 4,
+    gap: spacing.xs,
   },
 });
 

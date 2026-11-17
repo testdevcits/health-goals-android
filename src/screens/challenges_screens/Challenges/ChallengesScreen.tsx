@@ -74,12 +74,12 @@ const ChallengesScreen: React.FC<Props> = ({ navigation }) => {
       : [];
     const currentUser = myEntry;
     const avatarColors = [
-      '#00BFA5',
-      '#6C63FF',
-      '#FF9B38',
-      '#4F9CF9',
-      '#E879F9',
-      '#F97373',
+      theme.colors.primary,
+      theme.colors.primaryDark,
+      theme.colors.warning,
+      theme.colors.info,
+      theme.colors.coral,
+      theme.colors.error,
     ];
 
     return [...entries]
@@ -111,7 +111,7 @@ const ChallengesScreen: React.FC<Props> = ({ navigation }) => {
             'points',
         };
       });
-  }, [leaderboardChallenge, leaderboardCompetition]);
+  }, [leaderboardChallenge, leaderboardCompetition, theme.colors]);
   const browseAllChallenges = useCallback(
     () => navigation.navigate('AllChallenges'),
     [navigation],

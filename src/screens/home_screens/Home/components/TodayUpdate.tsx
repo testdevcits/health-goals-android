@@ -3,6 +3,7 @@ import { StyleSheet, View } from 'react-native';
 import { AppText } from '../../../../components';
 import { useTodayHealthData } from '../../../../hooks/useTodayHealthData';
 import { useTheme } from '../../../../theme/useTheme';
+import { spacing } from '../../../../theme/spacing';
 
 const formatNumber = (value: number, maximumFractionDigits = 0) =>
   value.toLocaleString('en-US', { maximumFractionDigits });
@@ -33,7 +34,7 @@ const getMostActiveHour = (values: number[] | null) => {
 
 const TodayUpdate: React.FC = memo(() => {
   const { theme } = useTheme();
-  const { colors, spacing, radius } = theme;
+  const { colors, radius } = theme;
   const { data, error, loading } = useTodayHealthData(true);
   const today = new Date().toLocaleDateString('en-IN', {
     weekday: 'long',
@@ -185,8 +186,8 @@ const styles = StyleSheet.create({
   headerRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 6,
-    marginBottom: 10,
+    gap: spacing.s,
+    marginBottom: spacing.ms,
   },
   dot: {
     width: 7,

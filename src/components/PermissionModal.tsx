@@ -2,6 +2,7 @@ import React, { memo } from 'react';
 import { Modal, StyleSheet, TouchableOpacity, View } from 'react-native';
 import { Bell, CircleAlert, Settings } from 'lucide-react-native';
 import { useTheme } from '../theme/useTheme';
+import { spacing } from '../theme/spacing';
 import AppButton from './AppButton';
 import AppText from './AppText';
 import AppIcon from '../assets/appicon/AppIcon';
@@ -30,7 +31,7 @@ const PermissionModal: React.FC<PermissionModalProps> = ({
   icon = 'notifications',
 }) => {
   const { theme } = useTheme();
-  const { colors, radius, spacing } = theme;
+  const { colors, radius } = theme;
   const Icon =
     icon === 'settings' ? Settings : icon === 'alert' ? CircleAlert : Bell;
 
@@ -158,7 +159,7 @@ const styles = StyleSheet.create({
   },
   secondaryButton: {
     width: '100%',
-    marginTop: 4,
+    marginTop: spacing.xs,
   },
 });
 

@@ -49,7 +49,7 @@ export const createResetPasswordStyles = (theme: AppTheme) => {
       borderRadius: radius.md,
       padding: spacing.md,
       marginBottom: spacing.md,
-      gap: 4,
+      gap: spacing.xs,
     },
     submitButton: {
       marginTop: spacing.md,

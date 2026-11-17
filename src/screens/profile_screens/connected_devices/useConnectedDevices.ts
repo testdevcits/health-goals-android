@@ -280,9 +280,8 @@ export default function useConnectedDevices() {
   const [isScanning, setIsScanning] = useState(false);
   const [bleError, setBleError] = useState('');
   const [onlyWatches, setOnlyWatches] = useState(true);
-  const [watchMetrics, setWatchMetricsState] = useState<WatchMetrics>(
-    sharedWatchMetrics,
-  );
+  const [watchMetrics, setWatchMetricsState] =
+    useState<WatchMetrics>(sharedWatchMetrics);
 
   useEffect(() => {
     const syncState = () => {
@@ -305,11 +304,7 @@ export default function useConnectedDevices() {
   }, []);
 
   const setWatchMetrics = useCallback(
-    (
-      updater:
-        | WatchMetrics
-        | ((prev: WatchMetrics) => WatchMetrics),
-    ) => {
+    (updater: WatchMetrics | ((prev: WatchMetrics) => WatchMetrics)) => {
       if (typeof updater === 'function') {
         sharedWatchMetrics = updater(sharedWatchMetrics);
       } else {
@@ -586,7 +581,8 @@ export default function useConnectedDevices() {
       if (!savedJson) return;
       const saved = JSON.parse(savedJson);
       if (!saved?.id) return;
-      if (sharedConnectedDevice && sharedConnectedDevice.id === saved.id) return;
+      if (sharedConnectedDevice && sharedConnectedDevice.id === saved.id)
+        return;
 
       const currentState = await bleManager.state();
       if (currentState !== BluetoothState.PoweredOn) return;

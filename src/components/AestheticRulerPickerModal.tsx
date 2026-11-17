@@ -18,6 +18,9 @@ import {
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTheme } from '../theme/useTheme';
+import type { AppColors } from '../theme/colors';
+import { typography } from '../theme/typography';
+import { spacing } from '../theme/spacing';
 import AppText from './AppText';
 import AppButton from './AppButton';
 import AppIcon from '../assets/appicon/AppIcon';
@@ -51,7 +54,8 @@ const AestheticRulerPickerModal: React.FC<AestheticRulerPickerModalProps> = ({
 }) => {
   const insets = useSafeAreaInsets();
   const { theme } = useTheme();
-  const { colors, radius, spacing } = theme;
+  const { colors, radius, spacing: themeSpacing } = theme;
+  const styles = useMemo(() => createStyles(colors), [colors]);
 
   const isHeight = mode === 'height';
   const min = customMin ?? (isHeight ? 50 : 30);
@@ -147,7 +151,7 @@ const AestheticRulerPickerModal: React.FC<AestheticRulerPickerModalProps> = ({
             {
               width: isMajor ? 32 : isMid ? 22 : 12,
               backgroundColor: isSelected
-                ? '#EF4444'
+                ? colors.error
                 : isMajor
                 ? colors.textPrimary
                 : colors.border,
@@ -162,7 +166,7 @@ const AestheticRulerPickerModal: React.FC<AestheticRulerPickerModalProps> = ({
             style={[
               styles.verticalTickLabel,
               {
-                color: isSelected ? '#EF4444' : colors.textSecondary,
+                color: isSelected ? colors.error : colors.textSecondary,
               },
             ]}
           >
@@ -185,7 +189,7 @@ const AestheticRulerPickerModal: React.FC<AestheticRulerPickerModalProps> = ({
             {
               height: isMajor ? 28 : 14,
               backgroundColor: isSelected
-                ? '#EF4444'
+                ? colors.error
                 : isMajor
                 ? colors.textPrimary
                 : colors.border,
@@ -200,7 +204,7 @@ const AestheticRulerPickerModal: React.FC<AestheticRulerPickerModalProps> = ({
             style={[
               styles.horizontalTickLabel,
               {
-                color: isSelected ? '#EF4444' : colors.textSecondary,
+                color: isSelected ? colors.error : colors.textSecondary,
               },
             ]}
           >
@@ -381,7 +385,9 @@ const AestheticRulerPickerModal: React.FC<AestheticRulerPickerModalProps> = ({
         )}
 
         {/* Continue Button */}
-        <View style={[styles.bottomBar, { paddingHorizontal: spacing.lg }]}>
+        <View
+          style={[styles.bottomBar, { paddingHorizontal: themeSpacing.lg }]}
+        >
           <AppButton
             title="Continue"
             variant="primary"
@@ -394,165 +400,166 @@ const AestheticRulerPickerModal: React.FC<AestheticRulerPickerModalProps> = ({
   );
 };
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
-  navBar: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 16,
-    paddingVertical: 10,
-  },
-  backButton: {
-    width: 36,
-    height: 36,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  navTitle: {
-    textAlign: 'center',
-  },
-  progressTrack: {
-    height: 4,
-    borderRadius: 2,
-    marginHorizontal: 40,
-    marginTop: 4,
-    marginBottom: 20,
-    overflow: 'hidden',
-  },
-  progressFill: {
-    height: '100%',
-    borderRadius: 2,
-  },
+const createStyles = (colors: AppColors) =>
+  StyleSheet.create({
+    container: {
+      flex: 1,
+    },
+    navBar: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      paddingHorizontal: spacing.base,
+      paddingVertical: spacing.ms,
+    },
+    backButton: {
+      width: 36,
+      height: 36,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    navTitle: {
+      textAlign: 'center',
+    },
+    progressTrack: {
+      height: spacing.xs,
+      borderRadius: 2,
+      marginHorizontal: spacing.xxxl,
+      marginTop: spacing.xs,
+      marginBottom: spacing.lg,
+      overflow: 'hidden',
+    },
+    progressFill: {
+      height: '100%',
+      borderRadius: 2,
+    },
 
-  /* Height Layout */
-  heightContentRow: {
-    flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 8,
-  },
-  heightLeftCol: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    position: 'relative',
-  },
-  heightValueBox: {
-    marginBottom: 16,
-    alignSelf: 'flex-start',
-    marginLeft: 24,
-  },
-  dashedLine: {
-    position: 'absolute',
-    top: 50,
-    right: 0,
-    width: 140,
-    borderBottomWidth: 1.5,
-    borderBottomColor: '#CBD5E1',
-    borderStyle: 'dashed',
-    zIndex: 1,
-  },
-  avatarWrap: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginTop: 20,
-  },
-  heightRulerWrap: {
-    width: 90,
-    height: VERTICAL_RULER_HEIGHT,
-    position: 'relative',
-    borderLeftWidth: 1,
-    borderLeftColor: '#E2E8F0',
-  },
-  redPointerHorizontal: {
-    position: 'absolute',
-    left: -6,
-    flexDirection: 'row',
-    alignItems: 'center',
-    zIndex: 10,
-  },
-  redDot: {
-    width: 10,
-    height: 10,
-    borderRadius: 5,
-    backgroundColor: '#EF4444',
-  },
-  redLineHorizontal: {
-    width: 44,
-    height: 2.5,
-    backgroundColor: '#EF4444',
-  },
-  verticalTickRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'flex-start',
-  },
-  verticalTickLine: {
-    marginRight: 8,
-  },
-  verticalTickLabel: {
-    fontSize: 12,
-  },
+    /* Height Layout */
+    heightContentRow: {
+      flex: 1,
+      flexDirection: 'row',
+      alignItems: 'center',
+      paddingHorizontal: spacing.sm,
+    },
+    heightLeftCol: {
+      flex: 1,
+      alignItems: 'center',
+      justifyContent: 'center',
+      position: 'relative',
+    },
+    heightValueBox: {
+      marginBottom: spacing.base,
+      alignSelf: 'flex-start',
+      marginLeft: spacing.xl,
+    },
+    dashedLine: {
+      position: 'absolute',
+      top: 50,
+      right: 0,
+      width: 140,
+      borderBottomWidth: 1.5,
+      borderBottomColor: colors.border,
+      borderStyle: 'dashed',
+      zIndex: 1,
+    },
+    avatarWrap: {
+      alignItems: 'center',
+      justifyContent: 'center',
+      marginTop: spacing.lg,
+    },
+    heightRulerWrap: {
+      width: 90,
+      height: VERTICAL_RULER_HEIGHT,
+      position: 'relative',
+      borderLeftWidth: 1,
+      borderLeftColor: colors.border,
+    },
+    redPointerHorizontal: {
+      position: 'absolute',
+      left: -spacing.s,
+      flexDirection: 'row',
+      alignItems: 'center',
+      zIndex: 10,
+    },
+    redDot: {
+      width: 10,
+      height: 10,
+      borderRadius: 5,
+      backgroundColor: colors.error,
+    },
+    redLineHorizontal: {
+      width: 44,
+      height: 2.5,
+      backgroundColor: colors.error,
+    },
+    verticalTickRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'flex-start',
+    },
+    verticalTickLine: {
+      marginRight: spacing.sm,
+    },
+    verticalTickLabel: {
+      fontSize: typography.caption.fontSize,
+    },
 
-  /* Weight Layout */
-  weightContentCol: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  weightAvatarWrap: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: 24,
-  },
-  weightRulerWrap: {
-    width: SCREEN_WIDTH,
-    height: 80,
-    position: 'relative',
-    borderTopWidth: 1,
-    borderTopColor: '#E2E8F0',
-    borderBottomWidth: 1,
-    borderBottomColor: '#E2E8F0',
-    justifyContent: 'center',
-  },
-  redPointerVertical: {
-    position: 'absolute',
-    top: 6,
-    alignItems: 'center',
-    zIndex: 10,
-  },
-  redLineVertical: {
-    width: 2.5,
-    height: 38,
-    backgroundColor: '#EF4444',
-  },
-  horizontalTickCol: {
-    alignItems: 'center',
-    justifyContent: 'flex-start',
-    paddingTop: 8,
-  },
-  horizontalTickLine: {
-    marginBottom: 6,
-  },
-  horizontalTickLabel: {
-    fontSize: 11,
-  },
-  weightValueBox: {
-    marginTop: 24,
-    alignItems: 'center',
-  },
+    /* Weight Layout */
+    weightContentCol: {
+      flex: 1,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    weightAvatarWrap: {
+      alignItems: 'center',
+      justifyContent: 'center',
+      marginBottom: spacing.xl,
+    },
+    weightRulerWrap: {
+      width: SCREEN_WIDTH,
+      height: 80,
+      position: 'relative',
+      borderTopWidth: 1,
+      borderTopColor: colors.border,
+      borderBottomWidth: 1,
+      borderBottomColor: colors.border,
+      justifyContent: 'center',
+    },
+    redPointerVertical: {
+      position: 'absolute',
+      top: spacing.s,
+      alignItems: 'center',
+      zIndex: 10,
+    },
+    redLineVertical: {
+      width: 2.5,
+      height: 38,
+      backgroundColor: colors.error,
+    },
+    horizontalTickCol: {
+      alignItems: 'center',
+      justifyContent: 'flex-start',
+      paddingTop: spacing.sm,
+    },
+    horizontalTickLine: {
+      marginBottom: spacing.s,
+    },
+    horizontalTickLabel: {
+      fontSize: typography.overline.fontSize,
+    },
+    weightValueBox: {
+      marginTop: spacing.xl,
+      alignItems: 'center',
+    },
 
-  /* Bottom Actions */
-  bottomBar: {
-    paddingVertical: 12,
-  },
-  continueButton: {
-    width: '100%',
-    paddingVertical: 14,
-  },
-});
+    /* Bottom Actions */
+    bottomBar: {
+      paddingVertical: spacing.md,
+    },
+    continueButton: {
+      width: '100%',
+      paddingVertical: spacing.ml,
+    },
+  });
 
 export default memo(AestheticRulerPickerModal);

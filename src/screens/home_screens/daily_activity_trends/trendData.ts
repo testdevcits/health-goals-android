@@ -1,3 +1,5 @@
+import { lightColors } from '../../../theme/colors';
+
 export const TREND_METRICS = ['Steps', 'Sleep', 'Heart', 'Stress'] as const;
 
 export type TrendMetric = (typeof TREND_METRICS)[number];
@@ -17,7 +19,7 @@ type TrendMetricData = {
 
 export const trendData: Record<TrendMetric, TrendMetricData> = {
   Steps: {
-    color: '#18B9A4',
+    color: lightColors.primary,
     bars: [null, null, null, null, null, null, null],
     stats: [
       { value: '—', label: 'Last 7 days' },
@@ -29,7 +31,7 @@ export const trendData: Record<TrendMetric, TrendMetricData> = {
     goalUnit: 'steps per day',
   },
   Sleep: {
-    color: '#7665DB',
+    color: lightColors.primaryDark,
     bars: [null, null, null, null, null, null, null],
     stats: [
       { value: '—', label: 'Daily avg' },
@@ -41,7 +43,7 @@ export const trendData: Record<TrendMetric, TrendMetricData> = {
     goalUnit: 'hours per night',
   },
   Heart: {
-    color: '#F16D72',
+    color: lightColors.coral,
     bars: [null, null, null, null, null, null, null],
     stats: [
       { value: '—', label: 'Daily avg' },
@@ -53,7 +55,7 @@ export const trendData: Record<TrendMetric, TrendMetricData> = {
     goalUnit: 'bpm',
   },
   Stress: {
-    color: '#F4A04F',
+    color: lightColors.warning,
     bars: [null, null, null, null, null, null, null],
     stats: [
       { value: '—', label: 'Daily avg' },

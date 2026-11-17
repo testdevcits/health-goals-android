@@ -5,6 +5,7 @@ import AppIcon from '../../assets/appicon/AppIcon';
 import AppButton from '../AppButton';
 import AppText from '../AppText';
 import { useTheme } from '../../theme/useTheme';
+import { spacing } from '../../theme/spacing';
 import createStyles from '../styles.ProfileQuestionsModal';
 import {
   calendarKeyToDateAnswer,
@@ -223,35 +224,35 @@ const localStyles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 12,
-    paddingHorizontal: 4,
+    marginBottom: spacing.md,
+    paddingHorizontal: spacing.xs,
   },
   yearTogglePill: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 6,
-    paddingVertical: 6,
-    paddingHorizontal: 12,
+    gap: spacing.s,
+    paddingVertical: spacing.s,
+    paddingHorizontal: spacing.md,
     borderRadius: 14,
     borderWidth: 1,
   },
   yearScrollContainer: {
     maxHeight: 330,
-    marginVertical: 4,
+    marginVertical: spacing.xs,
   },
   yearGrid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
     justifyContent: 'space-between',
-    paddingVertical: 4,
+    paddingVertical: spacing.xs,
   },
   yearGridItem: {
     width: '31%',
-    paddingVertical: 12,
+    paddingVertical: spacing.md,
     borderRadius: 12,
     alignItems: 'center',
     justifyContent: 'center',
-    marginBottom: 10,
+    marginBottom: spacing.ms,
     borderWidth: 1,
   },
 });

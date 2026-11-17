@@ -46,6 +46,11 @@ export const lightColors = {
   coral: '#FF8278',
   coralLight: '#FFE9E5',
 
+  // ── Medals ─────────────────────────────────────────────────
+  gold: '#FFD700',
+  silver: '#C0C0C0',
+  bronze: '#CD7F32',
+
   // ── Misc ──────────────────────────────────────────────────
   white: '#FFFFFF',
   black: '#000000',
@@ -109,6 +114,11 @@ export const darkColors = {
   // ── Brand accents ─────────────────────────────────────────
   coral: '#FF8278',
   coralLight: '#FFE9E5',
+
+  // ── Medals ─────────────────────────────────────────────────
+  gold: '#FFD700',
+  silver: '#C0C0C0',
+  bronze: '#CD7F32',
 
   // ── Misc ──────────────────────────────────────────────────
   white: '#FFFFFF',

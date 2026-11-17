@@ -1,22 +1,24 @@
 import { StyleSheet } from 'react-native';
+import { spacing } from '../../../../../theme/spacing';
+import { typography } from '../../../../../theme/typography';
 
 const styles = StyleSheet.create({
   container: {
-    margin: 16,
+    margin: spacing.base,
   },
   sectionHeader: {
     marginHorizontal: 0,
-    marginBottom: 10,
+    marginBottom: spacing.ms,
   },
   // Overview Summary Strip
   summaryStrip: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    padding: 12,
+    padding: spacing.md,
     borderRadius: 14,
     borderWidth: 1,
-    marginBottom: 14,
+    marginBottom: spacing.ml,
   },
   summaryItem: {
     flex: 1,
@@ -30,17 +32,17 @@ const styles = StyleSheet.create({
   tabsRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
-    marginBottom: 14,
+    gap: spacing.sm,
+    marginBottom: spacing.ml,
   },
   tabButton: {
-    paddingHorizontal: 14,
-    paddingVertical: 7,
+    paddingHorizontal: spacing.ml,
+    paddingVertical: spacing.s,
     alignItems: 'center',
     justifyContent: 'center',
   },
   list: {
-    gap: 12,
+    gap: spacing.md,
   },
   shimmerCard: {
     height: 120,
@@ -49,7 +51,7 @@ const styles = StyleSheet.create({
   // Card
   card: {
     borderWidth: 1,
-    padding: 16,
+    padding: spacing.base,
     borderRadius: 18,
     elevation: 2,
     shadowOffset: { width: 0, height: 2 },
@@ -60,7 +62,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    marginBottom: 12,
+    marginBottom: spacing.md,
   },
   activityInfoRow: {
     flexDirection: 'row',
@@ -73,7 +75,7 @@ const styles = StyleSheet.create({
     borderRadius: 14,
     alignItems: 'center',
     justifyContent: 'center',
-    marginRight: 12,
+    marginRight: spacing.md,
     borderWidth: 1,
   },
 
@@ -83,13 +85,13 @@ const styles = StyleSheet.create({
   titleRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 6,
+    gap: spacing.s,
   },
   subtitleRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 6,
-    marginTop: 3,
+    gap: spacing.s,
+    marginTop: spacing.xxs + 1,
   },
   dotDivider: {
     width: 3,
@@ -97,26 +99,26 @@ const styles = StyleSheet.create({
     borderRadius: 1.5,
   },
   sessionsBadge: {
-    paddingHorizontal: 7,
-    paddingVertical: 2,
+    paddingHorizontal: spacing.sm - 1,
+    paddingVertical: spacing.xxs,
     borderRadius: 6,
   },
   sessionsBadgeText: {
-    fontSize: 10,
+    fontSize: typography.tabLabel.fontSize,
   },
   headerActions: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
+    gap: spacing.sm,
   },
   sourceBadge: {
-    paddingHorizontal: 8,
-    paddingVertical: 3,
+    paddingHorizontal: spacing.sm,
+    paddingVertical: spacing.xxs + 1,
     borderRadius: 8,
     borderWidth: 1,
   },
   sourceBadgeText: {
-    fontSize: 10,
+    fontSize: typography.tabLabel.fontSize,
   },
   quickStartBtn: {
     width: 28,
@@ -130,23 +132,23 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     flexWrap: 'wrap',
-    gap: 8,
-    paddingTop: 12,
+    gap: spacing.sm,
+    paddingTop: spacing.md,
     borderTopWidth: StyleSheet.hairlineWidth,
   },
   metricPill: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 5,
-    paddingHorizontal: 10,
-    paddingVertical: 6,
+    gap: spacing.s - 1,
+    paddingHorizontal: spacing.ms,
+    paddingVertical: spacing.s,
     borderRadius: 12,
   },
   // Progress bar for daily stats like steps
   progressContainer: {
     width: '100%',
-    paddingTop: 10,
-    marginTop: 4,
+    paddingTop: spacing.ms,
+    marginTop: spacing.xs,
   },
   progressBarTrack: {
     height: 5,
@@ -162,36 +164,36 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginTop: 4,
+    marginTop: spacing.xs,
   },
   // Multi-session breakdown
   expandToggleBtn: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    gap: 5,
-    paddingVertical: 9,
-    marginTop: 10,
+    gap: spacing.s - 1,
+    paddingVertical: spacing.ms - 1,
+    marginTop: spacing.ms,
     borderTopWidth: StyleSheet.hairlineWidth,
   },
   sessionsBreakdownContainer: {
-    marginTop: 6,
-    paddingTop: 10,
+    marginTop: spacing.s,
+    paddingTop: spacing.ms,
     borderTopWidth: StyleSheet.hairlineWidth,
-    gap: 8,
+    gap: spacing.sm,
   },
   sessionItemRow: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingVertical: 8,
-    paddingHorizontal: 12,
+    paddingVertical: spacing.sm,
+    paddingHorizontal: spacing.md,
     borderRadius: 10,
   },
   sessionItemLeft: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
+    gap: spacing.sm,
   },
   sessionIndexBadge: {
     width: 22,
@@ -201,21 +203,21 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   sessionIndexText: {
-    fontSize: 10,
+    fontSize: typography.tabLabel.fontSize,
   },
   sessionItemMetrics: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
+    gap: spacing.sm,
   },
   // Empty State
   emptyCard: {
-    padding: 28,
+    padding: spacing.xl + spacing.xs,
     borderWidth: 1,
     borderRadius: 18,
     alignItems: 'center',
     justifyContent: 'center',
-    marginTop: 4,
+    marginTop: spacing.xs,
   },
   emptyIconBadge: {
     width: 58,
@@ -223,24 +225,24 @@ const styles = StyleSheet.create({
     borderRadius: 29,
     alignItems: 'center',
     justifyContent: 'center',
-    marginBottom: 12,
+    marginBottom: spacing.md,
   },
   emptySubtitle: {
     maxWidth: 270,
-    marginBottom: 16,
+    marginBottom: spacing.base,
   },
   startButton: {
-    paddingHorizontal: 22,
-    paddingVertical: 11,
+    paddingHorizontal: spacing.lg + spacing.xxs,
+    paddingVertical: spacing.md - 1,
     alignItems: 'center',
     justifyContent: 'center',
   },
   showMoreButton: {
     borderWidth: 1,
-    paddingVertical: 11,
+    paddingVertical: spacing.md - 1,
     alignItems: 'center',
     justifyContent: 'center',
-    marginTop: 6,
+    marginTop: spacing.s,
     borderRadius: 12,
   },
 });

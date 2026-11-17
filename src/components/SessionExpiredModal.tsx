@@ -2,6 +2,7 @@ import React from 'react';
 import { Modal, Pressable, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTheme } from '../theme/useTheme';
+import { spacing } from '../theme/spacing';
 import AppIcon from '../assets/appicon/AppIcon';
 import AppText from './AppText';
 
@@ -15,7 +16,7 @@ const SessionExpiredModal: React.FC<SessionExpiredModalProps> = ({
   onContinue,
 }) => {
   const { theme } = useTheme();
-  const { colors, spacing, radius } = theme;
+  const { colors, radius } = theme;
   const insets = useSafeAreaInsets();
 
   return (
@@ -92,7 +93,7 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    padding: 24,
+    padding: spacing.xl,
   },
   dialog: {
     width: '100%',
@@ -108,7 +109,7 @@ const styles = StyleSheet.create({
   },
   message: {
     maxWidth: 300,
-    marginBottom: 24,
+    marginBottom: spacing.xl,
     lineHeight: 22,
   },
   button: {

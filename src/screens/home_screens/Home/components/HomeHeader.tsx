@@ -91,7 +91,7 @@ const HomeHeader: React.FC = () => {
                 right: -3,
                 minWidth: 17,
                 height: 17,
-                paddingHorizontal: 3,
+                paddingHorizontal: theme.spacing.xs,
                 borderRadius: 9,
                 alignItems: 'center',
                 justifyContent: 'center',

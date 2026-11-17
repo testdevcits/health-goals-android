@@ -1,6 +1,9 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { View, StyleSheet } from 'react-native';
 import { AppText } from '../../../../components';
+import { useTheme } from '../../../../theme/useTheme';
+import type { AppColors } from '../../../../theme/colors';
+import { spacing } from '../../../../theme/spacing';
 export type RuleRow = {
   id: string;
   name: string;
@@ -23,6 +26,9 @@ export type Competition = {
   myProgress: RuleRow[];
 };
 export default function RuleCompetitions({ items }: { items: Competition[] }) {
+  const { theme } = useTheme();
+  const styles = useMemo(() => createStyles(theme.colors), [theme.colors]);
+
   return (
     <View style={styles.list}>
       {!items.length && (
@@ -79,27 +85,33 @@ export default function RuleCompetitions({ items }: { items: Competition[] }) {
     </View>
   );
 }
-const styles = StyleSheet.create({
-  list: { gap: 16 },
-  card: {
-    padding: 16,
-    gap: 10,
-    borderWidth: 1,
-    borderColor: '#dce5d7',
-    borderRadius: 14,
-  },
-  row: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    gap: 12,
-    paddingVertical: 7,
-  },
-  mine: { padding: 12, gap: 9, backgroundColor: '#eaf3e5', borderRadius: 10 },
-  track: {
-    height: 8,
-    borderRadius: 4,
-    backgroundColor: '#dbe5d5',
-    overflow: 'hidden',
-  },
-  fill: { height: 8, backgroundColor: '#315b40' },
-});
+const createStyles = (colors: AppColors) =>
+  StyleSheet.create({
+    list: { gap: spacing.base },
+    card: {
+      padding: spacing.base,
+      gap: spacing.ms,
+      borderWidth: 1,
+      borderColor: colors.border,
+      borderRadius: 14,
+    },
+    row: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      gap: spacing.md,
+      paddingVertical: spacing.s,
+    },
+    mine: {
+      padding: spacing.md,
+      gap: spacing.sm,
+      backgroundColor: colors.successLight,
+      borderRadius: 10,
+    },
+    track: {
+      height: 8,
+      borderRadius: 4,
+      backgroundColor: colors.divider,
+      overflow: 'hidden',
+    },
+    fill: { height: 8, backgroundColor: colors.success },
+  });

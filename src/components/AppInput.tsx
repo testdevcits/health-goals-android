@@ -9,6 +9,7 @@ import {
   ViewStyle,
 } from 'react-native';
 import { useTheme } from '../theme/useTheme';
+import { spacing } from '../theme/spacing';
 import AppText from './AppText';
 import AppIcon from '../assets/appicon/AppIcon';
 
@@ -36,7 +37,7 @@ const AppInput = forwardRef<TextInput, AppInputProps>(
     ref,
   ) => {
     const { theme } = useTheme();
-    const { colors, spacing, radius, fonts } = theme;
+    const { colors, radius, fonts } = theme;
     const [isFocused, setIsFocused] = useState(false);
     const [secureVisible, setSecureVisible] = useState(false);
 
@@ -82,8 +83,8 @@ const AppInput = forwardRef<TextInput, AppInputProps>(
               styles.input,
               {
                 fontFamily: fonts.regular,
-                fontSize: 15,
-                lineHeight: 22,
+                fontSize: theme.typography.body1.fontSize,
+                lineHeight: theme.typography.body1.lineHeight,
                 color: colors.textPrimary,
               },
               style,
@@ -125,7 +126,7 @@ const AppInput = forwardRef<TextInput, AppInputProps>(
 
 const styles = StyleSheet.create({
   wrapper: {
-    marginBottom: 16,
+    marginBottom: spacing.base,
   },
   inputContainer: {
     flexDirection: 'row',

@@ -1,4 +1,5 @@
 import { StyleSheet } from 'react-native';
+import { typography } from '../../../theme/typography';
 
 export const createStyles = (colors: any, spacing: any, radius: any) =>
   StyleSheet.create({
@@ -62,7 +63,7 @@ export const createStyles = (colors: any, spacing: any, radius: any) =>
     createModalOverlay: {
       flex: 1,
       justifyContent: 'flex-end',
-      backgroundColor: 'rgba(0,0,0,0.45)',
+      backgroundColor: colors.overlay,
     },
 
     createModalSheet: {
@@ -116,7 +117,7 @@ export const createCardStyles = (colors: any, spacing: any, radius: any) =>
     },
 
     emoji: {
-      fontSize: 15,
+      fontSize: typography.body1.fontSize,
     },
 
     title: {

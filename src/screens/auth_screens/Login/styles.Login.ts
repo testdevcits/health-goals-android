@@ -33,7 +33,7 @@ export const createLoginStyles = (theme: AppTheme) => {
       marginBottom: spacing.md,
     },
     iconEmoji: {
-      fontSize: 36,
+      fontSize: theme.typography.display.fontSize,
     },
     // ── Form ─────────────────────────────────────
     formSection: {

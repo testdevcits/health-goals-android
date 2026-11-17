@@ -19,6 +19,7 @@ import VerifyEmailScreen from '../screens/auth_screens/verify_email /VerifyEmail
 import { restoreSession } from '../services/auth';
 import { subscribeToSessionExpired } from '../services/auth';
 import { useTheme } from '../theme/useTheme';
+import { spacing } from '../theme/spacing';
 import AppIcon from '../assets/appicon/AppIcon';
 import SessionExpiredModal from '../components/SessionExpiredModal';
 import { clearProfile } from '../store/profileSlice';
@@ -234,7 +235,7 @@ const styles = StyleSheet.create({
     borderRadius: 44,
   },
   loaderMessage: {
-    marginTop: 20,
+    marginTop: spacing.lg,
   },
 });
 

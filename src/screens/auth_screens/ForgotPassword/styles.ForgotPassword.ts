@@ -52,7 +52,7 @@ export const createForgotPasswordStyles = (theme: AppTheme) => {
       flexDirection: 'row',
       alignItems: 'center',
       justifyContent: 'center',
-      gap: 6,
+      gap: spacing.s,
       marginTop: spacing.xl,
       paddingVertical: spacing.sm,
     },

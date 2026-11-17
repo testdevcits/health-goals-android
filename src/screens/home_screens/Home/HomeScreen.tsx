@@ -169,5 +169,3 @@ const HomeScreen: React.FC<Props> = ({ navigation }) => {
 };
 
 export default HomeScreen;
-
-

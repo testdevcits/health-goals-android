@@ -6,6 +6,7 @@ import { apiErrorMessage } from '../../../services/api';
 import { authenticatedRequest } from '../../../services/authenticatedApi';
 import { API_ENDPOINTS } from '../../../constants';
 import { showAppToast } from '../../../utils/appToast';
+import { lightColors } from '../../../theme/colors';
 import type { Badge, Challenge, ChallengeTab } from './data/challengesData';
 
 type CompetitionEntry = {
@@ -170,7 +171,7 @@ const useChallenges = () => {
                 : status === 'ACTIVE' || status === 'PUBLISHED'
                 ? 'LIVE'
                 : status,
-              color: '#00C6A2',
+              color: lightColors.primary,
               icon: metric.toLowerCase().includes('step')
                 ? Footprints
                 : metric.toLowerCase().includes('workout')
@@ -240,7 +241,7 @@ const useChallenges = () => {
               progress: Math.max(0, progress?.progress ?? 0),
               progressLabel: progressSummary,
               status: startsInFuture ? 'UPCOMING' : competition.status,
-              color: '#8175F5',
+              color: lightColors.primaryDark,
               icon: competition.metric.toLowerCase().includes('step')
                 ? Footprints
                 : competition.metric.toLowerCase().includes('workout')

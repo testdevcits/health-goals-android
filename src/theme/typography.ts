@@ -89,6 +89,32 @@ export const typography = {
     lineHeight: 22,
     letterSpacing: 0,
   },
+  // ── Navigation & Badges ────────────────────────
+  tabLabel: {
+    fontFamily: fonts.semiBold,
+    fontSize: 10,
+    lineHeight: 14,
+    letterSpacing: 0.2,
+  },
+  overline: {
+    fontFamily: fonts.medium,
+    fontSize: 11,
+    lineHeight: 14,
+    letterSpacing: 0.3,
+  },
+  // ── Metrics & Stats ────────────────────────────
+  statValue: {
+    fontFamily: fonts.bold,
+    fontSize: 24,
+    lineHeight: 32,
+    letterSpacing: 0,
+  },
+  metricNumber: {
+    fontFamily: fonts.bold,
+    fontSize: 40,
+    lineHeight: 48,
+    letterSpacing: -0.5,
+  },
 };
 
 export type TypographyVariant = keyof typeof typography;

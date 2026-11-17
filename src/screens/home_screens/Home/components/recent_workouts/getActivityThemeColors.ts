@@ -6,30 +6,51 @@ export const getActivityThemeColors = (
   const key = `${activityKey}_${metricType}`.toLowerCase();
   if (key.includes('run')) {
     return {
-      bg: themeColors.primaryLight || '#FFEDE8',
-      accent: themeColors.primary,
+      bg: themeColors.coralLight || themeColors.primaryLight,
+      accent: themeColors.coral || themeColors.primary,
     };
   }
   if (key.includes('walk')) {
-    return { bg: '#E8F5E9', accent: '#2E7D32' };
+    return {
+      bg: themeColors.successLight,
+      accent: themeColors.success,
+    };
   }
   if (key.includes('cycl')) {
-    return { bg: '#E1F5FE', accent: '#0288D1' };
+    return {
+      bg: themeColors.infoLight,
+      accent: themeColors.info,
+    };
   }
   if (key.includes('step')) {
-    return { bg: '#FFF8E1', accent: '#F59E0B' };
+    return {
+      bg: themeColors.warningLight,
+      accent: themeColors.warning,
+    };
   }
   if (key.includes('calor')) {
-    return { bg: '#FFEBEE', accent: '#EF4444' };
+    return {
+      bg: themeColors.errorLight,
+      accent: themeColors.error,
+    };
   }
   if (key.includes('sleep')) {
-    return { bg: '#EDE7F6', accent: '#6366F1' };
+    return {
+      bg: themeColors.purpleLight,
+      accent: themeColors.primaryDark || themeColors.info,
+    };
   }
   if (key.includes('active')) {
-    return { bg: '#FFF3E0', accent: '#F97316' };
+    return {
+      bg: themeColors.warningLight,
+      accent: themeColors.warning,
+    };
   }
   if (key.includes('dist')) {
-    return { bg: '#E0F7FA', accent: '#06B6D4' };
+    return {
+      bg: themeColors.primaryLight,
+      accent: themeColors.primary,
+    };
   }
   return { bg: themeColors.backgroundSecondary, accent: themeColors.primary };
 };

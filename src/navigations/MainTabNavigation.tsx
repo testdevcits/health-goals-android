@@ -8,6 +8,8 @@ import GroupsStack from './GroupsStack';
 import DiscoverStack from './DiscoverStack';
 import ProfileStack from './ProfileStack';
 import { fonts } from '../theme/fonts';
+import { typography } from '../theme/typography';
+import { spacing } from '../theme/spacing';
 import { useTheme } from '../theme/useTheme';
 import AppIcon from '../assets/appicon/AppIcon';
 
@@ -101,15 +103,15 @@ const createStyles = (colors: ReturnType<typeof useTheme>['theme']['colors']) =>
   StyleSheet.create({
     tabBar: {
       height: 65,
-      paddingTop: 8,
-      paddingBottom: 8,
+      paddingTop: spacing.sm,
+      paddingBottom: spacing.sm,
       backgroundColor: colors.surface,
       borderTopWidth: StyleSheet.hairlineWidth,
       borderTopColor: colors.border,
       elevation: 8,
     },
     tabBarLabel: {
-      fontSize: 10,
+      fontSize: typography.tabLabel.fontSize,
       fontFamily: fonts.semiBold,
     },
   });

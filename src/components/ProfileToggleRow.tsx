@@ -1,6 +1,7 @@
 import { Pressable, StyleSheet, View } from 'react-native';
 import React, { memo } from 'react';
 import { useTheme } from '../theme/useTheme';
+import { spacing } from '../theme/spacing';
 import AppText from './AppText';
 
 const ProfileToggleRow: React.FC<{
@@ -75,8 +76,8 @@ const styles = StyleSheet.create({
     minHeight: 68,
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 14,
-    gap: 12,
+    paddingHorizontal: spacing.ml,
+    gap: spacing.md,
   },
   rowIcon: {
     width: 38,
@@ -84,7 +85,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  rowCopy: { flex: 1, gap: 2 },
+  rowCopy: { flex: 1, gap: spacing.xxs },
   switchTrack: {
     width: 46,
     height: 28,

@@ -15,6 +15,7 @@ import {
   View,
 } from 'react-native';
 import { useTheme } from '../theme/useTheme';
+import { spacing } from '../theme/spacing';
 import AppText from './AppText';
 import AppButton from './AppButton';
 import AppIcon from '../assets/appicon/AppIcon';
@@ -47,7 +48,7 @@ const ScrollableValuePickerModal: React.FC<ScrollableValuePickerModalProps> = ({
   onClose,
 }) => {
   const { theme } = useTheme();
-  const { colors, spacing, radius } = theme;
+  const { colors, radius } = theme;
   const flatListRef = useRef<FlatList<number>>(null);
 
   const getDefaultValue = useCallback(() => {
@@ -185,7 +186,11 @@ const ScrollableValuePickerModal: React.FC<ScrollableValuePickerModalProps> = ({
               <AppText variant="h1" bold color="primary">
                 {currentVal}
               </AppText>
-              <AppText variant="subtitle1" secondary style={{ marginLeft: 6 }}>
+              <AppText
+                variant="subtitle1"
+                secondary
+                style={{ marginLeft: spacing.s }}
+              >
                 {unit}
               </AppText>
             </View>
@@ -339,9 +344,9 @@ const styles = StyleSheet.create({
     justifyContent: 'flex-end',
   },
   sheet: {
-    paddingHorizontal: 20,
-    paddingTop: 12,
-    paddingBottom: 28,
+    paddingHorizontal: spacing.lg,
+    paddingTop: spacing.md,
+    paddingBottom: spacing.xxl,
     maxHeight: '85%',
   },
   handle: {
@@ -349,13 +354,13 @@ const styles = StyleSheet.create({
     height: 4,
     borderRadius: 2,
     alignSelf: 'center',
-    marginBottom: 14,
+    marginBottom: spacing.ml,
   },
   headerRow: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    marginBottom: 16,
+    marginBottom: spacing.base,
   },
   closeButton: {
     width: 32,
@@ -368,9 +373,9 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingVertical: 12,
-    paddingHorizontal: 16,
-    marginBottom: 12,
+    paddingVertical: spacing.md,
+    paddingHorizontal: spacing.base,
+    marginBottom: spacing.md,
   },
   stepperButton: {
     width: 44,
@@ -384,30 +389,30 @@ const styles = StyleSheet.create({
     alignItems: 'baseline',
   },
   presetsContainer: {
-    marginBottom: 12,
+    marginBottom: spacing.md,
   },
   presetsList: {
-    gap: 8,
-    paddingVertical: 2,
+    gap: spacing.sm,
+    paddingVertical: spacing.xxs,
   },
   presetChip: {
-    paddingVertical: 6,
-    paddingHorizontal: 12,
+    paddingVertical: spacing.s,
+    paddingHorizontal: spacing.md,
     borderWidth: 1,
   },
   listContainer: {
     height: 200,
     borderWidth: 1,
     overflow: 'hidden',
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    marginBottom: 16,
+    paddingHorizontal: spacing.sm,
+    paddingVertical: spacing.xs,
+    marginBottom: spacing.base,
   },
   listItem: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingHorizontal: 16,
+    paddingHorizontal: spacing.base,
   },
   footerRow: {
     flexDirection: 'row',
