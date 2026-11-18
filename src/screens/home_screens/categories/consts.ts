@@ -2,123 +2,177 @@ import { lightColors } from '../../../theme/colors';
 
 export type WorkoutCategory = {
   id: string;
+  name: string;
   title: string;
   subtitle: string;
   emoji: string;
+  bg: string;
   tint: string;
+  accent: string;
 };
 
-export const categories: WorkoutCategory[] = [
+export const WORKOUT_CATEGORIES: WorkoutCategory[] = [
   {
     id: 'running',
+    name: 'Running',
     title: 'Running',
     subtitle: 'Cardio & Endurance',
     emoji: '🏃',
+    bg: lightColors.coralLight,
     tint: lightColors.coralLight,
+    accent: lightColors.coral,
   },
   {
     id: 'walking',
+    name: 'Walking',
     title: 'Walking',
     subtitle: 'Low impact steps',
     emoji: '🚶',
+    bg: lightColors.primaryLight,
     tint: lightColors.primaryLight,
+    accent: lightColors.primary,
   },
   {
     id: 'cycling',
+    name: 'Cycling',
     title: 'Cycling',
     subtitle: 'Outdoor & Indoor',
     emoji: '🚴',
+    bg: lightColors.infoLight,
     tint: lightColors.infoLight,
+    accent: lightColors.info,
   },
   {
     id: 'strength',
+    name: 'Strength',
     title: 'Strength',
     subtitle: 'Weights & Resistance',
     emoji: '🏋️',
+    bg: lightColors.purpleLight,
     tint: lightColors.purpleLight,
+    accent: lightColors.primaryDark,
   },
   {
     id: 'yoga',
+    name: 'Yoga',
     title: 'Yoga',
     subtitle: 'Flexibility & Mind',
     emoji: '🧘',
+    bg: lightColors.warningLight,
     tint: lightColors.warningLight,
+    accent: lightColors.warning,
   },
   {
     id: 'hiit',
+    name: 'HIIT',
     title: 'HIIT',
     subtitle: 'High Intensity',
     emoji: '🔥',
+    bg: lightColors.errorLight,
     tint: lightColors.errorLight,
+    accent: lightColors.error,
   },
   {
     id: 'swimming',
+    name: 'Swimming',
     title: 'Pool swim',
     subtitle: 'Full body cardio',
     emoji: '🏊',
+    bg: lightColors.infoLight,
     tint: lightColors.infoLight,
+    accent: lightColors.info,
   },
   {
     id: 'circuit',
+    name: 'Circuit training',
     title: 'Circuit training',
     subtitle: 'Full body workout',
     emoji: '🤸',
+    bg: lightColors.purpleLight,
     tint: lightColors.purpleLight,
+    accent: lightColors.primaryDark,
   },
   {
     id: 'hiking',
+    name: 'Hiking',
     title: 'Hiking',
     subtitle: 'Outdoor trails',
     emoji: '🥾',
+    bg: lightColors.primaryLight,
     tint: lightColors.primaryLight,
+    accent: lightColors.primary,
   },
   {
     id: 'machines',
+    name: 'Weight machines',
     title: 'Weight machines',
     subtitle: 'Gym equipment',
     emoji: '🏋️',
+    bg: lightColors.surfaceElevated,
     tint: lightColors.surfaceElevated,
+    accent: lightColors.textSecondary,
   },
   {
     id: 'indoor-bike',
+    name: 'Bike indoor',
     title: 'Bike indoor',
     subtitle: 'Stationary cycling',
     emoji: '🚲',
+    bg: lightColors.purpleLight,
     tint: lightColors.purpleLight,
+    accent: lightColors.primaryDark,
   },
   {
     id: 'treadmill',
+    name: 'Treadmill',
     title: 'Treadmill',
     subtitle: 'Indoor running',
     emoji: '🏃',
+    bg: lightColors.primaryLight,
     tint: lightColors.primaryLight,
+    accent: lightColors.primary,
   },
   {
     id: 'elliptical',
+    name: 'Elliptical trainer',
     title: 'Elliptical trainer',
     subtitle: 'Low impact gym',
     emoji: '🚴',
+    bg: lightColors.infoLight,
     tint: lightColors.infoLight,
+    accent: lightColors.info,
   },
   {
     id: 'dance',
+    name: 'Dance',
     title: 'Dance',
     subtitle: 'Fun cardio',
     emoji: '💃',
+    bg: lightColors.coralLight,
     tint: lightColors.coralLight,
+    accent: lightColors.coral,
   },
   {
     id: 'core',
+    name: 'Core',
     title: 'Core',
     subtitle: 'Abs & Stability',
     emoji: '🤸',
+    bg: lightColors.warningLight,
     tint: lightColors.warningLight,
+    accent: lightColors.warning,
   },
   {
     id: 'stretch',
+    name: 'Stretch',
     title: 'Stretch',
     subtitle: 'Recovery & Mobility',
     emoji: '🧘',
+    bg: lightColors.primaryLight,
     tint: lightColors.primaryLight,
+    accent: lightColors.primary,
   },
 ];
+
+// Single unified array export, preserving 'categories' alias for backward compatibility
+export const categories: WorkoutCategory[] = WORKOUT_CATEGORIES;

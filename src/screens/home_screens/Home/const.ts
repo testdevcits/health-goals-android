@@ -1,48 +1,11 @@
 import { lightColors } from '../../../theme/colors';
 
 // ── Static data ────────────────────────────────────────────────────────────
-export const WORKOUT_CATEGORIES = [
-  {
-    id: '1',
-    emoji: '🏃',
-    name: 'Running',
-    subtitle: 'Cardio & Endurance',
-    bg: lightColors.coralLight,
-    accent: lightColors.coral,
-  },
-  {
-    id: '2',
-    emoji: '🚶',
-    name: 'Walking',
-    subtitle: 'Low impact steps',
-    bg: lightColors.primaryLight,
-    accent: lightColors.primary,
-  },
-  {
-    id: '3',
-    emoji: '🚴',
-    name: 'Cycling',
-    subtitle: 'Outdoor & Indoor',
-    bg: lightColors.infoLight,
-    accent: lightColors.info,
-  },
-  {
-    id: '4',
-    emoji: '🏊',
-    name: 'Swimming',
-    subtitle: 'Full body workout',
-    bg: lightColors.purpleLight,
-    accent: lightColors.primaryDark,
-  },
-  {
-    id: '5',
-    emoji: '🧘',
-    name: 'Yoga',
-    subtitle: 'Flexibility & calm',
-    bg: lightColors.warningLight,
-    accent: lightColors.warning,
-  },
-];
+export {
+  WORKOUT_CATEGORIES,
+  categories,
+  type WorkoutCategory,
+} from '../categories/consts';
 
 export const DAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 

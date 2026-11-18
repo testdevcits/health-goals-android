@@ -1,5 +1,5 @@
-import React from 'react';
-import { Pressable, View } from 'react-native';
+import React, { useState } from 'react';
+import { Pressable, TouchableOpacity, View } from 'react-native';
 import {
   AppButton,
   AppEmptyState,
@@ -27,6 +27,57 @@ interface MetricReportCardProps {
   shareReport: (title: string) => void;
 }
 
+const formatMetricValue = (value: number, tab: HealthReportTab): string => {
+  if (value === 0) {
+    if (tab === 'Steps') return '0 steps';
+    if (tab === 'Sleep') return '0h 0m';
+    return '0 mins';
+  }
+  if (tab === 'Steps') return `${value.toLocaleString()} steps`;
+  if (tab === 'Sleep') {
+    const hours = Math.floor(value / 60);
+    const mins = Math.round(value % 60);
+    return `${hours}h ${mins}m`;
+  }
+  return `${value.toLocaleString()} mins`;
+};
+
+const formatShortTooltipValue = (
+  value: number,
+  tab: HealthReportTab,
+): string => {
+  if (value === 0) return '0';
+  if (tab === 'Steps') {
+    if (value >= 1000) {
+      const k = (value / 1000)
+        .toFixed(value >= 10000 ? 0 : 1)
+        .replace(/\.0$/, '');
+      return `${k}k`;
+    }
+    return value.toLocaleString();
+  }
+  if (tab === 'Sleep') {
+    const hours = Math.floor(value / 60);
+    const mins = Math.round(value % 60);
+    return mins > 0 ? `${hours}h${mins}m` : `${hours}h`;
+  }
+  return `${value}m`;
+};
+
+const formatDayLabel = (dateStr: string): string => {
+  try {
+    const d = new Date(`${dateStr}T12:00:00Z`);
+    return d.toLocaleDateString('en-US', {
+      weekday: 'short',
+      month: 'short',
+      day: 'numeric',
+      timeZone: 'UTC',
+    });
+  } catch {
+    return dateStr;
+  }
+};
+
 export const MetricReportCard: React.FC<MetricReportCardProps> = ({
   from,
   to,
@@ -45,7 +96,20 @@ export const MetricReportCard: React.FC<MetricReportCardProps> = ({
   const styles = createStyles(colors);
 
   const chartHistory = history.slice(-7);
+  const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
+  const effectiveIndex =
+    selectedIndex !== null &&
+    selectedIndex >= 0 &&
+    selectedIndex < chartHistory.length
+      ? selectedIndex
+      : Math.max(0, chartHistory.length - 1);
   const chartMaxValue = Math.max(...chartHistory.map(item => item.value), 1);
+  const tabColor =
+    activeTab === 'Steps'
+      ? colors.primary
+      : activeTab === 'Sleep'
+      ? colors.primaryDark
+      : colors.coral || colors.warning;
 
   return (
     <ProfileCard style={styles.reportCard}>
@@ -78,7 +142,10 @@ export const MetricReportCard: React.FC<MetricReportCardProps> = ({
         {(['Steps', 'Sleep', 'Workouts'] as HealthReportTab[]).map(tab => (
           <Pressable
             key={tab}
-            onPress={() => setActiveTab(tab)}
+            onPress={() => {
+              setActiveTab(tab);
+              setSelectedIndex(null);
+            }}
             style={[
               styles.tab,
               activeTab === tab && {
@@ -107,35 +174,109 @@ export const MetricReportCard: React.FC<MetricReportCardProps> = ({
           description="Connect Health Connect and allow access to this metric to see your report."
         />
       ) : activeTab === 'Steps' ? (
-        <View style={styles.chart}>
-          {chartHistory.map((item, index) => (
-            <View key={index} style={styles.chartDay}>
+        <>
+          {chartHistory.length > 0 && (
+            <View style={styles.chartInspectRow}>
+              <View style={styles.chartInspectLeft}>
+                <View
+                  style={[
+                    styles.chartInspectDot,
+                    { backgroundColor: tabColor },
+                  ]}
+                />
+                <AppText variant="caption" color="textSecondary">
+                  {formatDayLabel(chartHistory[effectiveIndex]?.date || '')}
+                </AppText>
+              </View>
               <View
                 style={[
-                  styles.bar,
+                  styles.chartInspectBadge,
                   {
-                    height: Math.max(
-                      7,
-                      Math.min(
-                        100,
-                        Math.round((item.value / chartMaxValue) * 100),
-                      ),
-                    ),
-                    backgroundColor:
-                      index === chartHistory.length - 1
-                        ? theme.colors.primary
-                        : theme.colors.primaryDark,
+                    backgroundColor: `${tabColor}1F`,
+                    borderColor: tabColor,
                   },
                 ]}
-              />
-              <AppText variant="caption" color="textTertiary">
-                {new Date(`${item.date}T12:00:00`).toLocaleDateString([], {
-                  weekday: 'short',
-                })}
-              </AppText>
+              >
+                <AppText variant="caption" bold style={{ color: tabColor }}>
+                  {formatMetricValue(
+                    chartHistory[effectiveIndex]?.value ?? 0,
+                    activeTab,
+                  )}
+                </AppText>
+              </View>
             </View>
-          ))}
-        </View>
+          )}
+          <View style={styles.chart}>
+            {chartHistory.map((item, index) => {
+              const isSelected = effectiveIndex === index;
+              return (
+                <TouchableOpacity
+                  key={item.date || index}
+                  activeOpacity={0.7}
+                  onPress={() => setSelectedIndex(index)}
+                  style={styles.barTouchable}
+                  accessibilityRole="button"
+                  accessibilityLabel={`${formatDayLabel(item.date)}: ${formatMetricValue(item.value, activeTab)}`}
+                >
+                  {isSelected && (
+                    <View
+                      style={[
+                        styles.barTooltip,
+                        {
+                          backgroundColor: theme.colors.surfaceElevated,
+                          borderColor: tabColor,
+                        },
+                      ]}
+                    >
+                      <AppText
+                        variant="caption"
+                        bold
+                        style={{ fontSize: 10, color: tabColor }}
+                      >
+                        {formatShortTooltipValue(item.value, activeTab)}
+                      </AppText>
+                    </View>
+                  )}
+                  <View
+                    style={[
+                      styles.bar,
+                      {
+                        height: Math.max(
+                          6,
+                          Math.min(
+                            90,
+                            Math.round((item.value / chartMaxValue) * 90),
+                          ),
+                        ),
+                        backgroundColor: tabColor,
+                        opacity: isSelected ? 1 : 0.45,
+                      },
+                      isSelected && {
+                        borderWidth: 1.5,
+                        borderColor: theme.colors.surface,
+                        elevation: 4,
+                        shadowColor: tabColor,
+                        shadowOpacity: 0.35,
+                        shadowRadius: 6,
+                        shadowOffset: { width: 0, height: 2 },
+                      },
+                    ]}
+                  />
+                  <AppText
+                    variant="caption"
+                    bold={isSelected}
+                    color={isSelected ? undefined : 'textTertiary'}
+                    style={isSelected ? { color: tabColor } : undefined}
+                  >
+                    {new Date(`${item.date}T12:00:00`).toLocaleDateString([], {
+                      weekday: 'short',
+                    })}
+                  </AppText>
+                </TouchableOpacity>
+              );
+            })}
+          </View>
+        </>
       ) : (
         <View style={styles.chartPlaceholder}>
           <AppText variant="h3" primary>

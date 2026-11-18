@@ -60,26 +60,77 @@ export const ReportDatePickerModal: React.FC<ReportDatePickerModalProps> = ({
           <AppText variant="subtitle2" bold style={styles.calendarTitle}>
             Choose report period
           </AppText>
-          <AppText variant="caption" secondary style={styles.calendarHint}>
-            {selectingEnd
-              ? 'Select an end date'
-              : 'Select a start date; then choose an end date'}
-          </AppText>
+          <View
+            style={[
+              styles.calendarPeriodBadge,
+              { backgroundColor: colors.backgroundSecondary },
+            ]}
+          >
+            <View>
+              <AppText variant="caption" bold primary>
+                {draftFrom && draftTo
+                  ? `${draftFrom} – ${draftTo}`
+                  : draftFrom || 'No date selected'}
+              </AppText>
+              <AppText variant="caption" secondary style={{ fontSize: 11 }}>
+                {draftFrom && draftTo
+                  ? `${
+                      Math.round(
+                        (new Date(`${draftTo}T00:00:00Z`).getTime() -
+                          new Date(`${draftFrom}T00:00:00Z`).getTime()) /
+                          86400000,
+                      ) + 1
+                    } days selected`
+                  : 'Tap a start date to auto-fill 7 days'}
+              </AppText>
+            </View>
+            {draftFrom ? (
+              <Pressable
+                onPress={() => setSelectingEnd(!selectingEnd)}
+                style={[
+                  styles.calendarPresetChip,
+                  {
+                    borderColor: selectingEnd
+                      ? colors.primary
+                      : colors.border,
+                    backgroundColor: selectingEnd
+                      ? colors.primaryLight
+                      : colors.surface,
+                  },
+                ]}
+              >
+                <AppText
+                  variant="caption"
+                  bold={selectingEnd}
+                  color={selectingEnd ? 'primary' : 'textSecondary'}
+                  style={{ fontSize: 11 }}
+                >
+                  {selectingEnd ? 'Cancel Custom' : 'Custom End'}
+                </AppText>
+              </Pressable>
+            ) : null}
+          </View>
           <Calendar
             current={currentDate}
             maxDate={maxDate || localDateKey(new Date())}
             markingType="period"
             markedDates={markedDates}
             onDayPress={day => {
-              if (!selectingEnd) {
-                setDraftFrom(day.dateString);
-                setDraftTo('');
-                setSelectingEnd(true);
-              } else if (day.dateString < draftFrom) {
-                setDraftFrom(day.dateString);
-                setDraftTo('');
-              } else {
+              const maxDateStr = maxDate || localDateKey(new Date());
+
+              if (selectingEnd && draftFrom && day.dateString >= draftFrom) {
                 setDraftTo(day.dateString);
+                setSelectingEnd(false);
+              } else {
+                const [y, m, d] = day.dateString.split('-').map(Number);
+                const start = new Date(Date.UTC(y, m - 1, d));
+                start.setUTCDate(start.getUTCDate() + 6);
+                const autoEndStr = start.toISOString().slice(0, 10);
+                const finalEnd =
+                  autoEndStr > maxDateStr ? maxDateStr : autoEndStr;
+
+                setDraftFrom(day.dateString);
+                setDraftTo(finalEnd);
                 setSelectingEnd(false);
               }
             }}

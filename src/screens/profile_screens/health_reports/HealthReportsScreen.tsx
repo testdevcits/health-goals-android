@@ -92,6 +92,7 @@ const HealthReportsScreen: React.FC<{
       startingDay: true,
       selected: true,
       selectedColor: colors.primary,
+      color: colors.primary,
       textColor: colors.white,
     };
     markedDates[draftTo] = {
@@ -99,12 +100,16 @@ const HealthReportsScreen: React.FC<{
       endingDay: true,
       selected: true,
       selectedColor: colors.primary,
+      color: colors.primary,
       textColor: colors.white,
     };
   } else if (draftFrom) {
     markedDates[draftFrom] = {
+      startingDay: true,
+      endingDay: true,
       selected: true,
       selectedColor: colors.primary,
+      color: colors.primary,
       textColor: colors.white,
     };
   }

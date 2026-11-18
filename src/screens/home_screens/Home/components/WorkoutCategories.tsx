@@ -8,6 +8,7 @@ import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import type { HomeStackParamList } from '../../../../navigations/HomeStack';
 import { resolveWorkoutActivityId } from '../../workout_sessions/workoutActivities';
+import { lightColors } from '../../../../theme/colors';
 
 const WorkoutCategories: React.FC<{ onViewAllPress: () => void }> = ({
   onViewAllPress,
@@ -21,12 +22,12 @@ const WorkoutCategories: React.FC<{ onViewAllPress: () => void }> = ({
     ({ item }: { item: (typeof WORKOUT_CATEGORIES)[number] }) => (
       <TouchableOpacity
         activeOpacity={0.8}
-        style={[styles.workoutCard, { borderBottomColor: item?.accent }]}
+        style={[styles.workoutCard, { borderBottomColor: item?.accent, borderWidth: 0.3, borderColor: lightColors.backgroundSecondary }]}
         accessibilityRole="button"
         accessibilityLabel={`${item?.name}: ${item?.subtitle}`}
         onPress={() =>
           navigation.navigate('WorkoutSession', {
-            activityId: resolveWorkoutActivityId(item.name),
+            activityId: resolveWorkoutActivityId(item.id),
           })
         }
       >

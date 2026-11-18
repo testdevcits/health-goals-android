@@ -12,8 +12,12 @@ import {
   readStepsHistory,
 } from '../../../services/healthConnect';
 import { fetchHealthTrend } from '../../../services/healthTrends';
+import { storageService } from '../../../storage/storageService';
 import { trendData as initialTrendData } from './trendData';
 import type { TrendMetric } from './trendData';
+
+const CACHE_KEY_DAILY_TRENDS = 'cache_daily_activity_trends_v2';
+const CACHE_KEY_HOME_TRENDS = 'cache_trend_data';
 
 const metricTypes = {
   Steps: 'steps',
@@ -34,9 +38,75 @@ export default function useDailyActivityTrends() {
   const goalValuesRef = useRef(goalValues);
   goalValuesRef.current = goalValues;
   const [goalDraft, setGoalDraft] = useState(goalValues.Steps);
-  const [trendData, setTrendData] = useState(initialTrendData);
-  const [loading, setLoading] = useState(true);
-  const [hasData, setHasData] = useState(false);
+  const [trendData, setTrendData] = useState(() => {
+    // Purge legacy corrupted percentage cache
+    storageService.remove('cache_daily_activity_trends');
+
+    const v2Cached = storageService.getObject<typeof initialTrendData>(
+      CACHE_KEY_DAILY_TRENDS,
+    );
+    const hasCorruptSteps =
+      v2Cached?.Steps?.bars?.some(v => v !== null && v > 0 && v <= 100) &&
+      !v2Cached?.Steps?.bars?.some(v => v !== null && v > 100);
+
+    if (v2Cached && !hasCorruptSteps) {
+      return v2Cached;
+    }
+
+    // Seed from Home Screen's fresh cache (cache_trend_data)
+    const homeCached = storageService.getObject<{
+      Steps?: {
+        bars: (number | null)[];
+        stats?: { value: string; label: string }[];
+      };
+      Sleep?: {
+        bars: (number | null)[];
+        stats?: { value: string; label: string }[];
+      };
+    }>(CACHE_KEY_HOME_TRENDS);
+
+    if (homeCached) {
+      const seeded = { ...initialTrendData };
+      if (homeCached.Steps?.bars?.some(v => v !== null && v > 0)) {
+        const homeBars = homeCached.Steps.bars;
+        const validValues = homeBars.filter((v): v is number => v !== null);
+        const sum = validValues.reduce((a, b) => a + b, 0);
+        const avg = validValues.length
+          ? Math.round(sum / validValues.length)
+          : 0;
+        seeded.Steps = {
+          ...seeded.Steps,
+          bars: homeBars,
+          stats: [
+            { value: sum.toLocaleString(), label: 'Last 7 days' },
+            { value: avg.toLocaleString(), label: 'Daily avg' },
+            {
+              value: String(validValues.filter(v => v >= 10000).length),
+              label: 'Days ≥10K',
+            },
+            { value: '—', label: 'Goal met' },
+          ],
+          insight: `${
+            validValues.filter(v => v > 0).length
+          } synced steps records in the last 7 days. Your average is ${avg.toLocaleString()} steps.`,
+        };
+      }
+      if (homeCached.Sleep?.bars?.some(v => v !== null && v > 0)) {
+        seeded.Sleep = {
+          ...seeded.Sleep,
+          bars: homeCached.Sleep.bars,
+        };
+      }
+      return seeded;
+    }
+
+    return initialTrendData;
+  });
+  const cachedHasData = trendData[activeMetric]?.bars?.some(
+    v => v !== null && v > 0,
+  );
+  const [loading, setLoading] = useState(!cachedHasData);
+  const [hasData, setHasData] = useState(Boolean(cachedHasData));
   const [loadError, setLoadError] = useState('');
   const [reloadKey, setReloadKey] = useState(0);
   const data = trendData[activeMetric];
@@ -45,170 +115,213 @@ export default function useDailyActivityTrends() {
   useEffect(() => {
     if (!isFocused) return;
     let active = true;
-    setLoading(true);
+    const currentCached =
+      storageService.getObject<typeof initialTrendData>(
+        CACHE_KEY_DAILY_TRENDS,
+      );
+    const hasCurrentData = currentCached?.[activeMetric]?.bars?.some(
+      v => v !== null && v > 0,
+    );
+    if (!hasCurrentData) {
+      setLoading(true);
+    }
     setLoadError('');
-    setHasData(false);
+
     (async () => {
       try {
         const dates = recentIstDates();
-        const [recordsResult, goalResult] = await Promise.allSettled([
-          activeMetric === 'Steps'
-            ? readStepsHistory(7).then(history =>
-                history.map(item => ({ date: item.date, value: item.value })),
-              )
-            : activeMetric === 'Sleep'
-            ? readSleepHistory(7).then(async history => {
-                if (history.length && history.some(item => item.value > 0)) {
-                  return history.map(item => ({
-                    date: item.date,
-                    value: item.value,
-                  }));
-                }
-                const res = await fetchHealthTrend(
-                  'sleep',
-                  dates[0],
-                  dates[dates.length - 1],
-                );
-                return res.series;
-              })
-            : activeMetric === 'Stress'
-            ? Promise.reject(
-                new Error(
-                  'Stress readings are not available from the connected health sources.',
-                ),
-              )
-            : fetchHealthTrend(
-                metricTypes[activeMetric],
+        let history: { date: string; value: number | null }[] = [];
+
+        if (activeMetric === 'Steps') {
+          try {
+            const hcSteps = await readStepsHistory(7);
+            if (hcSteps.length && hcSteps.some(item => item.value > 0)) {
+              history = hcSteps.map(item => ({
+                date: item.date,
+                value: item.value,
+              }));
+            } else {
+              const res = await fetchHealthTrend(
+                'steps',
                 dates[0],
                 dates[dates.length - 1],
-              ).then(result => result.series),
-          getCurrentUser(),
-        ]);
-        if (!active) return;
-        if (goalResult.status === 'fulfilled') {
-          const saved =
-            goalResult.value.healthGoals?.[metricTypes[activeMetric]];
-          if (saved) {
-            setGoalValues(current => ({
-              ...current,
-              [activeMetric]: String(
-                activeMetric === 'Sleep' ? saved / 60 : saved,
-              ),
+              );
+              history = res.series;
+            }
+          } catch {
+            const fallback = await readStepsHistory(7).catch(() => []);
+            history = fallback.map(item => ({
+              date: item.date,
+              value: item.value,
             }));
           }
+        } else if (activeMetric === 'Sleep') {
+          try {
+            const hcSleep = await readSleepHistory(7);
+            if (hcSleep.length && hcSleep.some(item => item.value > 0)) {
+              history = hcSleep.map(item => ({
+                date: item.date,
+                value: item.value,
+              }));
+            } else {
+              const res = await fetchHealthTrend(
+                'sleep',
+                dates[0],
+                dates[dates.length - 1],
+              );
+              history = res.series;
+            }
+          } catch {
+            const fallback = await readSleepHistory(7).catch(() => []);
+            history = fallback.map(item => ({
+              date: item.date,
+              value: item.value,
+            }));
+          }
+        } else if (activeMetric === 'Heart') {
+          const res = await fetchHealthTrend(
+            'heart_rate',
+            dates[0],
+            dates[dates.length - 1],
+          );
+          history = res.series;
+        } else {
+          throw new Error(
+            'Stress readings are not available from the connected health sources.',
+          );
         }
-        if (recordsResult.status === 'rejected') {
-          setLoadError(apiErrorMessage(recordsResult.reason));
-          return;
-        }
-        if (recordsResult.status === 'fulfilled') {
-          const byDate = new Map(
-            recordsResult.value.map(row => [row.date, row.value]),
-          );
-          const barsByDate = dates.map(date =>
-            byDate.has(date) ? byDate.get(date) ?? null : null,
-          );
-          const values = barsByDate.filter(
-            (value): value is number => value !== null,
-          );
-          const hasAnyNonZero = values.some(value => value > 0);
-          if (!values.length || !hasAnyNonZero) {
-            setHasData(false);
+
+        if (!active) return;
+
+        // Fetch user health goal in background
+        getCurrentUser()
+          .then(user => {
+            const saved = user.healthGoals?.[metricTypes[activeMetric]];
+            if (saved && active) {
+              setGoalValues(current => ({
+                ...current,
+                [activeMetric]: String(
+                  activeMetric === 'Sleep' ? saved / 60 : saved,
+                ),
+              }));
+            }
+          })
+          .catch(() => {});
+
+        const byDate = new Map(history.map(row => [row.date, row.value]));
+        const barsByDate = dates.map(date =>
+          byDate.has(date) ? byDate.get(date) ?? null : null,
+        );
+        const values = barsByDate.filter(
+          (value): value is number => value !== null,
+        );
+        const hasAnyNonZero = values.some(value => value > 0);
+        if (!values.length || !hasAnyNonZero) {
+          const homeCached = storageService.getObject<{
+            Steps?: { bars: (number | null)[] };
+          }>(CACHE_KEY_HOME_TRENDS);
+          if (
+            activeMetric === 'Steps' &&
+            homeCached?.Steps?.bars?.some(v => v !== null && v > 0)
+          ) {
+            setHasData(true);
             return;
           }
-          const average = Math.round(
-            values.reduce((sum, value) => sum + value, 0) / values.length,
-          );
-          const total = values.reduce((sum, value) => sum + value, 0);
-          const positiveValues = values.filter(value => value > 0);
-          const lowestObserved = positiveValues.length
-            ? Math.min(...positiveValues)
-            : 0;
-          const savedGoal =
-            goalResult.status === 'fulfilled'
-              ? goalResult.value.healthGoals?.[metricTypes[activeMetric]]
-              : undefined;
-          const goal =
-            Number(
-              savedGoal ||
-                goalValuesRef.current[activeMetric].replace(/,/g, ''),
-            ) * (activeMetric === 'Sleep' && !savedGoal ? 60 : 1);
-          const bars = barsByDate.map(value =>
-            value === null
-              ? null
-              : goal
-              ? Math.max(0, Math.min(100, Math.round((value / goal) * 100)))
-              : 0,
-          );
-          const averageLabel =
-            activeMetric === 'Sleep'
-              ? `${Math.floor(average / 60)}h ${Math.round(average % 60)}m`
-              : `${average}${activeMetric === 'Heart' ? ' bpm' : ''}`;
-          setTrendData(current => ({
-            ...current,
-            [activeMetric]: {
-              ...current[activeMetric],
-              bars,
-              stats:
-                activeMetric === 'Steps'
-                  ? [
-                      { value: total.toLocaleString(), label: 'Last 7 days' },
-                      { value: String(average), label: 'Daily avg' },
-                      {
-                        value: String(
-                          values.filter(value => value >= 10000).length,
-                        ),
-                        label: 'Days ≥10K',
-                      },
-                      {
-                        value: goal
-                          ? `${Math.round(
-                              (values.filter(value => value >= goal).length /
-                                7) *
-                                100,
-                            )}%`
-                          : '—',
-                        label: 'Goal met',
-                      },
-                    ]
-                  : activeMetric === 'Sleep'
-                  ? [
-                      { value: averageLabel, label: 'Daily avg' },
-                      {
-                        value: `${(Math.max(...values) / 60).toFixed(1)}h`,
-                        label: 'Longest day',
-                      },
-                      {
-                        value: `${(lowestObserved / 60).toFixed(1)}h`,
-                        label: 'Shortest day',
-                      },
-                      {
-                        value: String(positiveValues.length),
-                        label: 'Days synced',
-                      },
-                    ]
-                  : [
-                      { value: averageLabel, label: 'Daily avg' },
-                      {
-                        value: String(Math.max(...values)),
-                        label: 'Highest daily avg',
-                      },
-                      {
-                        value: String(lowestObserved),
-                        label: 'Lowest daily avg',
-                      },
-                      {
-                        value: String(positiveValues.length),
-                        label: 'Days synced',
-                      },
-                    ],
-              insight: `${
-                positiveValues.length
-              } synced ${activeMetric.toLowerCase()} daily records in the last 7 days. Your average is ${averageLabel}.`,
-            },
-          }));
-          setHasData(true);
+          setHasData(false);
+          return;
         }
+
+        const average = Math.round(
+          values.reduce((sum, value) => sum + value, 0) / values.length,
+        );
+        const total = values.reduce((sum, value) => sum + value, 0);
+        const positiveValues = values.filter(value => value > 0);
+        const lowestObserved = positiveValues.length
+          ? Math.min(...positiveValues)
+          : 0;
+
+        const goal =
+          Number(goalValuesRef.current[activeMetric].replace(/,/g, '')) *
+          (activeMetric === 'Sleep' ? 60 : 1);
+        const bars = barsByDate;
+        const averageLabel =
+          activeMetric === 'Sleep'
+            ? `${Math.floor(average / 60)}h ${Math.round(average % 60)}m`
+            : `${average.toLocaleString()}${
+                activeMetric === 'Heart'
+                  ? ' bpm'
+                  : activeMetric === 'Steps'
+                  ? ' steps'
+                  : ''
+              }`;
+          setTrendData(current => {
+            const updated = {
+              ...current,
+              [activeMetric]: {
+                ...current[activeMetric],
+                bars,
+                stats:
+                  activeMetric === 'Steps'
+                    ? [
+                        { value: total.toLocaleString(), label: 'Last 7 days' },
+                        { value: average.toLocaleString(), label: 'Daily avg' },
+                        {
+                          value: String(
+                            values.filter(value => value >= 10000).length,
+                          ),
+                          label: 'Days ≥10K',
+                        },
+                        {
+                          value: goal
+                            ? `${Math.round(
+                                (values.filter(value => value >= goal).length /
+                                  7) *
+                                  100,
+                              )}%`
+                            : '—',
+                          label: 'Goal met',
+                        },
+                      ]
+                    : activeMetric === 'Sleep'
+                    ? [
+                        { value: averageLabel, label: 'Daily avg' },
+                        {
+                          value: `${(Math.max(...values) / 60).toFixed(1)}h`,
+                          label: 'Longest day',
+                        },
+                        {
+                          value: `${(lowestObserved / 60).toFixed(1)}h`,
+                          label: 'Shortest day',
+                        },
+                        {
+                          value: String(positiveValues.length),
+                          label: 'Days synced',
+                        },
+                      ]
+                    : [
+                        { value: averageLabel, label: 'Daily avg' },
+                        {
+                          value: String(Math.max(...values)),
+                          label: 'Highest daily avg',
+                        },
+                        {
+                          value: String(lowestObserved),
+                          label: 'Lowest daily avg',
+                        },
+                        {
+                          value: String(positiveValues.length),
+                          label: 'Days synced',
+                        },
+                      ],
+                insight: `${
+                  positiveValues.length
+                } synced ${activeMetric.toLowerCase()} daily records in the last 7 days. Your average is ${averageLabel}.`,
+              },
+            };
+            storageService.setObject(CACHE_KEY_DAILY_TRENDS, updated);
+            return updated;
+          });
+        setHasData(true);
       } catch (error) {
         if (active) setLoadError(apiErrorMessage(error));
       } finally {

@@ -17,7 +17,7 @@ const TrendInsight: React.FC<{ text: string }> = ({ text }) => {
       style={[styles.insightCard, { backgroundColor: theme.colors.surface }]}
     >
       <AppText variant="subtitle2" bold style={styles.insightHeading}>
-        💡 Insight
+        Insight
       </AppText>
       <AppText variant="body2" secondary style={styles.insightText}>
         {text}

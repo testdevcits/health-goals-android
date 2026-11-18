@@ -25,14 +25,74 @@ import { storageService } from '../../../../storage/storageService';
 
 const CACHE_KEY_TREND_DATA = 'cache_trend_data';
 
-const BAR_MAX_HEIGHT = 100;
+const BAR_MAX_HEIGHT = 75;
 
-const BarChart: React.FC<{ data: (number | null)[]; color: string }> = ({
-  data,
-  color,
-}) => {
+const formatMetricValue = (value: number | null, tab: TrendTab): string => {
+  if (value === null || value === 0) {
+    if (tab === 'Steps') return '0 steps';
+    if (tab === 'Sleep') return '0h 0m';
+    return '0 mins';
+  }
+  if (tab === 'Steps') {
+    return `${value.toLocaleString()} steps`;
+  }
+  if (tab === 'Sleep') {
+    const hours = Math.floor(value / 60);
+    const mins = Math.round(value % 60);
+    return `${hours}h ${mins}m`;
+  }
+  return `${value.toLocaleString()} mins`;
+};
+
+const formatShortTooltipValue = (
+  value: number | null,
+  tab: TrendTab,
+): string => {
+  if (value === null || value === 0) return '0';
+  if (tab === 'Steps') {
+    if (value >= 1000) {
+      const k = (value / 1000)
+        .toFixed(value >= 10000 ? 0 : 1)
+        .replace(/\.0$/, '');
+      return `${k}k`;
+    }
+    return value.toLocaleString();
+  }
+  if (tab === 'Sleep') {
+    const hours = Math.floor(value / 60);
+    const mins = Math.round(value % 60);
+    return mins > 0 ? `${hours}h${mins}m` : `${hours}h`;
+  }
+  return `${value}m`;
+};
+
+const getDayFullLabel = (index: number): string => {
+  const dates = recentIstDates();
+  const dateStr = dates[index];
+  if (!dateStr) return recentHealthDayLabels()[index] || '';
+  try {
+    const d = new Date(`${dateStr}T00:00:00Z`);
+    return d.toLocaleDateString('en-US', {
+      weekday: 'short',
+      month: 'short',
+      day: 'numeric',
+      timeZone: 'UTC',
+    });
+  } catch {
+    return recentHealthDayLabels()[index] || '';
+  }
+};
+
+const BarChart: React.FC<{
+  data: (number | null)[];
+  color: string;
+  activeTab: TrendTab;
+  selectedIndex: number;
+  onSelectIndex: (index: number) => void;
+}> = ({ data, color, activeTab, selectedIndex, onSelectIndex }) => {
   const { theme } = useTheme();
   const styles = createHomeStyles(theme);
+  const labels = recentHealthDayLabels();
   const maxValue = Math.max(
     ...data.filter((value): value is number => value !== null),
     1,
@@ -43,10 +103,38 @@ const BarChart: React.FC<{ data: (number | null)[]; color: string }> = ({
       {data.map((value, index) => {
         const height =
           value !== null && value > 0
-            ? Math.max(2, (value / maxValue) * BAR_MAX_HEIGHT)
-            : 0;
+            ? Math.max(4, (value / maxValue) * BAR_MAX_HEIGHT)
+            : 4;
+        const isSelected = selectedIndex === index;
+
         return (
-          <View key={recentHealthDayLabels()[index]} style={styles.barWrapper}>
+          <TouchableOpacity
+            key={labels[index]}
+            activeOpacity={0.7}
+            style={styles.barTouchableColumn}
+            onPress={() => onSelectIndex(index)}
+            accessibilityRole="button"
+            accessibilityLabel={`${labels[index]}: ${formatMetricValue(value, activeTab)}`}
+          >
+            {isSelected && (
+              <View
+                style={[
+                  styles.barTooltip,
+                  {
+                    backgroundColor: theme.colors.surfaceElevated,
+                    borderColor: color,
+                  },
+                ]}
+              >
+                <AppText
+                  variant="caption"
+                  bold
+                  style={[styles.barTooltipText, { color }]}
+                >
+                  {formatShortTooltipValue(value, activeTab)}
+                </AppText>
+              </View>
+            )}
             <View
               style={[
                 styles.bar,
@@ -54,13 +142,19 @@ const BarChart: React.FC<{ data: (number | null)[]; color: string }> = ({
                   height,
                   backgroundColor: color,
                 },
-                index !== 4 && styles.barMuted,
+                !isSelected && styles.barMuted,
+                isSelected && [styles.barSelected, { shadowColor: color }],
               ]}
             />
-            <AppText variant="caption" secondary>
-              {recentHealthDayLabels()[index]}
+            <AppText
+              variant="caption"
+              bold={isSelected}
+              color={isSelected ? undefined : 'textSecondary'}
+              style={isSelected ? { color } : undefined}
+            >
+              {labels[index]}
             </AppText>
-          </View>
+          </TouchableOpacity>
         );
       })}
     </View>
@@ -80,6 +174,7 @@ const ActivityTrends: React.FC<{
       TREND_DATA
     );
   });
+  const [selectedIndex, setSelectedIndex] = useState<number>(6);
   const [loading, setLoading] = useState(false);
   const [loadError, setLoadError] = useState('');
   const [reloadKey, setReloadKey] = useState(0);
@@ -320,9 +415,45 @@ const ActivityTrends: React.FC<{
           />
         ) : (
           <>
+            <View style={styles.selectedReadoutRow}>
+              <View style={styles.selectedReadoutLeft}>
+                <View
+                  style={[
+                    styles.selectedIndicatorDot,
+                    { backgroundColor: activeTrendData.color },
+                  ]}
+                />
+                <AppText variant="caption" color="textSecondary">
+                  {getDayFullLabel(selectedIndex)}
+                </AppText>
+              </View>
+              <View
+                style={[
+                  styles.selectedPill,
+                  {
+                    backgroundColor: `${activeTrendData.color}1F`,
+                    borderColor: activeTrendData.color,
+                  },
+                ]}
+              >
+                <AppText
+                  variant="caption"
+                  bold
+                  style={{ color: activeTrendData.color }}
+                >
+                  {formatMetricValue(
+                    activeTrendData.bars[selectedIndex] ?? null,
+                    activeTab,
+                  )}
+                </AppText>
+              </View>
+            </View>
             <BarChart
               data={activeTrendData.bars}
               color={activeTrendData.color}
+              activeTab={activeTab}
+              selectedIndex={selectedIndex}
+              onSelectIndex={setSelectedIndex}
             />
             <View style={styles.statsRow}>
               {activeTrendData.stats.map((stat, index) => (
