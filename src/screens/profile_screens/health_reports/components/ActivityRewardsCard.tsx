@@ -1,5 +1,5 @@
 import React from 'react';
-import { Alert, View } from 'react-native';
+import { View } from 'react-native';
 import {
   Brain,
   Coins,
@@ -50,6 +50,8 @@ interface ActivityRewardsCardProps {
   dailyCoins: DailyActivityHistoryItem[];
   totalCoins: number;
   shareReport: (title: string) => void;
+  exportPdf: () => void;
+  onViewPdf?: () => void;
 }
 
 export const ActivityRewardsCard: React.FC<ActivityRewardsCardProps> = ({
@@ -61,6 +63,8 @@ export const ActivityRewardsCard: React.FC<ActivityRewardsCardProps> = ({
   dailyCoins,
   totalCoins,
   shareReport,
+  exportPdf,
+  onViewPdf,
 }) => {
   const { theme } = useTheme();
   const { colors } = theme;
@@ -377,9 +381,7 @@ export const ActivityRewardsCard: React.FC<ActivityRewardsCardProps> = ({
         />
         <AppButton
           title="View PDF"
-          onPress={() =>
-            Alert.alert('PDF report', 'PDF export is not available yet.')
-          }
+          onPress={onViewPdf || exportPdf}
           style={styles.reportButton}
         />
       </View>

@@ -25,6 +25,8 @@ interface MetricReportCardProps {
   history: DailyValue[];
   totalCoins: number;
   shareReport: (title: string) => void;
+  exportPdf: () => void;
+  onViewPdf?: () => void;
 }
 
 const formatMetricValue = (value: number, tab: HealthReportTab): string => {
@@ -90,6 +92,8 @@ export const MetricReportCard: React.FC<MetricReportCardProps> = ({
   history,
   totalCoins,
   shareReport,
+  exportPdf,
+  onViewPdf,
 }) => {
   const { theme } = useTheme();
   const { colors } = theme;
@@ -368,7 +372,7 @@ export const MetricReportCard: React.FC<MetricReportCardProps> = ({
           />
           <AppButton
             title="View PDF"
-            onPress={() => shareReport('Health report')}
+            onPress={onViewPdf || exportPdf}
             style={styles.reportButton}
           />
         </View>

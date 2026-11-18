@@ -9,6 +9,7 @@ import useHealthReports from './useHealthReports';
 import {
   ActivityRewardsCard,
   HealthAllTimeSummaryCard,
+  HealthReportPreviewModal,
   MetricReportCard,
   ReportDatePickerModal,
   SyncedRecordsCard,
@@ -47,10 +48,12 @@ const HealthReportsScreen: React.FC<{
     setFrom,
     setTo,
     shareReport,
+    exportPdf,
     totalCoins,
   } = useHealthReports();
 
   const [datePickerVisible, setDatePickerVisible] = useState(false);
+  const [previewVisible, setPreviewVisible] = useState(false);
   const [draftFrom, setDraftFrom] = useState('');
   const [draftTo, setDraftTo] = useState('');
   const [selectingEnd, setSelectingEnd] = useState(false);
@@ -141,6 +144,8 @@ const HealthReportsScreen: React.FC<{
           history={history}
           totalCoins={totalCoins}
           shareReport={shareReport}
+          exportPdf={exportPdf}
+          onViewPdf={() => setPreviewVisible(true)}
         />
 
         <HealthAllTimeSummaryCard
@@ -171,8 +176,22 @@ const HealthReportsScreen: React.FC<{
           dailyCoins={dailyCoins}
           totalCoins={totalCoins}
           shareReport={shareReport}
+          exportPdf={exportPdf}
+          onViewPdf={() => setPreviewVisible(true)}
         />
       </ScrollView>
+
+      <HealthReportPreviewModal
+        visible={previewVisible}
+        onClose={() => setPreviewVisible(false)}
+        from={from}
+        to={to}
+        activeTab={activeTab}
+        history={history}
+        totalCoins={totalCoins}
+        onDownloadPdf={exportPdf}
+        onShare={() => shareReport('Health report')}
+      />
 
       <ReportDatePickerModal
         visible={datePickerVisible}

@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { Alert, NativeModules } from 'react-native';
+import { Share } from 'react-native';
 import { useIsFocused } from '@react-navigation/native';
 import { authenticatedRequest } from '../../../services/authenticatedApi';
 import { API_ENDPOINTS } from '../../../constants';
@@ -13,6 +13,7 @@ import {
   HealthSummary,
 } from '../../../services/healthSummary';
 import { showAppToast } from '../../../utils/appToast';
+import { exportHealthReportPdf } from './utils/healthReportPdf';
 
 const METRICS = {
   Steps: 'steps',
@@ -257,11 +258,11 @@ export default function useHealthReports() {
     to,
   ]);
 
-  const shareReport = (title: string) => {
+  const shareReport = async (title: string = 'Vitality Health Report') => {
     const total = history.reduce((sum, item) => sum + item.value, 0);
     const content = [
+      `${title}: ${activeTab}`,
       `Report period: ${from.toLocaleDateString()} – ${to.toLocaleDateString()}`,
-      `Selected metric: ${activeTab}`,
       `Synced total: ${total.toLocaleString()} ${history[0]?.unit || ''}`,
       `Daily average: ${
         history.length ? Math.round(total / history.length).toLocaleString() : 0
@@ -273,21 +274,32 @@ export default function useHealthReports() {
       `Days with activity: ${dailyCoins.length}`,
       `Data points: ${history.length}`,
     ].join('\n');
-    const sharePdf = NativeModules.HealthAppConfig?.sharePdf;
-    if (typeof sharePdf !== 'function') {
-      Alert.alert(
-        'Report export unavailable',
-        'Update the Android app build to enable PDF sharing.',
-      );
-      return;
+
+    try {
+      await Share.share({
+        title,
+        message: content,
+      });
+    } catch {
+      // User dismissed share dialog
     }
-    sharePdf(title, content);
   };
 
   const totalCoins = dailyCoins.reduce(
     (sum, item) => sum + (item.creditedCoins || 0),
     0,
   );
+
+  const exportPdf = useCallback(async () => {
+    return exportHealthReportPdf({
+      from,
+      to,
+      activeTab,
+      history,
+      dailyCoins,
+      totalCoins,
+    });
+  }, [activeTab, dailyCoins, from, history, to, totalCoins]);
 
   return {
     activeTab,
@@ -312,6 +324,7 @@ export default function useHealthReports() {
     setFrom,
     setTo,
     shareReport,
+    exportPdf,
     totalCoins,
   };
 }
