@@ -11,7 +11,7 @@ const ProfileCard: React.FC<{
     <View
       style={[
         styles.card,
-        { backgroundColor: colors.surface, shadowColor: colors.black },
+        { backgroundColor: colors.surface, shadowColor: colors.textPrimary },
         style,
       ]}
     >

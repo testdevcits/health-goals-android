@@ -59,7 +59,7 @@ const CustomSwitch: React.FC<CustomSwitchProps> = ({
           styles.thumb,
           {
             backgroundColor: colors.white,
-            shadowColor: colors.black,
+            shadowColor: colors.textPrimary,
             transform: [{ translateX }],
           },
         ]}

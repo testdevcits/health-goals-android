@@ -28,7 +28,7 @@ const createStyles = (colors: any, spacing: any, radius: any) =>
     activeTab: {
       backgroundColor: colors.surface,
       elevation: 2,
-      shadowColor: colors.black,
+      shadowColor: colors.textPrimary,
       shadowOpacity: 0.06,
       shadowRadius: 4,
       shadowOffset: { width: 0, height: 2 },

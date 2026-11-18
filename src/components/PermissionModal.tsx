@@ -51,7 +51,7 @@ const PermissionModal: React.FC<PermissionModalProps> = ({
             {
               backgroundColor: colors.surface,
               borderColor: colors.border,
-              shadowColor: colors.black,
+              shadowColor: colors.textPrimary,
               borderRadius: radius.xxl,
               marginHorizontal: spacing.xl,
               padding: spacing.xl,

@@ -25,7 +25,7 @@ const createStyles = (colors: AppColors) =>
       borderRadius: spacing.base,
       overflow: 'hidden',
       elevation: 2,
-      shadowColor: colors.black,
+      shadowColor: colors.textPrimary,
       shadowOpacity: 0.04,
       shadowRadius: 8,
       shadowOffset: { width: 0, height: 3 },

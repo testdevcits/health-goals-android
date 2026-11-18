@@ -12,7 +12,7 @@ const createStyles = (colors: any, spacing: any, radius: any) =>
       padding: spacing.md,
       marginBottom: spacing.md,
       elevation: 2,
-      shadowColor: colors.black,
+      shadowColor: colors.textPrimary,
       shadowOpacity: 0.04,
       shadowRadius: 7,
       shadowOffset: { width: 0, height: 3 },

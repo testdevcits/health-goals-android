@@ -76,7 +76,7 @@ export const createAiChatBotStyles = (theme: AppTheme) => {
       borderBottomLeftRadius: radius.xs,
       borderWidth: 1,
       borderColor: colors.border,
-      shadowColor: colors.black,
+      shadowColor: colors.textPrimary,
       shadowOffset: { width: 0, height: 1 },
       shadowOpacity: 0.05,
       shadowRadius: 4,

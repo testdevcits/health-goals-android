@@ -212,7 +212,7 @@ const createStyles = (colors: AppColors) =>
       borderWidth: 1,
       zIndex: 10,
       elevation: 3,
-      shadowColor: colors.black,
+      shadowColor: colors.textPrimary,
       shadowOpacity: 0.15,
       shadowRadius: 3,
       shadowOffset: { width: 0, height: 1 },

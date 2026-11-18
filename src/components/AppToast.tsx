@@ -68,7 +68,7 @@ const AppToastCard: React.FC<ToastConfigParams<unknown>> = ({
           marginHorizontal: spacing.base,
           padding: spacing.md,
           opacity: pressed ? 0.96 : 1,
-          shadowColor: colors.black,
+          shadowColor: colors.textPrimary,
         },
       ]}
     >

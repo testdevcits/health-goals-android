@@ -15,7 +15,7 @@ const createStyles = (colors: any, spacing: any, radius: any) =>
       minHeight: 108,
       gap: spacing.md,
       elevation: 2,
-      shadowColor: colors.black,
+      shadowColor: colors.textPrimary,
       shadowOpacity: 0.04,
       shadowRadius: 7,
       shadowOffset: { width: 0, height: 3 },

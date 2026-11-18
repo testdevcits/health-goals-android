@@ -89,7 +89,7 @@ const OnboardingModal: React.FC<OnboardingModalProps> = ({
             styles.card,
             {
               backgroundColor: colors.surface,
-              shadowColor: colors.black,
+              shadowColor: colors.textPrimary,
               borderRadius: radius.xxl,
               marginHorizontal: spacing.xl,
               padding: spacing.xl,

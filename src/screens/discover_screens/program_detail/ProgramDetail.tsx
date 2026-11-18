@@ -77,7 +77,7 @@ const ProgramDetail = ({
             styles.includedCard,
             {
               backgroundColor: colors.surface,
-              shadowColor: colors.black,
+              shadowColor: colors.textPrimary,
             },
           ]}
         >

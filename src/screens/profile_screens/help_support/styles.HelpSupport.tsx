@@ -32,7 +32,7 @@ const createStyles = (colors: AppColors) =>
       paddingHorizontal: spacing.ml,
       paddingVertical: spacing.md + 1,
       elevation: 1,
-      shadowColor: colors.black,
+      shadowColor: colors.textPrimary,
       shadowOpacity: 0.035,
       shadowRadius: 5,
       shadowOffset: { width: 0, height: 2 },
