@@ -11,10 +11,11 @@ import { API_ENDPOINTS } from '../../../../constants';
 import { useTodayHealthData } from '../../../../hooks/useTodayHealthData';
 import { getCurrentUser } from '../../../../services/profile';
 import { storageService } from '../../../../storage/storageService';
+import { calculateActivityStreak } from '../../../../utils/activityStreak';
 
-const CACHE_KEY_ENERGY_CARD = 'cache_energy_card';
+export const CACHE_KEY_ENERGY_CARD = 'cache_energy_card';
 
-type CachedEnergyCardData = {
+export type CachedEnergyCardData = {
   energy: number;
   streakPeriod: number;
   stepsTarget: number;
@@ -173,46 +174,7 @@ const EnergyCard: React.FC<{ healthRefreshKey?: number }> = ({
         );
         setStepsTarget(target);
         setEnergy(Math.min(100, Math.round((steps / target) * 100)));
-        const activeDays = new Set(
-          (history.items || [])
-            .filter(
-              item =>
-                (item.creditedCoins || 0) > 0 ||
-                Boolean(
-                  item.totals?.steps ||
-                    item.totals?.workoutMinutes ||
-                    item.totals?.meditationMinutes,
-                ),
-            )
-            .map(item => item.day),
-        );
-        const today = new Intl.DateTimeFormat('en-CA', {
-          timeZone: 'Asia/Kolkata',
-        }).format(new Date());
-        if (
-          (day.creditedCoins || 0) > 0 ||
-          day.totals?.steps ||
-          history.items?.some(
-            item =>
-              item.day === today &&
-              (item.totals?.steps ||
-                item.totals?.workoutMinutes ||
-                item.totals?.meditationMinutes),
-          )
-        )
-          activeDays.add(today);
-        let streak = 0;
-        const cursor = new Date();
-        while (
-          activeDays.has(
-            new Intl.DateTimeFormat('en-CA', {
-              timeZone: 'Asia/Kolkata',
-            }).format(cursor),
-          )
-        ) {
-          streak += 1;
-          cursor.setUTCDate(cursor.getUTCDate() - 1);
-        }
+        const streak = calculateActivityStreak(history.items || [], day);
         setStreakPeriod(streak);
         storageService.setObject(CACHE_KEY_ENERGY_CARD, {
           energy: Math.min(100, Math.round((steps / target) * 100)),

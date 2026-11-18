@@ -20,7 +20,7 @@ export const createDailySummaryStyles = (theme: AppTheme) => {
       borderRadius: radius.lg,
       backgroundColor: colors.surface,
       elevation: 2,
-      shadowColor: colors.black,
+      shadowColor: colors.textPrimary,
       shadowOpacity: 0.06,
       shadowRadius: 8,
       shadowOffset: { width: 0, height: 3 },

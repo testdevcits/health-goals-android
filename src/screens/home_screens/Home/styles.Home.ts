@@ -304,7 +304,7 @@ export const createHomeStyles = (theme: AppTheme) => {
       padding: spacing.base,
       backgroundColor: colors.surface,
       elevation: 1,
-      shadowColor: colors.black,
+      shadowColor: colors.textPrimary,
       shadowOpacity: 0.05,
       shadowRadius: 6,
       shadowOffset: { width: 0, height: 2 },
@@ -326,7 +326,7 @@ export const createHomeStyles = (theme: AppTheme) => {
     tabBtnActive: {
       backgroundColor: colors.surface,
       elevation: 2,
-      shadowColor: colors.black,
+      shadowColor: colors.textPrimary,
       shadowOpacity: 0.08,
       shadowRadius: 4,
       shadowOffset: { width: 0, height: 1 },

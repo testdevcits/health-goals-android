@@ -39,6 +39,35 @@ const createStyles = ({ colors, spacing, radius }: AppTheme) =>
       paddingHorizontal: spacing.base,
       paddingTop: spacing.xs,
     },
+    challengeChipsScroll: {
+      marginBottom: spacing.sm,
+    },
+    challengeChipsContainer: {
+      flexDirection: 'row',
+      gap: spacing.xs,
+      paddingHorizontal: spacing.xxs,
+      paddingVertical: spacing.xxs,
+    },
+    challengeChip: {
+      paddingVertical: spacing.xs + 2,
+      paddingHorizontal: spacing.base,
+      borderRadius: radius.full,
+      backgroundColor: colors.surface,
+      borderWidth: 1,
+      borderColor: colors.border,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    activeChallengeChip: {
+      backgroundColor: colors.primary,
+      borderColor: colors.primary,
+    },
+    challengeChipText: {
+      color: colors.textSecondary,
+    },
+    activeChallengeChipText: {
+      color: colors.textInverse,
+    },
     leaderboardHeading: {
       gap: spacing.xxs,
       paddingHorizontal: spacing.xs,

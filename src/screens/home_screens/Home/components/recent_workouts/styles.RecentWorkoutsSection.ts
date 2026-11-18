@@ -4,7 +4,7 @@ import { typography } from '../../../../../theme/typography';
 
 const styles = StyleSheet.create({
   container: {
-    margin: spacing.base,
+    margin: spacing.xl,
   },
   sectionHeader: {
     marginHorizontal: 0,

@@ -38,10 +38,12 @@ type CommunityChallenge = {
   month?: string;
   leaderboard?: Array<{
     id: string;
+    userId?: string;
     name: string;
     profileImageUrl?: string;
     value: number;
     rank: number;
+    progress?: number;
     winner?: boolean;
     isWinner?: boolean;
   }>;
@@ -160,10 +162,12 @@ const useChallenges = () => {
               dateLabel,
               leaderboard: (item.leaderboard || []).map(entry => ({
                 id: entry.id,
+                userId: entry.userId,
                 name: entry.name,
                 profileImageUrl: entry.profileImageUrl,
                 value: Number(entry.value) || 0,
                 rank: Number(entry.rank) || 0,
+                progress: Number(entry.progress) || 0,
                 winner: entry.winner ?? entry.isWinner,
               })),
               status: startsInFuture

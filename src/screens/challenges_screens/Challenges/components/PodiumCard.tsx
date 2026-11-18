@@ -35,7 +35,11 @@ const PodiumCard: React.FC<PodiumCardProps> = ({ leaderboard, styles }) => {
         return (
           <View
             key={person.rank}
-            style={[styles.podiumPerson, isFirst && styles.firstPlacePerson]}
+            style={[
+              styles.podiumPerson,
+              isFirst && styles.firstPlacePerson,
+              topThree.length === 1 && { maxWidth: 160 },
+            ]}
           >
             <View
               style={[

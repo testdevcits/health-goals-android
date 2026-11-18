@@ -11,6 +11,8 @@ import { clearProfile, setProfile } from '../../../store/profileSlice';
 import { navigationRef } from '../../../navigations/AppNavigation';
 import { getProfileMenuItems } from './conts';
 import type { AppColors } from '../../../theme/colors';
+import { storageService } from '../../../storage/storageService';
+import { calculateActivityStreak } from '../../../utils/activityStreak';
 
 type ProfileNavigationProp = NativeStackNavigationProp<RootStackParamList>;
 
@@ -22,6 +24,12 @@ export default function useProfile(
   const dispatch = useAppDispatch();
   const user = useAppSelector(state => state.profile.user);
   const [points, setPoints] = useState(0);
+  const [streak, setStreak] = useState<number>(() => {
+    return (
+      storageService.getObject<{ streakPeriod?: number }>('cache_energy_card')
+        ?.streakPeriod ?? 0
+    );
+  });
   const [walletLoading, setWalletLoading] = useState(true);
   const [profileLoading, setProfileLoading] = useState(!user);
   const [profileError, setProfileError] = useState('');
@@ -39,8 +47,27 @@ export default function useProfile(
       authenticatedRequest<{
         wallet?: { availablePoints?: number; balance?: number };
       }>('GET', API_ENDPOINTS.REWARDS.WALLET),
+      authenticatedRequest<{
+        items: Array<{
+          day: string;
+          creditedCoins?: number;
+          totals?: {
+            steps?: number;
+            workoutMinutes?: number;
+            meditationMinutes?: number;
+          };
+        }>;
+      }>('GET', `${API_ENDPOINTS.ACTIVITY.HISTORY}?limit=30`),
+      authenticatedRequest<{
+        totals?: {
+          steps?: number;
+          workoutMinutes?: number;
+          meditationMinutes?: number;
+        };
+        creditedCoins?: number;
+      }>('GET', API_ENDPOINTS.ACTIVITY.TODAY),
     ])
-      .then(([userResult, walletResult]) => {
+      .then(([userResult, walletResult, historyResult, todayResult]) => {
         if (!active) return;
         const fetchedUser =
           userResult.status === 'fulfilled' ? userResult.value : null;
@@ -56,6 +83,27 @@ export default function useProfile(
         }
         setPoints(Number(wallet?.availablePoints ?? wallet?.balance ?? 0));
         setWalletLoading(false);
+
+        const historyData =
+          historyResult.status === 'fulfilled' ? historyResult.value : null;
+        const todayData =
+          todayResult.status === 'fulfilled' ? todayResult.value : null;
+
+        if (historyData?.items) {
+          const calculatedStreak = calculateActivityStreak(
+            historyData.items,
+            todayData || undefined,
+          );
+          setStreak(calculatedStreak);
+          const cached =
+            storageService.getObject<Record<string, unknown>>(
+              'cache_energy_card',
+            ) || {};
+          storageService.setObject('cache_energy_card', {
+            ...cached,
+            streakPeriod: calculatedStreak,
+          });
+        }
       })
       .finally(() => {
         if (active) setProfileLoading(false);
@@ -120,6 +168,7 @@ export default function useProfile(
     menuItems,
     user,
     points,
+    streak,
     walletLoading,
     profileLoading,
     profileError,

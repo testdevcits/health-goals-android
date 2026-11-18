@@ -18,12 +18,24 @@ export interface Challenge {
   dateLabel?: string;
   leaderboard?: Array<{
     id: string;
+    userId?: string;
     name: string;
     profileImageUrl?: string;
     value: number;
     rank: number;
+    progress?: number;
     winner?: boolean;
   }>;
+}
+
+export interface ChallengeLeaderboardGroup {
+  id: string;
+  title: string;
+  subtitle: string;
+  metricLabel: string;
+  joined?: boolean;
+  participantCount?: number;
+  leaderboard: LeaderboardPerson[];
 }
 
 export interface Badge {

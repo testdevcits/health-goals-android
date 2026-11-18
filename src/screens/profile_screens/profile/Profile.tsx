@@ -36,6 +36,7 @@ const ProfileScreen: React.FC = () => {
     menuItems,
     user,
     points,
+    streak,
     walletLoading,
     profileLoading,
     profileError,
@@ -130,7 +131,7 @@ const ProfileScreen: React.FC = () => {
                   value: walletLoading ? '…' : points.toLocaleString(),
                   label: 'Points',
                 },
-                { value: '0', label: 'Day Streak' },
+                { value: streak?.toString(), label: 'Day Streak' },
                 { value: '0', label: 'Badges' },
                 { value: '0', label: 'Rank' },
               ].map((stat, index) => (
