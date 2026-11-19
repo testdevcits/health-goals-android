@@ -451,8 +451,20 @@ describe('fetchSyncedHealthRecords & fetchSyncedHealthRecordsPage', () => {
   test('fetchSyncedHealthRecordsPage calls GET /health/sync with page and limit query params', async () => {
     (authenticatedRequest as jest.Mock).mockResolvedValueOnce({
       records: [
-        { id: 'rec-1', metricType: 'steps', value: 1000, unit: 'count', deleted: false },
-        { id: 'rec-del', metricType: 'steps', value: 500, unit: 'count', deleted: true },
+        {
+          id: 'rec-1',
+          metricType: 'steps',
+          value: 1000,
+          unit: 'count',
+          deleted: false,
+        },
+        {
+          id: 'rec-del',
+          metricType: 'steps',
+          value: 500,
+          unit: 'count',
+          deleted: true,
+        },
       ],
       page: 1,
       limit: 100,
@@ -497,7 +509,10 @@ describe('fetchSyncedHealthRecords & fetchSyncedHealthRecordsPage', () => {
         nextPage: null,
       });
 
-    const records = await fetchSyncedHealthRecords({ fetchAll: true, limit: 100 });
+    const records = await fetchSyncedHealthRecords({
+      fetchAll: true,
+      limit: 100,
+    });
 
     expect(authenticatedRequest).toHaveBeenCalledTimes(2);
     expect(authenticatedRequest).toHaveBeenNthCalledWith(

@@ -64,7 +64,12 @@ const ChangePasswordScreen: React.FC<{
   };
 
   return (
-    <View style={[styles.container, { backgroundColor: colors.backgroundSecondary }]}>
+    <View
+      style={[
+        styles.container,
+        { backgroundColor: colors.backgroundSecondary },
+      ]}
+    >
       <AppHeader
         title="Change Password"
         subtitle="Keep your account secure"

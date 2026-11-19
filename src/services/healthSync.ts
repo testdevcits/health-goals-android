@@ -670,20 +670,20 @@ async function collectDailySnapshots(
   try {
     const rawDailySteps = hasReadPermission(successfulPermissions, 'Steps')
       ? range.dates.map(date => {
-        const group = stepsByDate.get(date);
-        const steps = Number(group?.result.COUNT_TOTAL ?? 0);
-        if (!Number.isSafeInteger(steps) || steps < 0 || steps > 200_000) {
-          throw new Error(`Invalid Health Connect step total for ${date}.`);
-        }
-        const dataOrigins = group?.result.dataOrigins || [];
-        return {
-          date,
-          steps,
-          dataOrigin: [...dataOrigins].sort()[0] || 'com.vitality',
-          recordingMethod: 'automatic' as const,
-          deviceId,
-        };
-      })
+          const group = stepsByDate.get(date);
+          const steps = Number(group?.result.COUNT_TOTAL ?? 0);
+          if (!Number.isSafeInteger(steps) || steps < 0 || steps > 200_000) {
+            throw new Error(`Invalid Health Connect step total for ${date}.`);
+          }
+          const dataOrigins = group?.result.dataOrigins || [];
+          return {
+            date,
+            steps,
+            dataOrigin: [...dataOrigins].sort()[0] || 'com.vitality',
+            recordingMethod: 'automatic' as const,
+            deviceId,
+          };
+        })
       : [];
     stepSnapshots = rawDailySteps.map(record => {
       const start = Date.parse(`${record.date}T00:00:00.000Z`) - IST_OFFSET_MS;
@@ -986,7 +986,9 @@ export async function fetchSyncedHealthRecordsPage(
   limit = 100,
 ): Promise<FetchSyncedRecordsResponse> {
   try {
-    const queryParams = `?page=${encodeURIComponent(page)}&limit=${encodeURIComponent(limit)}`;
+    const queryParams = `?page=${encodeURIComponent(
+      page,
+    )}&limit=${encodeURIComponent(limit)}`;
     const path = `${API_ENDPOINTS.HEALTH.SYNC}${queryParams}`;
     const response = await authenticatedRequest<any>('GET', path);
 
@@ -1001,15 +1003,17 @@ export async function fetchSyncedHealthRecordsPage(
 
     const respPage = Number(response?.page ?? response?.data?.page ?? page);
     const respLimit = Number(response?.limit ?? response?.data?.limit ?? limit);
-    const hasMore = Boolean(response?.hasMore ?? response?.data?.hasMore ?? false);
+    const hasMore = Boolean(
+      response?.hasMore ?? response?.data?.hasMore ?? false,
+    );
     const nextPage =
       response?.nextPage !== undefined
         ? response.nextPage
         : response?.data?.nextPage !== undefined
-          ? response.data.nextPage
-          : hasMore
-            ? respPage + 1
-            : null;
+        ? response.data.nextPage
+        : hasMore
+        ? respPage + 1
+        : null;
     const total = response?.total ?? response?.data?.total;
 
     return {
@@ -1039,12 +1043,7 @@ export async function fetchSyncedHealthRecordsPage(
 export async function fetchSyncedHealthRecords(
   options: FetchSyncedRecordsOptions = {},
 ): Promise<SyncedHealthRecord[]> {
-  const {
-    page = 1,
-    limit = 100,
-    fetchAll = true,
-    maxPages = 5,
-  } = options;
+  const { page = 1, limit = 100, fetchAll = true, maxPages = 5 } = options;
 
   try {
     const firstPage = await fetchSyncedHealthRecordsPage(page, limit);

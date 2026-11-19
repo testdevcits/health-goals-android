@@ -72,7 +72,11 @@ const createStyles = (colors: AppColors) =>
     calendarCloseButton: {
       marginTop: spacing.md,
     },
-    saveButton: { width: '100%', borderRadius: spacing.ml, marginTop: spacing.xxs },
+    saveButton: {
+      width: '100%',
+      borderRadius: spacing.ml,
+      marginTop: spacing.xxs,
+    },
   });
 
 export default createStyles;

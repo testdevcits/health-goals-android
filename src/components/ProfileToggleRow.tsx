@@ -35,11 +35,7 @@ const ProfileToggleRow: React.FC<{
         ]}
       >
         {isNamedIcon ? (
-          <AppIcon
-            name={icon as IconName}
-            size={18}
-            color={colors.primary}
-          />
+          <AppIcon name={icon as IconName} size={18} color={colors.primary} />
         ) : (
           <AppText variant="body1">{icon}</AppText>
         )}

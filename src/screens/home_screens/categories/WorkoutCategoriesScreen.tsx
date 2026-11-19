@@ -97,4 +97,3 @@ const WorkoutCategoriesScreen: React.FC<Props> = ({ navigation }) => {
 };
 
 export default WorkoutCategoriesScreen;
-

@@ -114,7 +114,10 @@ const BarChart: React.FC<{
             style={styles.barTouchableColumn}
             onPress={() => onSelectIndex(index)}
             accessibilityRole="button"
-            accessibilityLabel={`${labels[index]}: ${formatMetricValue(value, activeTab)}`}
+            accessibilityLabel={`${labels[index]}: ${formatMetricValue(
+              value,
+              activeTab,
+            )}`}
           >
             {isSelected && (
               <View

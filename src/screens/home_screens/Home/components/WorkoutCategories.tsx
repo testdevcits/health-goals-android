@@ -22,7 +22,14 @@ const WorkoutCategories: React.FC<{ onViewAllPress: () => void }> = ({
     ({ item }: { item: (typeof WORKOUT_CATEGORIES)[number] }) => (
       <TouchableOpacity
         activeOpacity={0.8}
-        style={[styles.workoutCard, { borderBottomColor: item?.accent, borderWidth: 0.3, borderColor: lightColors.backgroundSecondary }]}
+        style={[
+          styles.workoutCard,
+          {
+            borderBottomColor: item?.accent,
+            borderWidth: 0.3,
+            borderColor: lightColors.backgroundSecondary,
+          },
+        ]}
         accessibilityRole="button"
         accessibilityLabel={`${item?.name}: ${item?.subtitle}`}
         onPress={() =>

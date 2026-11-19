@@ -36,7 +36,12 @@ const PrivacyScreen: React.FC<{ navigation: ProfileScreenNavigation }> = ({
   };
 
   return (
-    <View style={[styles.container, { backgroundColor: colors.backgroundSecondary }]}>
+    <View
+      style={[
+        styles.container,
+        { backgroundColor: colors.backgroundSecondary },
+      ]}
+    >
       <AppHeader
         title="Privacy & Permissions"
         subtitle="Control who sees your data"
@@ -117,7 +122,10 @@ const PrivacyScreen: React.FC<{ navigation: ProfileScreenNavigation }> = ({
         <Pressable
           onPress={handleDeleteConfirmation}
           accessibilityRole="button"
-          style={[styles.deleteModalButton, { backgroundColor: colors.coral, borderRadius: radius.md }]}
+          style={[
+            styles.deleteModalButton,
+            { backgroundColor: colors.coral, borderRadius: radius.md },
+          ]}
         >
           <AppText variant="button" color="textInverse">
             Delete Forever

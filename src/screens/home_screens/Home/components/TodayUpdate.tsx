@@ -78,8 +78,8 @@ const TodayUpdate: React.FC = memo(() => {
       data.workouts === null
         ? 'Unavailable (exercise-session access not granted)'
         : data.workouts.length === 0
-          ? 'No workout sessions recorded'
-          : data.workouts
+        ? 'No workout sessions recorded'
+        : data.workouts
             .map(
               workout =>
                 `${workout.activity}, ${formatTime(
@@ -93,33 +93,38 @@ const TodayUpdate: React.FC = memo(() => {
       data.steps === null
         ? 'Unavailable'
         : data.steps >= 6000
-          ? '6,000 steps reached'
-          : `${formatNumber(6000 - data.steps)} steps to go`;
+        ? '6,000 steps reached'
+        : `${formatNumber(6000 - data.steps)} steps to go`;
     const exerciseGoal =
       data.exerciseMinutes === null
         ? 'Unavailable'
         : data.exerciseMinutes >= 90
-          ? '90 minutes reached'
-          : `${formatNumber(90 - data.exerciseMinutes)} minutes to go`;
+        ? '90 minutes reached'
+        : `${formatNumber(90 - data.exerciseMinutes)} minutes to go`;
 
     reportLines = [
-      `Steps today: ${data.steps === null ? 'Not available' : formatNumber(data.steps)
+      `Steps today: ${
+        data.steps === null ? 'Not available' : formatNumber(data.steps)
       }`,
       `Step goal (6,000): ${stepsGoal}`,
-      `Distance today: ${data.distanceMeters === null
-        ? 'Not available'
-        : `${formatNumber(data.distanceMeters / 1000, 2)} km`
+      `Distance today: ${
+        data.distanceMeters === null
+          ? 'Not available'
+          : `${formatNumber(data.distanceMeters / 1000, 2)} km`
       }`,
-      `Exercise time: ${data.exerciseMinutes === null
-        ? 'Not available'
-        : `${formatNumber(data.exerciseMinutes)} minutes`
+      `Exercise time: ${
+        data.exerciseMinutes === null
+          ? 'Not available'
+          : `${formatNumber(data.exerciseMinutes)} minutes`
       }`,
       `Exercise goal (90 min): ${exerciseGoal}`,
-      `Total calories burned: ${data.calories === null
-        ? 'Not available'
-        : `${formatNumber(data.calories)} kcal`
+      `Total calories burned: ${
+        data.calories === null
+          ? 'Not available'
+          : `${formatNumber(data.calories)} kcal`
       }`,
-      `Workout sessions: ${data.workouts === null ? 'Details unavailable' : data.workouts.length
+      `Workout sessions: ${
+        data.workouts === null ? 'Details unavailable' : data.workouts.length
       }`,
       `Workout details: ${workoutDetails}`,
       `Most active steps hour: ${getMostActiveHour(data.hourlySteps)}`,

@@ -220,7 +220,9 @@ export const MetricReportCard: React.FC<MetricReportCardProps> = ({
                   onPress={() => setSelectedIndex(index)}
                   style={styles.barTouchable}
                   accessibilityRole="button"
-                  accessibilityLabel={`${formatDayLabel(item.date)}: ${formatMetricValue(item.value, activeTab)}`}
+                  accessibilityLabel={`${formatDayLabel(
+                    item.date,
+                  )}: ${formatMetricValue(item.value, activeTab)}`}
                 >
                   {isSelected && (
                     <View

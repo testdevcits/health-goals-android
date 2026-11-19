@@ -315,8 +315,7 @@ export async function exportHealthReportPdf(
         ? `${Math.floor(item.value / 60)}h ${Math.round(item.value % 60)}m`
         : `${item.value.toLocaleString()} ${unit}`;
 
-    const isGoal =
-      activeTab === 'Steps' ? item.value >= 10000 : item.value > 0;
+    const isGoal = activeTab === 'Steps' ? item.value >= 10000 : item.value > 0;
 
     return {
       date: item.date,
@@ -419,7 +418,9 @@ export async function exportHealthReportPdf(
       `Period: ${from.toLocaleDateString()} – ${to.toLocaleDateString()}`,
       `Total Recorded: ${total.toLocaleString()} ${unit}`,
       `Daily Average: ${avg.toLocaleString()} ${unit}`,
-      `Active Days: ${history.filter(h => h.value > 0).length} of ${history.length}`,
+      `Active Days: ${history.filter(h => h.value > 0).length} of ${
+        history.length
+      }`,
       `Activity Coins: ${totalCoins}`,
       `Generated: ${new Date().toLocaleDateString()}`,
       '',
@@ -448,7 +449,9 @@ export async function exportHealthReportPdf(
         `Total: ${total.toLocaleString()} ${unit}`,
         `Daily Avg: ${avg.toLocaleString()} ${unit}`,
         `Coins Earned: ${totalCoins}`,
-        `Days Recorded: ${history.filter(h => h.value > 0).length} of ${history.length}`,
+        `Days Recorded: ${history.filter(h => h.value > 0).length} of ${
+          history.length
+        }`,
       ].join('\n'),
     });
   } catch {

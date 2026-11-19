@@ -13,7 +13,9 @@ interface LeaderBoardTabProps {
 
 const LeaderBoardTab: React.FC<LeaderBoardTabProps> = ({ groups, styles }) => {
   const { theme } = useTheme();
-  const [selectedId, setSelectedId] = useState<string>(() => groups[0]?.id || '');
+  const [selectedId, setSelectedId] = useState<string>(
+    () => groups[0]?.id || '',
+  );
 
   useEffect(() => {
     if (!groups.some(g => g.id === selectedId) && groups[0]) {
@@ -103,14 +105,21 @@ const LeaderBoardTab: React.FC<LeaderBoardTabProps> = ({ groups, styles }) => {
                 </View>
 
                 <View
-                  style={[styles.smallAvatar, { backgroundColor: person?.color }]}
+                  style={[
+                    styles.smallAvatar,
+                    { backgroundColor: person?.color },
+                  ]}
                 >
                   {person?.profileImageUrl ? (
                     <Image
                       source={{ uri: person?.profileImageUrl }}
                       resizeMode="cover"
                       accessibilityLabel={`${person?.name} profile photo`}
-                      style={{ width: '100%', height: '100%', borderRadius: 999 }}
+                      style={{
+                        width: '100%',
+                        height: '100%',
+                        borderRadius: 999,
+                      }}
                     />
                   ) : (
                     <AppText variant="label" color="white" bold>

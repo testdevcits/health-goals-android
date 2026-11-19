@@ -115,7 +115,10 @@ const TrendChart: React.FC<{
               onPress={() => setSelectedIndex(index)}
               style={styles.chartColumn}
               accessibilityRole="button"
-              accessibilityLabel={`${days[index]}: ${formatMetricValue(value, metric)}`}
+              accessibilityLabel={`${days[index]}: ${formatMetricValue(
+                value,
+                metric,
+              )}`}
             >
               {isSelected && (
                 <View

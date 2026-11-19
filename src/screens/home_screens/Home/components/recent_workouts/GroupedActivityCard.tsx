@@ -31,8 +31,8 @@ export const GroupedActivityCard: React.FC<GroupedActivityCardProps> = ({
   const firstSession = group.sessions[0];
   const singleTimeText = formatTimeOnly(
     firstSession?.startTime ||
-    firstSession?.recordedAt ||
-    firstSession?.createdAt,
+      firstSession?.recordedAt ||
+      firstSession?.createdAt,
   );
   const themeAccents = getActivityThemeColors(
     group.activityKey,

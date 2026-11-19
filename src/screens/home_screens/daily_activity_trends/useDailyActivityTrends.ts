@@ -115,10 +115,9 @@ export default function useDailyActivityTrends() {
   useEffect(() => {
     if (!isFocused) return;
     let active = true;
-    const currentCached =
-      storageService.getObject<typeof initialTrendData>(
-        CACHE_KEY_DAILY_TRENDS,
-      );
+    const currentCached = storageService.getObject<typeof initialTrendData>(
+      CACHE_KEY_DAILY_TRENDS,
+    );
     const hasCurrentData = currentCached?.[activeMetric]?.bars?.some(
       v => v !== null && v > 0,
     );
@@ -254,73 +253,73 @@ export default function useDailyActivityTrends() {
                   ? ' steps'
                   : ''
               }`;
-          setTrendData(current => {
-            const updated = {
-              ...current,
-              [activeMetric]: {
-                ...current[activeMetric],
-                bars,
-                stats:
-                  activeMetric === 'Steps'
-                    ? [
-                        { value: total.toLocaleString(), label: 'Last 7 days' },
-                        { value: average.toLocaleString(), label: 'Daily avg' },
-                        {
-                          value: String(
-                            values.filter(value => value >= 10000).length,
-                          ),
-                          label: 'Days ≥10K',
-                        },
-                        {
-                          value: goal
-                            ? `${Math.round(
-                                (values.filter(value => value >= goal).length /
-                                  7) *
-                                  100,
-                              )}%`
-                            : '—',
-                          label: 'Goal met',
-                        },
-                      ]
-                    : activeMetric === 'Sleep'
-                    ? [
-                        { value: averageLabel, label: 'Daily avg' },
-                        {
-                          value: `${(Math.max(...values) / 60).toFixed(1)}h`,
-                          label: 'Longest day',
-                        },
-                        {
-                          value: `${(lowestObserved / 60).toFixed(1)}h`,
-                          label: 'Shortest day',
-                        },
-                        {
-                          value: String(positiveValues.length),
-                          label: 'Days synced',
-                        },
-                      ]
-                    : [
-                        { value: averageLabel, label: 'Daily avg' },
-                        {
-                          value: String(Math.max(...values)),
-                          label: 'Highest daily avg',
-                        },
-                        {
-                          value: String(lowestObserved),
-                          label: 'Lowest daily avg',
-                        },
-                        {
-                          value: String(positiveValues.length),
-                          label: 'Days synced',
-                        },
-                      ],
-                insight: `${
-                  positiveValues.length
-                } synced ${activeMetric.toLowerCase()} daily records in the last 7 days. Your average is ${averageLabel}.`,
-              },
-            };
-            storageService.setObject(CACHE_KEY_DAILY_TRENDS, updated);
-            return updated;
-          });
+        setTrendData(current => {
+          const updated = {
+            ...current,
+            [activeMetric]: {
+              ...current[activeMetric],
+              bars,
+              stats:
+                activeMetric === 'Steps'
+                  ? [
+                      { value: total.toLocaleString(), label: 'Last 7 days' },
+                      { value: average.toLocaleString(), label: 'Daily avg' },
+                      {
+                        value: String(
+                          values.filter(value => value >= 10000).length,
+                        ),
+                        label: 'Days ≥10K',
+                      },
+                      {
+                        value: goal
+                          ? `${Math.round(
+                              (values.filter(value => value >= goal).length /
+                                7) *
+                                100,
+                            )}%`
+                          : '—',
+                        label: 'Goal met',
+                      },
+                    ]
+                  : activeMetric === 'Sleep'
+                  ? [
+                      { value: averageLabel, label: 'Daily avg' },
+                      {
+                        value: `${(Math.max(...values) / 60).toFixed(1)}h`,
+                        label: 'Longest day',
+                      },
+                      {
+                        value: `${(lowestObserved / 60).toFixed(1)}h`,
+                        label: 'Shortest day',
+                      },
+                      {
+                        value: String(positiveValues.length),
+                        label: 'Days synced',
+                      },
+                    ]
+                  : [
+                      { value: averageLabel, label: 'Daily avg' },
+                      {
+                        value: String(Math.max(...values)),
+                        label: 'Highest daily avg',
+                      },
+                      {
+                        value: String(lowestObserved),
+                        label: 'Lowest daily avg',
+                      },
+                      {
+                        value: String(positiveValues.length),
+                        label: 'Days synced',
+                      },
+                    ],
+              insight: `${
+                positiveValues.length
+              } synced ${activeMetric.toLowerCase()} daily records in the last 7 days. Your average is ${averageLabel}.`,
+            },
+          };
+          storageService.setObject(CACHE_KEY_DAILY_TRENDS, updated);
+          return updated;
+        });
         setHasData(true);
       } catch (error) {
         if (active) setLoadError(apiErrorMessage(error));

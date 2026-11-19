@@ -37,7 +37,11 @@ const createStyles = (colors: AppColors) =>
       shadowRadius: 5,
       shadowOffset: { width: 0, height: 2 },
     },
-    faqQuestion: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm },
+    faqQuestion: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: spacing.sm,
+    },
     faqText: { flex: 1 },
     chevronExpanded: { transform: [{ rotate: '180deg' }] },
     faqAnswer: { marginTop: spacing.ms - 1, paddingRight: spacing.sl },

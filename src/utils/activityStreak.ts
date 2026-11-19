@@ -28,8 +28,8 @@ export function calculateActivityStreak(
           (item.creditedCoins || 0) > 0 ||
           Boolean(
             item.totals?.steps ||
-            item.totals?.workoutMinutes ||
-            item.totals?.meditationMinutes,
+              item.totals?.workoutMinutes ||
+              item.totals?.meditationMinutes,
           ),
       )
       .map(item => item.day),
@@ -49,8 +49,8 @@ export function calculateActivityStreak(
         item.day === today &&
         Boolean(
           item.totals?.steps ||
-          item.totals?.workoutMinutes ||
-          item.totals?.meditationMinutes,
+            item.totals?.workoutMinutes ||
+            item.totals?.meditationMinutes,
         ),
     )
   ) {

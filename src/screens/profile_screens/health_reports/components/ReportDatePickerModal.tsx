@@ -90,9 +90,7 @@ export const ReportDatePickerModal: React.FC<ReportDatePickerModalProps> = ({
                 style={[
                   styles.calendarPresetChip,
                   {
-                    borderColor: selectingEnd
-                      ? colors.primary
-                      : colors.border,
+                    borderColor: selectingEnd ? colors.primary : colors.border,
                     backgroundColor: selectingEnd
                       ? colors.primaryLight
                       : colors.surface,

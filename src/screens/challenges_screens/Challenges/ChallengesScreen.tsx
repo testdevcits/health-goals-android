@@ -79,9 +79,10 @@ const ChallengesScreen: React.FC<Props> = ({ navigation }) => {
           .map((entry, index) => {
             const isCurrentUser = Boolean(
               (currentUser?.id &&
-                (entry.id === currentUser.id || entry.userId === currentUser.id)) ||
-              (currentUser?.name &&
-                entry.name.toLowerCase() === currentUser.name.toLowerCase()),
+                (entry.id === currentUser.id ||
+                  entry.userId === currentUser.id)) ||
+                (currentUser?.name &&
+                  entry.name.toLowerCase() === currentUser.name.toLowerCase()),
             );
             return {
               rank: entry.rank || index + 1,
@@ -122,9 +123,7 @@ const ChallengesScreen: React.FC<Props> = ({ navigation }) => {
       const merged = [
         ...entries,
         ...(myEntry &&
-        !entries.some(
-          e => e.id === myEntry.id || e.name === myEntry.name,
-        )
+        !entries.some(e => e.id === myEntry.id || e.name === myEntry.name)
           ? [myEntry]
           : []),
       ];
@@ -140,7 +139,8 @@ const ChallengesScreen: React.FC<Props> = ({ navigation }) => {
           .sort((a, b) => a.rank - b.rank)
           .map((entry, index) => {
             const isCurrentUser = Boolean(
-              myEntry && (entry.id === myEntry.id || entry.name === myEntry.name),
+              myEntry &&
+                (entry.id === myEntry.id || entry.name === myEntry.name),
             );
             return {
               rank: entry.rank || index + 1,
