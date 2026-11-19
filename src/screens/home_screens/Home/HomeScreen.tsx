@@ -33,6 +33,9 @@ const HomeScreen: React.FC<Props> = ({ navigation }) => {
   const {
     connectedDevice,
     watchMetrics,
+    isWatchConnected,
+    isWatchReconnecting,
+    reconnectDevice,
     disconnectDevice,
     syncWatchHealthData,
   } = useConnectedDevices();
@@ -136,8 +139,11 @@ const HomeScreen: React.FC<Props> = ({ navigation }) => {
             <ConnectedWatchCard
               connectedDevice={connectedDevice}
               watchMetrics={watchMetrics}
+              isConnected={isWatchConnected}
+              isConnecting={isWatchReconnecting}
               onDisconnect={disconnectDevice}
               onSync={handleWatchSync}
+              onReconnect={reconnectDevice}
             />
           </View>
         ) : null}

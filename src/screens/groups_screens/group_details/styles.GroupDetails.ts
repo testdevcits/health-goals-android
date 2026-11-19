@@ -1,4 +1,5 @@
 import { StyleSheet } from 'react-native';
+import { fonts } from '../../../theme/fonts';
 
 const createStyles = (colors: any, spacing: any) =>
   StyleSheet.create({
@@ -36,7 +37,7 @@ const createStyles = (colors: any, spacing: any) =>
     },
     addMemberText: {
       color: colors.primary,
-      fontWeight: '600',
+      fontFamily: fonts.semiBold,
     },
   });
 

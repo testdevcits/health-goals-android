@@ -1,4 +1,5 @@
 import { StyleSheet } from 'react-native';
+import { fonts } from '../../../theme/fonts';
 import { spacing } from '../../../theme/spacing';
 import { radius } from '../../../theme/radius';
 import { typography } from '../../../theme/typography';
@@ -103,14 +104,14 @@ export const createWorkoutSessionStyles = (colors: any) =>
       color: colors.white,
       fontSize: typography.metricNumber.fontSize,
       lineHeight: 50,
-      fontWeight: '700',
+      fontFamily: fonts.bold,
       letterSpacing: 1,
       fontVariant: ['tabular-nums'],
     },
     timerStatus: {
       color: colors.white,
       marginTop: spacing.xs,
-      fontWeight: '500',
+      fontFamily: fonts.medium,
     },
     metricsGrid: {
       flexDirection: 'row',

@@ -9,6 +9,7 @@ import {
   MapPin,
   RefreshCw,
   Watch,
+  X,
   Zap,
 } from 'lucide-react-native';
 import { AppText } from '../../../../components';
@@ -35,47 +36,56 @@ interface ConnectedDeviceItem {
 interface ConnectedWatchCardProps {
   connectedDevice: ConnectedDeviceItem;
   watchMetrics: WatchMetrics;
+  isConnected?: boolean;
+  isConnecting?: boolean;
   onDisconnect: () => void;
   onSync: () => void;
+  onReconnect?: () => void;
 }
 
 export const ConnectedWatchCard: React.FC<ConnectedWatchCardProps> = ({
   connectedDevice,
   watchMetrics,
+  isConnected = true,
+  isConnecting = false,
   onDisconnect,
   onSync,
+  onReconnect,
 }) => {
-
-  console.log("=======watchMetrics===========", watchMetrics)
   const { theme } = useTheme();
   const { colors } = theme;
   const styles = createStyles(colors);
 
   const deviceName =
-    connectedDevice.name || connectedDevice.localName || 'Smartwatch';
+    connectedDevice.name || connectedDevice.localName || 'Not Available';
 
-  const isLive = Boolean(watchMetrics.liveHeartRate);
-  const heartRate = watchMetrics.liveHeartRate ?? 72;
+  const isLive = Boolean(
+    watchMetrics.liveHeartRate && watchMetrics.liveHeartRate > 0,
+  );
+  const heartRate = isLive ? watchMetrics.liveHeartRate : '--';
 
-  const batteryPercent =
-    watchMetrics.batteryLevel !== null ? watchMetrics.batteryLevel : 0;
-
-  const stepCount = watchMetrics.steps > 0 ? watchMetrics.steps : 0;
+  const stepCount =
+    typeof watchMetrics.steps === 'number' && watchMetrics.steps > 0
+      ? Math.round(watchMetrics.steps)
+      : 0;
   const stepTarget = 10000;
   const progressRatio = Math.min(Math.max((stepCount / stepTarget) * 100, 6), 100);
 
   const caloriesValue =
-    watchMetrics.calories > 0
-      ? watchMetrics.calories.toLocaleString(undefined, {
-        minimumFractionDigits: 1,
-        maximumFractionDigits: 1,
-      })
+    typeof watchMetrics.calories === 'number' &&
+      !isNaN(watchMetrics.calories) &&
+      watchMetrics.calories > 0
+      ? watchMetrics.calories
+        .toFixed(1)
+        .replace(/\B(?=(\d{3})+(?!\d))/g, ',')
       : '0.0';
 
   const distanceValue =
-    watchMetrics.distanceKm > 0
+    typeof watchMetrics.distanceKm === 'number' &&
+      !isNaN(watchMetrics.distanceKm) &&
+      watchMetrics.distanceKm > 0
       ? watchMetrics.distanceKm.toFixed(2)
-      : '0.0';
+      : '0.00';
 
   const lastSyncLabel = watchMetrics.lastSyncedAt
     ? `Last synced at ${watchMetrics.lastSyncedAt}`
@@ -88,9 +98,13 @@ export const ConnectedWatchCard: React.FC<ConnectedWatchCardProps> = ({
         <View style={styles.watchInfoRow}>
           {/* Smartwatch Squircle Avatar with overlapping Bluetooth badge */}
           <View style={styles.watchIconBadge}>
-            <Watch size={24} color="#0F172A" strokeWidth={1.8} />
+            <Watch size={22} color={colors.textPrimary} strokeWidth={1.8} />
             <View style={styles.watchBluetoothBadge}>
-              <Bluetooth size={10} color="#2563EB" strokeWidth={2.4} />
+              <Bluetooth
+                size={9}
+                color={colors.watchBluetoothIcon}
+                strokeWidth={2.4}
+              />
             </View>
           </View>
 
@@ -98,38 +112,110 @@ export const ConnectedWatchCard: React.FC<ConnectedWatchCardProps> = ({
           <View style={styles.watchTitleCol}>
             <AppText
               variant="subtitle1"
-              bold
-              numberOfLines={2}
+              numberOfLines={1}
+              ellipsizeMode="tail"
               style={styles.watchDeviceName}
             >
               {deviceName}
             </AppText>
             <View style={styles.statusIndicatorRow}>
-              <View style={styles.statusDot} />
-              <AppText style={styles.connectedStatusText}>Connected</AppText>
+              <View
+                style={[
+                  styles.statusDot,
+                  !isConnected && {
+                    backgroundColor: isConnecting
+                      ? colors.watchStatusConnecting
+                      : colors.watchStatusDisconnected,
+                  },
+                ]}
+              />
+              <AppText
+                style={[
+                  styles.connectedStatusText,
+                  !isConnected && {
+                    color: isConnecting
+                      ? colors.watchStatusConnecting
+                      : colors.watchStatusDisconnected,
+                  },
+                ]}
+                numberOfLines={1}
+              >
+                {isConnected
+                  ? 'Connected'
+                  : isConnecting
+                    ? 'Connecting…'
+                    : 'Disconnected'}
+              </AppText>
             </View>
           </View>
         </View>
 
-        {/* Header Right Actions: Battery & Disconnect */}
+        {/* Header Right Actions: Battery & Connect/Disconnect */}
         <View style={styles.watchHeaderActions}>
-          <View style={styles.batteryBadge}>
-            <View style={styles.batteryIndicatorBar} />
-            <AppText style={styles.batteryLevelText}>{batteryPercent}%</AppText>
-          </View>
+          {watchMetrics.batteryLevel !== null ? (
+            <View style={styles.batteryBadge}>
+              <View style={styles.batteryIndicatorBar} />
+              <AppText style={styles.batteryLevelText}>
+                {watchMetrics.batteryLevel}%
+              </AppText>
+            </View>
+          ) : null}
 
-          <Pressable
-            accessibilityRole="button"
-            accessibilityLabel="Disconnect watch"
-            hitSlop={8}
-            onPress={onDisconnect}
-            style={({ pressed }) => [
-              styles.disconnectButton,
-              pressed && { opacity: 0.7 },
-            ]}
-          >
-            <AppText style={styles.disconnectButtonText}>Disconnect</AppText>
-          </Pressable>
+          {isConnected ? (
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel="Disconnect watch"
+              hitSlop={8}
+              onPress={onDisconnect}
+              style={({ pressed }) => [
+                styles.disconnectButton,
+                pressed && { opacity: 0.7 },
+              ]}
+            >
+              <AppText style={styles.disconnectButtonText}>Disconnect</AppText>
+            </Pressable>
+          ) : isConnecting ? (
+            <View style={[styles.disconnectButton, { opacity: 0.8 }]}>
+              <AppText
+                style={[
+                  styles.disconnectButtonText,
+                  { color: colors.watchStatusConnecting },
+                ]}
+              >
+                Connecting…
+              </AppText>
+            </View>
+          ) : (
+            <View style={styles.disconnectedActionsRow}>
+              {onReconnect ? (
+                <Pressable
+                  accessibilityRole="button"
+                  accessibilityLabel="Reconnect watch"
+                  hitSlop={8}
+                  onPress={onReconnect}
+                  style={({ pressed }) => [
+                    styles.reconnectButton,
+                    pressed && { opacity: 0.7 },
+                  ]}
+                >
+                  <AppText style={styles.reconnectButtonText}>Reconnect</AppText>
+                </Pressable>
+              ) : null}
+
+              <Pressable
+                accessibilityRole="button"
+                accessibilityLabel="Forget watch"
+                hitSlop={8}
+                onPress={onDisconnect}
+                style={({ pressed }) => [
+                  styles.forgetButton,
+                  pressed && { opacity: 0.7 },
+                ]}
+              >
+                <X size={13} color={colors.watchForgetText} strokeWidth={2.4} />
+              </Pressable>
+            </View>
+          )}
         </View>
       </View>
 
@@ -142,18 +228,33 @@ export const ConnectedWatchCard: React.FC<ConnectedWatchCardProps> = ({
             <View
               style={[
                 styles.metricIconBadge,
-                { backgroundColor: '#CCFBF1' },
+                { backgroundColor: colors.metricStepsIconBg },
               ]}
             >
-              <Zap size={14} color="#0D9488" fill="#0D9488" strokeWidth={2.4} />
+              <Zap
+                size={14}
+                color={colors.metricStepsIcon}
+                fill={colors.metricStepsIcon}
+                strokeWidth={2.4}
+              />
             </View>
           </View>
 
           <View style={styles.metricValueRow}>
-            <AppText style={[styles.metricLargeValue, { color: '#0F172A' }]}>
-              {stepCount.toLocaleString()}
+            <AppText
+              style={[
+                styles.metricLargeValue,
+                { color: colors.metricStepsText },
+              ]}
+            >
+              {stepCount.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
             </AppText>
-            <AppText style={[styles.metricUnitText, { color: '#94A3B8' }]}>
+            <AppText
+              style={[
+                styles.metricUnitText,
+                { color: colors.metricStepsUnit },
+              ]}
+            >
               {' '}
               / 10k
             </AppText>
@@ -183,18 +284,32 @@ export const ConnectedWatchCard: React.FC<ConnectedWatchCardProps> = ({
             <View
               style={[
                 styles.metricIconBadge,
-                { backgroundColor: '#FFE4E6' },
+                { backgroundColor: colors.metricHeartIconBg },
               ]}
             >
-              <Heart size={14} color="#E11D48" fill="#E11D48" />
+              <Heart
+                size={14}
+                color={colors.metricHeartIcon}
+                fill={colors.metricHeartIcon}
+              />
             </View>
           </View>
 
           <View style={styles.metricValueRow}>
-            <AppText style={[styles.metricLargeValue, { color: '#E11D48' }]}>
+            <AppText
+              style={[
+                styles.metricLargeValue,
+                { color: colors.metricHeartText },
+              ]}
+            >
               {heartRate}
             </AppText>
-            <AppText style={[styles.metricUnitText, { color: '#E11D48' }]}>
+            <AppText
+              style={[
+                styles.metricUnitText,
+                { color: colors.metricHeartText },
+              ]}
+            >
               {' '}
               BPM
             </AppText>
@@ -205,7 +320,7 @@ export const ConnectedWatchCard: React.FC<ConnectedWatchCardProps> = ({
               <Path
                 d="M 0 11 L 34 11 L 39 6 L 45 16 L 51 2 L 57 20 L 63 9 L 68 11 L 100 11"
                 fill="none"
-                stroke="#FB7185"
+                stroke={colors.metricHeartWave}
                 strokeWidth={2}
                 strokeLinecap="round"
                 strokeLinejoin="round"
@@ -225,15 +340,25 @@ export const ConnectedWatchCard: React.FC<ConnectedWatchCardProps> = ({
             <View
               style={[
                 styles.metricIconBadge,
-                { backgroundColor: '#FEF3C7' },
+                { backgroundColor: colors.metricEnergyIconBg },
               ]}
             >
-              <Flame size={14} color="#D97706" fill="#D97706" strokeWidth={2.4} />
+              <Flame
+                size={14}
+                color={colors.metricEnergyIcon}
+                fill={colors.metricEnergyIcon}
+                strokeWidth={2.4}
+              />
             </View>
           </View>
 
-          <View style={[styles.metricValueRow, { marginBottom: 12 }]}>
-            <AppText style={[styles.metricLargeValue, { color: '#D97706' }]}>
+          <View style={[styles.metricValueRow, { marginBottom: theme.spacing.md }]}>
+            <AppText
+              style={[
+                styles.metricLargeValue,
+                { color: colors.metricEnergyText },
+              ]}
+            >
               {caloriesValue}
             </AppText>
           </View>
@@ -250,18 +375,32 @@ export const ConnectedWatchCard: React.FC<ConnectedWatchCardProps> = ({
             <View
               style={[
                 styles.metricIconBadge,
-                { backgroundColor: '#EDE9FE' },
+                { backgroundColor: colors.metricDistanceIconBg },
               ]}
             >
-              <MapPin size={14} color="#7C3AED" strokeWidth={2.4} />
+              <MapPin
+                size={14}
+                color={colors.metricDistanceIcon}
+                strokeWidth={2.4}
+              />
             </View>
           </View>
 
           <View style={styles.metricValueRow}>
-            <AppText style={[styles.metricLargeValue, { color: '#4338CA' }]}>
+            <AppText
+              style={[
+                styles.metricLargeValue,
+                { color: colors.metricDistanceText },
+              ]}
+            >
               {distanceValue}
             </AppText>
-            <AppText style={[styles.metricUnitText, { color: '#4F46E5' }]}>
+            <AppText
+              style={[
+                styles.metricUnitText,
+                { color: colors.metricDistanceUnit },
+              ]}
+            >
               {' '}
               km
             </AppText>
@@ -283,7 +422,7 @@ export const ConnectedWatchCard: React.FC<ConnectedWatchCardProps> = ({
       {/* Footer: Last Sync & Sync Button */}
       <View style={styles.watchFooter}>
         <View style={styles.syncStatusCol}>
-          <Clock size={14} color="#94A3B8" strokeWidth={2} />
+          <Clock size={14} color={colors.watchLastSyncText} strokeWidth={2} />
           <AppText style={styles.syncStatusText} numberOfLines={1}>
             {lastSyncLabel}
           </AppText>
@@ -300,9 +439,13 @@ export const ConnectedWatchCard: React.FC<ConnectedWatchCardProps> = ({
           ]}
         >
           {watchMetrics.isSyncing ? (
-            <ActivityIndicator size="small" color="#FFFFFF" />
+            <ActivityIndicator size="small" color={colors.watchSyncButtonText} />
           ) : (
-            <RefreshCw size={13} color="#FFFFFF" strokeWidth={2.4} />
+            <RefreshCw
+              size={13}
+              color={colors.watchSyncButtonText}
+              strokeWidth={2.4}
+            />
           )}
           <AppText style={styles.syncButtonText}>
             {watchMetrics.isSyncing ? 'Syncing…' : 'Sync Data'}
@@ -312,3 +455,6 @@ export const ConnectedWatchCard: React.FC<ConnectedWatchCardProps> = ({
     </View>
   );
 };
+
+
+

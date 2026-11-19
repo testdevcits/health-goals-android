@@ -2,7 +2,7 @@ import { StyleSheet } from 'react-native';
 import { useTheme } from '../../../theme/useTheme';
 
 const createStyles = (theme: ReturnType<typeof useTheme>['theme']) => {
-  const { colors, spacing, radius } = theme;
+  const { colors, spacing, radius, fonts } = theme;
 
   return StyleSheet.create({
     keyboardView: {
@@ -81,7 +81,7 @@ const createStyles = (theme: ReturnType<typeof useTheme>['theme']) => {
     otpText: {
       color: colors.textPrimary,
       fontSize: theme.typography.h2.fontSize,
-      fontWeight: '600',
+      fontFamily: fonts.semiBold,
     },
     otpPlaceholder: {
       color: colors.textTertiary,

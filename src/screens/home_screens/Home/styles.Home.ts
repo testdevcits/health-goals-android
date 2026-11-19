@@ -3,7 +3,7 @@ import { StyleSheet } from 'react-native';
 import { AppTheme } from '../../../theme';
 
 export const createHomeStyles = (theme: AppTheme) => {
-  const { spacing, radius, colors } = theme;
+  const { spacing, radius, colors, fonts } = theme;
 
   return StyleSheet.create({
     // ── Root ──────────────────────────────────────
@@ -85,7 +85,7 @@ export const createHomeStyles = (theme: AppTheme) => {
       backgroundColor: colors.white,
       color: colors.primary,
       fontSize: theme.typography.buttonSm.fontSize,
-      fontWeight: 'bold',
+      fontFamily: fonts.bold,
       paddingHorizontal: spacing.md,
       paddingVertical: spacing.xs + 2,
       borderRadius: radius.full,

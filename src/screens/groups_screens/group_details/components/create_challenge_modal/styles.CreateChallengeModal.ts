@@ -1,4 +1,5 @@
 import { StyleSheet } from 'react-native';
+import { fonts } from '../../../../../theme/fonts';
 import { typography } from '../../../../../theme/typography';
 
 const createChallengeModalStyles = (colors: any, spacing: any, radius: any) =>
@@ -175,7 +176,7 @@ const createChallengeModalStyles = (colors: any, spacing: any, radius: any) =>
 
     summaryItemValue: {
       fontSize: typography.label.fontSize,
-      fontWeight: '700',
+      fontFamily: fonts.bold,
       color: colors.textPrimary,
     },
 

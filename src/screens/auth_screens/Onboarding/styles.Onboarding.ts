@@ -1,7 +1,7 @@
 import { StyleSheet } from 'react-native';
 
 const createOnboardingStyles = (theme: any) => {
-  const { colors, spacing, radius, typography } = theme;
+  const { colors, spacing, radius, typography, fonts } = theme;
 
   return StyleSheet.create({
     screen: {
@@ -21,7 +21,7 @@ const createOnboardingStyles = (theme: any) => {
       marginTop: spacing.sm,
     },
     backText: {
-      fontWeight: '600',
+      fontFamily: fonts.semiBold,
     },
     progressWrap: {
       height: spacing.sm + 4,

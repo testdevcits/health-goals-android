@@ -610,3 +610,48 @@ export const readActiveMinutesHistory = async (
     };
   });
 };
+
+/** Read the most recent heart rate in BPM from Health Connect */
+export const readLatestHeartRate = async (): Promise<number | null> => {
+  if (Platform.OS !== 'android') return null;
+  if (!(await ensureHealthConnectInitialized())) return null;
+
+  try {
+    const granted = (await getGrantedPermissions()).filter(
+      (permission): permission is Permission =>
+        'accessType' in permission && 'recordType' in permission,
+    );
+    if (!hasReadPermission(granted, 'HeartRate')) return null;
+
+    const end = new Date();
+    const start = new Date(end.getTime() - 24 * 60 * 60 * 1000);
+    const result = await readRecords('HeartRate', {
+      timeRangeFilter: {
+        operator: 'between',
+        startTime: start.toISOString(),
+        endTime: end.toISOString(),
+      },
+      ascendingOrder: false,
+      pageSize: 5,
+    });
+    if (result.records && result.records.length > 0) {
+      for (const record of result.records) {
+        if (record.samples && record.samples.length > 0) {
+          const latestSample = record.samples[record.samples.length - 1];
+          if (
+            latestSample &&
+            typeof latestSample.beatsPerMinute === 'number' &&
+            latestSample.beatsPerMinute > 30 &&
+            latestSample.beatsPerMinute < 240
+          ) {
+            return Math.round(latestSample.beatsPerMinute);
+          }
+        }
+      }
+    }
+  } catch (err) {
+    console.warn('[HealthConnect] readLatestHeartRate error:', err);
+  }
+  return null;
+};
+

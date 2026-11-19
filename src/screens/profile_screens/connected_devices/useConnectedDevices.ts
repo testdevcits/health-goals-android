@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { Alert, Linking, PermissionsAndroid, Platform } from 'react-native';
+import { Alert, AppState, Linking, PermissionsAndroid, Platform } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useFocusEffect } from '@react-navigation/native';
 import {
@@ -25,6 +25,7 @@ import {
 } from '../../../services/backgroundHealthSync';
 import {
   HEALTH_PERMISSIONS,
+  readLatestHeartRate,
   readTodayHealthData,
 } from '../../../services/healthConnect';
 import { syncRecentHealthData } from '../../../services/healthSync';
@@ -185,6 +186,14 @@ const matchingHealthPermissions = (
   );
 
 const SAVED_WATCH_KEY = 'vitality:connected_watch';
+const SAVED_WATCH_METRICS_KEY = 'vitality:saved_watch_metrics';
+
+export interface SavedWatchInfo {
+  id: string;
+  name?: string | null;
+  localName?: string | null;
+}
+
 let sharedBleManager: BleManager | null = null;
 const getBleManager = () => {
   if (!sharedBleManager) {
@@ -250,10 +259,13 @@ const waitForBluetoothPoweredOn = (
 };
 
 let sharedConnectedDevice: Device | null = null;
+let sharedSavedWatch: SavedWatchInfo | null = null;
 let sharedWatchMetrics: WatchMetrics = INITIAL_WATCH_METRICS;
+let sharedIsReconnecting = false;
 const sharedWatchListeners = new Set<() => void>();
 let sharedDisconnectSubscription: Subscription | null = null;
 let sharedHrSubscription: Subscription | null = null;
+let sharedBatterySubscription: Subscription | null = null;
 
 const notifyWatchListeners = () => {
   sharedWatchListeners.forEach(listener => {
@@ -274,6 +286,10 @@ export default function useConnectedDevices() {
   const [connectedDevice, setConnectedDeviceState] = useState<Device | null>(
     sharedConnectedDevice,
   );
+  const [savedWatch, setSavedWatch] = useState<SavedWatchInfo | null>(
+    sharedSavedWatch,
+  );
+  const [isReconnecting, setIsReconnecting] = useState(sharedIsReconnecting);
   const [connectingDeviceId, setConnectingDeviceId] = useState<string | null>(
     null,
   );
@@ -284,21 +300,60 @@ export default function useConnectedDevices() {
     useState<WatchMetrics>(sharedWatchMetrics);
 
   useEffect(() => {
+    let mounted = true;
+    const loadStoredWatch = async () => {
+      try {
+        const [savedJson, metricsJson] = await Promise.all([
+          AsyncStorage.getItem(SAVED_WATCH_KEY),
+          AsyncStorage.getItem(SAVED_WATCH_METRICS_KEY),
+        ]);
+        if (savedJson && mounted) {
+          const parsed: SavedWatchInfo = JSON.parse(savedJson);
+          if (parsed?.id) {
+            sharedSavedWatch = parsed;
+            setSavedWatch(parsed);
+          }
+        }
+        if (metricsJson && mounted) {
+          const parsedMetrics = JSON.parse(metricsJson);
+          if (parsedMetrics && typeof parsedMetrics === 'object') {
+            sharedWatchMetrics = {
+              ...INITIAL_WATCH_METRICS,
+              ...parsedMetrics,
+              isSyncing: false,
+            };
+            setWatchMetricsState(sharedWatchMetrics);
+          }
+        }
+      } catch (err) {
+        console.warn('Failed to load saved watch info:', err);
+      }
+    };
+    void loadStoredWatch();
+
     const syncState = () => {
       setConnectedDeviceState(sharedConnectedDevice);
+      setSavedWatch(sharedSavedWatch);
       setWatchMetricsState(sharedWatchMetrics);
+      setIsReconnecting(sharedIsReconnecting);
     };
     sharedWatchListeners.add(syncState);
     syncState();
     return () => {
+      mounted = false;
       sharedWatchListeners.delete(syncState);
     };
   }, []);
 
   const setConnectedDevice = useCallback((device: Device | null) => {
     sharedConnectedDevice = device;
-    if (!device) {
-      sharedWatchMetrics = INITIAL_WATCH_METRICS;
+    if (device) {
+      const info: SavedWatchInfo = {
+        id: device.id,
+        name: device.name || device.localName || 'Smartwatch',
+      };
+      sharedSavedWatch = info;
+      setSavedWatch(info);
     }
     notifyWatchListeners();
   }, []);
@@ -311,6 +366,10 @@ export default function useConnectedDevices() {
         sharedWatchMetrics = updater;
       }
       notifyWatchListeners();
+      AsyncStorage.setItem(
+        SAVED_WATCH_METRICS_KEY,
+        JSON.stringify(sharedWatchMetrics),
+      ).catch(() => {});
     },
     [],
   );
@@ -492,12 +551,27 @@ export default function useConnectedDevices() {
     setWatchMetrics(prev => ({ ...prev, isSyncing: true }));
     try {
       await syncRecentHealthData();
-      const todayData = await readTodayHealthData();
+      const [todayData, latestBpm] = await Promise.all([
+        readTodayHealthData().catch(() => ({
+          status: 'unavailable' as const,
+          steps: null,
+          distanceMeters: null,
+          calories: null,
+          exerciseMinutes: null,
+          workouts: null,
+          hourlySteps: null,
+          hourlyCalories: null,
+          hourlyExerciseMinutes: null,
+        })),
+        readLatestHeartRate().catch(() => null),
+      ]);
       const now = new Date();
-      const timeStr = `${now.getHours().toString().padStart(2, '0')}:${now
-        .getMinutes()
-        .toString()
-        .padStart(2, '0')}`;
+      const hours = now.getHours();
+      const minutes = now.getMinutes().toString().padStart(2, '0');
+      const ampm = hours >= 12 ? 'PM' : 'AM';
+      const formattedHours = (hours % 12 || 12).toString().padStart(2, '0');
+      const timeStr = `${formattedHours}:${minutes} ${ampm}`;
+
       setWatchMetrics(prev => ({
         ...prev,
         steps: todayData.steps ?? prev.steps,
@@ -506,6 +580,7 @@ export default function useConnectedDevices() {
           ? Number((todayData.distanceMeters / 1000).toFixed(2))
           : prev.distanceKm,
         exerciseMinutes: todayData.exerciseMinutes ?? prev.exerciseMinutes,
+        liveHeartRate: prev.liveHeartRate || latestBpm,
         lastSyncedAt: timeStr,
         isSyncing: false,
       }));
@@ -529,12 +604,32 @@ export default function useConnectedDevices() {
             c.uuid.toLowerCase().includes('2a19'),
           );
           if (batteryChar) {
-            const readChar = await batteryChar.read();
-            if (readChar.value) {
-              const bytes = decodeBase64ToBytes(readChar.value);
-              if (bytes.length > 0 && bytes[0] >= 0 && bytes[0] <= 100) {
-                setWatchMetrics(prev => ({ ...prev, batteryLevel: bytes[0] }));
+            try {
+              const readChar = await batteryChar.read();
+              if (readChar.value) {
+                const bytes = decodeBase64ToBytes(readChar.value);
+                if (bytes.length > 0 && bytes[0] >= 0 && bytes[0] <= 100) {
+                  setWatchMetrics(prev => ({ ...prev, batteryLevel: bytes[0] }));
+                }
               }
+            } catch (bErr) {
+              console.log('[BLE] Battery initial read:', bErr);
+            }
+            try {
+              sharedBatterySubscription?.remove();
+              sharedBatterySubscription = batteryChar.monitor((bErr, bChar) => {
+                if (!bErr && bChar?.value) {
+                  const bytes = decodeBase64ToBytes(bChar.value);
+                  if (bytes.length > 0 && bytes[0] >= 0 && bytes[0] <= 100) {
+                    setWatchMetrics(prev => ({
+                      ...prev,
+                      batteryLevel: bytes[0],
+                    }));
+                  }
+                }
+              });
+            } catch (bMonErr) {
+              console.log('[BLE] Battery monitor:', bMonErr);
             }
           }
         }
@@ -576,16 +671,32 @@ export default function useConnectedDevices() {
   );
 
   const autoReconnectSavedWatch = useCallback(async () => {
+    if (sharedIsReconnecting) return;
+
     try {
       const savedJson = await AsyncStorage.getItem(SAVED_WATCH_KEY);
       if (!savedJson) return;
-      const saved = JSON.parse(savedJson);
+      const saved: SavedWatchInfo = JSON.parse(savedJson);
       if (!saved?.id) return;
-      if (sharedConnectedDevice && sharedConnectedDevice.id === saved.id)
-        return;
 
-      const currentState = await bleManager.state();
-      if (currentState !== BluetoothState.PoweredOn) return;
+      sharedSavedWatch = saved;
+      setSavedWatch(saved);
+
+      if (sharedConnectedDevice && sharedConnectedDevice.id === saved.id) {
+        return;
+      }
+
+      setIsReconnecting(true);
+      sharedIsReconnecting = true;
+      notifyWatchListeners();
+
+      const isPoweredOn = await waitForBluetoothPoweredOn(bleManager, 10000);
+      if (!isPoweredOn) {
+        setIsReconnecting(false);
+        sharedIsReconnecting = false;
+        notifyWatchListeners();
+        return;
+      }
 
       const isConnected = await bleManager.isDeviceConnected(saved.id);
       let activeConnection: Device;
@@ -596,14 +707,15 @@ export default function useConnectedDevices() {
           activeConnection = known[0];
         } else {
           activeConnection = await bleManager.connectToDevice(saved.id, {
-            autoConnect: true,
+            autoConnect: false,
             timeout: 10000,
           });
         }
       } else {
+        // Direct connection with autoConnect: false connects in 1-2s
         activeConnection = await bleManager.connectToDevice(saved.id, {
-          autoConnect: true,
-          timeout: 15000,
+          autoConnect: false,
+          timeout: 12000,
         });
       }
 
@@ -615,43 +727,64 @@ export default function useConnectedDevices() {
         async () => {
           sharedHrSubscription?.remove();
           sharedHrSubscription = null;
-          setWatchMetrics(INITIAL_WATCH_METRICS);
-          setConnectedDevice(null);
+          sharedBatterySubscription?.remove();
+          sharedBatterySubscription = null;
+          sharedConnectedDevice = null;
+          notifyWatchListeners();
           sharedDisconnectSubscription?.remove();
           sharedDisconnectSubscription = null;
+
           // Check if still saved in storage to auto-reconnect when back in range
           const stillSaved = await AsyncStorage.getItem(SAVED_WATCH_KEY);
-          if (stillSaved) {
-            void autoReconnectSavedWatch();
+          if (stillSaved && !sharedIsReconnecting) {
+            setTimeout(() => {
+              void autoReconnectRef.current();
+            }, 3000);
           }
         },
       );
       setConnectedDevice(discoveredConnection);
+      setIsReconnecting(false);
+      sharedIsReconnecting = false;
+      notifyWatchListeners();
       void readWatchTelemetry(discoveredConnection);
     } catch (reconnectError) {
+      setIsReconnecting(false);
+      sharedIsReconnecting = false;
+      notifyWatchListeners();
       console.log(
-        'Watch auto-reconnect skipped or watch not in range:',
+        '[BLE] Watch auto-reconnect attempt ended (will retry on next trigger):',
         reconnectError,
       );
     }
-  }, [bleManager, readWatchTelemetry, setConnectedDevice, setWatchMetrics]);
+  }, [bleManager, readWatchTelemetry, setConnectedDevice]);
+
+  const autoReconnectRef = useRef(autoReconnectSavedWatch);
+  autoReconnectRef.current = autoReconnectSavedWatch;
 
   useEffect(() => {
     const subscription = bleManager.onStateChange(state => {
       setBluetoothState(state);
       if (state === BluetoothState.PoweredOn) {
-        void autoReconnectSavedWatch();
+        void autoReconnectRef.current();
       }
     }, true);
 
-    void autoReconnectSavedWatch();
+    void autoReconnectRef.current();
+
+    const appStateSub = AppState.addEventListener('change', nextState => {
+      if (nextState === 'active') {
+        void autoReconnectRef.current();
+      }
+    });
 
     return () => {
       subscription.remove();
+      appStateSub.remove();
       if (scanTimeout.current) clearTimeout(scanTimeout.current);
       bleManager.stopDeviceScan().catch(() => {});
     };
-  }, [bleManager, autoReconnectSavedWatch]);
+  }, [bleManager]);
 
   const connectToDevice = async (device: Device) => {
     setBleError('');
@@ -669,14 +802,18 @@ export default function useConnectedDevices() {
         async error => {
           sharedHrSubscription?.remove();
           sharedHrSubscription = null;
-          setWatchMetrics(INITIAL_WATCH_METRICS);
-          setConnectedDevice(null);
+          sharedBatterySubscription?.remove();
+          sharedBatterySubscription = null;
+          sharedConnectedDevice = null;
+          notifyWatchListeners();
           sharedDisconnectSubscription?.remove();
           sharedDisconnectSubscription = null;
           if (error) setBleError(`Bluetooth connection lost: ${error.message}`);
           const stillSaved = await AsyncStorage.getItem(SAVED_WATCH_KEY);
           if (stillSaved) {
-            void autoReconnectSavedWatch();
+            setTimeout(() => {
+              void autoReconnectSavedWatch();
+            }, 3000);
           }
         },
       );
@@ -685,13 +822,13 @@ export default function useConnectedDevices() {
         previous.filter(discovered => discovered.id !== device.id),
       );
       // Persist paired watch so it auto-reconnects if app is killed
-      await AsyncStorage.setItem(
-        SAVED_WATCH_KEY,
-        JSON.stringify({
-          id: device.id,
-          name: device.name || device.localName || 'Smartwatch',
-        }),
-      );
+      const watchInfo: SavedWatchInfo = {
+        id: device.id,
+        name: device.name || device.localName || 'Smartwatch',
+      };
+      sharedSavedWatch = watchInfo;
+      setSavedWatch(watchInfo);
+      await AsyncStorage.setItem(SAVED_WATCH_KEY, JSON.stringify(watchInfo));
       void readWatchTelemetry(discoveredConnection);
     } catch (error) {
       try {
@@ -713,18 +850,26 @@ export default function useConnectedDevices() {
   };
 
   const disconnectDevice = async () => {
-    if (!connectedDevice) return;
     try {
       // Clear saved watch from storage so it does NOT auto-reconnect
       await AsyncStorage.removeItem(SAVED_WATCH_KEY);
+      await AsyncStorage.removeItem(SAVED_WATCH_METRICS_KEY);
+      sharedSavedWatch = null;
+      setSavedWatch(null);
       sharedHrSubscription?.remove();
       sharedHrSubscription = null;
+      sharedBatterySubscription?.remove();
+      sharedBatterySubscription = null;
       setWatchMetrics(INITIAL_WATCH_METRICS);
-      await bleManager.cancelDeviceConnection(connectedDevice.id);
+      if (sharedConnectedDevice) {
+        await bleManager.cancelDeviceConnection(sharedConnectedDevice.id);
+      }
       sharedDisconnectSubscription?.remove();
       sharedDisconnectSubscription = null;
       setConnectedDevice(null);
-      setDiscoveredDevices(previous => [...previous, connectedDevice]);
+      if (connectedDevice) {
+        setDiscoveredDevices(previous => [...previous, connectedDevice]);
+      }
     } catch (error) {
       setBleError(
         error instanceof Error
@@ -792,6 +937,7 @@ export default function useConnectedDevices() {
     useCallback(() => {
       refreshConnection();
       refreshAutoSyncState();
+      void autoReconnectRef.current();
     }, [refreshAutoSyncState, refreshConnection]),
   );
 
@@ -941,10 +1087,15 @@ export default function useConnectedDevices() {
     }
   };
 
+  const displayDevice = connectedDevice || savedWatch;
+
   return {
     bluetoothState,
     discoveredDevices,
-    connectedDevice,
+    connectedDevice: displayDevice,
+    isWatchConnected: Boolean(connectedDevice),
+    isWatchReconnecting: isReconnecting,
+    reconnectDevice: autoReconnectSavedWatch,
     connectingDeviceId,
     isScanning,
     bleError,

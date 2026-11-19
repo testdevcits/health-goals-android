@@ -2,7 +2,7 @@ import { StyleSheet } from 'react-native';
 import { AppTheme } from '../../../theme';
 
 export const createVerifyResetOtpStyles = (theme: AppTheme) => {
-  const { colors, spacing, radius } = theme;
+  const { colors, spacing, radius, fonts } = theme;
 
   return StyleSheet.create({
     container: {
@@ -78,7 +78,7 @@ export const createVerifyResetOtpStyles = (theme: AppTheme) => {
     otpText: {
       color: colors.textPrimary,
       fontSize: theme.typography.h2.fontSize,
-      fontWeight: '600',
+      fontFamily: fonts.semiBold,
     },
     otpPlaceholder: {
       color: colors.textTertiary,

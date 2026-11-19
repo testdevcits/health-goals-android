@@ -48,6 +48,9 @@ const ConnectedDevicesScreen: React.FC<{
     cancelAutoSync,
     watchMetrics,
     syncWatchHealthData,
+    isWatchConnected,
+    isWatchReconnecting,
+    reconnectDevice,
     onlyWatches,
     setOnlyWatches,
   } = useConnectedDevices();
@@ -75,8 +78,11 @@ const ConnectedDevicesScreen: React.FC<{
             <ConnectedWatchCard
               connectedDevice={connectedDevice}
               watchMetrics={watchMetrics}
+              isConnected={isWatchConnected}
+              isConnecting={isWatchReconnecting}
               onDisconnect={disconnectDevice}
               onSync={syncWatchHealthData}
+              onReconnect={reconnectDevice}
             />
           ) : null}
 
