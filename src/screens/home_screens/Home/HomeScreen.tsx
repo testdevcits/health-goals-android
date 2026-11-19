@@ -147,7 +147,6 @@ const HomeScreen: React.FC<Props> = ({ navigation }) => {
           navigation={navigation}
           healthRefreshKey={healthRefreshKey}
         />
-
         <WorkoutCategories onViewAllPress={handleViewAllCategories} />
         <ActivityTrends
           onPressDetails={handleTrendsDetails}
