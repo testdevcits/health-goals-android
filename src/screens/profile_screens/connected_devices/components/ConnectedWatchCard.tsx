@@ -69,21 +69,22 @@ export const ConnectedWatchCard: React.FC<ConnectedWatchCardProps> = ({
       ? Math.round(watchMetrics.steps)
       : 0;
   const stepTarget = 10000;
-  const progressRatio = Math.min(Math.max((stepCount / stepTarget) * 100, 6), 100);
+  const progressRatio = Math.min(
+    Math.max((stepCount / stepTarget) * 100, 6),
+    100,
+  );
 
   const caloriesValue =
     typeof watchMetrics.calories === 'number' &&
-      !isNaN(watchMetrics.calories) &&
-      watchMetrics.calories > 0
-      ? watchMetrics.calories
-        .toFixed(1)
-        .replace(/\B(?=(\d{3})+(?!\d))/g, ',')
+    !isNaN(watchMetrics.calories) &&
+    watchMetrics.calories > 0
+      ? watchMetrics.calories.toFixed(1).replace(/\B(?=(\d{3})+(?!\d))/g, ',')
       : '0.0';
 
   const distanceValue =
     typeof watchMetrics.distanceKm === 'number' &&
-      !isNaN(watchMetrics.distanceKm) &&
-      watchMetrics.distanceKm > 0
+    !isNaN(watchMetrics.distanceKm) &&
+    watchMetrics.distanceKm > 0
       ? watchMetrics.distanceKm.toFixed(2)
       : '0.00';
 
@@ -139,12 +140,13 @@ export const ConnectedWatchCard: React.FC<ConnectedWatchCardProps> = ({
                   },
                 ]}
                 numberOfLines={1}
+                ellipsizeMode="tail"
               >
                 {isConnected
                   ? 'Connected'
                   : isConnecting
-                    ? 'Connecting…'
-                    : 'Disconnected'}
+                  ? 'Connecting…'
+                  : 'Disconnected'}
               </AppText>
             </View>
           </View>
@@ -155,7 +157,7 @@ export const ConnectedWatchCard: React.FC<ConnectedWatchCardProps> = ({
           {watchMetrics.batteryLevel !== null ? (
             <View style={styles.batteryBadge}>
               <View style={styles.batteryIndicatorBar} />
-              <AppText style={styles.batteryLevelText}>
+              <AppText style={styles.batteryLevelText} numberOfLines={1}>
                 {watchMetrics.batteryLevel}%
               </AppText>
             </View>
@@ -172,7 +174,9 @@ export const ConnectedWatchCard: React.FC<ConnectedWatchCardProps> = ({
                 pressed && { opacity: 0.7 },
               ]}
             >
-              <AppText style={styles.disconnectButtonText}>Disconnect</AppText>
+              <AppText style={styles.disconnectButtonText} numberOfLines={1}>
+                Disconnect
+              </AppText>
             </Pressable>
           ) : isConnecting ? (
             <View style={[styles.disconnectButton, { opacity: 0.8 }]}>
@@ -181,6 +185,7 @@ export const ConnectedWatchCard: React.FC<ConnectedWatchCardProps> = ({
                   styles.disconnectButtonText,
                   { color: colors.watchStatusConnecting },
                 ]}
+                numberOfLines={1}
               >
                 Connecting…
               </AppText>
@@ -198,7 +203,9 @@ export const ConnectedWatchCard: React.FC<ConnectedWatchCardProps> = ({
                     pressed && { opacity: 0.7 },
                   ]}
                 >
-                  <AppText style={styles.reconnectButtonText}>Reconnect</AppText>
+                  <AppText style={styles.reconnectButtonText} numberOfLines={1}>
+                    Reconnect
+                  </AppText>
                 </Pressable>
               ) : null}
 
@@ -212,7 +219,7 @@ export const ConnectedWatchCard: React.FC<ConnectedWatchCardProps> = ({
                   pressed && { opacity: 0.7 },
                 ]}
               >
-                <X size={13} color={colors.watchForgetText} strokeWidth={2.4} />
+                <X size={12} color={colors.watchForgetText} strokeWidth={2.4} />
               </Pressable>
             </View>
           )}
@@ -250,10 +257,7 @@ export const ConnectedWatchCard: React.FC<ConnectedWatchCardProps> = ({
               {stepCount.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
             </AppText>
             <AppText
-              style={[
-                styles.metricUnitText,
-                { color: colors.metricStepsUnit },
-              ]}
+              style={[styles.metricUnitText, { color: colors.metricStepsUnit }]}
             >
               {' '}
               / 10k
@@ -262,10 +266,7 @@ export const ConnectedWatchCard: React.FC<ConnectedWatchCardProps> = ({
 
           <View style={styles.progressBarTrack}>
             <View
-              style={[
-                styles.progressBarFill,
-                { width: `${progressRatio}%` },
-              ]}
+              style={[styles.progressBarFill, { width: `${progressRatio}%` }]}
             >
               <View style={styles.progressBarThumb} />
             </View>
@@ -305,10 +306,7 @@ export const ConnectedWatchCard: React.FC<ConnectedWatchCardProps> = ({
               {heartRate}
             </AppText>
             <AppText
-              style={[
-                styles.metricUnitText,
-                { color: colors.metricHeartText },
-              ]}
+              style={[styles.metricUnitText, { color: colors.metricHeartText }]}
             >
               {' '}
               BPM
@@ -352,7 +350,9 @@ export const ConnectedWatchCard: React.FC<ConnectedWatchCardProps> = ({
             </View>
           </View>
 
-          <View style={[styles.metricValueRow, { marginBottom: theme.spacing.md }]}>
+          <View
+            style={[styles.metricValueRow, { marginBottom: theme.spacing.md }]}
+          >
             <AppText
               style={[
                 styles.metricLargeValue,
@@ -363,9 +363,7 @@ export const ConnectedWatchCard: React.FC<ConnectedWatchCardProps> = ({
             </AppText>
           </View>
 
-          <AppText style={styles.energyCaptionText}>
-            kcal burned today
-          </AppText>
+          <AppText style={styles.energyCaptionText}>kcal burned today</AppText>
         </View>
 
         {/* Tile 4: Distance */}
@@ -439,7 +437,10 @@ export const ConnectedWatchCard: React.FC<ConnectedWatchCardProps> = ({
           ]}
         >
           {watchMetrics.isSyncing ? (
-            <ActivityIndicator size="small" color={colors.watchSyncButtonText} />
+            <ActivityIndicator
+              size="small"
+              color={colors.watchSyncButtonText}
+            />
           ) : (
             <RefreshCw
               size={13}
@@ -455,6 +456,3 @@ export const ConnectedWatchCard: React.FC<ConnectedWatchCardProps> = ({
     </View>
   );
 };
-
-
-

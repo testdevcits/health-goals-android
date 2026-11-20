@@ -7,6 +7,7 @@ import {
 import { syncRecentHealthData } from '../services/healthSync';
 import { apiErrorMessage } from '../services/api';
 import { storageService } from '../storage/storageService';
+import { istDateKey } from '../utils/healthDates';
 
 const CACHE_KEY_TODAY_HEALTH = 'cache_today_health_data';
 
@@ -23,10 +24,9 @@ export const useTodayHealthData = (
   refreshKey = 0,
 ) => {
   const isFocused = useIsFocused();
+  const todayCacheKey = `${CACHE_KEY_TODAY_HEALTH}:${istDateKey(new Date())}`;
   const [state, setState] = useState<HealthDataState>(() => {
-    const cached = storageService.getObject<TodayHealthData>(
-      CACHE_KEY_TODAY_HEALTH,
-    );
+    const cached = storageService.getObject<TodayHealthData>(todayCacheKey);
     return {
       loading: !cached,
       data: cached || null,
@@ -70,7 +70,7 @@ export const useTodayHealthData = (
       .then(data => {
         if (isActive) {
           if (data) {
-            storageService.setObject(CACHE_KEY_TODAY_HEALTH, data);
+            storageService.setObject(todayCacheKey, data);
           }
           setState(previous => ({
             ...previous,
@@ -96,7 +96,7 @@ export const useTodayHealthData = (
     return () => {
       isActive = false;
     };
-  }, [isFocused, includeHourlyData, refreshKey]);
+  }, [isFocused, includeHourlyData, refreshKey, todayCacheKey]);
 
   return state;
 };

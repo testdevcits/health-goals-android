@@ -137,9 +137,12 @@ const hasReadPermission = (permissions: Permission[], recordType: string) =>
   );
 
 const getTodayRange = () => {
-  const today = istDateKey(new Date());
-  const start = new Date(Date.parse(`${today}T00:00:00.000Z`) - IST_OFFSET_MS);
-  const end = new Date(start.getTime() + 24 * 60 * 60 * 1000);
+  const now = new Date();
+  const todayIst = istDateKey(now);
+  const start = new Date(
+    Date.parse(`${todayIst}T00:00:00.000Z`) - IST_OFFSET_MS,
+  );
+  const end = new Date(now.getTime() + 60 * 1000);
 
   return {
     operator: 'between' as const,
@@ -317,12 +320,87 @@ export const readTodayHealthData = async (
     return values;
   };
 
+  let finalSteps = stepsResult?.COUNT_TOTAL ?? null;
+  if (
+    !failedMetrics.includes('Steps') &&
+    (!finalSteps || finalSteps === 0) &&
+    hasSteps
+  ) {
+    try {
+      const rawSteps = await readRecords('Steps', {
+        timeRangeFilter,
+        pageSize: 1000,
+      });
+      if (rawSteps.records && rawSteps.records.length > 0) {
+        const sum = rawSteps.records.reduce(
+          (acc, r) => acc + (typeof r.count === 'number' ? r.count : 0),
+          0,
+        );
+        if (sum > 0) {
+          finalSteps = sum;
+        }
+      }
+    } catch {
+      // Raw steps fallback skipped
+    }
+  }
+
+  let finalDistance = distanceResult?.DISTANCE?.inMeters ?? null;
+  if (
+    !failedMetrics.includes('Distance') &&
+    (!finalDistance || finalDistance === 0) &&
+    hasDistance
+  ) {
+    try {
+      const rawDist = await readRecords('Distance', {
+        timeRangeFilter,
+        pageSize: 1000,
+      });
+      if (rawDist.records && rawDist.records.length > 0) {
+        const sum = rawDist.records.reduce(
+          (acc, r) => acc + (r.distance?.inMeters || 0),
+          0,
+        );
+        if (sum > 0) {
+          finalDistance = sum;
+        }
+      }
+    } catch {
+      // Raw distance fallback skipped
+    }
+  }
+
+  let finalCalories = caloriesResult?.ENERGY_TOTAL?.inKilocalories ?? null;
+  if (
+    !failedMetrics.includes('TotalCaloriesBurned') &&
+    (!finalCalories || finalCalories === 0) &&
+    hasCalories
+  ) {
+    try {
+      const rawCal = await readRecords('TotalCaloriesBurned', {
+        timeRangeFilter,
+        pageSize: 1000,
+      });
+      if (rawCal.records && rawCal.records.length > 0) {
+        const sum = rawCal.records.reduce(
+          (acc, r) => acc + (r.energy?.inKilocalories || 0),
+          0,
+        );
+        if (sum > 0) {
+          finalCalories = sum;
+        }
+      }
+    } catch {
+      // Raw calories fallback skipped
+    }
+  }
+
   return {
     status: 'ready',
     ...(failedMetrics.length ? { failedMetrics } : {}),
-    steps: stepsResult?.COUNT_TOTAL ?? null,
-    distanceMeters: distanceResult?.DISTANCE.inMeters ?? null,
-    calories: caloriesResult?.ENERGY_TOTAL.inKilocalories ?? null,
+    steps: finalSteps,
+    distanceMeters: finalDistance,
+    calories: finalCalories,
     exerciseMinutes: exerciseResult
       ? exerciseResult.EXERCISE_DURATION_TOTAL.inSeconds / 60
       : null,
@@ -654,4 +732,3 @@ export const readLatestHeartRate = async (): Promise<number | null> => {
   }
   return null;
 };
-

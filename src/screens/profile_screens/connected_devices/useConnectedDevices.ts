@@ -1,5 +1,11 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { Alert, AppState, Linking, PermissionsAndroid, Platform } from 'react-native';
+import {
+  Alert,
+  AppState,
+  Linking,
+  PermissionsAndroid,
+  Platform,
+} from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useFocusEffect } from '@react-navigation/native';
 import {
@@ -29,6 +35,7 @@ import {
   readTodayHealthData,
 } from '../../../services/healthConnect';
 import { syncRecentHealthData } from '../../../services/healthSync';
+import { istDateKey } from '../../../utils/healthDates';
 
 const WATCH_KEYWORDS = [
   'watch',
@@ -144,6 +151,27 @@ const decodeBase64ToBytes = (b64: string): number[] => {
   return bytes;
 };
 
+const parsePedometerSteps = (bytes: number[]): number => {
+  if (!bytes || bytes.length < 3) return 0;
+  // 1. Standard 4-byte Little Endian
+  if (bytes.length >= 4) {
+    const valLE =
+      (bytes[0] | (bytes[1] << 8) | (bytes[2] << 16) | (bytes[3] << 24)) >>> 0;
+    if (valLE > 0 && valLE < 300000) return valLE;
+    // 2. 4-byte Big Endian
+    const valBE =
+      ((bytes[0] << 24) | (bytes[1] << 16) | (bytes[2] << 8) | bytes[3]) >>> 0;
+    if (valBE > 0 && valBE < 300000) return valBE;
+    // 3. Command/flag prefix (bytes[0] = 0x01/0x02, bytes 1-3 = steps)
+    const valFlag = (bytes[1] | (bytes[2] << 8) | (bytes[3] << 16)) >>> 0;
+    if (valFlag > 0 && valFlag < 300000) return valFlag;
+  } else if (bytes.length === 3) {
+    const val3 = (bytes[0] | (bytes[1] << 8) | (bytes[2] << 16)) >>> 0;
+    if (val3 > 0 && val3 < 300000) return val3;
+  }
+  return 0;
+};
+
 export interface WatchMetrics {
   batteryLevel: number | null;
   liveHeartRate: number | null;
@@ -152,6 +180,7 @@ export interface WatchMetrics {
   distanceKm: number;
   exerciseMinutes: number;
   lastSyncedAt: string;
+  dataDate: string;
   isSyncing: boolean;
 }
 
@@ -163,6 +192,7 @@ const INITIAL_WATCH_METRICS: WatchMetrics = {
   distanceKm: 0,
   exerciseMinutes: 0,
   lastSyncedAt: '',
+  dataDate: '',
   isSyncing: false,
 };
 
@@ -266,6 +296,7 @@ const sharedWatchListeners = new Set<() => void>();
 let sharedDisconnectSubscription: Subscription | null = null;
 let sharedHrSubscription: Subscription | null = null;
 let sharedBatterySubscription: Subscription | null = null;
+let sharedStepSubscription: Subscription | null = null;
 
 const notifyWatchListeners = () => {
   sharedWatchListeners.forEach(listener => {
@@ -317,9 +348,13 @@ export default function useConnectedDevices() {
         if (metricsJson && mounted) {
           const parsedMetrics = JSON.parse(metricsJson);
           if (parsedMetrics && typeof parsedMetrics === 'object') {
+            const storedMetrics =
+              parsedMetrics.dataDate === istDateKey(new Date())
+                ? parsedMetrics
+                : INITIAL_WATCH_METRICS;
             sharedWatchMetrics = {
               ...INITIAL_WATCH_METRICS,
-              ...parsedMetrics,
+              ...storedMetrics,
               isSyncing: false,
             };
             setWatchMetricsState(sharedWatchMetrics);
@@ -550,21 +585,40 @@ export default function useConnectedDevices() {
   const syncWatchHealthData = useCallback(async () => {
     setWatchMetrics(prev => ({ ...prev, isSyncing: true }));
     try {
-      await syncRecentHealthData();
-      const [todayData, latestBpm] = await Promise.all([
-        readTodayHealthData().catch(() => ({
-          status: 'unavailable' as const,
-          steps: null,
-          distanceMeters: null,
-          calories: null,
-          exerciseMinutes: null,
-          workouts: null,
-          hourlySteps: null,
-          hourlyCalories: null,
-          hourlyExerciseMinutes: null,
-        })),
-        readLatestHeartRate().catch(() => null),
-      ]);
+      syncRecentHealthData().catch(cloudErr => {
+        console.log('[HealthSync] Background cloud sync skipped:', cloudErr);
+      });
+
+      let todayData = await readTodayHealthData().catch(() => ({
+        status: 'unavailable' as const,
+        steps: null,
+        distanceMeters: null,
+        calories: null,
+        exerciseMinutes: null,
+        workouts: null,
+        hourlySteps: null,
+        hourlyCalories: null,
+        hourlyExerciseMinutes: null,
+      }));
+
+      // If Health Connect needs permission, attempt request
+      if (todayData.status === 'permission-required') {
+        try {
+          await requestPermission(HEALTH_PERMISSIONS);
+          const recheck = await readTodayHealthData().catch(() => null);
+          if (
+            recheck &&
+            (recheck.status === 'ready' ||
+              (typeof recheck.steps === 'number' && recheck.steps > 0))
+          ) {
+            todayData = recheck;
+          }
+        } catch {
+          // Ignore if user dismisses prompt
+        }
+      }
+
+      const latestBpm = await readLatestHeartRate().catch(() => null);
       const now = new Date();
       const hours = now.getHours();
       const minutes = now.getMinutes().toString().padStart(2, '0');
@@ -572,18 +626,32 @@ export default function useConnectedDevices() {
       const formattedHours = (hours % 12 || 12).toString().padStart(2, '0');
       const timeStr = `${formattedHours}:${minutes} ${ampm}`;
 
-      setWatchMetrics(prev => ({
-        ...prev,
-        steps: todayData.steps ?? prev.steps,
-        calories: todayData.calories ?? prev.calories,
-        distanceKm: todayData.distanceMeters
-          ? Number((todayData.distanceMeters / 1000).toFixed(2))
-          : prev.distanceKm,
-        exerciseMinutes: todayData.exerciseMinutes ?? prev.exerciseMinutes,
-        liveHeartRate: prev.liveHeartRate || latestBpm,
-        lastSyncedAt: timeStr,
-        isSyncing: false,
-      }));
+      setWatchMetrics(prev => {
+        const nextSteps =
+          todayData.status === 'ready' && typeof todayData.steps === 'number'
+            ? todayData.steps
+            : prev.steps;
+        const nextDistKm =
+          typeof todayData.distanceMeters === 'number'
+            ? Number((todayData.distanceMeters / 1000).toFixed(2))
+            : prev.distanceKm;
+        const nextCalories =
+          typeof todayData.calories === 'number'
+            ? todayData.calories
+            : prev.calories;
+
+        return {
+          ...prev,
+          steps: nextSteps,
+          calories: nextCalories,
+          distanceKm: nextDistKm,
+          exerciseMinutes: todayData.exerciseMinutes ?? prev.exerciseMinutes,
+          liveHeartRate: prev.liveHeartRate || latestBpm,
+          lastSyncedAt: timeStr,
+          dataDate: istDateKey(now),
+          isSyncing: false,
+        };
+      });
     } catch (err) {
       console.warn('Could not sync watch health data:', err);
       setWatchMetrics(prev => ({ ...prev, isSyncing: false }));
@@ -609,7 +677,10 @@ export default function useConnectedDevices() {
               if (readChar.value) {
                 const bytes = decodeBase64ToBytes(readChar.value);
                 if (bytes.length > 0 && bytes[0] >= 0 && bytes[0] <= 100) {
-                  setWatchMetrics(prev => ({ ...prev, batteryLevel: bytes[0] }));
+                  setWatchMetrics(prev => ({
+                    ...prev,
+                    batteryLevel: bytes[0],
+                  }));
                 }
               }
             } catch (bErr) {
@@ -660,6 +731,134 @@ export default function useConnectedDevices() {
                 }
               }
             });
+          }
+        }
+
+        // 3. WeChat/Tencent Step Service (0xFEE7) -> Characteristic 0xFEC7 (steps), 0xFEC9 (dist/cal)
+        const fee7Service = services.find(s =>
+          s.uuid.toLowerCase().includes('fee7'),
+        );
+        if (fee7Service) {
+          const fee7Chars = await fee7Service.characteristics();
+          const stepChar = fee7Chars.find(c =>
+            c.uuid.toLowerCase().includes('fec7'),
+          );
+          if (stepChar) {
+            try {
+              const readChar = await stepChar.read();
+              if (readChar.value) {
+                const bytes = decodeBase64ToBytes(readChar.value);
+                const steps = parsePedometerSteps(bytes);
+                if (steps > 0) {
+                  setWatchMetrics(prev => ({
+                    ...prev,
+                    steps,
+                    distanceKm: Number(((steps * 0.75) / 1000).toFixed(2)),
+                    calories: Number((steps * 0.04).toFixed(1)),
+                  }));
+                }
+              }
+            } catch (stepErr) {
+              console.log('[BLE] FEE7 step read error:', stepErr);
+            }
+
+            try {
+              sharedStepSubscription?.remove();
+              sharedStepSubscription = stepChar.monitor((sErr, sChar) => {
+                if (!sErr && sChar?.value) {
+                  const bytes = decodeBase64ToBytes(sChar.value);
+                  const steps = parsePedometerSteps(bytes);
+                  if (steps > 0) {
+                    setWatchMetrics(prev => ({
+                      ...prev,
+                      steps,
+                      distanceKm: Number(((steps * 0.75) / 1000).toFixed(2)),
+                      calories: Number((steps * 0.04).toFixed(1)),
+                    }));
+                  }
+                }
+              });
+            } catch (monErr) {
+              console.log('[BLE] FEE7 step monitor error:', monErr);
+            }
+          }
+
+          const calChar = fee7Chars.find(c =>
+            c.uuid.toLowerCase().includes('fec9'),
+          );
+          if (calChar) {
+            try {
+              const readCal = await calChar.read();
+              if (readCal.value) {
+                const bytes = decodeBase64ToBytes(readCal.value);
+                if (bytes.length >= 4) {
+                  const distMeters =
+                    (bytes[0] | (bytes[1] << 8) | (bytes[2] << 16)) >>> 0;
+                  const cals =
+                    bytes.length >= 6
+                      ? (bytes[3] | (bytes[4] << 8)) >>> 0
+                      : bytes[3] >>> 0;
+                  if (distMeters > 0 || cals > 0) {
+                    setWatchMetrics(prev => ({
+                      ...prev,
+                      ...(distMeters > 0
+                        ? { distanceKm: Number((distMeters / 1000).toFixed(2)) }
+                        : {}),
+                      ...(cals > 0 ? { calories: cals } : {}),
+                    }));
+                  }
+                }
+              }
+            } catch {
+              // Optional
+            }
+          }
+        }
+
+        // 4. RSC Service (0x1814) -> Characteristic 0x2A53 (RSC Measurement)
+        const rscService = services.find(s =>
+          s.uuid.toLowerCase().includes('1814'),
+        );
+        if (rscService) {
+          const rscChars = await rscService.characteristics();
+          const rscChar = rscChars.find(c =>
+            c.uuid.toLowerCase().includes('2a53'),
+          );
+          if (rscChar) {
+            try {
+              rscChar.monitor((rErr, rChar) => {
+                if (!rErr && rChar?.value) {
+                  const bytes = decodeBase64ToBytes(rChar.value);
+                  if (bytes.length >= 4) {
+                    const flags = bytes[0];
+                    const hasStride = (flags & 0x01) !== 0;
+                    const hasDistance = (flags & 0x02) !== 0;
+                    let offset = 4;
+                    if (hasStride) offset += 2;
+                    if (hasDistance && bytes.length >= offset + 4) {
+                      const distDeci =
+                        (bytes[offset] |
+                          (bytes[offset + 1] << 8) |
+                          (bytes[offset + 2] << 16) |
+                          (bytes[offset + 3] << 24)) >>>
+                        0;
+                      const distMeters = distDeci / 10;
+                      const estSteps = Math.round(distMeters / 0.75);
+                      if (estSteps > 0) {
+                        setWatchMetrics(prev => ({
+                          ...prev,
+                          steps: Math.max(prev.steps, estSteps),
+                          distanceKm: Number((distMeters / 1000).toFixed(2)),
+                          calories: Number((estSteps * 0.04).toFixed(1)),
+                        }));
+                      }
+                    }
+                  }
+                }
+              });
+            } catch {
+              // Optional
+            }
           }
         }
       } catch (telemetryError) {
@@ -729,6 +928,8 @@ export default function useConnectedDevices() {
           sharedHrSubscription = null;
           sharedBatterySubscription?.remove();
           sharedBatterySubscription = null;
+          sharedStepSubscription?.remove();
+          sharedStepSubscription = null;
           sharedConnectedDevice = null;
           notifyWatchListeners();
           sharedDisconnectSubscription?.remove();
@@ -860,6 +1061,8 @@ export default function useConnectedDevices() {
       sharedHrSubscription = null;
       sharedBatterySubscription?.remove();
       sharedBatterySubscription = null;
+      sharedStepSubscription?.remove();
+      sharedStepSubscription = null;
       setWatchMetrics(INITIAL_WATCH_METRICS);
       if (sharedConnectedDevice) {
         await bleManager.cancelDeviceConnection(sharedConnectedDevice.id);

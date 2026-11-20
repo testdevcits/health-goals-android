@@ -22,44 +22,52 @@ const notifyListeners = () => {
 
 const loadSession = (): Promise<WorkoutSession | null> => {
   if (!loadPromise) {
-    loadPromise = AsyncStorage.getItem(STORAGE_KEY).then(value => {
-      if (value === null) {
-        session = null;
+    loadPromise = AsyncStorage.getItem(STORAGE_KEY)
+      .then(value => {
+        if (value === null) {
+          session = null;
+          return session;
+        }
+
+        const storedSession: unknown = JSON.parse(value);
+        if (
+          typeof storedSession !== 'object' ||
+          storedSession === null ||
+          !('activityId' in storedSession) ||
+          typeof storedSession.activityId !== 'string' ||
+          !('elapsedMilliseconds' in storedSession) ||
+          typeof storedSession.elapsedMilliseconds !== 'number' ||
+          !Number.isFinite(storedSession.elapsedMilliseconds) ||
+          storedSession.elapsedMilliseconds < 0 ||
+          !('startedAtMilliseconds' in storedSession) ||
+          (storedSession.startedAtMilliseconds !== null &&
+            (typeof storedSession.startedAtMilliseconds !== 'number' ||
+              !Number.isFinite(storedSession.startedAtMilliseconds)))
+        ) {
+          throw new Error('Saved workout session data is invalid.');
+        }
+
+        session = {
+          sessionId:
+            'sessionId' in storedSession &&
+            typeof storedSession.sessionId === 'string'
+              ? storedSession.sessionId
+              : `${storedSession.activityId}:${
+                  storedSession.elapsedMilliseconds
+                }:${storedSession.startedAtMilliseconds ?? 0}`,
+          activityId: storedSession.activityId,
+          elapsedMilliseconds: storedSession.elapsedMilliseconds,
+          startedAtMilliseconds: storedSession.startedAtMilliseconds,
+        };
         return session;
-      }
-
-      const storedSession: unknown = JSON.parse(value);
-      if (
-        typeof storedSession !== 'object' ||
-        storedSession === null ||
-        !('activityId' in storedSession) ||
-        typeof storedSession.activityId !== 'string' ||
-        !('elapsedMilliseconds' in storedSession) ||
-        typeof storedSession.elapsedMilliseconds !== 'number' ||
-        !Number.isFinite(storedSession.elapsedMilliseconds) ||
-        storedSession.elapsedMilliseconds < 0 ||
-        !('startedAtMilliseconds' in storedSession) ||
-        (storedSession.startedAtMilliseconds !== null &&
-          (typeof storedSession.startedAtMilliseconds !== 'number' ||
-            !Number.isFinite(storedSession.startedAtMilliseconds)))
-      ) {
-        throw new Error('Saved workout session data is invalid.');
-      }
-
-      session = {
-        sessionId:
-          'sessionId' in storedSession &&
-          typeof storedSession.sessionId === 'string'
-            ? storedSession.sessionId
-            : `${storedSession.activityId}:${
-                storedSession.elapsedMilliseconds
-              }:${storedSession.startedAtMilliseconds ?? 0}`,
-        activityId: storedSession.activityId,
-        elapsedMilliseconds: storedSession.elapsedMilliseconds,
-        startedAtMilliseconds: storedSession.startedAtMilliseconds,
-      };
-      return session;
-    });
+      })
+      .catch(error => {
+        // Allow a later read to recover from a transient storage error or
+        // malformed value instead of caching a permanently rejected promise.
+        session = null;
+        loadPromise = null;
+        throw error;
+      });
   }
 
   return loadPromise;
