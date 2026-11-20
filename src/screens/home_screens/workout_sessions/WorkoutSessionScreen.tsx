@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useCallback, useMemo } from 'react';
 import { ScrollView, StatusBar, View } from 'react-native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { HomeStackParamList } from '../../../navigations/HomeStack';
@@ -17,7 +17,7 @@ type Props = NativeStackScreenProps<HomeStackParamList, 'WorkoutSession'>;
 const WorkoutSessionScreen: React.FC<Props> = ({ navigation, route }) => {
   const { theme } = useTheme();
   const { colors } = theme;
-  const styles = createWorkoutSessionStyles(colors);
+  const styles = useMemo(() => createWorkoutSessionStyles(colors), [colors]);
 
   const {
     currentActivity,
@@ -36,6 +36,12 @@ const WorkoutSessionScreen: React.FC<Props> = ({ navigation, route }) => {
     handleBack,
   } = useWorkoutSession(navigation, route.params);
 
+  const handleCloseConfirmation = useCallback(() => {
+    if (!savingWorkout) {
+      setConfirmation(null);
+    }
+  }, [savingWorkout, setConfirmation]);
+
   return (
     <View
       style={[styles.safeArea, { backgroundColor: colors.backgroundSecondary }]}
@@ -53,7 +59,7 @@ const WorkoutSessionScreen: React.FC<Props> = ({ navigation, route }) => {
 
       <ConfirmationModal
         visible={confirmation !== null}
-        onClose={() => !savingWorkout && setConfirmation(null)}
+        onClose={handleCloseConfirmation}
         title={confirmation?.title}
         message={confirmation?.message}
         position="center"

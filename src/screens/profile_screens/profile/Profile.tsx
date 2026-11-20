@@ -1,4 +1,4 @@
-import React, { Suspense } from 'react';
+import React from 'react';
 import {
   Image,
   View,
@@ -16,7 +16,12 @@ import createStyles from './styles.Profile';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '../../../navigations/ProfileStack';
-import { AppEmptyState, AppErrorView, AppLoader } from '../../../components';
+import {
+  AppEmptyState,
+  AppErrorView,
+  AppLoader,
+  LogoutModal,
+} from '../../../components';
 import useProfile from './useProfile';
 import AppIcon from '../../../assets/appicon/AppIcon';
 
@@ -27,9 +32,6 @@ const ProfileScreen: React.FC = () => {
   const { colors } = theme;
   const styles = createStyles(colors);
   const insets = useSafeAreaInsets();
-  const LogoutModal = React.lazy(
-    () => import('../../../components/common/logout_modal/LogoutModal'),
-  );
 
   const navigation = useNavigation<ProfileNavigationProp>();
   const {
@@ -216,13 +218,11 @@ const ProfileScreen: React.FC = () => {
           </>
         )}
       </ScrollView>
-      <Suspense fallback={null}>
-        <LogoutModal
-          visible={modalVisible}
-          onClose={() => setModalVisible(false)}
-          onSignOut={handleSignOut}
-        />
-      </Suspense>
+      <LogoutModal
+        visible={modalVisible}
+        onClose={() => setModalVisible(false)}
+        onSignOut={handleSignOut}
+      />
     </View>
   );
 };

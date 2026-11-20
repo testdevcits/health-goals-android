@@ -112,6 +112,7 @@ const PrivacyScreen: React.FC<{ navigation: ProfileScreenNavigation }> = ({
           Delete My Account
         </AppText>
       </ScrollView>
+
       <ConfirmationModal
         visible={deleteAccount}
         onClose={() => setDeleteAccount(false)}

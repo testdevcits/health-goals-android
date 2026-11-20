@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { memo } from 'react';
 import { Image, Modal, Pressable, StyleSheet, View } from 'react-native';
 import ImagePicker from 'react-native-image-crop-picker';
 import { AppButton, AppInput, AppText } from '../../../../../components';
@@ -6,6 +6,7 @@ import { useTheme } from '../../../../../theme/useTheme';
 import { apiErrorMessage } from '../../../../../services/api';
 import { showAppToast } from '../../../../../utils/appToast';
 import AppIcon from '../../../../../assets/appicon/AppIcon';
+import { styles } from './styles.EditGroupModal';
 
 interface EditGroupModalProps {
   visible: boolean;
@@ -21,7 +22,7 @@ interface EditGroupModalProps {
   onOpenLeaveModal: () => void;
 }
 
-export const EditGroupModal: React.FC<EditGroupModalProps> = ({
+const EditGroupModal: React.FC<EditGroupModalProps> = ({
   visible,
   onClose,
   isLeader,
@@ -227,79 +228,4 @@ export const EditGroupModal: React.FC<EditGroupModalProps> = ({
   );
 };
 
-const styles = StyleSheet.create({
-  modalOverlay: {
-    flex: 1,
-    justifyContent: 'flex-end',
-    backgroundColor: 'rgba(0,0,0,0.45)',
-  },
-  modalSheet: {
-    padding: 20,
-    borderTopLeftRadius: 24,
-    borderTopRightRadius: 24,
-  },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    marginBottom: 16,
-  },
-  closeButton: {
-    width: 34,
-    height: 34,
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderRadius: 17,
-  },
-  imageSection: {
-    alignItems: 'center',
-    marginBottom: 16,
-  },
-  imagePreviewContainer: {
-    width: 80,
-    height: 80,
-    borderRadius: 40,
-    borderWidth: 1.5,
-    position: 'relative',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  imagePreview: {
-    width: '100%',
-    height: '100%',
-  },
-  placeholderContainer: {
-    width: '100%',
-    height: '100%',
-    borderRadius: 40,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  cameraBadge: {
-    position: 'absolute',
-    right: -2,
-    bottom: -2,
-    width: 28,
-    height: 28,
-    borderRadius: 14,
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderWidth: 1,
-    elevation: 3,
-  },
-  imageActionRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginTop: 8,
-  },
-  outlineActionBtn: {
-    marginBottom: 10,
-  },
-  leaveOutlineBtn: {
-    minHeight: 48,
-    borderWidth: 1.5,
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingVertical: 12,
-  },
-});
+export default memo(EditGroupModal);

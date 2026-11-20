@@ -1,4 +1,4 @@
-import React, { Suspense } from 'react';
+import React from 'react';
 import {
   Modal,
   Pressable,
@@ -8,7 +8,13 @@ import {
   StatusBar,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { AppHeader, AppSettingsRow, AppText } from '../../../components';
+import {
+  AppHeader,
+  AppSettingsRow,
+  AppText,
+  ConfirmationModal,
+  LogoutModal,
+} from '../../../components';
 import { useTheme } from '../../../theme/useTheme';
 import createStyles from './styles.Setting';
 import SettingsSection from './components/SettingsSection';
@@ -17,14 +23,6 @@ import useSettings, {
   type SettingsNavigation,
 } from './useSettings';
 import AppIcon from '../../../assets/appicon/AppIcon';
-
-const LogoutModal = React.lazy(
-  () => import('../../../components/common/logout_modal/LogoutModal'),
-);
-const ConfirmationModal = React.lazy(
-  () =>
-    import('../../../components/common/confirmation_modal/ConfirmationModal'),
-);
 
 const Settings = ({ navigation }: { navigation: SettingsNavigation }) => {
   const { theme } = useTheme();
@@ -260,41 +258,37 @@ const Settings = ({ navigation }: { navigation: SettingsNavigation }) => {
         </Pressable>
       </Modal>
 
-      <Suspense fallback={null}>
-        <LogoutModal
-          visible={modalVisible}
-          onClose={() => setModalVisible(false)}
-          onSignOut={handleSignOut}
-        />
-      </Suspense>
-      <Suspense fallback={null}>
-        <ConfirmationModal
-          visible={showLocationConfirmation}
-          onClose={() => setShowLocationConfirmation(false)}
-          title="Enable continuous location tracking?"
-          message="Vitality will record your location in the background, including when the app is closed, until you turn this off. Location data currently stays on this device."
-          position="center"
-          closeOnBackdropPress={false}
-          showCloseButton
-        >
-          <View style={styles.modalActionsRow}>
-            <Pressable
-              onPress={() => setShowLocationConfirmation(false)}
-              style={styles.cancelButton}
-              accessibilityRole="button"
-            >
-              <AppText>Cancel</AppText>
-            </Pressable>
-            <Pressable
-              onPress={handleStartLocationTracking}
-              style={styles.continueButton}
-              accessibilityRole="button"
-            >
-              <AppText style={{ color: colors.white }}>Continue</AppText>
-            </Pressable>
-          </View>
-        </ConfirmationModal>
-      </Suspense>
+      <LogoutModal
+        visible={modalVisible}
+        onClose={() => setModalVisible(false)}
+        onSignOut={handleSignOut}
+      />
+      <ConfirmationModal
+        visible={showLocationConfirmation}
+        onClose={() => setShowLocationConfirmation(false)}
+        title="Enable continuous location tracking?"
+        message="Vitality will record your location in the background, including when the app is closed, until you turn this off. Location data currently stays on this device."
+        position="center"
+        closeOnBackdropPress={false}
+        showCloseButton
+      >
+        <View style={styles.modalActionsRow}>
+          <Pressable
+            onPress={() => setShowLocationConfirmation(false)}
+            style={styles.cancelButton}
+            accessibilityRole="button"
+          >
+            <AppText>Cancel</AppText>
+          </Pressable>
+          <Pressable
+            onPress={handleStartLocationTracking}
+            style={styles.continueButton}
+            accessibilityRole="button"
+          >
+            <AppText style={{ color: colors.white }}>Continue</AppText>
+          </Pressable>
+        </View>
+      </ConfirmationModal>
     </View>
   );
 };

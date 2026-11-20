@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useCallback, useMemo, useState } from 'react';
 import { View, ScrollView, Pressable } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import {
@@ -13,7 +13,6 @@ import { GroupTabs } from './components/groups_tab/GroupTabs';
 import { GroupOverview } from './components/group_overview/GroupOverview';
 import { GroupLeaderboard } from './components/group_leaderboard/GroupLeaderboard';
 import { CreateChallengeModal } from './components/create_challenge_modal/CreateChallengeModal';
-import { EditGroupModal } from './components/edit_group_modal/EditGroupModal';
 import { MemberSearchModal } from './components/member_search_modal/MemberSearchModal';
 import { GroupDetailShimmer } from './components/group_detail_shimmer/GroupDetailShimmer';
 import { AppErrorView, AppHeader, AppText } from '../../../components';
@@ -22,9 +21,10 @@ import type { RootStackParamList } from '../../../navigations/GroupsStack';
 // import { GroupChat } from './components/group_chats/GroupChat';
 import useGroupDetail, { type GroupUserSearchResult } from './useGroupDetail';
 import AppIcon from '../../../assets/appicon/AppIcon';
-import InviteMemberModal from './components/modals/InviteMemberModal';
-import ArchiveGroupModal from './components/modals/ArchiveGroupModal';
 import LeaveGroupModal from './components/modals/LeaveGroupModal';
+import ArchiveGroupModal from './components/modals/ArchiveGroupModal';
+import InviteMemberModal from './components/modals/InviteMemberModal';
+import EditGroupModal from './components/edit_group_modal/EditGroupModal';
 
 interface GroupDetailScreenProps {
   groupName?: string;
@@ -118,12 +118,106 @@ const GroupDetailScreen: React.FC<GroupDetailScreenProps> = ({
     primaryColor: colors.primary,
   });
 
+  const handleBackPress = useCallback(() => {
+    navigation.goBack();
+  }, [navigation]);
+
+  const handleSettingsPress = useCallback(() => {
+    setGroupNameDraft(groupName);
+    setGroupImage(undefined);
+    setGroupEditVisible(true);
+  }, [groupName, setGroupNameDraft, setGroupEditVisible]);
+
+  const handleOpenMemberSearch = useCallback(() => {
+    setMemberSearchVisible(true);
+  }, [setMemberSearchVisible]);
+
+  const handleCloseMemberSearch = useCallback(() => {
+    setMemberSearchVisible(false);
+  }, [setMemberSearchVisible]);
+
+  const handleOpenCreateChallenge = useCallback(() => {
+    setCreateChallengeVisible(true);
+  }, [setCreateChallengeVisible]);
+
+  const handleCloseCreateChallenge = useCallback(() => {
+    if (!createChallengeLoading) {
+      setCreateChallengeVisible(false);
+    }
+  }, [createChallengeLoading, setCreateChallengeVisible]);
+
+  const handleOpenArchiveModal = useCallback(() => {
+    setArchiveModalVisible(true);
+  }, []);
+
+  const handleCloseArchiveModal = useCallback(() => {
+    setArchiveModalVisible(false);
+  }, []);
+
+  const handleArchiveGroup = useCallback(async () => {
+    setArchiveLoading(true);
+    try {
+      const archived = await archiveGroup();
+      setArchiveModalVisible(false);
+      if (archived) navigation.goBack();
+    } finally {
+      setArchiveLoading(false);
+    }
+  }, [archiveGroup, navigation]);
+
+  const handleOpenLeaveModal = useCallback(() => {
+    setLeaveModalVisible(true);
+  }, []);
+
+  const handleCloseLeaveModal = useCallback(() => {
+    setLeaveModalVisible(false);
+  }, []);
+
+  const handleLeaveGroup = useCallback(async () => {
+    setLeaveLoading(true);
+    try {
+      const left = await leaveGroup();
+      setLeaveModalVisible(false);
+      if (left) navigation.goBack();
+    } finally {
+      setLeaveLoading(false);
+    }
+  }, [leaveGroup, navigation]);
+
+  const handleCloseEditGroup = useCallback(() => {
+    if (!saveLoading) {
+      setGroupEditVisible(false);
+    }
+  }, [saveLoading, setGroupEditVisible]);
+
+  const handleSaveGroup = useCallback(
+    async (img?: string | null) => {
+      setSaveLoading(true);
+      try {
+        await saveGroup(img);
+      } finally {
+        setSaveLoading(false);
+      }
+    },
+    [saveGroup],
+  );
+
+  const handleCloseInviteModal = useCallback(() => {
+    setPendingInviteUser(null);
+  }, []);
+
+  const handleInviteMember = useCallback(async () => {
+    if (!pendingInviteUser) return;
+    const added = await addMember(pendingInviteUser);
+    if (added) setPendingInviteUser(null);
+  }, [pendingInviteUser, addMember]);
+
   return (
     <View style={styles.container}>
       <AppHeader
         title={groupName}
         subtitle={groupDescription}
-        onBackPress={() => navigation.goBack()}
+        onBackPress={handleBackPress}
       />
       <ScrollView
         contentContainerStyle={styles.screenContent}
@@ -146,15 +240,11 @@ const GroupDetailScreen: React.FC<GroupDetailScreenProps> = ({
               isPrivate={isPrivateGroup}
               members={members}
               imageUrl={groupImageUrl}
-              onSettingsPress={() => {
-                setGroupNameDraft(groupName);
-                setGroupImage(undefined);
-                setGroupEditVisible(true);
-              }}
+              onSettingsPress={handleSettingsPress}
             />
             {isLeader ? (
               <Pressable
-                onPress={() => setMemberSearchVisible(true)}
+                onPress={handleOpenMemberSearch}
                 style={styles.addMemberButton}
                 accessibilityRole="button"
                 accessibilityLabel="Add member to group"
@@ -177,8 +267,8 @@ const GroupDetailScreen: React.FC<GroupDetailScreenProps> = ({
                 challenges={challenges}
                 isLeader={isLeader}
                 loading={dataLoading}
-                onNewChallenge={() => setCreateChallengeVisible(true)}
-                onArchiveGroup={() => setArchiveModalVisible(true)}
+                onNewChallenge={handleOpenCreateChallenge}
+                onArchiveGroup={handleOpenArchiveModal}
               />
             )}
             {activeTab === 'Leaderboard' && (
@@ -186,7 +276,7 @@ const GroupDetailScreen: React.FC<GroupDetailScreenProps> = ({
             )}
             {activeTab === 'Challenges' && (
               <ChallengesTab
-                onNewChallenge={() => setCreateChallengeVisible(true)}
+                onNewChallenge={handleOpenCreateChallenge}
                 challenges={challenges}
                 onJoin={joinGroupChallenge}
                 joiningChallengeId={joiningChallengeId}
@@ -204,31 +294,33 @@ const GroupDetailScreen: React.FC<GroupDetailScreenProps> = ({
           </>
         )}
       </ScrollView>
-      <CreateChallengeModal
-        visible={createChallengeVisible}
-        challengeName={challengeName}
-        challengeDescription={challengeDescription}
-        challengeGoal={challengeGoal}
-        metricType={metricType}
-        duration={duration}
-        rewardPoints={rewardPoints}
-        bottomInset={insets.bottom}
-        loading={createChallengeLoading}
-        onClose={() =>
-          !createChallengeLoading && setCreateChallengeVisible(false)
-        }
-        onChangeName={setChallengeName}
-        onChangeDescription={setChallengeDescription}
-        onChangeGoal={setChallengeGoal}
-        onChangeMetricType={setMetricType}
-        onChangeRewardPoints={setRewardPoints}
-        onCycleDuration={cycleDuration}
-        onSelectDuration={setDuration}
-        onSubmit={handleCreateChallenge}
-      />
+
+      {createChallengeVisible ? (
+        <CreateChallengeModal
+          visible={createChallengeVisible}
+          challengeName={challengeName}
+          challengeDescription={challengeDescription}
+          challengeGoal={challengeGoal}
+          metricType={metricType}
+          duration={duration}
+          rewardPoints={rewardPoints}
+          bottomInset={insets.bottom}
+          loading={createChallengeLoading}
+          onClose={handleCloseCreateChallenge}
+          onChangeName={setChallengeName}
+          onChangeDescription={setChallengeDescription}
+          onChangeGoal={setChallengeGoal}
+          onChangeMetricType={setMetricType}
+          onChangeRewardPoints={setRewardPoints}
+          onCycleDuration={cycleDuration}
+          onSelectDuration={setDuration}
+          onSubmit={handleCreateChallenge}
+        />
+      ) : null}
+
       <EditGroupModal
         visible={groupEditVisible}
-        onClose={() => !saveLoading && setGroupEditVisible(false)}
+        onClose={handleCloseEditGroup}
         isLeader={isLeader}
         groupNameDraft={groupNameDraft}
         setGroupNameDraft={setGroupNameDraft}
@@ -236,71 +328,44 @@ const GroupDetailScreen: React.FC<GroupDetailScreenProps> = ({
         currentGroupImage={groupImageUrl}
         setGroupImage={setGroupImage}
         saveLoading={saveLoading}
-        onSaveGroup={async img => {
-          setSaveLoading(true);
-          try {
-            await saveGroup(img);
-          } finally {
-            setSaveLoading(false);
-          }
-        }}
-        onOpenLeaveModal={() => setLeaveModalVisible(true)}
+        onSaveGroup={handleSaveGroup}
+        onOpenLeaveModal={handleOpenLeaveModal}
       />
 
-      <MemberSearchModal
-        visible={memberSearchVisible}
-        onClose={() => setMemberSearchVisible(false)}
-        searchQuery={memberSearchQuery}
-        onSearchChange={searchMembers}
-        loading={memberSearchLoading}
-        searchResults={memberSearchResults}
-        onSelectUser={setPendingInviteUser}
-      />
+      {memberSearchVisible ? (
+        <MemberSearchModal
+          visible={memberSearchVisible}
+          onClose={handleCloseMemberSearch}
+          searchQuery={memberSearchQuery}
+          onSearchChange={searchMembers}
+          loading={memberSearchLoading}
+          searchResults={memberSearchResults}
+          onSelectUser={setPendingInviteUser}
+        />
+      ) : null}
 
       <InviteMemberModal
         user={pendingInviteUser}
         groupName={groupName}
         loading={memberAddLoading}
-        onClose={() => setPendingInviteUser(null)}
-        onInvite={async () => {
-          if (!pendingInviteUser) return;
-          const added = await addMember(pendingInviteUser);
-          if (added) setPendingInviteUser(null);
-        }}
+        onClose={handleCloseInviteModal}
+        onInvite={handleInviteMember}
         styles={styles}
       />
 
       <ArchiveGroupModal
         visible={archiveModalVisible}
         loading={archiveLoading}
-        onClose={() => setArchiveModalVisible(false)}
-        onArchive={async () => {
-          setArchiveLoading(true);
-          try {
-            const archived = await archiveGroup();
-            setArchiveModalVisible(false);
-            if (archived) navigation.goBack();
-          } finally {
-            setArchiveLoading(false);
-          }
-        }}
+        onClose={handleCloseArchiveModal}
+        onArchive={handleArchiveGroup}
         styles={styles}
       />
 
       <LeaveGroupModal
         visible={leaveModalVisible}
         loading={leaveLoading}
-        onClose={() => setLeaveModalVisible(false)}
-        onLeave={async () => {
-          setLeaveLoading(true);
-          try {
-            const left = await leaveGroup();
-            setLeaveModalVisible(false);
-            if (left) navigation.goBack();
-          } finally {
-            setLeaveLoading(false);
-          }
-        }}
+        onClose={handleCloseLeaveModal}
+        onLeave={handleLeaveGroup}
         styles={styles}
       />
     </View>

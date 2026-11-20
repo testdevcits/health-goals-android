@@ -4,6 +4,7 @@ import { AppText } from '../../../../../components';
 import { useTheme } from '../../../../../theme/useTheme';
 import { Member, AVATAR_PALETTE } from '../../constants';
 import styles from './styles.GroupBanner';
+import AppIcon from '../../../../../assets/appicon/AppIcon';
 
 interface Props {
   groupName: string;
@@ -137,7 +138,7 @@ export const GroupBanner: React.FC<Props> = memo(
 
         <Pressable
           accessibilityRole="button"
-          accessibilityLabel="Group options"
+          accessibilityLabel="Edit group"
           onPress={onSettingsPress}
           disabled={!onSettingsPress}
           style={[
@@ -145,9 +146,12 @@ export const GroupBanner: React.FC<Props> = memo(
             { backgroundColor: colors.whiteOverlay20 },
           ]}
         >
-          <AppText style={[styles.settingsIcon, { color: colors.white }]}>
-            ⚙
-          </AppText>
+          <AppIcon
+            name="Edit"
+            size={18}
+            color={colors.white}
+            strokeWidth={2.2}
+          />
         </Pressable>
       </View>
     );
