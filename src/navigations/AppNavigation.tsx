@@ -6,7 +6,7 @@ import {
   NavigationContainer,
 } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import AppText from '../components/AppText';
+import AppText from '../components/common/AppText';
 import LoginScreen from '../screens/auth_screens/Login/LoginScreen';
 import MainTabNavigation from './MainTabNavigation';
 import SplashScreen from '../screens/auth_screens/Splash/SplashScreen';
@@ -21,7 +21,7 @@ import { subscribeToSessionExpired } from '../services/auth';
 import { useTheme } from '../theme/useTheme';
 import { spacing } from '../theme/spacing';
 import AppIcon from '../assets/appicon/AppIcon';
-import SessionExpiredModal from '../components/SessionExpiredModal';
+import SessionExpiredModal from '../components/common/session_expired_modal/SessionExpiredModal';
 import { clearProfile } from '../store/profileSlice';
 import { useAppDispatch } from '../store/hooks';
 

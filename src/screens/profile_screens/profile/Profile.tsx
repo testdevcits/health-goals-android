@@ -28,7 +28,7 @@ const ProfileScreen: React.FC = () => {
   const styles = createStyles(colors);
   const insets = useSafeAreaInsets();
   const LogoutModal = React.lazy(
-    () => import('../../../components/LogoutModal'),
+    () => import('../../../components/common/logout_modal/LogoutModal'),
   );
 
   const navigation = useNavigation<ProfileNavigationProp>();

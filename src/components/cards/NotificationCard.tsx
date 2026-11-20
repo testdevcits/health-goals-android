@@ -1,7 +1,7 @@
 import { StyleSheet, TouchableOpacity, View } from 'react-native';
 import React from 'react';
 import { NotificationItem } from '../../screens/common_screens/notifications/const';
-import AppText from '../AppText';
+import AppText from '../common/AppText';
 import { spacing } from '../../theme/spacing';
 import { useTheme } from '../../theme/useTheme';
 import { radius } from '../../theme/radius';

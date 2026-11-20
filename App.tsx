@@ -15,7 +15,7 @@ import { useTheme } from './src/theme/useTheme';
 import AppNavigation from './src/navigations/AppNavigation';
 import { initializeBackgroundHealthSync } from './src/services/backgroundHealthSync';
 import Toast from 'react-native-toast-message';
-import { appToastConfig } from './src/components/AppToast';
+import { appToastConfig } from './src/components/common/AppToast';
 import BootSplash from 'react-native-bootsplash';
 import { Provider } from 'react-redux';
 import { store } from './src/store/store';

@@ -4,7 +4,7 @@ import { View, Animated } from 'react-native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../../../navigations/AppNavigation';
 import { useTheme } from '../../../theme/useTheme';
-import AppText from '../../../components/AppText';
+import AppText from '../../../components/common/AppText';
 import { createSplashStyles } from './styles.Splash';
 import * as Animatable from 'react-native-animatable';
 

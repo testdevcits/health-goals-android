@@ -1,7 +1,7 @@
 import { View } from 'react-native';
 import React, { useMemo } from 'react';
 import { AppEmptyState } from '../../../../../components';
-import ChallengeCard from '../../../../../components/ChallengeCard';
+import ChallengeCard from '../../../../../components/cards/ChallengeCard';
 import { useTheme } from '../../../../../theme/useTheme';
 import { ChallengesShimmer } from '../group_detail_shimmer/GroupDetailShimmer';
 import { createGroupDetailShimmerStyles } from '../group_detail_shimmer/styles.GroupDetailShimmer';

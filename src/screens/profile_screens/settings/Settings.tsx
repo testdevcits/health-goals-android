@@ -18,9 +18,12 @@ import useSettings, {
 } from './useSettings';
 import AppIcon from '../../../assets/appicon/AppIcon';
 
-const LogoutModal = React.lazy(() => import('../../../components/LogoutModal'));
+const LogoutModal = React.lazy(
+  () => import('../../../components/common/logout_modal/LogoutModal'),
+);
 const ConfirmationModal = React.lazy(
-  () => import('../../../components/ConfirmationModal'),
+  () =>
+    import('../../../components/common/confirmation_modal/ConfirmationModal'),
 );
 
 const Settings = ({ navigation }: { navigation: SettingsNavigation }) => {
