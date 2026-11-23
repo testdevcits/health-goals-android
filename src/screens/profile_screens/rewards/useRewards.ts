@@ -38,15 +38,24 @@ export type Redemption = {
 export type TicketClaim = {
   id?: string;
   month: string;
+  audience?: string;
+  winnerId?: string;
   winnerName?: string;
+  recipientName?: string;
+  recipientEmail?: string;
+  rank?: number;
+  steps?: number;
   groupName?: string;
   status: string;
   stepTotal?: number;
-  ticketDate?: string;
+  ticketDate?: string | null;
   ticketNumber?: string;
   ticketCount?: number;
   bookingReference?: string;
-  ticketImage?: string;
+  delivery?: string | null;
+  ticketImage?: string | null;
+  createdAt?: string;
+  updatedAt?: string;
 };
 
 export const rewardIcon = (title: string) =>

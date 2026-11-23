@@ -138,12 +138,15 @@ const GroupsScreen: React.FC = () => {
               }
             />
           )
-        ) : posts.length ? (
-          <FeedTab posts={posts} />
         ) : (
-          <AppEmptyState
-            title="Your feed is quiet"
-            description="Group activity and updates will show here when they are available."
+          <FeedTab
+            posts={posts}
+            availableGroups={groups.map(g => ({
+              id: g.id,
+              name: g.name,
+              emoji: g.emoji,
+            }))}
+            onPostCreated={refresh}
           />
         )}
       </ScrollView>

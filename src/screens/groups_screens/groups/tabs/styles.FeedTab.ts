@@ -2,8 +2,33 @@ import { StyleSheet } from 'react-native';
 
 const createStyles = (colors: any, spacing: any, radius: any) =>
   StyleSheet.create({
+    container: {
+      flex: 1,
+      position: 'relative',
+      minHeight: 400,
+    },
+
     feedList: {
       paddingHorizontal: spacing.base,
+      paddingBottom: spacing.xxl + spacing.lg,
+    },
+
+    floatingButton: {
+      position: 'absolute',
+      bottom: spacing.lg,
+      right: spacing.base,
+      width: 56,
+      height: 56,
+      borderRadius: radius.full,
+      backgroundColor: colors.primary,
+      alignItems: 'center',
+      justifyContent: 'center',
+      elevation: 8,
+      shadowColor: colors.primary,
+      shadowOffset: { width: 0, height: 4 },
+      shadowOpacity: 0.35,
+      shadowRadius: 8,
+      zIndex: 99,
     },
 
     feedCard: {
