@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import {
   Image,
   View,
@@ -6,6 +6,7 @@ import {
   ScrollView,
   Pressable,
   StatusBar,
+  Share,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
@@ -52,6 +53,52 @@ const ProfileScreen: React.FC = () => {
     phone,
     initials,
   } = useProfile(navigation, colors);
+
+  const aboutItems = useMemo(
+    () => [
+      {
+        id: 'about',
+        title: 'About Vitality',
+        icon: 'Info' as const,
+        onPress: () => navigation.navigate('AboutVitality'),
+      },
+      {
+        id: 'terms',
+        title: 'Terms & Conditions',
+        icon: 'FileText' as const,
+        onPress: () => navigation.navigate('CommunityGuidelines'),
+      },
+      {
+        id: 'privacy-policy',
+        title: 'Privacy Policy',
+        icon: 'LockKeyhole' as const,
+        onPress: () => navigation.navigate('PrivacyPolicy'),
+      },
+      {
+        id: 'contact',
+        title: 'Contact Us',
+        icon: 'Headphones' as const,
+        onPress: () => navigation.navigate('HelpSupport'),
+      },
+      {
+        id: 'share',
+        title: 'Share the App',
+        icon: 'Share2' as const,
+        onPress: async () => {
+          try {
+            await Share.share({
+              title: 'Vitality',
+              message:
+                'Join me on Vitality to track your daily steps, workouts, and earn rewards! Download now: https://vitality.app',
+            });
+          } catch {
+            // User cancelled share
+          }
+        },
+      },
+    ],
+    [navigation],
+  );
 
   return (
     <View
@@ -204,6 +251,58 @@ const ProfileScreen: React.FC = () => {
                 </Pressable>
               ))}
             </View>
+
+
+            {/* About the App */}
+            <AppText variant="subtitle1" bold style={styles.sectionTitle}>
+              About the App
+            </AppText>
+
+            <View
+              style={[styles.menuCard, { backgroundColor: colors.surface }]}
+            >
+              {aboutItems.map((item, index) => (
+                <Pressable
+                  key={item.id}
+                  onPress={item.onPress}
+                  style={({ pressed }) => [
+                    styles.menuRow,
+                    pressed && { backgroundColor: colors.backgroundSecondary },
+                    index !== aboutItems.length - 1 && {
+                      borderBottomColor: colors.divider,
+                      borderBottomWidth: StyleSheet.hairlineWidth,
+                    },
+                  ]}
+                  accessibilityRole="button"
+                  accessibilityLabel={item.title}
+                >
+                  <View
+                    style={[
+                      styles.menuIconContainer,
+                      { backgroundColor: colors.primaryLight },
+                    ]}
+                  >
+                    <AppIcon
+                      name={item.icon}
+                      size={19}
+                      color={colors.textSecondary}
+                    />
+                  </View>
+
+                  <AppText variant="subtitle2" bold style={styles.menuTitle}>
+                    {item.title}
+                  </AppText>
+
+                  <AppIcon
+                    name="ChevronRight"
+                    size={18}
+                    color={colors.textTertiary}
+                  />
+                </Pressable>
+              ))}
+            </View>
+
+            {/* Sign Out */}
             <View
               style={[styles.menuCard, { backgroundColor: colors.surface }]}
             >
@@ -218,11 +317,15 @@ const ProfileScreen: React.FC = () => {
           </>
         )}
       </ScrollView>
-      <LogoutModal
-        visible={modalVisible}
-        onClose={() => setModalVisible(false)}
-        onSignOut={handleSignOut}
-      />
+      {
+        modalVisible &&
+        <LogoutModal
+          visible={modalVisible}
+          onClose={() => setModalVisible(false)}
+          onSignOut={handleSignOut}
+        />
+      }
+
     </View>
   );
 };

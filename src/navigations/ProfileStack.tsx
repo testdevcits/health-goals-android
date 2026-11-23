@@ -13,6 +13,8 @@ import HelpSupportScreen from '../screens/profile_screens/help_support/HelpSuppo
 import AiChatBot from '../screens/profile_screens/help_support/screens/ai_agent_chat/AiChatBot';
 import EmailSupport from '../screens/profile_screens/help_support/screens/email_support/EmailSupport';
 import CommunityGuidelines from '../screens/profile_screens/help_support/screens/community_guidelines/CommunityGuidelines';
+import PrivacyPolicyScreen from '../screens/profile_screens/privacy_policy/PrivacyPolicyScreen';
+import AboutVitalityScreen from '../screens/profile_screens/about_vitality/AboutVitalityScreen';
 
 export type RootStackParamList = {
   Profile: undefined;
@@ -27,6 +29,8 @@ export type RootStackParamList = {
   AiChatBot: undefined;
   EmailSupport: undefined;
   CommunityGuidelines: undefined;
+  PrivacyPolicy: undefined;
+  AboutVitality: undefined;
 };
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
@@ -51,6 +55,14 @@ const ProfileStack = () => {
       <Stack.Screen
         name="CommunityGuidelines"
         component={CommunityGuidelines}
+      />
+      <Stack.Screen
+        name="PrivacyPolicy"
+        component={PrivacyPolicyScreen}
+      />
+      <Stack.Screen
+        name="AboutVitality"
+        component={AboutVitalityScreen}
       />
     </Stack.Navigator>
   );
