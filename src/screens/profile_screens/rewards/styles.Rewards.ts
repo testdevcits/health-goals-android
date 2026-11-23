@@ -410,7 +410,6 @@ const createStyles = (colors: AppColors) =>
     transactionRight: {
       alignItems: 'flex-end',
       marginLeft: spacing.sm,
-
     },
     transactionAmount: {
       fontFamily: fonts.bold,

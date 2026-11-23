@@ -79,8 +79,9 @@ const PrivacyPolicyScreen: React.FC<Props> = ({ navigation }) => {
             Your Privacy Comes First
           </AppText>
           <AppText variant="body2" style={styles.heroDescription}>
-            Vitality is built to reward healthy habits while keeping your personal
-            and health data completely confidential, encrypted, and secure.
+            Vitality is built to reward healthy habits while keeping your
+            personal and health data completely confidential, encrypted, and
+            secure.
           </AppText>
 
           <View style={styles.effectiveDateBadge}>

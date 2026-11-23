@@ -56,14 +56,8 @@ const ProfileStack = () => {
         name="CommunityGuidelines"
         component={CommunityGuidelines}
       />
-      <Stack.Screen
-        name="PrivacyPolicy"
-        component={PrivacyPolicyScreen}
-      />
-      <Stack.Screen
-        name="AboutVitality"
-        component={AboutVitalityScreen}
-      />
+      <Stack.Screen name="PrivacyPolicy" component={PrivacyPolicyScreen} />
+      <Stack.Screen name="AboutVitality" component={AboutVitalityScreen} />
     </Stack.Navigator>
   );
 };

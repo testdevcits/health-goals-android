@@ -41,5 +41,3 @@ const useVerifyEmail = ({ navigation, route }: any) => {
 };
 
 export default useVerifyEmail;
-
-

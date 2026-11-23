@@ -57,7 +57,17 @@ export interface CreateFeedPostModalProps {
   initialMediaUrl?: string;
 }
 
-const CELEBRATION_EMOJIS = ['🎉', '🔥', '🏆', '💪', '⚡', '👟', '🥇', '🎯', '🌟'];
+const CELEBRATION_EMOJIS = [
+  '🎉',
+  '🔥',
+  '🏆',
+  '💪',
+  '⚡',
+  '👟',
+  '🥇',
+  '🎯',
+  '🌟',
+];
 
 export const CreateFeedPostModal: React.FC<CreateFeedPostModalProps> = memo(
   ({
@@ -403,7 +413,9 @@ export const CreateFeedPostModal: React.FC<CreateFeedPostModalProps> = memo(
                             name={activityIconName}
                             size={18}
                             color={
-                              attachActivity ? colors.primary : colors.textSecondary
+                              attachActivity
+                                ? colors.primary
+                                : colors.textSecondary
                             }
                           />
                         </View>
@@ -424,7 +436,9 @@ export const CreateFeedPostModal: React.FC<CreateFeedPostModalProps> = memo(
                           name={attachActivity ? 'Check' : 'Plus'}
                           size={18}
                           color={
-                            attachActivity ? colors.primary : colors.textSecondary
+                            attachActivity
+                              ? colors.primary
+                              : colors.textSecondary
                           }
                         />
                       </View>
@@ -454,7 +468,9 @@ export const CreateFeedPostModal: React.FC<CreateFeedPostModalProps> = memo(
                       accessibilityLabel="Change photo from gallery"
                     >
                       <AppIcon name="Edit" size={12} color="#FFFFFF" />
-                      <AppText style={styles.mediaChangeBtnText}>Change</AppText>
+                      <AppText style={styles.mediaChangeBtnText}>
+                        Change
+                      </AppText>
                     </Pressable>
                   </View>
                 ) : (

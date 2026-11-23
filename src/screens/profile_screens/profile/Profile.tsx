@@ -252,7 +252,6 @@ const ProfileScreen: React.FC = () => {
               ))}
             </View>
 
-
             {/* About the App */}
             <AppText variant="subtitle1" bold style={styles.sectionTitle}>
               About the App
@@ -317,15 +316,13 @@ const ProfileScreen: React.FC = () => {
           </>
         )}
       </ScrollView>
-      {
-        modalVisible &&
+      {modalVisible && (
         <LogoutModal
           visible={modalVisible}
           onClose={() => setModalVisible(false)}
           onSignOut={handleSignOut}
         />
-      }
-
+      )}
     </View>
   );
 };

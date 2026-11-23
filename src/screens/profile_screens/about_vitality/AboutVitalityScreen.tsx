@@ -71,7 +71,8 @@ const AboutVitalityScreen: React.FC<Props> = ({ navigation }) => {
             Vitality
           </AppText>
           <AppText variant="body2" style={styles.appTagline}>
-            Every step counts. Every movement inspires. Every milestone is rewarded.
+            Every step counts. Every movement inspires. Every milestone is
+            rewarded.
           </AppText>
 
           <View style={styles.versionBadge}>

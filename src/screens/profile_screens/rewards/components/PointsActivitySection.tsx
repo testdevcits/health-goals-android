@@ -26,10 +26,7 @@ interface PointsActivitySectionProps {
   onLoadMore: () => void;
 }
 
-const getTransactionVisuals = (
-  type: TransactionItem['type'],
-  colors: any,
-) => {
+const getTransactionVisuals = (type: TransactionItem['type'], colors: any) => {
   switch (type) {
     case 'EARN':
       return {

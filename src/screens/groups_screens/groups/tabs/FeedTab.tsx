@@ -54,7 +54,11 @@ const FeedTab: React.FC<FeedTabProps> = ({
     async (payload: FeedPostPayload) => {
       setSubmitting(true);
       try {
-        await authenticatedRequest('POST', API_ENDPOINTS.COMMUNITY.FEED, payload);
+        await authenticatedRequest(
+          'POST',
+          API_ENDPOINTS.COMMUNITY.FEED,
+          payload,
+        );
         showAppToast(
           'success',
           'Milestone Shared!',
