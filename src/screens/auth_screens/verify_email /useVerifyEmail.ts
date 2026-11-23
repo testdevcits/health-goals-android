@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { apiErrorMessage } from '../../../services/api';
 import { verifyEmailCode } from '../../../services/auth';
 import { CommonActions } from '@react-navigation/native';
+import { Keyboard } from 'react-native';
 
 const useVerifyEmail = ({ navigation, route }: any) => {
   const [otp, setOtp] = useState('');
@@ -13,7 +14,7 @@ const useVerifyEmail = ({ navigation, route }: any) => {
       setError('Enter the 6-digit code');
       return;
     }
-
+    Keyboard.dismiss();
     setLoading(true);
     try {
       await verifyEmailCode(route.params.challengeId, otp);

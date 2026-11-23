@@ -53,10 +53,10 @@ export const rewardIcon = (title: string) =>
   /coffee|cafe/i.test(title)
     ? '☕'
     : /fitness|band|wearable/i.test(title)
-    ? '💪'
-    : /donat|charity|health/i.test(title)
-    ? '❤️'
-    : '🎁';
+      ? '💪'
+      : /donat|charity|health/i.test(title)
+        ? '❤️'
+        : '🎁';
 
 export default function useRewards() {
   const [points, setPoints] = useState(0);
@@ -116,7 +116,7 @@ export default function useRewards() {
       const currentRedemptions = redemptionsResult.value.redemptions || [];
       setRedemptions(currentRedemptions);
       setRevealedCodes(previous =>
-        previous.filter(id => currentRedemptions.some(item => item.id === id)),
+        previous.filter(id => currentRedemptions.some(item => item?.id === id)),
       );
     }
     if (ticketsResult.status === 'fulfilled') {
@@ -245,7 +245,7 @@ export default function useRewards() {
       );
       setRedemptions(previous =>
         previous.map(item =>
-          item.id === redemption.id ? { ...item, ...result.redemption } : item,
+          item?.id === redemption.id ? { ...item, ...result.redemption } : item,
         ),
       );
       if (result.redemption.redemptionCode) {
@@ -267,8 +267,7 @@ export default function useRewards() {
   const confirmRedeem = (reward: Reward) => {
     Alert.alert(
       'Redeem this reward?',
-      `${
-        reward.title
+      `${reward.title
       } will use ${reward.pointsRequired.toLocaleString()} points. If successful, the code will appear in Recent Redemptions.`,
       [
         { text: 'Cancel', style: 'cancel' },

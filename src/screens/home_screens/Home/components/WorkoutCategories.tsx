@@ -34,7 +34,7 @@ const WorkoutCategories: React.FC<{ onViewAllPress: () => void }> = ({
         accessibilityLabel={`${item?.name}: ${item?.subtitle}`}
         onPress={() =>
           navigation.navigate('WorkoutSession', {
-            activityId: resolveWorkoutActivityId(item.id),
+            activityId: resolveWorkoutActivityId(item?.id),
           })
         }
       >

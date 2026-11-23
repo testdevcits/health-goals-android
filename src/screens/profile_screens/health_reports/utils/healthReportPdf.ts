@@ -41,10 +41,10 @@ export interface ExportPdfOptions {
 
 export function buildHealthReportHtml(options: ExportPdfOptions): string {
   const { from, to, activeTab, history, totalCoins } = options;
-  const total = history.reduce((sum, item) => sum + item.value, 0);
+  const total = history.reduce((sum, item) => sum + item?.value, 0);
   const avg = history.length ? Math.round(total / history.length) : 0;
-  const max = history.length ? Math.max(...history.map(item => item.value)) : 0;
-  const activeDays = history.filter(item => item.value > 0).length;
+  const max = history.length ? Math.max(...history.map(item => item?.value)) : 0;
+  const activeDays = history.filter(item => item?.value > 0).length;
   const unit = history[0]?.unit || (activeTab === 'Steps' ? 'steps' : 'mins');
 
   const formattedTotal =
@@ -66,30 +66,30 @@ export function buildHealthReportHtml(options: ExportPdfOptions): string {
     .map(item => {
       let dayName = '';
       try {
-        const d = new Date(`${item.date}T12:00:00Z`);
+        const d = new Date(`${item?.date}T12:00:00Z`);
         dayName = d.toLocaleDateString('en-US', { weekday: 'short' });
       } catch {
         dayName = '';
       }
       const valStr =
         activeTab === 'Sleep'
-          ? `${Math.floor(item.value / 60)}h ${Math.round(item.value % 60)}m`
-          : `${item.value.toLocaleString()} ${unit}`;
+          ? `${Math.floor(item?.value / 60)}h ${Math.round(item?.value % 60)}m`
+          : `${item?.value.toLocaleString()} ${unit}`;
 
       const status =
         activeTab === 'Steps'
-          ? item.value >= 10000
+          ? item?.value >= 10000
             ? '<span class="badge success">Goal Met</span>'
-            : item.value > 0
-            ? '<span class="badge active">Active</span>'
-            : '<span class="badge rest">Rest</span>'
-          : item.value > 0
-          ? '<span class="badge success">Recorded</span>'
-          : '<span class="badge rest">No Data</span>';
+            : item?.value > 0
+              ? '<span class="badge active">Active</span>'
+              : '<span class="badge rest">Rest</span>'
+          : item?.value > 0
+            ? '<span class="badge success">Recorded</span>'
+            : '<span class="badge rest">No Data</span>';
 
       return `
         <tr>
-          <td><strong>${item.date}</strong> <span style="color:#6B7280; font-size:12px;">(${dayName})</span></td>
+          <td><strong>${item?.date}</strong> <span style="color:#6B7280; font-size:12px;">(${dayName})</span></td>
           <td style="text-align: right; font-weight: 600;">${valStr}</td>
           <td style="text-align: center;">${status}</td>
         </tr>
@@ -273,10 +273,10 @@ export async function exportHealthReportPdf(
   options: ExportPdfOptions,
 ): Promise<string | null> {
   const { from, to, activeTab, history, totalCoins } = options;
-  const total = history.reduce((sum, item) => sum + item.value, 0);
+  const total = history.reduce((sum, item) => sum + item?.value, 0);
   const avg = history.length ? Math.round(total / history.length) : 0;
-  const max = history.length ? Math.max(...history.map(item => item.value)) : 0;
-  const activeDays = history.filter(item => item.value > 0).length;
+  const max = history.length ? Math.max(...history.map(item => item?.value)) : 0;
+  const activeDays = history.filter(item => item?.value > 0).length;
   const unit = history[0]?.unit || (activeTab === 'Steps' ? 'steps' : 'mins');
 
   const formattedTotal =
@@ -305,20 +305,20 @@ export async function exportHealthReportPdf(
   const rows = history.map(item => {
     let dayName = '';
     try {
-      const d = new Date(`${item.date}T12:00:00Z`);
+      const d = new Date(`${item?.date}T12:00:00Z`);
       dayName = d.toLocaleDateString('en-US', { weekday: 'short' });
     } catch {
       dayName = '';
     }
     const valStr =
       activeTab === 'Sleep'
-        ? `${Math.floor(item.value / 60)}h ${Math.round(item.value % 60)}m`
-        : `${item.value.toLocaleString()} ${unit}`;
+        ? `${Math.floor(item?.value / 60)}h ${Math.round(item?.value % 60)}m`
+        : `${item?.value.toLocaleString()} ${unit}`;
 
-    const isGoal = activeTab === 'Steps' ? item.value >= 10000 : item.value > 0;
+    const isGoal = activeTab === 'Steps' ? item?.value >= 10000 : item?.value > 0;
 
     return {
-      date: item.date,
+      date: item?.date,
       day: dayName,
       value: valStr,
       status: isGoal
@@ -418,15 +418,14 @@ export async function exportHealthReportPdf(
       `Period: ${from.toLocaleDateString()} – ${to.toLocaleDateString()}`,
       `Total Recorded: ${total.toLocaleString()} ${unit}`,
       `Daily Average: ${avg.toLocaleString()} ${unit}`,
-      `Active Days: ${history.filter(h => h.value > 0).length} of ${
-        history.length
+      `Active Days: ${history.filter(h => h.value > 0).length} of ${history.length
       }`,
       `Activity Coins: ${totalCoins}`,
       `Generated: ${new Date().toLocaleDateString()}`,
       '',
       'DAILY BREAKDOWN:',
       ...history.map(
-        item => `${item.date}: ${item.value.toLocaleString()} ${unit}`,
+        item => `${item?.date}: ${item?.value.toLocaleString()} ${unit}`,
       ),
     ].join('\n');
 
@@ -449,8 +448,7 @@ export async function exportHealthReportPdf(
         `Total: ${total.toLocaleString()} ${unit}`,
         `Daily Avg: ${avg.toLocaleString()} ${unit}`,
         `Coins Earned: ${totalCoins}`,
-        `Days Recorded: ${history.filter(h => h.value > 0).length} of ${
-          history.length
+        `Days Recorded: ${history.filter(h => h.value > 0).length} of ${history.length
         }`,
       ].join('\n'),
     });

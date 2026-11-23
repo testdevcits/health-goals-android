@@ -39,7 +39,7 @@ const Notifications = () => {
     [markAsRead],
   );
 
-  const keyExtractor = useCallback((item: NotificationItem) => item.id, []);
+  const keyExtractor = useCallback((item: NotificationItem) => item?.id, []);
 
   return (
     <View style={[styles.safeArea, { backgroundColor: colors.background }]}>

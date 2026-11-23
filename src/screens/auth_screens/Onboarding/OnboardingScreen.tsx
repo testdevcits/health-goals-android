@@ -92,7 +92,7 @@ const OnboardingScreen: React.FC<Props> = ({ navigation }) => {
             <View style={styles.featureList}>
               {featureList.map(item => (
                 <View
-                  key={item.title}
+                  key={item?.title}
                   style={[
                     styles.featureItem,
                     {
@@ -108,15 +108,15 @@ const OnboardingScreen: React.FC<Props> = ({ navigation }) => {
                     ]}
                   >
                     <AppText style={styles.featureIconText}>
-                      {item.icon}
+                      {item?.icon}
                     </AppText>
                   </View>
                   <View style={styles.featureTextWrap}>
                     <AppText variant="label" bold>
-                      {item.title}
+                      {item?.title}
                     </AppText>
                     <AppText variant="caption" secondary>
-                      {item.text}
+                      {item?.text}
                     </AppText>
                   </View>
                 </View>

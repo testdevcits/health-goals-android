@@ -103,17 +103,17 @@ export const MetricReportCard: React.FC<MetricReportCardProps> = ({
   const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
   const effectiveIndex =
     selectedIndex !== null &&
-    selectedIndex >= 0 &&
-    selectedIndex < chartHistory.length
+      selectedIndex >= 0 &&
+      selectedIndex < chartHistory.length
       ? selectedIndex
       : Math.max(0, chartHistory.length - 1);
-  const chartMaxValue = Math.max(...chartHistory.map(item => item.value), 1);
+  const chartMaxValue = Math.max(...chartHistory.map(item => item?.value), 1);
   const tabColor =
     activeTab === 'Steps'
       ? colors.primary
       : activeTab === 'Sleep'
-      ? colors.primaryDark
-      : colors.coral || colors.warning;
+        ? colors.primaryDark
+        : colors.coral || colors.warning;
 
   return (
     <ProfileCard style={styles.reportCard}>
@@ -215,14 +215,14 @@ export const MetricReportCard: React.FC<MetricReportCardProps> = ({
               const isSelected = effectiveIndex === index;
               return (
                 <TouchableOpacity
-                  key={item.date || index}
+                  key={item?.date || index}
                   activeOpacity={0.7}
                   onPress={() => setSelectedIndex(index)}
                   style={styles.barTouchable}
                   accessibilityRole="button"
                   accessibilityLabel={`${formatDayLabel(
-                    item.date,
-                  )}: ${formatMetricValue(item.value, activeTab)}`}
+                    item?.date,
+                  )}: ${formatMetricValue(item?.value, activeTab)}`}
                 >
                   {isSelected && (
                     <View
@@ -239,7 +239,7 @@ export const MetricReportCard: React.FC<MetricReportCardProps> = ({
                         bold
                         style={{ fontSize: 10, color: tabColor }}
                       >
-                        {formatShortTooltipValue(item.value, activeTab)}
+                        {formatShortTooltipValue(item?.value, activeTab)}
                       </AppText>
                     </View>
                   )}
@@ -251,7 +251,7 @@ export const MetricReportCard: React.FC<MetricReportCardProps> = ({
                           6,
                           Math.min(
                             90,
-                            Math.round((item.value / chartMaxValue) * 90),
+                            Math.round((item?.value / chartMaxValue) * 90),
                           ),
                         ),
                         backgroundColor: tabColor,
@@ -274,7 +274,7 @@ export const MetricReportCard: React.FC<MetricReportCardProps> = ({
                     color={isSelected ? undefined : 'textTertiary'}
                     style={isSelected ? { color: tabColor } : undefined}
                   >
-                    {new Date(`${item.date}T12:00:00`).toLocaleDateString([], {
+                    {new Date(`${item?.date}T12:00:00`).toLocaleDateString([], {
                       weekday: 'short',
                     })}
                   </AppText>
@@ -287,7 +287,7 @@ export const MetricReportCard: React.FC<MetricReportCardProps> = ({
         <View style={styles.chartPlaceholder}>
           <AppText variant="h3" primary>
             {history
-              .reduce((sum, item) => sum + item.value, 0)
+              .reduce((sum, item) => sum + item?.value, 0)
               .toLocaleString()}{' '}
             {history[0]?.unit}
           </AppText>
@@ -303,53 +303,53 @@ export const MetricReportCard: React.FC<MetricReportCardProps> = ({
         <View style={styles.metricsRow}>
           {(activeTab === 'Steps'
             ? [
-                [
-                  history
-                    .reduce((sum, item) => sum + item.value, 0)
-                    .toLocaleString(),
-                  'Total Steps',
-                ],
-                [
-                  history.length
-                    ? Math.round(
-                        history.reduce((sum, item) => sum + item.value, 0) /
-                          history.length,
-                      ).toLocaleString()
-                    : '—',
-                  'Daily Avg',
-                ],
-                [
-                  history.filter(item => item.value >= 10000).length.toString(),
-                  'Days >10K',
-                ],
-              ]
+              [
+                history
+                  .reduce((sum, item) => sum + item?.value, 0)
+                  .toLocaleString(),
+                'Total Steps',
+              ],
+              [
+                history.length
+                  ? Math.round(
+                    history.reduce((sum, item) => sum + item?.value, 0) /
+                    history.length,
+                  ).toLocaleString()
+                  : '—',
+                'Daily Avg',
+              ],
+              [
+                history.filter(item => item?.value >= 10000).length.toString(),
+                'Days >10K',
+              ],
+            ]
             : activeTab === 'Sleep'
-            ? [
+              ? [
                 [
                   history.length
                     ? `${Math.floor(
-                        history.reduce((sum, item) => sum + item.value, 0) /
-                          history.length /
-                          60,
-                      )}h ${Math.round(
-                        (history.reduce((sum, item) => sum + item.value, 0) /
-                          history.length) %
-                          60,
-                      )}m`
+                      history.reduce((sum, item) => sum + item?.value, 0) /
+                      history.length /
+                      60,
+                    )}h ${Math.round(
+                      (history.reduce((sum, item) => sum + item?.value, 0) /
+                        history.length) %
+                      60,
+                    )}m`
                     : '—',
                   'Avg Sleep',
                 ],
                 [history.length.toString(), 'Days Recorded'],
                 [totalCoins.toString(), 'Coins Earned'],
               ]
-            : [
+              : [
                 [
-                  history.reduce((sum, item) => sum + item.count, 0).toString(),
+                  history.reduce((sum, item) => sum + item?.count, 0).toString(),
                   'Workouts',
                 ],
                 [
                   history
-                    .reduce((sum, item) => sum + item.value, 0)
+                    .reduce((sum, item) => sum + item?.value, 0)
                     .toLocaleString(),
                   'Total Minutes',
                 ],

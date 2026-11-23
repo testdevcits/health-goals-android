@@ -160,7 +160,7 @@ const AiChatBot: React.FC<Props> = ({ navigation }) => {
 
   const renderMessageItem = useCallback(
     ({ item }: { item: ChatMessage }) => {
-      const isUser = item.sender === 'user';
+      const isUser = item?.sender === 'user';
 
       return (
         <View
@@ -185,7 +185,7 @@ const AiChatBot: React.FC<Props> = ({ navigation }) => {
                 isUser ? styles.userMessageText : styles.botMessageText,
               ]}
             >
-              {item.text}
+              {item?.text}
             </AppText>
             <AppText
               variant="caption"
@@ -194,7 +194,7 @@ const AiChatBot: React.FC<Props> = ({ navigation }) => {
                 isUser ? styles.userTime : styles.botTime,
               ]}
             >
-              {item.time}
+              {item?.time}
             </AppText>
           </View>
         </View>
@@ -234,7 +234,7 @@ const AiChatBot: React.FC<Props> = ({ navigation }) => {
           ref={flatListRef}
           data={messages}
           renderItem={renderMessageItem}
-          keyExtractor={item => item.id}
+          keyExtractor={item => item?.id}
           style={styles.messagesList}
           contentContainerStyle={styles.messagesContent}
           showsVerticalScrollIndicator={false}

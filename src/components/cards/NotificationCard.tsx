@@ -21,9 +21,8 @@ const NotificationCard = ({
     <TouchableOpacity
       activeOpacity={0.75}
       accessibilityRole="button"
-      accessibilityLabel={`${item?.title}, ${item?.time}${
-        item?.unread ? ', unread' : ''
-      }`}
+      accessibilityLabel={`${item?.title}, ${item?.time}${item?.unread ? ', unread' : ''
+        }`}
       style={[
         styles.notificationCard,
         {
@@ -32,14 +31,14 @@ const NotificationCard = ({
           borderRadius: radius.lg,
         },
       ]}
-      onPress={() => item?.unread && onRead(item.id)}
+      onPress={() => item?.unread && onRead(item?.id)}
     >
       {/* Notification Icon */}
       <View
         style={[
           styles.iconContainer,
           {
-            backgroundColor: colors[item.bgColor],
+            backgroundColor: colors[item?.bgColor],
             borderRadius: radius.md,
           },
         ]}

@@ -71,20 +71,20 @@ export default function useNotifications() {
             importance: AndroidImportance.DEFAULT,
           });
           const challengeItems = items
-            .filter(item => !item.read && /^CHALLENGE_/i.test(item.type))
+            .filter(item => !item?.read && /^CHALLENGE_/i.test(item?.type))
             .slice(0, 3);
           const staleChallengeItems = items.filter(
-            item => item.read && /^CHALLENGE_/i.test(item.type),
+            item => item?.read && /^CHALLENGE_/i.test(item?.type),
           );
           await Promise.all([
             ...staleChallengeItems.map(item =>
-              notifee.cancelNotification(item.id),
+              notifee.cancelNotification(item?.id),
             ),
             ...challengeItems.map(item =>
               notifee.displayNotification({
-                id: item.id,
-                title: item.title,
-                body: item.body,
+                id: item?.id,
+                title: item?.title,
+                body: item?.body,
                 android: {
                   channelId,
                   smallIcon: 'ic_notification',
@@ -102,16 +102,16 @@ export default function useNotifications() {
         );
       }
       const mappedItems = items.map(item => ({
-        id: item.id,
-        emoji: emojiForType(item.type),
-        title: item.body ? `${item.title} · ${item.body}` : item.title,
-        time: displayTime(item.createdAt),
-        unread: !item.read,
-        bgColor: iconForType(item.type),
+        id: item?.id,
+        emoji: emojiForType(item?.type),
+        title: item?.body ? `${item?.title} · ${item?.body}` : item?.title,
+        time: displayTime(item?.createdAt),
+        unread: !item?.read,
+        bgColor: iconForType(item?.type),
       }));
       notificationsRef.current = mappedItems;
       setNotifications(mappedItems);
-      setUnreadCount(result.unread ?? items.filter(item => !item.read).length);
+      setUnreadCount(result.unread ?? items.filter(item => !item?.read).length);
     } catch (error) {
       setLoadError(apiErrorMessage(error));
     } finally {
@@ -128,12 +128,12 @@ export default function useNotifications() {
   const markAsRead = useCallback(
     async (id: string) => {
       const wasUnread = notificationsRef.current.some(
-        item => item.id === id && item.unread,
+        item => item?.id === id && item?.unread,
       );
       if (!wasUnread) return;
 
       const updatedItems = notificationsRef.current.map(item =>
-        item.id === id ? { ...item, unread: false } : item,
+        item?.id === id ? { ...item, unread: false } : item,
       );
       notificationsRef.current = updatedItems;
       setNotifications(updatedItems);
@@ -171,7 +171,7 @@ export default function useNotifications() {
       );
       await Promise.all(
         notificationsRef.current.map(item =>
-          notifee.cancelNotification(item.id),
+          notifee.cancelNotification(item?.id),
         ),
       );
     } catch (error) {

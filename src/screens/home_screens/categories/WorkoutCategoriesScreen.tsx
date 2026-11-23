@@ -23,7 +23,7 @@ const WorkoutCategoriesScreen: React.FC<Props> = ({ navigation }) => {
         accessibilityLabel={`${item?.title}, ${item?.subtitle}`}
         onPress={() =>
           navigation.navigate('WorkoutSession', {
-            activityId: resolveWorkoutActivityId(item.id),
+            activityId: resolveWorkoutActivityId(item?.id),
           })
         }
         style={({ pressed }) => [

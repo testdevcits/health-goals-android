@@ -76,7 +76,7 @@ export default function useWorkoutSession(
 
   useEffect(() => {
     const activityId = routeParams?.activityId;
-    const activity = activities.find(item => item.id === activityId);
+    const activity = activities.find(item => item?.id === activityId);
     if (activity && !workoutSession) {
       setSelectedActivity(activity);
     }
@@ -225,7 +225,7 @@ export default function useWorkoutSession(
             try {
               let records: Array<Record<string, unknown>> =
                 pendingWorkoutUpload.current?.sessionId ===
-                workoutSession.sessionId
+                  workoutSession.sessionId
                   ? pendingWorkoutUpload.current.records
                   : [];
               if (records.length === 0) {
@@ -274,7 +274,7 @@ export default function useWorkoutSession(
                     metadata: {
                       estimatedCalories: Math.floor(
                         ((end - cursor) / 60000) *
-                          currentActivity.caloriesPerMinute,
+                        currentActivity.caloriesPerMinute,
                       ),
                       estimatedDistanceKm: Number(
                         (

@@ -123,11 +123,10 @@ export default function useHealthReports() {
       activeTab === 'Steps'
         ? readStepsHistory(7, { from, to })
         : authenticatedRequest<{ history: DailyValue[] }>(
-            'GET',
-            `${
-              API_ENDPOINTS.HEALTH.HISTORY
-            }?metricType=${metricType}&from=${dateKey(from)}&to=${dateKey(to)}`,
-          ).then(result => result.history),
+          'GET',
+          `${API_ENDPOINTS.HEALTH.HISTORY
+          }?metricType=${metricType}&from=${dateKey(from)}&to=${dateKey(to)}`,
+        ).then(result => result.history),
       fetchActivityHistory(from, to),
     ])
       .then(([reportHistory, activityHistory]) => {
@@ -136,7 +135,7 @@ export default function useHealthReports() {
         setDailyCoins(activityHistory);
         setWeekStepTotal(
           activityHistory.reduce(
-            (sum, item) => sum + (item.totals?.steps ?? 0),
+            (sum, item) => sum + (item?.totals?.steps ?? 0),
             0,
           ),
         );
@@ -259,16 +258,15 @@ export default function useHealthReports() {
   ]);
 
   const shareReport = async (title: string = 'Vitality Health Report') => {
-    const total = history.reduce((sum, item) => sum + item.value, 0);
+    const total = history.reduce((sum, item) => sum + item?.value, 0);
     const content = [
       `${title}: ${activeTab}`,
       `Report period: ${from.toLocaleDateString()} – ${to.toLocaleDateString()}`,
       `Synced total: ${total.toLocaleString()} ${history[0]?.unit || ''}`,
-      `Daily average: ${
-        history.length ? Math.round(total / history.length).toLocaleString() : 0
+      `Daily average: ${history.length ? Math.round(total / history.length).toLocaleString() : 0
       }`,
       `Coins credited: ${dailyCoins.reduce(
-        (sum, item) => sum + (item.creditedCoins || 0),
+        (sum, item) => sum + (item?.creditedCoins || 0),
         0,
       )}`,
       `Days with activity: ${dailyCoins.length}`,
@@ -286,7 +284,7 @@ export default function useHealthReports() {
   };
 
   const totalCoins = dailyCoins.reduce(
-    (sum, item) => sum + (item.creditedCoins || 0),
+    (sum, item) => sum + (item?.creditedCoins || 0),
     0,
   );
 

@@ -1,9 +1,9 @@
 import { Pressable, StyleSheet, View } from 'react-native';
 import React, { memo } from 'react';
-import { useTheme } from '../../theme/useTheme';
-import { spacing } from '../../theme/spacing';
-import AppText from './AppText';
-import AppIcon, { ICONS, type IconName } from '../../assets/appicon/AppIcon';
+import { useTheme } from '../../../theme/useTheme';
+ import AppText from '../AppText';
+import AppIcon, { ICONS, type IconName } from '../../../assets/appicon/AppIcon';
+import { styles } from './styles.ProfileToggleRow';
 
 const ProfileToggleRow: React.FC<{
   icon: string;
@@ -78,32 +78,4 @@ const ProfileToggleRow: React.FC<{
 
 export default memo(ProfileToggleRow);
 
-const styles = StyleSheet.create({
-  listRow: {
-    minHeight: 68,
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: spacing.ml,
-    gap: spacing.md,
-  },
-  rowIcon: {
-    width: 38,
-    height: 38,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  rowCopy: { flex: 1, gap: spacing.xxs },
-  switchTrack: {
-    width: 46,
-    height: 28,
-    borderRadius: 14,
-    padding: 3,
-    justifyContent: 'center',
-  },
-  switchThumb: {
-    width: 22,
-    height: 22,
-    borderRadius: 11,
-  },
-  switchThumbOn: { alignSelf: 'flex-end' },
-});
+ 

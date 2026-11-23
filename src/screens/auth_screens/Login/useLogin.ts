@@ -1,4 +1,4 @@
-import { TextInput, Alert } from 'react-native';
+import { TextInput, Alert, Keyboard } from 'react-native';
 import { useRef, useState } from 'react';
 import { GOOGLE_WEB_CLIENT_ID } from '../../../services/googleConfig';
 import { apiErrorMessage } from '../../../services/api';
@@ -37,6 +37,7 @@ const useLogin = ({ navigation }: any) => {
 
   const handleSignIn = async () => {
     if (!validate()) return;
+    Keyboard.dismiss();
     setLoading(true);
     try {
       const challenge = await requestLogin(email, password);
@@ -88,7 +89,6 @@ const useLogin = ({ navigation }: any) => {
     handleSignIn,
     handleGoogleSignIn,
     passwordRef,
-
     validateEmail,
     validatePassword,
     setErrors,

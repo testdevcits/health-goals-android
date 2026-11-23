@@ -91,45 +91,45 @@ export default function useAllChallenges() {
       setChallenges(
         (result.challenges || result.items || []).map(item => {
           const metric = (
-            item.metricType ||
-            item.metric ||
+            item?.metricType ||
+            item?.metric ||
             'steps'
           ).toLowerCase();
-          const currentValue = Number(item.currentValue || 0);
-          const targetValue = Number(item.targetValue || 0);
+          const currentValue = Number(item?.currentValue || 0);
+          const targetValue = Number(item?.targetValue || 0);
           const progress = Number(
-            item.progress ??
-              (targetValue > 0 ? (currentValue / targetValue) * 100 : 0),
+            item?.progress ??
+            (targetValue > 0 ? (currentValue / targetValue) * 100 : 0),
           );
-          const joined = Boolean(item.joined);
-          const status = String(item.status || 'UPCOMING').toUpperCase();
+          const joined = Boolean(item?.joined);
+          const status = String(item?.status || 'UPCOMING').toUpperCase();
           const joinable = Boolean(
-            item.joinable ??
-              (!joined && ['ACTIVE', 'LIVE', 'PUBLISHED'].includes(status)),
+            item?.joinable ??
+            (!joined && ['ACTIVE', 'LIVE', 'PUBLISHED'].includes(status)),
           );
-          const responseCategory = String(item.category || '').toLowerCase();
+          const responseCategory = String(item?.category || '').toLowerCase();
           const category: ChallengeCategory =
             responseCategory === 'steps'
               ? 'Steps'
               : responseCategory === 'mind'
-              ? 'Mind'
-              : responseCategory === 'strength'
-              ? 'Strength'
-              : responseCategory === 'other'
-              ? 'Other'
-              : metric.includes('step')
-              ? 'Steps'
-              : metric.includes('workout')
-              ? 'Strength'
-              : 'Other';
+                ? 'Mind'
+                : responseCategory === 'strength'
+                  ? 'Strength'
+                  : responseCategory === 'other'
+                    ? 'Other'
+                    : metric.includes('step')
+                      ? 'Steps'
+                      : metric.includes('workout')
+                        ? 'Strength'
+                        : 'Other';
           const participants = Number(
-            item.participantCount ?? item.participants ?? 0,
+            item?.participantCount ?? item?.participants ?? 0,
           );
 
           return {
-            id: item.id,
-            title: item.title,
-            description: item.description || `${targetValue} ${metric}`,
+            id: item?.id,
+            title: item?.title,
+            description: item?.description || `${targetValue} ${metric}`,
             category,
             status,
             progress: Math.min(100, Math.max(0, progress)),
@@ -141,10 +141,10 @@ export default function useAllChallenges() {
               category === 'Steps'
                 ? '👟'
                 : category === 'Strength'
-                ? '💪'
-                : category === 'Mind'
-                ? '🧘'
-                : '🎯',
+                  ? '💪'
+                  : category === 'Mind'
+                    ? '🧘'
+                    : '🎯',
             joined,
             joinable,
             currentValue,

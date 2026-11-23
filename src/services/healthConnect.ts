@@ -165,6 +165,46 @@ const createEmptyData = (
   hourlyExerciseMinutes: null,
 });
 
+export const isWearableDataOrigin = (origin?: string): boolean => {
+  if (!origin) return false;
+  const lower = origin.toLowerCase();
+  return (
+    lower.includes('shealth') ||
+    lower.includes('samsung.health') ||
+    lower.includes('fitbit') ||
+    lower.includes('huami') ||
+    lower.includes('zepp') ||
+    lower.includes('xiaomi.wearable') ||
+    lower.includes('garmin') ||
+    lower.includes('polar') ||
+    lower.includes('suunto') ||
+    lower.includes('withings') ||
+    lower.includes('fossil') ||
+    lower.includes('mobvoi') ||
+    lower.includes('ticwatch') ||
+    lower.includes('heytap') ||
+    lower.includes('oneplus') ||
+    lower.includes('dafit') ||
+    lower.includes('noise') ||
+    lower.includes('boat') ||
+    lower.includes('crrepa')
+  );
+};
+
+export const isWatchOrWearableRecord = (record: {
+  metadata?: {
+    device?: { type?: number; model?: string; manufacturer?: string };
+    dataOrigin?: string;
+  };
+}): boolean => {
+  const deviceType = record.metadata?.device?.type;
+  // 1 = TYPE_WATCH, 6 = TYPE_FITNESS_BAND, 4 = TYPE_RING
+  if (deviceType === 1 || deviceType === 6 || deviceType === 4) {
+    return true;
+  }
+  return isWearableDataOrigin(record.metadata?.dataOrigin);
+};
+
 export const readTodayHealthData = async (
   includeHourlyData = false,
 ): Promise<TodayHealthData> => {
@@ -332,7 +372,12 @@ export const readTodayHealthData = async (
         pageSize: 1000,
       });
       if (rawSteps.records && rawSteps.records.length > 0) {
-        const sum = rawSteps.records.reduce(
+        const watchRecords = rawSteps.records.filter(r =>
+          isWatchOrWearableRecord(r),
+        );
+        const targetRecords =
+          watchRecords.length > 0 ? watchRecords : rawSteps.records;
+        const sum = targetRecords.reduce(
           (acc, r) => acc + (typeof r.count === 'number' ? r.count : 0),
           0,
         );
@@ -357,7 +402,12 @@ export const readTodayHealthData = async (
         pageSize: 1000,
       });
       if (rawDist.records && rawDist.records.length > 0) {
-        const sum = rawDist.records.reduce(
+        const watchRecords = rawDist.records.filter(r =>
+          isWatchOrWearableRecord(r),
+        );
+        const targetRecords =
+          watchRecords.length > 0 ? watchRecords : rawDist.records;
+        const sum = targetRecords.reduce(
           (acc, r) => acc + (r.distance?.inMeters || 0),
           0,
         );
@@ -382,7 +432,12 @@ export const readTodayHealthData = async (
         pageSize: 1000,
       });
       if (rawCal.records && rawCal.records.length > 0) {
-        const sum = rawCal.records.reduce(
+        const watchRecords = rawCal.records.filter(r =>
+          isWatchOrWearableRecord(r),
+        );
+        const targetRecords =
+          watchRecords.length > 0 ? watchRecords : rawCal.records;
+        const sum = targetRecords.reduce(
           (acc, r) => acc + (r.energy?.inKilocalories || 0),
           0,
         );

@@ -208,10 +208,10 @@ const ActivityTrends: React.FC<{
       try {
         if (activeTab === 'Steps') {
           const hcSteps = await readStepsHistory(7);
-          if (hcSteps.length && hcSteps.some(item => item.value > 0)) {
+          if (hcSteps.length && hcSteps.some(item => item?.value > 0)) {
             history = hcSteps.map(item => ({
-              date: item.date,
-              value: item.value,
+              date: item?.date,
+              value: item?.value,
             }));
           } else {
             const res = await fetchHealthTrend(
@@ -223,10 +223,10 @@ const ActivityTrends: React.FC<{
           }
         } else if (activeTab === 'Sleep') {
           const hcSleep = await readSleepHistory(7);
-          if (hcSleep.length && hcSleep.some(item => item.value > 0)) {
+          if (hcSleep.length && hcSleep.some(item => item?.value > 0)) {
             history = hcSleep.map(item => ({
-              date: item.date,
-              value: item.value,
+              date: item?.date,
+              value: item?.value,
             }));
           } else {
             const res = await fetchHealthTrend(
@@ -238,10 +238,10 @@ const ActivityTrends: React.FC<{
           }
         } else {
           const hcActive = await readActiveMinutesHistory(7);
-          if (hcActive.length && hcActive.some(item => item.value > 0)) {
+          if (hcActive.length && hcActive.some(item => item?.value > 0)) {
             history = hcActive.map(item => ({
-              date: item.date,
-              value: item.value,
+              date: item?.date,
+              value: item?.value,
             }));
           } else {
             const res = await fetchHealthTrend(
@@ -256,20 +256,20 @@ const ActivityTrends: React.FC<{
         if (activeTab === 'Steps') {
           const fallback = await readStepsHistory(7).catch(() => []);
           history = fallback.map(item => ({
-            date: item.date,
-            value: item.value,
+            date: item?.date,
+            value: item?.value,
           }));
         } else if (activeTab === 'Sleep') {
           const fallback = await readSleepHistory(7).catch(() => []);
           history = fallback.map(item => ({
-            date: item.date,
-            value: item.value,
+            date: item?.date,
+            value: item?.value,
           }));
         } else {
           const fallback = await readActiveMinutesHistory(7).catch(() => []);
           history = fallback.map(item => ({
-            date: item.date,
-            value: item.value,
+            date: item?.date,
+            value: item?.value,
           }));
         }
       }
@@ -307,7 +307,7 @@ const ActivityTrends: React.FC<{
       const qualityScore = Math.round(
         (observedValues.filter(value => value >= 420).length /
           observedValues.length) *
-          100,
+        100,
       );
 
       setTrendData(current => {
@@ -319,17 +319,17 @@ const ActivityTrends: React.FC<{
             stats:
               activeTab === 'Steps'
                 ? [
-                    { value: sum.toLocaleString(), label: 'Total' },
-                    { value: average.toLocaleString(), label: 'Daily Avg' },
-                    {
-                      value: String(
-                        observedValues.filter(value => value >= 10000).length,
-                      ),
-                      label: 'Days >10K',
-                    },
-                  ]
+                  { value: sum.toLocaleString(), label: 'Total' },
+                  { value: average.toLocaleString(), label: 'Daily Avg' },
+                  {
+                    value: String(
+                      observedValues.filter(value => value >= 10000).length,
+                    ),
+                    label: 'Days >10K',
+                  },
+                ]
                 : activeTab === 'Sleep'
-                ? [
+                  ? [
                     {
                       value: `${Math.floor(average / 60)}h ${Math.round(
                         average % 60,
@@ -342,7 +342,7 @@ const ActivityTrends: React.FC<{
                       label: 'Lowest',
                     },
                   ]
-                : [
+                  : [
                     { value: sum.toLocaleString(), label: 'Total Mins' },
                     { value: average.toLocaleString(), label: 'Daily Avg' },
                     {

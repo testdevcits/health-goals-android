@@ -20,7 +20,7 @@ const BadgesTab: React.FC<BadgesTabProps> = ({ badges, styles }) => {
   return (
     <FlatList
       data={badges}
-      keyExtractor={item => item.id.toString()}
+      keyExtractor={item => item?.id.toString()}
       numColumns={3}
       scrollEnabled={false}
       contentContainerStyle={styles.badgesGrid}

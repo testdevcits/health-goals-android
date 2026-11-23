@@ -21,7 +21,7 @@ export type { SelectOption } from './common/app_select/AppSelect';
 export { default as NotificationCard } from './cards/NotificationCard';
 export { default as ProfileCard } from './cards/ProfileCard';
 export { default as ProfileMetric } from './common/ProfileMetric';
-export { default as ProfileToggleRow } from './common/ProfileToggleRow';
+export { default as ProfileToggleRow } from './common/profile_toggle_row/ProfileToggleRow';
 export { default as ProfileListRow } from './cards/ProfileListRow';
 export { default as ProfileScreen } from './common/ProfileScreen';
 export { default as ConfirmationModal } from './common/confirmation_modal/ConfirmationModal';

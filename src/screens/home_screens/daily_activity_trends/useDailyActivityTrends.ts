@@ -86,9 +86,8 @@ export default function useDailyActivityTrends() {
             },
             { value: '—', label: 'Goal met' },
           ],
-          insight: `${
-            validValues.filter(v => v > 0).length
-          } synced steps records in the last 7 days. Your average is ${avg.toLocaleString()} steps.`,
+          insight: `${validValues.filter(v => v > 0).length
+            } synced steps records in the last 7 days. Your average is ${avg.toLocaleString()} steps.`,
         };
       }
       if (homeCached.Sleep?.bars?.some(v => v !== null && v > 0)) {
@@ -134,10 +133,10 @@ export default function useDailyActivityTrends() {
         if (activeMetric === 'Steps') {
           try {
             const hcSteps = await readStepsHistory(7);
-            if (hcSteps.length && hcSteps.some(item => item.value > 0)) {
+            if (hcSteps.length && hcSteps.some(item => item?.value > 0)) {
               history = hcSteps.map(item => ({
-                date: item.date,
-                value: item.value,
+                date: item?.date,
+                value: item?.value,
               }));
             } else {
               const res = await fetchHealthTrend(
@@ -150,17 +149,17 @@ export default function useDailyActivityTrends() {
           } catch {
             const fallback = await readStepsHistory(7).catch(() => []);
             history = fallback.map(item => ({
-              date: item.date,
-              value: item.value,
+              date: item?.date,
+              value: item?.value,
             }));
           }
         } else if (activeMetric === 'Sleep') {
           try {
             const hcSleep = await readSleepHistory(7);
-            if (hcSleep.length && hcSleep.some(item => item.value > 0)) {
+            if (hcSleep.length && hcSleep.some(item => item?.value > 0)) {
               history = hcSleep.map(item => ({
-                date: item.date,
-                value: item.value,
+                date: item?.date,
+                value: item?.value,
               }));
             } else {
               const res = await fetchHealthTrend(
@@ -173,8 +172,8 @@ export default function useDailyActivityTrends() {
           } catch {
             const fallback = await readSleepHistory(7).catch(() => []);
             history = fallback.map(item => ({
-              date: item.date,
-              value: item.value,
+              date: item?.date,
+              value: item?.value,
             }));
           }
         } else if (activeMetric === 'Heart') {
@@ -205,7 +204,7 @@ export default function useDailyActivityTrends() {
               }));
             }
           })
-          .catch(() => {});
+          .catch(() => { });
 
         const byDate = new Map(history.map(row => [row.date, row.value]));
         const barsByDate = dates.map(date =>
@@ -246,13 +245,12 @@ export default function useDailyActivityTrends() {
         const averageLabel =
           activeMetric === 'Sleep'
             ? `${Math.floor(average / 60)}h ${Math.round(average % 60)}m`
-            : `${average.toLocaleString()}${
-                activeMetric === 'Heart'
-                  ? ' bpm'
-                  : activeMetric === 'Steps'
-                  ? ' steps'
-                  : ''
-              }`;
+            : `${average.toLocaleString()}${activeMetric === 'Heart'
+              ? ' bpm'
+              : activeMetric === 'Steps'
+                ? ' steps'
+                : ''
+            }`;
         setTrendData(current => {
           const updated = {
             ...current,
@@ -262,27 +260,27 @@ export default function useDailyActivityTrends() {
               stats:
                 activeMetric === 'Steps'
                   ? [
-                      { value: total.toLocaleString(), label: 'Last 7 days' },
-                      { value: average.toLocaleString(), label: 'Daily avg' },
-                      {
-                        value: String(
-                          values.filter(value => value >= 10000).length,
-                        ),
-                        label: 'Days ≥10K',
-                      },
-                      {
-                        value: goal
-                          ? `${Math.round(
-                              (values.filter(value => value >= goal).length /
-                                7) *
-                                100,
-                            )}%`
-                          : '—',
-                        label: 'Goal met',
-                      },
-                    ]
+                    { value: total.toLocaleString(), label: 'Last 7 days' },
+                    { value: average.toLocaleString(), label: 'Daily avg' },
+                    {
+                      value: String(
+                        values.filter(value => value >= 10000).length,
+                      ),
+                      label: 'Days ≥10K',
+                    },
+                    {
+                      value: goal
+                        ? `${Math.round(
+                          (values.filter(value => value >= goal).length /
+                            7) *
+                          100,
+                        )}%`
+                        : '—',
+                      label: 'Goal met',
+                    },
+                  ]
                   : activeMetric === 'Sleep'
-                  ? [
+                    ? [
                       { value: averageLabel, label: 'Daily avg' },
                       {
                         value: `${(Math.max(...values) / 60).toFixed(1)}h`,
@@ -297,7 +295,7 @@ export default function useDailyActivityTrends() {
                         label: 'Days synced',
                       },
                     ]
-                  : [
+                    : [
                       { value: averageLabel, label: 'Daily avg' },
                       {
                         value: String(Math.max(...values)),
@@ -312,9 +310,8 @@ export default function useDailyActivityTrends() {
                         label: 'Days synced',
                       },
                     ],
-              insight: `${
-                positiveValues.length
-              } synced ${activeMetric.toLowerCase()} daily records in the last 7 days. Your average is ${averageLabel}.`,
+              insight: `${positiveValues.length
+                } synced ${activeMetric.toLowerCase()} daily records in the last 7 days. Your average is ${averageLabel}.`,
             },
           };
           storageService.setObject(CACHE_KEY_DAILY_TRENDS, updated);

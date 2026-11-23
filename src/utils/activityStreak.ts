@@ -25,14 +25,14 @@ export function calculateActivityStreak(
     (historyItems || [])
       .filter(
         item =>
-          (item.creditedCoins || 0) > 0 ||
+          (item?.creditedCoins || 0) > 0 ||
           Boolean(
-            item.totals?.steps ||
-              item.totals?.workoutMinutes ||
-              item.totals?.meditationMinutes,
+            item?.totals?.steps ||
+            item?.totals?.workoutMinutes ||
+            item?.totals?.meditationMinutes,
           ),
       )
-      .map(item => item.day),
+      .map(item => item?.day),
   );
 
   const today = new Intl.DateTimeFormat('en-CA', {
@@ -46,11 +46,11 @@ export function calculateActivityStreak(
     Boolean(todayData?.totals?.meditationMinutes) ||
     (historyItems || []).some(
       item =>
-        item.day === today &&
+        item?.day === today &&
         Boolean(
-          item.totals?.steps ||
-            item.totals?.workoutMinutes ||
-            item.totals?.meditationMinutes,
+          item?.totals?.steps ||
+          item?.totals?.workoutMinutes ||
+          item?.totals?.meditationMinutes,
         ),
     )
   ) {

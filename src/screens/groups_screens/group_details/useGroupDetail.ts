@@ -20,12 +20,12 @@ const mergeChatMessages = (
   userId: string,
   color: string,
 ) => {
-  const messages = new Map(current.map(item => [item.id, item]));
+  const messages = new Map(current.map(item => [item?.id, item]));
   incoming.forEach(item =>
-    messages.set(item.id, {
+    messages.set(item?.id, {
       ...item,
-      color: item.color || color,
-      mine: item.senderId ? item.senderId === userId : Boolean(item.mine),
+      color: item?.color || color,
+      mine: item?.senderId ? item?.senderId === userId : Boolean(item?.mine),
     }),
   );
   return [...messages.values()].sort(
@@ -173,9 +173,9 @@ export default function useGroupDetail({
       ).toUpperCase();
       setIsLeader(
         group.isLeader === true ||
-          group.isCurrentUserLeader === true ||
-          ['LEADER', 'OWNER', 'GL', 'GROUP_LEADER'].includes(currentRole) ||
-          Boolean(userId && leaderIds.includes(userId)),
+        group.isCurrentUserLeader === true ||
+        ['LEADER', 'OWNER', 'GL', 'GROUP_LEADER'].includes(currentRole) ||
+        Boolean(userId && leaderIds.includes(userId)),
       );
       setMemberCount(
         Array.isArray(group.members) ? group.members.length : group.members,
@@ -224,37 +224,35 @@ export default function useGroupDetail({
       if (challengeResult.status === 'fulfilled') {
         setChallenges(
           (challengeResult.value.challenges || []).map(item => {
-            const targetValue = Number(item.targetValue || 0);
-            const currentValue = Number(item.currentValue || 0);
+            const targetValue = Number(item?.targetValue || 0);
+            const currentValue = Number(item?.currentValue || 0);
             const progress = Number(
-              item.progress ??
-                (targetValue > 0 ? (currentValue / targetValue) * 100 : 0),
+              item?.progress ??
+              (targetValue > 0 ? (currentValue / targetValue) * 100 : 0),
             );
-            const joined = Boolean(item.joined);
-            const status = String(item.status || 'UPCOMING').toUpperCase();
+            const joined = Boolean(item?.joined);
+            const status = String(item?.status || 'UPCOMING').toUpperCase();
             const inWindow =
-              (!item.startsAt || Date.parse(item.startsAt) <= Date.now()) &&
-              (!item.endsAt || Date.parse(item.endsAt) >= Date.now());
+              (!item?.startsAt || Date.parse(item?.startsAt) <= Date.now()) &&
+              (!item?.endsAt || Date.parse(item?.endsAt) >= Date.now());
             const joinable = Boolean(
-              item.joinable ??
-                (!joined &&
-                  inWindow &&
-                  ['ACTIVE', 'LIVE', 'PUBLISHED'].includes(status)),
+              item?.joinable ??
+              (!joined &&
+                inWindow &&
+                ['ACTIVE', 'LIVE', 'PUBLISHED'].includes(status)),
             );
             const participants = Number(
-              item.participantCount ?? item.participants ?? item.joinCount ?? 0,
+              item?.participantCount ?? item?.participants ?? item?.joinCount ?? 0,
             );
-            const endsLabel = item.endsAt
-              ? ` · ends ${new Date(item.endsAt).toLocaleDateString()}`
+            const endsLabel = item?.endsAt
+              ? ` · ends ${new Date(item?.endsAt).toLocaleDateString()}`
               : '';
             return {
-              id: item.id,
-              title: item.title,
-              description: `${
-                item.description || item.metricType || 'Group challenge'
-              }${
-                targetValue ? ` · Target ${targetValue.toLocaleString()}` : ''
-              }${endsLabel}`,
+              id: item?.id,
+              title: item?.title,
+              description: `${item?.description || item?.metricType || 'Group challenge'
+                }${targetValue ? ` · Target ${targetValue.toLocaleString()}` : ''
+                }${endsLabel}`,
               status: joined ? 'JOINED' : joinable ? 'OPEN' : 'CLOSED',
               progress: Math.min(100, Math.max(0, progress)),
               progressLabel: joined
@@ -265,7 +263,7 @@ export default function useGroupDetail({
               joinable,
               targetValue,
               currentValue,
-              endsAt: item.endsAt,
+              endsAt: item?.endsAt,
               participantCount: participants,
             };
           }),
@@ -296,13 +294,13 @@ export default function useGroupDetail({
       if (leaderboardResult.status === 'fulfilled') {
         setMembers(
           (leaderboardResult.value.leaderboard || []).map(item => ({
-            id: item.id,
-            name: item.name,
-            initials: item.initials,
-            steps: item.steps,
-            streak: Number.parseInt(item.streak, 10) || 0,
-            color: item.color,
-            profileImageUrl: item.profileImageUrl?.trim() || undefined,
+            id: item?.id,
+            name: item?.name,
+            initials: item?.initials,
+            steps: item?.steps,
+            streak: Number.parseInt(item?.streak, 10) || 0,
+            color: item?.color,
+            profileImageUrl: item?.profileImageUrl?.trim() || undefined,
           })),
         );
       } else {
@@ -627,8 +625,8 @@ export default function useGroupDetail({
           image === null
             ? undefined
             : result.group?.imageUrl ||
-                result.group?.image ||
-                (typeof image === 'string' ? image : groupImageUrl),
+            result.group?.image ||
+            (typeof image === 'string' ? image : groupImageUrl),
         );
         setGroupEditVisible(false);
         showAppToast('success', 'Group updated');

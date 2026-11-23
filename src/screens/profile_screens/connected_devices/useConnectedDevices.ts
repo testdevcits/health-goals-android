@@ -36,6 +36,12 @@ import {
 } from '../../../services/healthConnect';
 import { syncRecentHealthData } from '../../../services/healthSync';
 import { istDateKey } from '../../../utils/healthDates';
+import {
+  connectNativeWatch,
+  disconnectNativeWatch,
+  subscribeToNativeWatchTelemetry,
+  isNativeWatchAvailable,
+} from '../../../services/nativeWatchManager';
 
 const WATCH_KEYWORDS = [
   'watch',
@@ -297,6 +303,7 @@ let sharedDisconnectSubscription: Subscription | null = null;
 let sharedHrSubscription: Subscription | null = null;
 let sharedBatterySubscription: Subscription | null = null;
 let sharedStepSubscription: Subscription | null = null;
+let sharedNativeTelemetrySub: { remove: () => void } | null = null;
 
 const notifyWatchListeners = () => {
   sharedWatchListeners.forEach(listener => {
@@ -326,7 +333,7 @@ export default function useConnectedDevices() {
   );
   const [isScanning, setIsScanning] = useState(false);
   const [bleError, setBleError] = useState('');
-  const [onlyWatches, setOnlyWatches] = useState(true);
+  const [onlyWatches, setOnlyWatches] = useState(false);
   const [watchMetrics, setWatchMetricsState] =
     useState<WatchMetrics>(sharedWatchMetrics);
 
@@ -627,16 +634,25 @@ export default function useConnectedDevices() {
       const timeStr = `${formattedHours}:${minutes} ${ampm}`;
 
       setWatchMetrics(prev => {
-        const nextSteps =
-          todayData.status === 'ready' && typeof todayData.steps === 'number'
-            ? todayData.steps
-            : prev.steps;
+        // Direct BLE / Native watch telemetry provides the watch hardware's true metrics.
+        // We MUST NOT overwrite actual smartwatch steps with mobile phone accelerometer steps!
+        const hasDirectWatchSteps =
+          typeof prev.steps === 'number' && prev.steps > 0;
+        const nextSteps = hasDirectWatchSteps
+          ? prev.steps
+          : todayData.status === 'ready' && typeof todayData.steps === 'number'
+          ? todayData.steps
+          : prev.steps;
         const nextDistKm =
-          typeof todayData.distanceMeters === 'number'
+          hasDirectWatchSteps && prev.distanceKm > 0
+            ? prev.distanceKm
+            : typeof todayData.distanceMeters === 'number'
             ? Number((todayData.distanceMeters / 1000).toFixed(2))
             : prev.distanceKm;
         const nextCalories =
-          typeof todayData.calories === 'number'
+          hasDirectWatchSteps && prev.calories > 0
+            ? prev.calories
+            : typeof todayData.calories === 'number'
             ? todayData.calories
             : prev.calories;
 
@@ -930,6 +946,11 @@ export default function useConnectedDevices() {
           sharedBatterySubscription = null;
           sharedStepSubscription?.remove();
           sharedStepSubscription = null;
+          sharedNativeTelemetrySub?.remove();
+          sharedNativeTelemetrySub = null;
+          if (isNativeWatchAvailable) {
+            void disconnectNativeWatch();
+          }
           sharedConnectedDevice = null;
           notifyWatchListeners();
           sharedDisconnectSubscription?.remove();
@@ -948,6 +969,38 @@ export default function useConnectedDevices() {
       setIsReconnecting(false);
       sharedIsReconnecting = false;
       notifyWatchListeners();
+      if (isNativeWatchAvailable) {
+        void connectNativeWatch(saved.id);
+        if (!sharedNativeTelemetrySub) {
+          sharedNativeTelemetrySub = subscribeToNativeWatchTelemetry(
+            telemetry => {
+              setWatchMetrics(prev => ({
+                ...prev,
+                batteryLevel:
+                  telemetry.batteryLevel >= 0
+                    ? telemetry.batteryLevel
+                    : prev.batteryLevel,
+                liveHeartRate:
+                  telemetry.liveHeartRate > 0
+                    ? telemetry.liveHeartRate
+                    : prev.liveHeartRate,
+                steps:
+                  telemetry.steps > 0
+                    ? Math.max(prev.steps, telemetry.steps)
+                    : prev.steps,
+                calories:
+                  telemetry.calories > 0
+                    ? telemetry.calories
+                    : prev.calories,
+                distanceKm:
+                  telemetry.distanceKm > 0
+                    ? telemetry.distanceKm
+                    : prev.distanceKm,
+              }));
+            },
+          );
+        }
+      }
       void readWatchTelemetry(discoveredConnection);
     } catch (reconnectError) {
       setIsReconnecting(false);
@@ -958,7 +1011,7 @@ export default function useConnectedDevices() {
         reconnectError,
       );
     }
-  }, [bleManager, readWatchTelemetry, setConnectedDevice]);
+  }, [bleManager, readWatchTelemetry, setConnectedDevice, setWatchMetrics]);
 
   const autoReconnectRef = useRef(autoReconnectSavedWatch);
   autoReconnectRef.current = autoReconnectSavedWatch;
@@ -1022,6 +1075,38 @@ export default function useConnectedDevices() {
       setDiscoveredDevices(previous =>
         previous.filter(discovered => discovered.id !== device.id),
       );
+      if (isNativeWatchAvailable) {
+        void connectNativeWatch(device.id);
+        if (!sharedNativeTelemetrySub) {
+          sharedNativeTelemetrySub = subscribeToNativeWatchTelemetry(
+            telemetry => {
+              setWatchMetrics(prev => ({
+                ...prev,
+                batteryLevel:
+                  telemetry.batteryLevel >= 0
+                    ? telemetry.batteryLevel
+                    : prev.batteryLevel,
+                liveHeartRate:
+                  telemetry.liveHeartRate > 0
+                    ? telemetry.liveHeartRate
+                    : prev.liveHeartRate,
+                steps:
+                  telemetry.steps > 0
+                    ? Math.max(prev.steps, telemetry.steps)
+                    : prev.steps,
+                calories:
+                  telemetry.calories > 0
+                    ? telemetry.calories
+                    : prev.calories,
+                distanceKm:
+                  telemetry.distanceKm > 0
+                    ? telemetry.distanceKm
+                    : prev.distanceKm,
+              }));
+            },
+          );
+        }
+      }
       // Persist paired watch so it auto-reconnects if app is killed
       const watchInfo: SavedWatchInfo = {
         id: device.id,
@@ -1063,6 +1148,11 @@ export default function useConnectedDevices() {
       sharedBatterySubscription = null;
       sharedStepSubscription?.remove();
       sharedStepSubscription = null;
+      sharedNativeTelemetrySub?.remove();
+      sharedNativeTelemetrySub = null;
+      if (isNativeWatchAvailable) {
+        void disconnectNativeWatch();
+      }
       setWatchMetrics(INITIAL_WATCH_METRICS);
       if (sharedConnectedDevice) {
         await bleManager.cancelDeviceConnection(sharedConnectedDevice.id);

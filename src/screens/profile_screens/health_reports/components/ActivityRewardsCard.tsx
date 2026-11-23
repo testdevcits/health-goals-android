@@ -31,14 +31,14 @@ const formatActivityDay = (day: string, timezone = 'UTC') =>
   });
 
 const formatSettlementDue = (item: DailyActivityHistoryItem) =>
-  item.dueAt
-    ? new Date(item.dueAt).toLocaleString(undefined, {
-        month: 'short',
-        day: 'numeric',
-        hour: 'numeric',
-        minute: '2-digit',
-        timeZone: item.timezone || 'UTC',
-      })
+  item?.dueAt
+    ? new Date(item?.dueAt).toLocaleString(undefined, {
+      month: 'short',
+      day: 'numeric',
+      hour: 'numeric',
+      minute: '2-digit',
+      timeZone: item?.timezone || 'UTC',
+    })
     : null;
 
 interface ActivityRewardsCardProps {
@@ -71,17 +71,17 @@ export const ActivityRewardsCard: React.FC<ActivityRewardsCardProps> = ({
   const styles = createStyles(colors);
 
   const pendingCoins = dailyCoins.reduce(
-    (sum, item) => sum + (item.pendingCoins ?? 0),
+    (sum, item) => sum + (item?.pendingCoins ?? 0),
     0,
   );
   const allPeriodCoins = totalCoins + pendingCoins;
   const activeDays = dailyCoins.filter(
     item =>
-      (item.totals?.steps ?? 0) > 0 ||
-      (item.totals?.workoutMinutes ?? 0) > 0 ||
-      (item.totals?.meditationMinutes ?? 0) > 0 ||
-      (item.totals?.sleepMinutes ?? 0) > 0 ||
-      (item.entitledCoins ?? 0) > 0,
+      (item?.totals?.steps ?? 0) > 0 ||
+      (item?.totals?.workoutMinutes ?? 0) > 0 ||
+      (item?.totals?.meditationMinutes ?? 0) > 0 ||
+      (item?.totals?.sleepMinutes ?? 0) > 0 ||
+      (item?.entitledCoins ?? 0) > 0,
   ).length;
 
   return (
@@ -181,20 +181,20 @@ export const ActivityRewardsCard: React.FC<ActivityRewardsCardProps> = ({
           </View>
           <View style={styles.activityList}>
             {dailyCoins.map(item => {
-              const settled = item.state === 'SETTLED';
+              const settled = item?.state === 'SETTLED';
               const settlementDue = formatSettlementDue(item);
-              const breakdown = item.totals?.breakdown;
-              const statusLabel = item.state
-                ? item.state.charAt(0) + item.state.slice(1).toLowerCase()
-                : item.needsSettlement
-                ? 'Pending'
-                : 'Recorded';
+              const breakdown = item?.totals?.breakdown;
+              const statusLabel = item?.state
+                ? item?.state.charAt(0) + item?.state.slice(1).toLowerCase()
+                : item?.needsSettlement
+                  ? 'Pending'
+                  : 'Recorded';
               const activityRows = [
                 {
                   label: 'Workout',
                   value:
-                    item.totals?.workoutMinutes !== undefined
-                      ? `${Math.round(item.totals.workoutMinutes)} min`
+                    item?.totals?.workoutMinutes !== undefined
+                      ? `${Math.round(item?.totals.workoutMinutes)} min`
                       : '—',
                   coins: breakdown?.workout ?? 0,
                   icon: Dumbbell,
@@ -204,8 +204,8 @@ export const ActivityRewardsCard: React.FC<ActivityRewardsCardProps> = ({
                 {
                   label: 'Steps',
                   value:
-                    item.totals?.steps !== undefined
-                      ? `${item.totals.steps.toLocaleString()} steps`
+                    item?.totals?.steps !== undefined
+                      ? `${item?.totals.steps.toLocaleString()} steps`
                       : '—',
                   coins: breakdown?.steps ?? 0,
                   icon: Footprints,
@@ -215,8 +215,8 @@ export const ActivityRewardsCard: React.FC<ActivityRewardsCardProps> = ({
                 {
                   label: 'Meditation',
                   value:
-                    item.totals?.meditationMinutes !== undefined
-                      ? `${Math.round(item.totals.meditationMinutes)} min`
+                    item?.totals?.meditationMinutes !== undefined
+                      ? `${Math.round(item?.totals.meditationMinutes)} min`
                       : '—',
                   coins: breakdown?.meditation ?? 0,
                   icon: Brain,
@@ -244,7 +244,7 @@ export const ActivityRewardsCard: React.FC<ActivityRewardsCardProps> = ({
               ];
               return (
                 <View
-                  key={item.day}
+                  key={item?.day}
                   style={[
                     styles.activityDay,
                     { backgroundColor: colors.surface },
@@ -252,7 +252,7 @@ export const ActivityRewardsCard: React.FC<ActivityRewardsCardProps> = ({
                 >
                   <View style={styles.activityDayHeading}>
                     <AppText variant="body2" bold>
-                      {formatActivityDay(item.day, item.timezone)}
+                      {formatActivityDay(item?.day, item?.timezone)}
                     </AppText>
                     <View
                       style={[
@@ -325,7 +325,7 @@ export const ActivityRewardsCard: React.FC<ActivityRewardsCardProps> = ({
                         Credited
                       </AppText>
                       <AppText variant="caption" bold>
-                        {(item.creditedCoins ?? 0).toLocaleString()} coins
+                        {(item?.creditedCoins ?? 0).toLocaleString()} coins
                       </AppText>
                     </View>
                     <View
@@ -339,7 +339,7 @@ export const ActivityRewardsCard: React.FC<ActivityRewardsCardProps> = ({
                         Pending
                       </AppText>
                       <AppText variant="caption" bold>
-                        {(item.pendingCoins ?? 0).toLocaleString()} coins
+                        {(item?.pendingCoins ?? 0).toLocaleString()} coins
                       </AppText>
                     </View>
                     <View style={styles.rewardBreakdownItem}>
@@ -352,13 +352,13 @@ export const ActivityRewardsCard: React.FC<ActivityRewardsCardProps> = ({
                         style={{ color: colors.primary }}
                       >
                         {(
-                          (item.creditedCoins ?? 0) + (item.pendingCoins ?? 0)
+                          (item?.creditedCoins ?? 0) + (item?.pendingCoins ?? 0)
                         ).toLocaleString()}{' '}
                         coins
                       </AppText>
                     </View>
                   </View>
-                  {item.needsSettlement && settlementDue ? (
+                  {item?.needsSettlement && settlementDue ? (
                     <AppText variant="caption" secondary>
                       Settlement due {settlementDue}
                     </AppText>

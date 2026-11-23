@@ -189,7 +189,7 @@ const ProfileScreen: React.FC = () => {
                       { backgroundColor: colors.primaryLight },
                     ]}
                   >
-                    {item.icon}
+                    {item?.icon}
                   </View>
 
                   <AppText variant="subtitle2" bold style={styles.menuTitle}>
