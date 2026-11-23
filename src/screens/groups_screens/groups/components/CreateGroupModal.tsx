@@ -1,4 +1,4 @@
-import React, { memo, useEffect, useState } from 'react';
+import React, { memo, useCallback, useEffect, useState } from 'react';
 import {
   Keyboard,
   KeyboardAvoidingView,
@@ -21,6 +21,7 @@ import {
 import { useTheme } from '../../../../theme/useTheme';
 import createStyles from './styles.CreateGroupMOdal';
 import AppIcon from '../../../../assets/appicon/AppIcon';
+import Toast from 'react-native-toast-message';
 
 // const groupIcons = ['🚶', '🏃', '🚴', '💪', '🧘', '🏆', '🌳', '❤️'];
 
@@ -119,18 +120,33 @@ const CreateGroupModal: React.FC<CreateGroupModalProps> = ({
     handleCreateGroup();
   };
 
+  const handleCloseModal = useCallback(() => {
+    setGroupName('');
+    setGroupDescription('');
+    setSelectedIcon(groupIcons[0]);
+    setGroupNameError('');
+    setIsPrivate(false);
+    setCreateModalVisible(false);
+  }, [
+    setCreateModalVisible,
+    setGroupDescription,
+    setGroupName,
+    setIsPrivate,
+    setSelectedIcon,
+  ]);
+
   return (
     <Modal
       visible={createModalVisible}
       transparent
       animationType="slide"
       statusBarTranslucent
-      onRequestClose={() => setCreateModalVisible(false)}
+      onRequestClose={handleCloseModal}
     >
       <View style={styles.modalOverlay}>
         <Pressable
           style={StyleSheet.absoluteFill}
-          onPress={() => setCreateModalVisible(false)}
+          onPress={handleCloseModal}
           accessibilityLabel="Close create group sheet"
         />
 
@@ -162,7 +178,7 @@ const CreateGroupModal: React.FC<CreateGroupModalProps> = ({
                 <Pressable
                   accessibilityRole="button"
                   accessibilityLabel="Close"
-                  onPress={() => setCreateModalVisible(false)}
+                  onPress={handleCloseModal}
                   style={styles.closeButton}
                 >
                   <AppIcon name="X" size={19} color={colors.textPrimary} />
@@ -260,6 +276,7 @@ const CreateGroupModal: React.FC<CreateGroupModalProps> = ({
           </View>
         </KeyboardAvoidingView>
       </View>
+      <Toast />
     </Modal>
   );
 };

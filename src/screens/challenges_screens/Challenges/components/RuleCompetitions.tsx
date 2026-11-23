@@ -40,16 +40,16 @@ export default function RuleCompetitions({ items }: { items: Competition[] }) {
         <View key={item?.id} style={styles.card}>
           <AppText bold>{item?.title}</AppText>
           <AppText variant="caption" secondary>
-            {item?.audience === 'GROUP' ? 'Group' : 'Individual'} · {item?.status}{' '}
-            · {item?.start} – {item?.end}
+            {item?.audience === 'GROUP' ? 'Group' : 'Individual'} ·{' '}
+            {item?.status} · {item?.start} – {item?.end}
           </AppText>
           <AppText variant="body2">
             Target: {item?.targetValue.toLocaleString()}{' '}
             {item?.metric === 'STEPS'
               ? 'steps'
               : item?.metric === 'WORKOUT_HOURS'
-                ? 'workout hours'
-                : 'meditation hours'}
+              ? 'workout hours'
+              : 'meditation hours'}
           </AppText>
           {item?.myProgress.map(row => (
             <View key={row.id} style={styles.mine}>

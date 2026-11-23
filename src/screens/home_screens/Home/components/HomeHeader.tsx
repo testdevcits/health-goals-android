@@ -31,7 +31,7 @@ const HomeHeader: React.FC = () => {
         .then(user => {
           if (active) dispatch(setProfile(user));
         })
-        .catch(() => { });
+        .catch(() => {});
       authenticatedRequest<{
         unread?: number;
         items?: Array<{ read: boolean }>;
@@ -40,11 +40,11 @@ const HomeHeader: React.FC = () => {
           if (active) {
             setUnreadNotifications(
               result.unread ??
-              (result.items || []).filter(item => !item?.read).length,
+                (result.items || []).filter(item => !item?.read).length,
             );
           }
         })
-        .catch(() => { });
+        .catch(() => {});
       return () => {
         active = false;
       };
@@ -70,8 +70,9 @@ const HomeHeader: React.FC = () => {
           style={styles.bellButton}
           activeOpacity={0.8}
           accessibilityRole="button"
-          accessibilityLabel={`Notifications${unreadNotifications ? `, ${unreadNotifications} unread` : ''
-            }`}
+          accessibilityLabel={`Notifications${
+            unreadNotifications ? `, ${unreadNotifications} unread` : ''
+          }`}
           onPress={() => navigation.navigate('Notifications' as never)}
         >
           {/* <Bell size={20} color={theme.colors.textSecondary} /> */}

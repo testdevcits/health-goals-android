@@ -132,18 +132,18 @@ const useChallenges = () => {
             const joined = Boolean(item?.joined);
             const joinable = Boolean(
               item?.joinable ??
-              (!joined &&
-                !startsInFuture &&
-                ['ACTIVE', 'LIVE', 'PUBLISHED'].includes(status)),
+                (!joined &&
+                  !startsInFuture &&
+                  ['ACTIVE', 'LIVE', 'PUBLISHED'].includes(status)),
             );
             const metricLabel = metric.replace(/_/g, ' ');
             const dateLabel = item?.month
               ? item?.month
               : item?.startsAt && item?.endsAt
-                ? `${new Date(item?.startsAt).toLocaleDateString()} – ${new Date(
+              ? `${new Date(item?.startsAt).toLocaleDateString()} – ${new Date(
                   item?.endsAt,
                 ).toLocaleDateString()}`
-                : undefined;
+              : undefined;
 
             return {
               id: item?.id,
@@ -151,10 +151,12 @@ const useChallenges = () => {
               description: item?.description || `${targetValue} ${metric}`,
               progress: Math.max(0, progress),
               progressLabel: item?.joined
-                ? `Joined · ${currentValue.toLocaleString()} / ${targetValue.toLocaleString()} · ${item?.participantCount ?? item?.participants ?? 0
-                } participants`
-                : `Not joined · ${item?.participantCount ?? item?.participants ?? 0
-                } participants`,
+                ? `Joined · ${currentValue.toLocaleString()} / ${targetValue.toLocaleString()} · ${
+                    item?.participantCount ?? item?.participants ?? 0
+                  } participants`
+                : `Not joined · ${
+                    item?.participantCount ?? item?.participants ?? 0
+                  } participants`,
               metricLabel,
               targetLabel: targetValue.toLocaleString(),
               dateLabel,
@@ -171,14 +173,14 @@ const useChallenges = () => {
               status: startsInFuture
                 ? 'UPCOMING'
                 : status === 'ACTIVE' || status === 'PUBLISHED'
-                  ? 'LIVE'
-                  : status,
+                ? 'LIVE'
+                : status,
               color: lightColors.primary,
               icon: metric.toLowerCase().includes('step')
                 ? Footprints
                 : metric.toLowerCase().includes('workout')
-                  ? Dumbbell
-                  : Sunrise,
+                ? Dumbbell
+                : Sunrise,
               joined,
               joinable,
             };
@@ -224,12 +226,13 @@ const useChallenges = () => {
             const metric = competition.metric.replace(/_/g, ' ');
             const progressSummary = progressEntries.length
               ? progressEntries
-                .map(
-                  entry =>
-                    `${entry.name
-                    }: ${entry.value.toLocaleString()} / ${competition.targetValue.toLocaleString()} ${metric}`,
-                )
-                .join(' · ')
+                  .map(
+                    entry =>
+                      `${
+                        entry.name
+                      }: ${entry.value.toLocaleString()} / ${competition.targetValue.toLocaleString()} ${metric}`,
+                  )
+                  .join(' · ')
               : `Goal: ${competition.targetValue.toLocaleString()} ${metric}`;
 
             return {
@@ -246,8 +249,8 @@ const useChallenges = () => {
               icon: competition.metric.toLowerCase().includes('step')
                 ? Footprints
                 : competition.metric.toLowerCase().includes('workout')
-                  ? Dumbbell
-                  : Sunrise,
+                ? Dumbbell
+                : Sunrise,
               joined: true,
               joinable: false,
             };
@@ -258,16 +261,16 @@ const useChallenges = () => {
       if (notificationResult.status === 'fulfilled') {
         setUnreadNotifications(
           notificationResult.value.unread ??
-          (notificationResult.value.items || []).filter(item => !item?.read)
-            .length,
+            (notificationResult.value.items || []).filter(item => !item?.read)
+              .length,
         );
       }
       if (walletResult.status === 'fulfilled') {
         setWalletPoints(
           Number(
             walletResult.value.wallet?.availablePoints ??
-            walletResult.value.wallet?.balance ??
-            0,
+              walletResult.value.wallet?.balance ??
+              0,
           ),
         );
       }

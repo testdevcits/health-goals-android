@@ -53,10 +53,10 @@ export const rewardIcon = (title: string) =>
   /coffee|cafe/i.test(title)
     ? '☕'
     : /fitness|band|wearable/i.test(title)
-      ? '💪'
-      : /donat|charity|health/i.test(title)
-        ? '❤️'
-        : '🎁';
+    ? '💪'
+    : /donat|charity|health/i.test(title)
+    ? '❤️'
+    : '🎁';
 
 export default function useRewards() {
   const [points, setPoints] = useState(0);
@@ -267,7 +267,8 @@ export default function useRewards() {
   const confirmRedeem = (reward: Reward) => {
     Alert.alert(
       'Redeem this reward?',
-      `${reward.title
+      `${
+        reward.title
       } will use ${reward.pointsRequired.toLocaleString()} points. If successful, the code will appear in Recent Redemptions.`,
       [
         { text: 'Cancel', style: 'cancel' },

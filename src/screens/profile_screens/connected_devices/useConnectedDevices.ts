@@ -989,9 +989,7 @@ export default function useConnectedDevices() {
                     ? Math.max(prev.steps, telemetry.steps)
                     : prev.steps,
                 calories:
-                  telemetry.calories > 0
-                    ? telemetry.calories
-                    : prev.calories,
+                  telemetry.calories > 0 ? telemetry.calories : prev.calories,
                 distanceKm:
                   telemetry.distanceKm > 0
                     ? telemetry.distanceKm
@@ -1095,9 +1093,7 @@ export default function useConnectedDevices() {
                     ? Math.max(prev.steps, telemetry.steps)
                     : prev.steps,
                 calories:
-                  telemetry.calories > 0
-                    ? telemetry.calories
-                    : prev.calories,
+                  telemetry.calories > 0 ? telemetry.calories : prev.calories,
                 distanceKm:
                   telemetry.distanceKm > 0
                     ? telemetry.distanceKm

@@ -307,7 +307,7 @@ const ActivityTrends: React.FC<{
       const qualityScore = Math.round(
         (observedValues.filter(value => value >= 420).length /
           observedValues.length) *
-        100,
+          100,
       );
 
       setTrendData(current => {
@@ -319,17 +319,17 @@ const ActivityTrends: React.FC<{
             stats:
               activeTab === 'Steps'
                 ? [
-                  { value: sum.toLocaleString(), label: 'Total' },
-                  { value: average.toLocaleString(), label: 'Daily Avg' },
-                  {
-                    value: String(
-                      observedValues.filter(value => value >= 10000).length,
-                    ),
-                    label: 'Days >10K',
-                  },
-                ]
+                    { value: sum.toLocaleString(), label: 'Total' },
+                    { value: average.toLocaleString(), label: 'Daily Avg' },
+                    {
+                      value: String(
+                        observedValues.filter(value => value >= 10000).length,
+                      ),
+                      label: 'Days >10K',
+                    },
+                  ]
                 : activeTab === 'Sleep'
-                  ? [
+                ? [
                     {
                       value: `${Math.floor(average / 60)}h ${Math.round(
                         average % 60,
@@ -342,7 +342,7 @@ const ActivityTrends: React.FC<{
                       label: 'Lowest',
                     },
                   ]
-                  : [
+                : [
                     { value: sum.toLocaleString(), label: 'Total Mins' },
                     { value: average.toLocaleString(), label: 'Daily Avg' },
                     {

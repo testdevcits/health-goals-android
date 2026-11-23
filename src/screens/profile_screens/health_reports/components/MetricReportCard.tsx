@@ -103,8 +103,8 @@ export const MetricReportCard: React.FC<MetricReportCardProps> = ({
   const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
   const effectiveIndex =
     selectedIndex !== null &&
-      selectedIndex >= 0 &&
-      selectedIndex < chartHistory.length
+    selectedIndex >= 0 &&
+    selectedIndex < chartHistory.length
       ? selectedIndex
       : Math.max(0, chartHistory.length - 1);
   const chartMaxValue = Math.max(...chartHistory.map(item => item?.value), 1);
@@ -112,8 +112,8 @@ export const MetricReportCard: React.FC<MetricReportCardProps> = ({
     activeTab === 'Steps'
       ? colors.primary
       : activeTab === 'Sleep'
-        ? colors.primaryDark
-        : colors.coral || colors.warning;
+      ? colors.primaryDark
+      : colors.coral || colors.warning;
 
   return (
     <ProfileCard style={styles.reportCard}>
@@ -303,48 +303,52 @@ export const MetricReportCard: React.FC<MetricReportCardProps> = ({
         <View style={styles.metricsRow}>
           {(activeTab === 'Steps'
             ? [
-              [
-                history
-                  .reduce((sum, item) => sum + item?.value, 0)
-                  .toLocaleString(),
-                'Total Steps',
-              ],
-              [
-                history.length
-                  ? Math.round(
-                    history.reduce((sum, item) => sum + item?.value, 0) /
-                    history.length,
-                  ).toLocaleString()
-                  : '—',
-                'Daily Avg',
-              ],
-              [
-                history.filter(item => item?.value >= 10000).length.toString(),
-                'Days >10K',
-              ],
-            ]
+                [
+                  history
+                    .reduce((sum, item) => sum + item?.value, 0)
+                    .toLocaleString(),
+                  'Total Steps',
+                ],
+                [
+                  history.length
+                    ? Math.round(
+                        history.reduce((sum, item) => sum + item?.value, 0) /
+                          history.length,
+                      ).toLocaleString()
+                    : '—',
+                  'Daily Avg',
+                ],
+                [
+                  history
+                    .filter(item => item?.value >= 10000)
+                    .length.toString(),
+                  'Days >10K',
+                ],
+              ]
             : activeTab === 'Sleep'
-              ? [
+            ? [
                 [
                   history.length
                     ? `${Math.floor(
-                      history.reduce((sum, item) => sum + item?.value, 0) /
-                      history.length /
-                      60,
-                    )}h ${Math.round(
-                      (history.reduce((sum, item) => sum + item?.value, 0) /
-                        history.length) %
-                      60,
-                    )}m`
+                        history.reduce((sum, item) => sum + item?.value, 0) /
+                          history.length /
+                          60,
+                      )}h ${Math.round(
+                        (history.reduce((sum, item) => sum + item?.value, 0) /
+                          history.length) %
+                          60,
+                      )}m`
                     : '—',
                   'Avg Sleep',
                 ],
                 [history.length.toString(), 'Days Recorded'],
                 [totalCoins.toString(), 'Coins Earned'],
               ]
-              : [
+            : [
                 [
-                  history.reduce((sum, item) => sum + item?.count, 0).toString(),
+                  history
+                    .reduce((sum, item) => sum + item?.count, 0)
+                    .toString(),
                   'Workouts',
                 ],
                 [

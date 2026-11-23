@@ -1,4 +1,4 @@
-import { Pressable, View } from 'react-native';
+import { Image, Pressable, View } from 'react-native';
 import React, { memo } from 'react';
 import { AppText } from '../../../../components';
 import { useTheme } from '../../../../theme/useTheme';
@@ -54,21 +54,34 @@ const MyGroups = ({
           }
           style={styles.groupCard}
         >
-          <View
-            style={[
-              styles.groupIcon,
-              {
-                backgroundColor:
-                  group?.emoji === '🏃'
-                    ? colors.primaryLight
-                    : group?.emoji === '💼'
-                    ? colors.infoLight
-                    : colors.warningLight,
-              },
-            ]}
-          >
-            <AppText style={styles.groupEmoji}>{group?.emoji}</AppText>
-          </View>
+          {group?.imageUrl === null && (
+            <View
+              style={[
+                styles.groupIcon,
+                {
+                  backgroundColor:
+                    group?.emoji === '🏃'
+                      ? colors.primaryLight
+                      : group?.emoji === '💼'
+                      ? colors.infoLight
+                      : colors.warningLight,
+                },
+              ]}
+            >
+              <AppText style={styles.groupEmoji}>{group?.emoji}</AppText>
+            </View>
+          )}
+
+          {group?.imageUrl !== null && (
+            <Image
+              source={{ uri: group?.imageUrl }}
+              style={{
+                width: 52,
+                height: 52,
+                borderRadius: radius.md,
+              }}
+            />
+          )}
 
           <View style={styles.groupInfo}>
             <AppText variant="subtitle2" numberOfLines={1}>

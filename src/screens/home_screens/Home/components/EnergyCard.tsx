@@ -162,15 +162,15 @@ const EnergyCard: React.FC<{ healthRefreshKey?: number }> = ({
         const steps = todayHealthData?.steps ?? day.totals?.steps ?? 0;
         setHasActivity(
           steps > 0 ||
-          Boolean(day.totals?.workoutMinutes) ||
-          Boolean(day.totals?.meditationMinutes) ||
-          (history.items || []).some(item =>
-            Boolean(
-              item?.totals?.steps ||
-              item?.totals?.workoutMinutes ||
-              item?.totals?.meditationMinutes,
+            Boolean(day.totals?.workoutMinutes) ||
+            Boolean(day.totals?.meditationMinutes) ||
+            (history.items || []).some(item =>
+              Boolean(
+                item?.totals?.steps ||
+                  item?.totals?.workoutMinutes ||
+                  item?.totals?.meditationMinutes,
+              ),
             ),
-          ),
         );
         setStepsTarget(target);
         setEnergy(Math.min(100, Math.round((steps / target) * 100)));
@@ -187,8 +187,8 @@ const EnergyCard: React.FC<{ healthRefreshKey?: number }> = ({
             (history.items || []).some(item =>
               Boolean(
                 item?.totals?.steps ||
-                item?.totals?.workoutMinutes ||
-                item?.totals?.meditationMinutes,
+                  item?.totals?.workoutMinutes ||
+                  item?.totals?.meditationMinutes,
               ),
             ),
         });

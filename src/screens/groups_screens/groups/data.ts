@@ -8,6 +8,7 @@ export interface Group {
   avatars: Array<string | { initial: string }>;
   private: boolean;
   joined?: boolean;
+  imageUrl?: null | string;
 }
 
 export interface FeedPost {

@@ -33,12 +33,12 @@ const formatActivityDay = (day: string, timezone = 'UTC') =>
 const formatSettlementDue = (item: DailyActivityHistoryItem) =>
   item?.dueAt
     ? new Date(item?.dueAt).toLocaleString(undefined, {
-      month: 'short',
-      day: 'numeric',
-      hour: 'numeric',
-      minute: '2-digit',
-      timeZone: item?.timezone || 'UTC',
-    })
+        month: 'short',
+        day: 'numeric',
+        hour: 'numeric',
+        minute: '2-digit',
+        timeZone: item?.timezone || 'UTC',
+      })
     : null;
 
 interface ActivityRewardsCardProps {
@@ -187,8 +187,8 @@ export const ActivityRewardsCard: React.FC<ActivityRewardsCardProps> = ({
               const statusLabel = item?.state
                 ? item?.state.charAt(0) + item?.state.slice(1).toLowerCase()
                 : item?.needsSettlement
-                  ? 'Pending'
-                  : 'Recorded';
+                ? 'Pending'
+                : 'Recorded';
               const activityRows = [
                 {
                   label: 'Workout',

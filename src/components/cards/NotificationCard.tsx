@@ -21,8 +21,9 @@ const NotificationCard = ({
     <TouchableOpacity
       activeOpacity={0.75}
       accessibilityRole="button"
-      accessibilityLabel={`${item?.title}, ${item?.time}${item?.unread ? ', unread' : ''
-        }`}
+      accessibilityLabel={`${item?.title}, ${item?.time}${
+        item?.unread ? ', unread' : ''
+      }`}
       style={[
         styles.notificationCard,
         {

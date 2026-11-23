@@ -1,7 +1,7 @@
 import { Pressable, StyleSheet, View } from 'react-native';
 import React, { memo } from 'react';
 import { useTheme } from '../../../theme/useTheme';
- import AppText from '../AppText';
+import AppText from '../AppText';
 import AppIcon, { ICONS, type IconName } from '../../../assets/appicon/AppIcon';
 import { styles } from './styles.ProfileToggleRow';
 
@@ -77,5 +77,3 @@ const ProfileToggleRow: React.FC<{
 };
 
 export default memo(ProfileToggleRow);
-
- 

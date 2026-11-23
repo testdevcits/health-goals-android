@@ -39,9 +39,7 @@ export const DiscoveredDevicesList: React.FC<DiscoveredDevicesListProps> = ({
           style={[
             styles.filterChip,
             {
-              backgroundColor: onlyWatches
-                ? colors.primary
-                : colors.primary,
+              backgroundColor: onlyWatches ? colors.primary : colors.primary,
               borderColor: onlyWatches ? colors.primary : colors.border,
             },
           ]}
@@ -53,10 +51,7 @@ export const DiscoveredDevicesList: React.FC<DiscoveredDevicesListProps> = ({
           >
             {onlyWatches ? '⌚ Watches Only' : 'All Devices'}
 
-            <AppText
-              variant="label"  >
-              ⟳
-            </AppText>
+            <AppText variant="label">⟳</AppText>
           </AppText>
         </Pressable>
       </View>

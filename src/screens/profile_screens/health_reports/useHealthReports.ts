@@ -123,10 +123,11 @@ export default function useHealthReports() {
       activeTab === 'Steps'
         ? readStepsHistory(7, { from, to })
         : authenticatedRequest<{ history: DailyValue[] }>(
-          'GET',
-          `${API_ENDPOINTS.HEALTH.HISTORY
-          }?metricType=${metricType}&from=${dateKey(from)}&to=${dateKey(to)}`,
-        ).then(result => result.history),
+            'GET',
+            `${
+              API_ENDPOINTS.HEALTH.HISTORY
+            }?metricType=${metricType}&from=${dateKey(from)}&to=${dateKey(to)}`,
+          ).then(result => result.history),
       fetchActivityHistory(from, to),
     ])
       .then(([reportHistory, activityHistory]) => {
@@ -263,7 +264,8 @@ export default function useHealthReports() {
       `${title}: ${activeTab}`,
       `Report period: ${from.toLocaleDateString()} – ${to.toLocaleDateString()}`,
       `Synced total: ${total.toLocaleString()} ${history[0]?.unit || ''}`,
-      `Daily average: ${history.length ? Math.round(total / history.length).toLocaleString() : 0
+      `Daily average: ${
+        history.length ? Math.round(total / history.length).toLocaleString() : 0
       }`,
       `Coins credited: ${dailyCoins.reduce(
         (sum, item) => sum + (item?.creditedCoins || 0),
