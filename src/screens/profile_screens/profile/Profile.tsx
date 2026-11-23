@@ -263,8 +263,8 @@ const ProfileScreen: React.FC = () => {
             >
               {aboutItems.map((item, index) => (
                 <Pressable
-                  key={item.id}
-                  onPress={item.onPress}
+                  key={item?.id}
+                  onPress={item?.onPress}
                   style={({ pressed }) => [
                     styles.menuRow,
                     pressed && { backgroundColor: colors.backgroundSecondary },
@@ -274,7 +274,7 @@ const ProfileScreen: React.FC = () => {
                     },
                   ]}
                   accessibilityRole="button"
-                  accessibilityLabel={item.title}
+                  accessibilityLabel={item?.title}
                 >
                   <View
                     style={[
@@ -283,14 +283,14 @@ const ProfileScreen: React.FC = () => {
                     ]}
                   >
                     <AppIcon
-                      name={item.icon}
+                      name={item?.icon}
                       size={19}
                       color={colors.textSecondary}
                     />
                   </View>
 
                   <AppText variant="subtitle2" bold style={styles.menuTitle}>
-                    {item.title}
+                    {item?.title}
                   </AppText>
 
                   <AppIcon

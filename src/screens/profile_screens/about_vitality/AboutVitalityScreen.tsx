@@ -84,15 +84,15 @@ const AboutVitalityScreen: React.FC<Props> = ({ navigation }) => {
         </AppText>
 
         {HIGHLIGHTS.map(item => (
-          <View key={item.title} style={styles.featureCard}>
+          <View key={item?.title} style={styles.featureCard}>
             <View style={styles.featureHeader}>
-              <AppText style={styles.featureEmoji}>{item.emoji}</AppText>
+              <AppText style={styles.featureEmoji}>{item?.emoji}</AppText>
               <AppText variant="subtitle2" bold>
-                {item.title}
+                {item?.title}
               </AppText>
             </View>
             <AppText variant="body2" style={styles.featureText}>
-              {item.description}
+              {item?.description}
             </AppText>
           </View>
         ))}

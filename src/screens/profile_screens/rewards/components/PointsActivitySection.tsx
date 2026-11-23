@@ -125,24 +125,24 @@ export const PointsActivitySection: React.FC<PointsActivitySectionProps> = memo(
         ) : (
           <View style={styles.activityCardList}>
             {transactions.map(item => {
-              const visuals = getTransactionVisuals(item.type, colors);
-              const formattedDate = formatTransactionDate(item.createdAt);
-              const isPositive = item.amount > 0;
+              const visuals = getTransactionVisuals(item?.type, colors);
+              const formattedDate = formatTransactionDate(item?.createdAt);
+              const isPositive = item?.amount > 0;
               const displayAmount = isPositive
-                ? `+${item.amount}`
-                : `${item.amount}`;
+                ? `+${item?.amount}`
+                : `${item?.amount}`;
 
               // Clean title
               const displayTitle =
-                item.description || item.type.replace(/_/g, ' ');
+                item?.description || item?.type.replace(/_/g, ' ');
 
               // Clean reference label (e.g. DAILY_SETTLEMENT -> Daily Settlement)
-              const displayRef = item.referenceType
-                ? item.referenceType.replace(/_/g, ' ')
-                : item.type.replace(/_/g, ' ');
+              const displayRef = item?.referenceType
+                ? item?.referenceType.replace(/_/g, ' ')
+                : item?.type.replace(/_/g, ' ');
 
               return (
-                <View key={item.id} style={styles.transactionCard}>
+                <View key={item?.id} style={styles.transactionCard}>
                   {/* Left: Icon Badge & Details */}
                   <View style={styles.transactionLeft}>
                     <View
@@ -191,7 +191,7 @@ export const PointsActivitySection: React.FC<PointsActivitySectionProps> = memo(
                     </AppText>
 
                     <AppText style={styles.transactionBalance}>
-                      Bal: {item.balanceAfter.toLocaleString()}
+                      Bal: {item?.balanceAfter.toLocaleString()}
                     </AppText>
                   </View>
                 </View>

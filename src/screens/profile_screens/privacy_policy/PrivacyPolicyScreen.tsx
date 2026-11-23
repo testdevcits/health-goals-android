@@ -95,15 +95,15 @@ const PrivacyPolicyScreen: React.FC<Props> = ({ navigation }) => {
         </AppText>
 
         {PRIVACY_SECTIONS.map(item => (
-          <View key={item.title} style={styles.policyCard}>
+          <View key={item?.title} style={styles.policyCard}>
             <View style={styles.policyHeader}>
-              <AppText style={styles.policyEmoji}>{item.emoji}</AppText>
+              <AppText style={styles.policyEmoji}>{item?.emoji}</AppText>
               <AppText variant="subtitle2" bold>
-                {item.title}
+                {item?.title}
               </AppText>
             </View>
             <AppText variant="body2" style={styles.policyText}>
-              {item.description}
+              {item?.description}
             </AppText>
           </View>
         ))}
