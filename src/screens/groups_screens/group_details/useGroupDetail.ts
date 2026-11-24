@@ -58,6 +58,7 @@ type GroupRecord = {
   isPrivate?: boolean;
   imageUrl?: string;
   image?: string;
+  emoji?: string;
   isLeader?: boolean;
   isCurrentUserLeader?: boolean;
   currentUserRole?: string;
@@ -94,6 +95,7 @@ export default function useGroupDetail({
     initialGroupDescription,
   );
   const [groupImageUrl, setGroupImageUrl] = useState<string | undefined>();
+  const [groupEmoji, setGroupEmoji] = useState('🏃');
   const [memberCount, setMemberCount] = useState(initialMemberCount);
   const [isPrivateGroup, setIsPrivateGroup] = useState(false);
   const [isLeader, setIsLeader] = useState(false);
@@ -142,6 +144,9 @@ export default function useGroupDetail({
       setGroupName(groupResult.group.name);
       setGroupDescription(groupResult.group.description);
       setGroupImageUrl(groupResult.group.imageUrl || groupResult.group.image);
+      if (groupResult.group.emoji) {
+        setGroupEmoji(groupResult.group.emoji);
+      }
       setIsPrivateGroup(
         Boolean(groupResult.group.private ?? groupResult.group.isPrivate),
       );
@@ -676,6 +681,7 @@ export default function useGroupDetail({
     groupName,
     groupDescription,
     groupImageUrl,
+    groupEmoji,
     memberCount,
     isPrivateGroup,
     isLeader,

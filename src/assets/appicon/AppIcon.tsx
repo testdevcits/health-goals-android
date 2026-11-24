@@ -62,6 +62,8 @@ import {
   Pencil,
   FileText,
   Headphones,
+  Link2,
+  BellOff,
 } from 'lucide-react-native';
 import { useTheme } from '../../theme/useTheme';
 
@@ -127,6 +129,8 @@ export const ICONS = {
   Pencil,
   FileText,
   Headphones,
+  Link2,
+  BellOff,
 } as const;
 
 export type IconName = keyof typeof ICONS;

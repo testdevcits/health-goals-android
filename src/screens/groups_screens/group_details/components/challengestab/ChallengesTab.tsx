@@ -1,11 +1,11 @@
-import { View } from 'react-native';
+import { Pressable, View } from 'react-native';
 import React, { useMemo } from 'react';
-import { AppEmptyState } from '../../../../../components';
+import { AppEmptyState, AppText } from '../../../../../components';
 import ChallengeCard from '../../../../../components/cards/ChallengeCard';
 import { useTheme } from '../../../../../theme/useTheme';
 import { ChallengesShimmer } from '../group_detail_shimmer/GroupDetailShimmer';
 import { createGroupDetailShimmerStyles } from '../group_detail_shimmer/styles.GroupDetailShimmer';
-import styles from './styles.ChallengesTab';
+import { createChallengesTabStyles } from './styles.ChallengesTab';
 
 interface ChallengeItem {
   id: string;
@@ -30,6 +30,7 @@ interface ChallengesTabProps {
 }
 
 const ChallengesTab: React.FC<ChallengesTabProps> = ({
+  onNewChallenge,
   challenges,
   onJoin,
   joiningChallengeId,
@@ -37,6 +38,7 @@ const ChallengesTab: React.FC<ChallengesTabProps> = ({
 }) => {
   const { theme } = useTheme();
   const { colors, spacing, radius } = theme;
+  const styles = useMemo(() => createChallengesTabStyles(theme), [theme]);
   const shimmerStyles = useMemo(
     () => createGroupDetailShimmerStyles(colors, spacing),
     [colors, spacing],
@@ -71,17 +73,16 @@ const ChallengesTab: React.FC<ChallengesTabProps> = ({
         ))
       )}
 
-      {/* {onNewChallenge ? (
-        <Pressable
-          accessibilityRole="button"
-          onPress={onNewChallenge}
-          style={overviewStyles.newChallengeButton}
-        >
-          <AppText variant="buttonSm" primary>
-            + New Challenge
-          </AppText>
-        </Pressable>
-      ) : null} */}
+
+      <Pressable
+        accessibilityRole="button"
+        accessibilityLabel="Create New Challenge"
+        onPress={onNewChallenge}
+        style={styles.newChallengeButton}
+      >
+        <AppText style={styles.newChallengeText}>+ New Challenge</AppText>
+      </Pressable>
+
     </View>
   );
 };

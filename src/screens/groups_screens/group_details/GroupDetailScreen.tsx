@@ -2,10 +2,12 @@ import React, { useCallback, useMemo, useState } from 'react';
 import { View, ScrollView, Pressable } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import {
+  useFocusEffect,
   useNavigation,
   useRoute,
   type RouteProp,
 } from '@react-navigation/native';
+import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useTheme } from '../../../theme/useTheme';
 import createStyles from './styles.GroupDetails';
 import { GroupBanner } from './components/group_banner/GroupBanner';
@@ -21,10 +23,7 @@ import type { RootStackParamList } from '../../../navigations/GroupsStack';
 // import { GroupChat } from './components/group_chats/GroupChat';
 import useGroupDetail, { type GroupUserSearchResult } from './useGroupDetail';
 import AppIcon from '../../../assets/appicon/AppIcon';
-import LeaveGroupModal from './components/modals/LeaveGroupModal';
-import ArchiveGroupModal from './components/modals/ArchiveGroupModal';
 import InviteMemberModal from './components/modals/InviteMemberModal';
-import EditGroupModal from './components/edit_group_modal/EditGroupModal';
 
 interface GroupDetailScreenProps {
   groupName?: string;
@@ -37,20 +36,13 @@ const GroupDetailScreen: React.FC<GroupDetailScreenProps> = ({
   groupDescription: initialGroupDescription = '',
   memberCount: initialMemberCount = 1,
 }) => {
-  const [groupImage, setGroupImage] = useState<string | null | undefined>(
-    undefined,
-  );
-  const [archiveModalVisible, setArchiveModalVisible] = useState(false);
-  const [archiveLoading, setArchiveLoading] = useState(false);
-  const [leaveModalVisible, setLeaveModalVisible] = useState(false);
-  const [leaveLoading, setLeaveLoading] = useState(false);
-  const [saveLoading, setSaveLoading] = useState(false);
   const [pendingInviteUser, setPendingInviteUser] =
     useState<GroupUserSearchResult | null>(null);
   const { theme } = useTheme();
   const { colors, spacing } = theme;
   const insets = useSafeAreaInsets();
-  const navigation = useNavigation();
+  const navigation =
+    useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const route = useRoute<RouteProp<RootStackParamList, 'GroupDetails'>>();
   const groupId = route.params?.groupId || '';
   const styles = useMemo(
@@ -63,16 +55,10 @@ const GroupDetailScreen: React.FC<GroupDetailScreenProps> = ({
     groupName,
     groupDescription,
     groupImageUrl,
+    groupEmoji,
     memberCount,
     isPrivateGroup,
     isLeader,
-    groupEditVisible,
-    setGroupEditVisible,
-    groupNameDraft,
-    setGroupNameDraft,
-    saveGroup,
-    leaveGroup,
-    archiveGroup,
     memberSearchVisible,
     setMemberSearchVisible,
     memberSearchQuery,
@@ -122,11 +108,33 @@ const GroupDetailScreen: React.FC<GroupDetailScreenProps> = ({
     navigation.goBack();
   }, [navigation]);
 
+  useFocusEffect(
+    useCallback(() => {
+      refreshGroup();
+    }, [refreshGroup]),
+  );
+
   const handleSettingsPress = useCallback(() => {
-    setGroupNameDraft(groupName);
-    setGroupImage(undefined);
-    setGroupEditVisible(true);
-  }, [groupName, setGroupNameDraft, setGroupEditVisible]);
+    navigation.navigate('GroupSetting', {
+      groupId,
+      groupName,
+      groupDescription,
+      groupImageUrl,
+      groupEmoji,
+      isLeader,
+      memberCount: memberCount || members.length,
+    });
+  }, [
+    navigation,
+    groupId,
+    groupName,
+    groupDescription,
+    groupImageUrl,
+    groupEmoji,
+    isLeader,
+    memberCount,
+    members.length,
+  ]);
 
   const handleOpenMemberSearch = useCallback(() => {
     setMemberSearchVisible(true);
@@ -146,61 +154,8 @@ const GroupDetailScreen: React.FC<GroupDetailScreenProps> = ({
     }
   }, [createChallengeLoading, setCreateChallengeVisible]);
 
-  const handleOpenArchiveModal = useCallback(() => {
-    setArchiveModalVisible(true);
-  }, []);
 
-  const handleCloseArchiveModal = useCallback(() => {
-    setArchiveModalVisible(false);
-  }, []);
 
-  const handleArchiveGroup = useCallback(async () => {
-    setArchiveLoading(true);
-    try {
-      const archived = await archiveGroup();
-      setArchiveModalVisible(false);
-      if (archived) navigation.goBack();
-    } finally {
-      setArchiveLoading(false);
-    }
-  }, [archiveGroup, navigation]);
-
-  const handleOpenLeaveModal = useCallback(() => {
-    setLeaveModalVisible(true);
-  }, []);
-
-  const handleCloseLeaveModal = useCallback(() => {
-    setLeaveModalVisible(false);
-  }, []);
-
-  const handleLeaveGroup = useCallback(async () => {
-    setLeaveLoading(true);
-    try {
-      const left = await leaveGroup();
-      setLeaveModalVisible(false);
-      if (left) navigation.goBack();
-    } finally {
-      setLeaveLoading(false);
-    }
-  }, [leaveGroup, navigation]);
-
-  const handleCloseEditGroup = useCallback(() => {
-    if (!saveLoading) {
-      setGroupEditVisible(false);
-    }
-  }, [saveLoading, setGroupEditVisible]);
-
-  const handleSaveGroup = useCallback(
-    async (img?: string | null) => {
-      setSaveLoading(true);
-      try {
-        await saveGroup(img);
-      } finally {
-        setSaveLoading(false);
-      }
-    },
-    [saveGroup],
-  );
 
   const handleCloseInviteModal = useCallback(() => {
     setPendingInviteUser(null);
@@ -265,10 +220,8 @@ const GroupDetailScreen: React.FC<GroupDetailScreenProps> = ({
               <GroupOverview
                 members={members}
                 challenges={challenges}
-                isLeader={isLeader}
                 loading={dataLoading}
                 onNewChallenge={handleOpenCreateChallenge}
-                onArchiveGroup={handleOpenArchiveModal}
               />
             )}
             {activeTab === 'Leaderboard' && (
@@ -318,20 +271,6 @@ const GroupDetailScreen: React.FC<GroupDetailScreenProps> = ({
         />
       ) : null}
 
-      <EditGroupModal
-        visible={groupEditVisible}
-        onClose={handleCloseEditGroup}
-        isLeader={isLeader}
-        groupNameDraft={groupNameDraft}
-        setGroupNameDraft={setGroupNameDraft}
-        groupImage={groupImage}
-        currentGroupImage={groupImageUrl}
-        setGroupImage={setGroupImage}
-        saveLoading={saveLoading}
-        onSaveGroup={handleSaveGroup}
-        onOpenLeaveModal={handleOpenLeaveModal}
-      />
-
       {memberSearchVisible ? (
         <MemberSearchModal
           visible={memberSearchVisible}
@@ -350,22 +289,6 @@ const GroupDetailScreen: React.FC<GroupDetailScreenProps> = ({
         loading={memberAddLoading}
         onClose={handleCloseInviteModal}
         onInvite={handleInviteMember}
-        styles={styles}
-      />
-
-      <ArchiveGroupModal
-        visible={archiveModalVisible}
-        loading={archiveLoading}
-        onClose={handleCloseArchiveModal}
-        onArchive={handleArchiveGroup}
-        styles={styles}
-      />
-
-      <LeaveGroupModal
-        visible={leaveModalVisible}
-        loading={leaveLoading}
-        onClose={handleCloseLeaveModal}
-        onLeave={handleLeaveGroup}
         styles={styles}
       />
     </View>

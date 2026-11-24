@@ -277,17 +277,6 @@ const createGroupOverviewStyles = (colors: any, spacing: any, radius: any) =>
       alignItems: 'center',
       justifyContent: 'center',
     },
-    archiveGroupButton: {
-      minHeight: 76,
-      borderRadius: radius.lg,
-      borderWidth: 1,
-      borderColor: colors.error,
-      backgroundColor: colors.surface,
-      padding: spacing.md,
-      alignItems: 'center',
-      justifyContent: 'center',
-      gap: spacing.xs,
-    },
   });
 
 export default createGroupOverviewStyles;
