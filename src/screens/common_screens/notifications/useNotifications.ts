@@ -1,26 +1,16 @@
-import { useCallback, useRef, useState } from 'react';
+import { useCallback, useMemo } from 'react';
 import { useFocusEffect } from '@react-navigation/native';
 import notifee, { AndroidImportance } from '@notifee/react-native';
-import { authenticatedRequest } from '../../../services/authenticatedApi';
-import { API_ENDPOINTS } from '../../../constants';
 import { apiErrorMessage } from '../../../services/api';
 import { showAppToast } from '../../../utils/appToast';
 import { getNotificationPermission } from '../../../utils/AppPermissions';
+import { useAppDispatch, useAppSelector } from '../../../store/hooks';
+import {
+  fetchNotifications,
+  markAllNotificationsAsRead,
+  markNotificationAsRead,
+} from '../../../store/notificationSlice';
 import type { NotificationItem } from './const';
-
-type ApiNotification = {
-  id: string;
-  type: string;
-  title: string;
-  body: string;
-  read: boolean;
-  createdAt: string;
-};
-
-type NotificationPage = {
-  items?: ApiNotification[];
-  unread?: number;
-};
 
 const iconForType = (type: string): NotificationItem['bgColor'] => {
   if (/challenge|achievement|reward|competition/i.test(type))
@@ -48,52 +38,62 @@ const displayTime = (date: string) => {
 };
 
 export default function useNotifications() {
-  const [notifications, setNotifications] = useState<NotificationItem[]>([]);
-  const notificationsRef = useRef<NotificationItem[]>([]);
-  const [unreadCount, setUnreadCount] = useState(0);
-  const [loading, setLoading] = useState(true);
-  const [loadError, setLoadError] = useState('');
+  const dispatch = useAppDispatch();
+  const {
+    items: rawItems,
+    unreadCount,
+    loading,
+    error: loadError,
+  } = useAppSelector(state => state.notifications);
 
-  const refresh = useCallback(async () => {
-    setLoading(true);
-    setLoadError('');
-    try {
-      const result = await authenticatedRequest<NotificationPage>(
-        'GET',
-        API_ENDPOINTS.NOTIFICATIONS.LIST(1, 50),
-      );
-      const items = result.items || [];
+  const notifications = useMemo<NotificationItem[]>(() => {
+    return (rawItems || []).map(item => ({
+      id: item?.id,
+      emoji: emojiForType(item?.type),
+      title: item?.body ? `${item?.title} · ${item?.body}` : item?.title,
+      time: displayTime(item?.createdAt),
+      unread: !item?.read,
+      bgColor: iconForType(item?.type),
+    }));
+  }, [rawItems]);
+
+  const refresh = useCallback(
+    async (force = true) => {
       try {
-        if (await getNotificationPermission()) {
-          const channelId = await notifee.createChannel({
-            id: 'challenge-updates',
-            name: 'Challenge updates',
-            importance: AndroidImportance.DEFAULT,
-          });
-          const challengeItems = items
-            .filter(item => !item?.read && /^CHALLENGE_/i.test(item?.type))
-            .slice(0, 3);
-          const staleChallengeItems = items.filter(
-            item => item?.read && /^CHALLENGE_/i.test(item?.type),
-          );
-          await Promise.all([
-            ...staleChallengeItems.map(item =>
-              notifee.cancelNotification(item?.id),
-            ),
-            ...challengeItems.map(item =>
-              notifee.displayNotification({
-                id: item?.id,
-                title: item?.title,
-                body: item?.body,
-                android: {
-                  channelId,
-                  smallIcon: 'ic_notification',
-                  color: '#00C6A2',
-                  pressAction: { id: 'default' },
-                },
-              }),
-            ),
-          ]);
+        const actionResult = await dispatch(fetchNotifications({ force }));
+        if (fetchNotifications.fulfilled.match(actionResult)) {
+          const items = actionResult.payload.items;
+          if (await getNotificationPermission()) {
+            const channelId = await notifee.createChannel({
+              id: 'challenge-updates',
+              name: 'Challenge updates',
+              importance: AndroidImportance.DEFAULT,
+            });
+            const challengeItems = items
+              .filter(item => !item?.read && /^CHALLENGE_/i.test(item?.type))
+              .slice(0, 3);
+            const staleChallengeItems = items.filter(
+              item => item?.read && /^CHALLENGE_/i.test(item?.type),
+            );
+            await Promise.all([
+              ...staleChallengeItems.map(item =>
+                notifee.cancelNotification(item?.id),
+              ),
+              ...challengeItems.map(item =>
+                notifee.displayNotification({
+                  id: item?.id,
+                  title: item?.title,
+                  body: item?.body,
+                  android: {
+                    channelId,
+                    smallIcon: 'ic_notification',
+                    color: '#00C6A2',
+                    pressAction: { id: 'default' },
+                  },
+                }),
+              ),
+            ]);
+          }
         }
       } catch (notificationError) {
         console.warn(
@@ -101,51 +101,22 @@ export default function useNotifications() {
           notificationError,
         );
       }
-      const mappedItems = items.map(item => ({
-        id: item?.id,
-        emoji: emojiForType(item?.type),
-        title: item?.body ? `${item?.title} · ${item?.body}` : item?.title,
-        time: displayTime(item?.createdAt),
-        unread: !item?.read,
-        bgColor: iconForType(item?.type),
-      }));
-      notificationsRef.current = mappedItems;
-      setNotifications(mappedItems);
-      setUnreadCount(result.unread ?? items.filter(item => !item?.read).length);
-    } catch (error) {
-      setLoadError(apiErrorMessage(error));
-    } finally {
-      setLoading(false);
-    }
-  }, []);
+    },
+    [dispatch],
+  );
 
   useFocusEffect(
     useCallback(() => {
-      refresh();
+      refresh(false);
     }, [refresh]),
   );
 
   const markAsRead = useCallback(
     async (id: string) => {
-      const wasUnread = notificationsRef.current.some(
-        item => item?.id === id && item?.unread,
-      );
-      if (!wasUnread) return;
-
-      const updatedItems = notificationsRef.current.map(item =>
-        item?.id === id ? { ...item, unread: false } : item,
-      );
-      notificationsRef.current = updatedItems;
-      setNotifications(updatedItems);
-      setUnreadCount(count => Math.max(0, count - 1));
       try {
-        await authenticatedRequest(
-          'PATCH',
-          API_ENDPOINTS.NOTIFICATIONS.MARK_READ(id),
-        );
+        await dispatch(markNotificationAsRead(id)).unwrap();
         await notifee.cancelNotification(id);
       } catch (error) {
-        await refresh();
         showAppToast(
           'error',
           'Could not update notification',
@@ -153,42 +124,29 @@ export default function useNotifications() {
         );
       }
     },
-    [refresh],
+    [dispatch],
   );
 
   const markAllAsRead = useCallback(async () => {
-    const updatedItems = notificationsRef.current.map(item => ({
-      ...item,
-      unread: false,
-    }));
-    notificationsRef.current = updatedItems;
-    setNotifications(updatedItems);
-    setUnreadCount(0);
     try {
-      await authenticatedRequest(
-        'PATCH',
-        API_ENDPOINTS.NOTIFICATIONS.MARK_ALL_READ,
-      );
+      await dispatch(markAllNotificationsAsRead()).unwrap();
       await Promise.all(
-        notificationsRef.current.map(item =>
-          notifee.cancelNotification(item?.id),
-        ),
+        (rawItems || []).map(item => notifee.cancelNotification(item?.id)),
       );
     } catch (error) {
-      await refresh();
       showAppToast(
         'error',
         'Could not update notifications',
         apiErrorMessage(error),
       );
     }
-  }, [refresh]);
+  }, [dispatch, rawItems]);
 
   return {
     notifications,
     unreadCount,
     loading,
-    loadError,
+    loadError: loadError ?? '',
     refresh,
     markAsRead,
     markAllAsRead,

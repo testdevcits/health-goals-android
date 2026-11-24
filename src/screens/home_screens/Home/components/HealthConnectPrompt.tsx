@@ -15,6 +15,10 @@ import {
   HEALTH_PERMISSIONS,
 } from '../../../../services/healthConnect';
 import { syncRecentHealthData } from '../../../../services/healthSync';
+import {
+  enableBackgroundHealthSync,
+  requestBackgroundHealthReadPermission,
+} from '../../../../services/backgroundHealthSync';
 import { apiErrorMessage } from '../../../../services/api';
 import { showAppToast } from '../../../../utils/appToast';
 import { useTheme } from '../../../../theme/useTheme';
@@ -116,6 +120,19 @@ const HealthConnectPrompt: React.FC<{
 
       setStatus('connected');
       onSyncComplete();
+
+      // Enable background sync if background permission is supported and granted
+      try {
+        const bgGranted = await requestBackgroundHealthReadPermission().catch(
+          () => false,
+        );
+        if (bgGranted) {
+          await enableBackgroundHealthSync().catch(() => {});
+        }
+      } catch {
+        // Silent fall-through: foreground sync works seamlessly
+      }
+
       let result;
       try {
         result = await syncRecentHealthData({ force: true });

@@ -8,6 +8,8 @@ import { API_ENDPOINTS } from '../../../constants';
 import { showAppToast } from '../../../utils/appToast';
 import { lightColors } from '../../../theme/colors';
 import type { Badge, Challenge, ChallengeTab } from './data/challengesData';
+import { useAppDispatch, useAppSelector } from '../../../store/hooks';
+import { fetchNotifications } from '../../../store/notificationSlice';
 
 type CompetitionEntry = {
   id: string;
@@ -72,6 +74,10 @@ type Achievement = {
 };
 
 const useChallenges = () => {
+  const dispatch = useAppDispatch();
+  const unreadNotifications = useAppSelector(
+    state => state.notifications.unreadCount,
+  );
   const [activeTab, setActiveTab] = useState<ChallengeTab>('Challenges');
   const [challenges, setChallenges] = useState<Challenge[]>([]);
   const [ruleChallenges, setRuleChallenges] = useState<Challenge[]>([]);
@@ -80,18 +86,19 @@ const useChallenges = () => {
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState('');
   const [walletPoints, setWalletPoints] = useState<number | null>(null);
-  const [unreadNotifications, setUnreadNotifications] = useState(0);
 
   const refresh = useCallback(async () => {
     setLoading(true);
     setLoadError('');
+
+    // Fetch via Redux store (uses 1-min TTL cache, no redundant calls)
+    dispatch(fetchNotifications());
 
     try {
       const [
         challengeResult,
         badgeResult,
         competitionResult,
-        notificationResult,
         walletResult,
       ] = await Promise.allSettled([
         authenticatedRequest<{
@@ -106,10 +113,6 @@ const useChallenges = () => {
           competitions: Competition[];
           achievements: Achievement[];
         }>('GET', API_ENDPOINTS.CHALLENGES.RULE_COMPETITIONS),
-        authenticatedRequest<{
-          items?: Array<{ read: boolean }>;
-          unread?: number;
-        }>('GET', API_ENDPOINTS.NOTIFICATIONS.LIST(1, 50)),
         authenticatedRequest<{
           wallet?: { availablePoints?: number; balance?: number };
         }>('GET', API_ENDPOINTS.REWARDS.WALLET),
@@ -258,13 +261,6 @@ const useChallenges = () => {
         );
       }
 
-      if (notificationResult.status === 'fulfilled') {
-        setUnreadNotifications(
-          notificationResult.value.unread ??
-            (notificationResult.value.items || []).filter(item => !item?.read)
-              .length,
-        );
-      }
       if (walletResult.status === 'fulfilled') {
         setWalletPoints(
           Number(
@@ -283,7 +279,6 @@ const useChallenges = () => {
         const optionalFailure = [
           badgeResult,
           competitionResult,
-          notificationResult,
           walletResult,
         ].find(result => result.status === 'rejected');
         if (optionalFailure?.status === 'rejected') {
@@ -297,7 +292,7 @@ const useChallenges = () => {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [dispatch]);
 
   useFocusEffect(
     useCallback(() => {

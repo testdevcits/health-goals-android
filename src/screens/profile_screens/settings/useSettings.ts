@@ -20,6 +20,7 @@ import { logout } from '../../../services/auth';
 import { navigationRef } from '../../../navigations/AppNavigation';
 import { useAppDispatch } from '../../../store/hooks';
 import { clearProfile } from '../../../store/profileSlice';
+import { clearNotifications } from '../../../store/notificationSlice';
 
 export type SettingsGroup = 'units' | 'language' | 'appearance';
 export type SettingsNavigation = {
@@ -68,6 +69,7 @@ export default function useSettings() {
       // Clear the local session even while offline.
     }
     dispatch(clearProfile());
+    dispatch(clearNotifications());
     setModalVisible(false);
     navigationRef.resetRoot({ index: 0, routes: [{ name: 'Login' }] });
   };

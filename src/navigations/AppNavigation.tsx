@@ -23,6 +23,7 @@ import { spacing } from '../theme/spacing';
 import AppIcon from '../assets/appicon/AppIcon';
 import SessionExpiredModal from '../components/common/session_expired_modal/SessionExpiredModal';
 import { clearProfile } from '../store/profileSlice';
+import { clearNotifications } from '../store/notificationSlice';
 import { useAppDispatch } from '../store/hooks';
 
 export type RootStackParamList = {
@@ -94,6 +95,7 @@ const AppNavigation = () => {
     () =>
       subscribeToSessionExpired(() => {
         dispatch(clearProfile());
+        dispatch(clearNotifications());
         setSessionExpiredVisible(true);
         if (navigationRef.isReady()) {
           navigationRef.resetRoot({ index: 0, routes: [{ name: 'Login' }] });

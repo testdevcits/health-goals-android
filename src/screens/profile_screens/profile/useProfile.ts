@@ -8,6 +8,7 @@ import { getCurrentUser } from '../../../services/profile';
 import { logout } from '../../../services/auth';
 import { useAppDispatch, useAppSelector } from '../../../store/hooks';
 import { clearProfile, setProfile } from '../../../store/profileSlice';
+import { clearNotifications } from '../../../store/notificationSlice';
 import { navigationRef } from '../../../navigations/AppNavigation';
 import { getProfileMenuItems } from './conts';
 import type { AppColors } from '../../../theme/colors';
@@ -143,6 +144,7 @@ export default function useProfile(
       // Clear the local profile even when logout cannot reach the server.
     }
     dispatch(clearProfile());
+    dispatch(clearNotifications());
     setModalVisible(false);
     navigationRef.resetRoot({ index: 0, routes: [{ name: 'Login' }] });
   };

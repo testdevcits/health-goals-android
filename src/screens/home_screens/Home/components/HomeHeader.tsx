@@ -10,16 +10,18 @@ import { useCallback } from 'react';
 import { getCurrentUser } from '../../../../services/profile';
 import { useAppDispatch, useAppSelector } from '../../../../store/hooks';
 import { setProfile } from '../../../../store/profileSlice';
-import { authenticatedRequest } from '../../../../services/authenticatedApi';
-import { API_ENDPOINTS } from '../../../../constants';
+import { fetchNotifications } from '../../../../store/notificationSlice';
 
 const HomeHeader: React.FC = () => {
   const dispatch = useAppDispatch();
   const profile = useAppSelector(state => state.profile.user);
+  const unreadNotifications = useAppSelector(
+    state => state.notifications.unreadCount,
+  );
   const fullName = profile?.name ?? '';
   const name = fullName.split(' ')[0] || '';
   const [avatarLoadFailed, setAvatarLoadFailed] = useState(false);
-  const [unreadNotifications, setUnreadNotifications] = useState(0);
+
   useEffect(() => {
     setAvatarLoadFailed(false);
   }, [profile?.profileImageUrl]);
@@ -32,19 +34,10 @@ const HomeHeader: React.FC = () => {
           if (active) dispatch(setProfile(user));
         })
         .catch(() => {});
-      authenticatedRequest<{
-        unread?: number;
-        items?: Array<{ read: boolean }>;
-      }>('GET', API_ENDPOINTS.NOTIFICATIONS.LIST(1, 50))
-        .then(result => {
-          if (active) {
-            setUnreadNotifications(
-              result.unread ??
-                (result.items || []).filter(item => !item?.read).length,
-            );
-          }
-        })
-        .catch(() => {});
+
+      // Use Redux thunk (with TTL cache – does not call API repeatedly)
+      dispatch(fetchNotifications());
+
       return () => {
         active = false;
       };
