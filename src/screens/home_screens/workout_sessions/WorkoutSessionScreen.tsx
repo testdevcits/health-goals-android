@@ -11,6 +11,7 @@ import MetricCard from './components/MetricCard';
 import ActivitySelector from './components/ActivitySelector';
 import WorkoutHero from './components/WorkoutHero';
 import WorkoutControls from './components/WorkoutControls';
+import WorkoutCelebrationModal from './components/WorkoutCelebrationModal';
 
 type Props = NativeStackScreenProps<HomeStackParamList, 'WorkoutSession'>;
 
@@ -26,9 +27,12 @@ const WorkoutSessionScreen: React.FC<Props> = ({ navigation, route }) => {
     hasStarted,
     distanceKm,
     calories,
+    avgPace,
     confirmation,
     setConfirmation,
     savingWorkout,
+    completedWorkout,
+    closeCelebration,
     handleConfirmationAction,
     handleStartPause,
     handleSelectActivity,
@@ -132,7 +136,8 @@ const WorkoutSessionScreen: React.FC<Props> = ({ navigation, route }) => {
           />
           <MetricCard
             emoji="⚡"
-            value="--"
+            value={avgPace}
+            unit={avgPace !== '--' ? '/km' : undefined}
             label="Avg pace"
             tint={colors.infoLight}
             backgroundColor={colors.surface}
@@ -151,6 +156,13 @@ const WorkoutSessionScreen: React.FC<Props> = ({ navigation, route }) => {
           styles={styles}
         />
       </ScrollView>
+
+      {/* Workout Celebration Confetti Modal */}
+      <WorkoutCelebrationModal
+        visible={completedWorkout !== null}
+        data={completedWorkout}
+        onClose={closeCelebration}
+      />
     </View>
   );
 };

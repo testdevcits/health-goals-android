@@ -42,6 +42,13 @@ export default function useWorkoutSession(
     null,
   );
   const [savingWorkout, setSavingWorkout] = useState(false);
+  const [completedWorkout, setCompletedWorkout] = useState<{
+    activityName: string;
+    activityEmoji: string;
+    durationSeconds: number;
+    calories: number;
+    distanceKm: number;
+  } | null>(null);
   const finishLock = useRef(false);
   const pendingWorkoutUpload = useRef<{
     sessionId: string;
@@ -152,6 +159,20 @@ export default function useWorkoutSession(
   const calories = Math.floor(
     (elapsedSeconds / 60) * currentActivity.caloriesPerMinute,
   );
+
+  // Average Pace: min / km (only applicable when distance > 0, e.g. running, walking, cycling, hiking)
+  const avgPace = (() => {
+    if (currentActivity.speedKmh <= 0 || distanceKm <= 0 || elapsedSeconds < 5) {
+      return '--';
+    }
+    const paceSecondsPerKm = elapsedSeconds / distanceKm;
+    if (!Number.isFinite(paceSecondsPerKm) || paceSecondsPerKm > 3600) {
+      return '--';
+    }
+    const paceMinutes = Math.floor(paceSecondsPerKm / 60);
+    const paceRemainingSeconds = Math.floor(paceSecondsPerKm % 60);
+    return `${paceMinutes}'${String(paceRemainingSeconds).padStart(2, '0')}"`;
+  })();
 
   const handleStartPause = async () => {
     try {
@@ -308,7 +329,15 @@ export default function useWorkoutSession(
               finishLock.current = false;
               setSavingWorkout(false);
               setConfirmation(null);
-              returnToPreviousScreen();
+
+              // Trigger Celebration Modal with summary stats
+              setCompletedWorkout({
+                activityName: currentActivity.name,
+                activityEmoji: currentActivity.emoji,
+                durationSeconds: elapsedSeconds,
+                calories,
+                distanceKm,
+              });
             } catch (error) {
               finishLock.current = false;
               setSavingWorkout(false);
@@ -367,9 +396,15 @@ export default function useWorkoutSession(
     hasStarted,
     distanceKm,
     calories,
+    avgPace,
     confirmation,
     setConfirmation,
     savingWorkout,
+    completedWorkout,
+    closeCelebration: () => {
+      setCompletedWorkout(null);
+      returnToPreviousScreen();
+    },
     handleConfirmationAction,
     handleStartPause,
     handleSelectActivity,
