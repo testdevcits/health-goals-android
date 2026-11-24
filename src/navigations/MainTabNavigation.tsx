@@ -13,12 +13,12 @@ import { spacing } from '../theme/spacing';
 import { useTheme } from '../theme/useTheme';
 import AppIcon from '../assets/appicon/AppIcon';
 
-type MainTabParamList = {
-  Home: undefined;
-  Challenges: undefined;
-  Groups: undefined;
-  Discover: undefined;
-  Profile: undefined;
+export type MainTabParamList = {
+  HomeTab: undefined;
+  ChallengesTab: undefined;
+  GroupsTab: undefined;
+  DiscoverTab: undefined;
+  ProfileTab: undefined;
 };
 
 const Tab = createBottomTabNavigator<MainTabParamList>();
@@ -47,7 +47,7 @@ const MainTabNavigation = () => {
 
   return (
     <Tab.Navigator
-      initialRouteName="Home"
+      initialRouteName="HomeTab"
       screenOptions={{
         headerShown: false,
         tabBarActiveTintColor: theme.colors.primary,
@@ -58,40 +58,45 @@ const MainTabNavigation = () => {
       }}
     >
       <Tab.Screen
-        name="Home"
+        name="HomeTab"
         component={HomeStack}
         options={{
+          tabBarLabel: 'Home',
           tabBarIcon: HomeTabIcon,
         }}
       />
 
       <Tab.Screen
-        name="Challenges"
+        name="ChallengesTab"
         component={ChallengesStack}
         options={{
+          tabBarLabel: 'Challenges',
           tabBarIcon: ChallengesTabIcon,
         }}
       />
 
       <Tab.Screen
-        name="Groups"
+        name="GroupsTab"
         component={GroupsStack}
         options={{
+          tabBarLabel: 'Groups',
           tabBarIcon: GroupsTabIcon,
         }}
       />
 
       <Tab.Screen
-        name="Discover"
+        name="DiscoverTab"
         component={DiscoverStack}
         options={{
+          tabBarLabel: 'Discover',
           tabBarIcon: DiscoverTabIcon,
         }}
       />
       <Tab.Screen
-        name="Profile"
+        name="ProfileTab"
         component={ProfileStack}
         options={{
+          tabBarLabel: 'Profile',
           tabBarIcon: ProfileTabIcon,
         }}
       />

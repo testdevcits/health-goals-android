@@ -24,6 +24,8 @@ import AppIcon from '../assets/appicon/AppIcon';
 import SessionExpiredModal from '../components/common/session_expired_modal/SessionExpiredModal';
 import { clearProfile } from '../store/profileSlice';
 import { clearNotifications } from '../store/notificationSlice';
+import { clearWallet } from '../store/walletSlice';
+import { clearActivity } from '../store/activitySlice';
 import { useAppDispatch } from '../store/hooks';
 
 export type RootStackParamList = {
@@ -96,6 +98,8 @@ const AppNavigation = () => {
       subscribeToSessionExpired(() => {
         dispatch(clearProfile());
         dispatch(clearNotifications());
+        dispatch(clearWallet());
+        dispatch(clearActivity());
         setSessionExpiredVisible(true);
         if (navigationRef.isReady()) {
           navigationRef.resetRoot({ index: 0, routes: [{ name: 'Login' }] });

@@ -108,7 +108,7 @@ const HomeScreen: React.FC<Props> = ({ navigation }) => {
       if (action === 'WorkoutSession') {
         navigation.navigate('WorkoutSession');
       } else {
-        navigation.getParent()?.navigate('Challenges');
+        navigation.getParent()?.navigate('ChallengesTab');
       }
     },
     [navigation],

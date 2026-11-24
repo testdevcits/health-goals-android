@@ -9,6 +9,8 @@ import { logout } from '../../../services/auth';
 import { useAppDispatch, useAppSelector } from '../../../store/hooks';
 import { clearProfile, setProfile } from '../../../store/profileSlice';
 import { clearNotifications } from '../../../store/notificationSlice';
+import { clearWallet, getWalletData } from '../../../store/walletSlice';
+import { clearActivity } from '../../../store/activitySlice';
 import { navigationRef } from '../../../navigations/AppNavigation';
 import { getProfileMenuItems } from './conts';
 import type { AppColors } from '../../../theme/colors';
@@ -24,14 +26,14 @@ export default function useProfile(
   const menuItems = useMemo(() => getProfileMenuItems(colors), [colors]);
   const dispatch = useAppDispatch();
   const user = useAppSelector(state => state.profile.user);
-  const [points, setPoints] = useState(0);
+  const points = useAppSelector(state => state.wallet.availablePoints);
+  const walletLoading = useAppSelector(state => state.wallet.loading);
   const [streak, setStreak] = useState<number>(() => {
     return (
       storageService.getObject<{ streakPeriod?: number }>('cache_energy_card')
         ?.streakPeriod ?? 0
     );
   });
-  const [walletLoading, setWalletLoading] = useState(true);
   const [profileLoading, setProfileLoading] = useState(!user);
   const [profileError, setProfileError] = useState('');
   const [reloadKey, setReloadKey] = useState(0);
@@ -43,11 +45,12 @@ export default function useProfile(
     let active = true;
     setProfileLoading(true);
     setProfileError('');
+
+    // Fetch wallet with caching
+    dispatch(getWalletData());
+
     Promise.allSettled([
       getCurrentUser(),
-      authenticatedRequest<{
-        wallet?: { availablePoints?: number; balance?: number };
-      }>('GET', API_ENDPOINTS.REWARDS.WALLET),
       authenticatedRequest<{
         items: Array<{
           day: string;
@@ -68,22 +71,16 @@ export default function useProfile(
         creditedCoins?: number;
       }>('GET', API_ENDPOINTS.ACTIVITY.TODAY),
     ])
-      .then(([userResult, walletResult, historyResult, todayResult]) => {
+      .then(([userResult, historyResult, todayResult]) => {
         if (!active) return;
         const fetchedUser =
           userResult.status === 'fulfilled' ? userResult.value : null;
-        const wallet =
-          walletResult.status === 'fulfilled'
-            ? walletResult.value.wallet
-            : undefined;
         if (fetchedUser) dispatch(setProfile(fetchedUser));
         else if (userResult.status === 'rejected') {
           setProfileError(
             'We could not load your profile. Check your connection and try again.',
           );
         }
-        setPoints(Number(wallet?.availablePoints ?? wallet?.balance ?? 0));
-        setWalletLoading(false);
 
         const historyData =
           historyResult.status === 'fulfilled' ? historyResult.value : null;
@@ -145,6 +142,8 @@ export default function useProfile(
     }
     dispatch(clearProfile());
     dispatch(clearNotifications());
+    dispatch(clearWallet());
+    dispatch(clearActivity());
     setModalVisible(false);
     navigationRef.resetRoot({ index: 0, routes: [{ name: 'Login' }] });
   };

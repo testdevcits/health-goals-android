@@ -10,6 +10,7 @@ import { lightColors } from '../../../theme/colors';
 import type { Badge, Challenge, ChallengeTab } from './data/challengesData';
 import { useAppDispatch, useAppSelector } from '../../../store/hooks';
 import { fetchNotifications } from '../../../store/notificationSlice';
+import { getWalletData } from '../../../store/walletSlice';
 
 type CompetitionEntry = {
   id: string;
@@ -78,6 +79,9 @@ const useChallenges = () => {
   const unreadNotifications = useAppSelector(
     state => state.notifications.unreadCount,
   );
+  const walletPoints = useAppSelector(
+    state => state.wallet.availablePoints,
+  );
   const [activeTab, setActiveTab] = useState<ChallengeTab>('Challenges');
   const [challenges, setChallenges] = useState<Challenge[]>([]);
   const [ruleChallenges, setRuleChallenges] = useState<Challenge[]>([]);
@@ -85,21 +89,20 @@ const useChallenges = () => {
   const [competitions, setCompetitions] = useState<Competition[]>([]);
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState('');
-  const [walletPoints, setWalletPoints] = useState<number | null>(null);
 
   const refresh = useCallback(async () => {
     setLoading(true);
     setLoadError('');
 
-    // Fetch via Redux store (uses 1-min TTL cache, no redundant calls)
+    // Fetch notifications and wallet via Redux store (uses 1-min TTL cache, no redundant network hits)
     dispatch(fetchNotifications());
+    dispatch(getWalletData());
 
     try {
       const [
         challengeResult,
         badgeResult,
         competitionResult,
-        walletResult,
       ] = await Promise.allSettled([
         authenticatedRequest<{
           challenges?: CommunityChallenge[];
@@ -113,9 +116,6 @@ const useChallenges = () => {
           competitions: Competition[];
           achievements: Achievement[];
         }>('GET', API_ENDPOINTS.CHALLENGES.RULE_COMPETITIONS),
-        authenticatedRequest<{
-          wallet?: { availablePoints?: number; balance?: number };
-        }>('GET', API_ENDPOINTS.REWARDS.WALLET),
       ]);
 
       if (challengeResult.status === 'fulfilled') {
@@ -261,16 +261,6 @@ const useChallenges = () => {
         );
       }
 
-      if (walletResult.status === 'fulfilled') {
-        setWalletPoints(
-          Number(
-            walletResult.value.wallet?.availablePoints ??
-              walletResult.value.wallet?.balance ??
-              0,
-          ),
-        );
-      }
-
       if (challengeResult.status === 'rejected') {
         const message = apiErrorMessage(challengeResult.reason);
         setLoadError(message);
@@ -279,7 +269,6 @@ const useChallenges = () => {
         const optionalFailure = [
           badgeResult,
           competitionResult,
-          walletResult,
         ].find(result => result.status === 'rejected');
         if (optionalFailure?.status === 'rejected') {
           showAppToast(

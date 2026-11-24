@@ -21,6 +21,8 @@ import { navigationRef } from '../../../navigations/AppNavigation';
 import { useAppDispatch } from '../../../store/hooks';
 import { clearProfile } from '../../../store/profileSlice';
 import { clearNotifications } from '../../../store/notificationSlice';
+import { clearWallet } from '../../../store/walletSlice';
+import { clearActivity } from '../../../store/activitySlice';
 
 export type SettingsGroup = 'units' | 'language' | 'appearance';
 export type SettingsNavigation = {
@@ -70,6 +72,8 @@ export default function useSettings() {
     }
     dispatch(clearProfile());
     dispatch(clearNotifications());
+    dispatch(clearWallet());
+    dispatch(clearActivity());
     setModalVisible(false);
     navigationRef.resetRoot({ index: 0, routes: [{ name: 'Login' }] });
   };

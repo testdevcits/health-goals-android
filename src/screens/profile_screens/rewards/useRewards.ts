@@ -9,6 +9,8 @@ import { fetchWallet } from '../../../services/wallet';
 import type { DailyActivity, Wallet } from '../../../services/wallet';
 import { apiErrorMessage } from '../../../services/api';
 import { showAppToast } from '../../../utils/appToast';
+import { useAppDispatch } from '../../../store/hooks';
+import { deductPoints, setWalletData } from '../../../store/walletSlice';
 
 export type Reward = {
   id: string;
@@ -68,6 +70,7 @@ export const rewardIcon = (title: string) =>
     : '🎁';
 
 export default function useRewards() {
+  const dispatch = useAppDispatch();
   const [points, setPoints] = useState(0);
   const [wallet, setWallet] = useState<Wallet | null>(null);
   const [dailyActivity, setDailyActivity] = useState<DailyActivity | null>(
@@ -117,6 +120,12 @@ export default function useRewards() {
       setWallet(walletResult.value.wallet);
       setDailyActivity(walletResult.value.dailyActivity);
       setPoints(walletResult.value.wallet.availablePoints);
+      dispatch(
+        setWalletData({
+          wallet: walletResult.value.wallet,
+          dailyActivity: walletResult.value.dailyActivity,
+        }),
+      );
     }
     if (rewardsResult.status === 'fulfilled') {
       setRewards(rewardsResult.value.rewards || []);
@@ -166,7 +175,7 @@ export default function useRewards() {
       );
     }
     setLoading(false);
-  }, []);
+  }, [dispatch]);
 
   const loadMoreTransactions = useCallback(async () => {
     if (
@@ -226,6 +235,7 @@ export default function useRewards() {
       if (!result.redemption?.id) {
         throw new Error('The server did not confirm this redemption.');
       }
+      dispatch(deductPoints(reward.pointsRequired));
       await refresh();
       showAppToast(
         'success',
