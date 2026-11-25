@@ -112,10 +112,17 @@ const styles = StyleSheet.create({
     gap: spacing.sm,
   },
   sourceBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.xs,
     paddingHorizontal: spacing.sm,
     paddingVertical: spacing.xxs + 1,
     borderRadius: 8,
     borderWidth: 1,
+  },
+  sourceBadgeIcon: {
+    width: 22,
+    height: 22,
   },
   sourceBadgeText: {
     fontSize: typography.tabLabel.fontSize,

@@ -1,5 +1,5 @@
-import React from 'react';
-import { Pressable, View } from 'react-native';
+import React, { useCallback } from 'react';
+import { ActivityIndicator, FlatList, Pressable, View } from 'react-native';
 import { AppShimmer, AppText, SectionHeader } from '../../../../../components';
 import { useTheme } from '../../../../../theme/useTheme';
 import {
@@ -46,12 +46,103 @@ const RecentWorkoutsSection: React.FC<RecentWorkoutsSectionProps> = ({
     overviewStats,
   } = useRecentWorkouts(healthRefreshKey);
 
-  const handleNavigateWorkout = (activityId?: string) => {
-    navigation.navigate(
-      'WorkoutSession',
-      activityId ? { activityId } : undefined,
+  const handleNavigateWorkout = useCallback(
+    (activityId?: string) => {
+      navigation.navigate(
+        'WorkoutSession',
+        activityId ? { activityId } : undefined,
+      );
+    },
+    [navigation],
+  );
+
+  const renderActivityGroup = useCallback(
+    ({ item }: { item: GroupedActivityItem }) => (
+      <GroupedActivityCard
+        key={item.id}
+        group={item}
+        isExpanded={Boolean(expandedCards[item.id])}
+        onToggleExpand={() => toggleExpand(item.id)}
+        onNavigateWorkout={handleNavigateWorkout}
+      />
+    ),
+    [expandedCards, handleNavigateWorkout, toggleExpand],
+  );
+
+  const keyExtractor = useCallback(
+    (item: GroupedActivityItem) => item.id,
+    [],
+  );
+
+  const renderFooter = useCallback(() => {
+    return (
+      <View>
+        {filteredGroups.length > 4 ? (
+          <Pressable
+            onPress={() => setShowAllItems(prev => !prev)}
+            style={[
+              styles.showMoreButton,
+              {
+                borderColor: colors.border,
+                backgroundColor: colors.surface,
+              },
+            ]}
+          >
+            <AppText variant="caption" bold color="primary">
+              {showAllItems
+                ? 'Show Less'
+                : `Show All (${filteredGroups.length} days / activities)`}
+            </AppText>
+          </Pressable>
+        ) : null}
+
+        {loadingMore ? (
+          <View
+            style={{
+              paddingVertical: theme.spacing.md,
+              alignItems: 'center',
+              justifyContent: 'center',
+              flexDirection: 'row',
+              gap: theme.spacing.sm,
+            }}
+          >
+            <ActivityIndicator size="small" color={colors.primary} />
+            <AppText variant="caption" color="textSecondary">
+              Loading more activities...
+            </AppText>
+          </View>
+        ) : hasMore ? (
+          <Pressable
+            onPress={loadMore}
+            style={[
+              styles.showMoreButton,
+              {
+                borderColor: colors.border,
+                backgroundColor: colors.surface,
+              },
+            ]}
+          >
+            <AppText variant="caption" bold color="primary">
+              {`Load More Activities (Page ${page + 1})`}
+            </AppText>
+          </Pressable>
+        ) : null}
+      </View>
     );
-  };
+  }, [
+    colors.border,
+    colors.primary,
+    colors.surface,
+    filteredGroups.length,
+    hasMore,
+    loadMore,
+    loadingMore,
+    page,
+    setShowAllItems,
+    showAllItems,
+    theme.spacing.md,
+    theme.spacing.sm,
+  ]);
 
   return (
     <View style={styles.container}>
@@ -109,56 +200,24 @@ const RecentWorkoutsSection: React.FC<RecentWorkoutsSectionProps> = ({
           onStartWorkout={() => handleNavigateWorkout()}
         />
       ) : (
-        <View style={styles.list}>
-          {displayedGroups.map(group => (
-            <GroupedActivityCard
-              key={group.id}
-              group={group}
-              isExpanded={Boolean(expandedCards[group.id])}
-              onToggleExpand={() => toggleExpand(group.id)}
-              onNavigateWorkout={handleNavigateWorkout}
-            />
-          ))}
-
-          {filteredGroups.length > 4 ? (
-            <Pressable
-              onPress={() => setShowAllItems(prev => !prev)}
-              style={[
-                styles.showMoreButton,
-                {
-                  borderColor: colors.border,
-                  backgroundColor: colors.surface,
-                },
-              ]}
-            >
-              <AppText variant="caption" bold color="primary">
-                {showAllItems
-                  ? 'Show Less'
-                  : `Show All (${filteredGroups.length} days / activities)`}
-              </AppText>
-            </Pressable>
-          ) : null}
-
-          {hasMore ? (
-            <Pressable
-              onPress={loadMore}
-              disabled={loadingMore}
-              style={[
-                styles.showMoreButton,
-                {
-                  borderColor: colors.border,
-                  backgroundColor: colors.surface,
-                },
-              ]}
-            >
-              <AppText variant="caption" bold color="primary">
-                {loadingMore
-                  ? 'Loading next page...'
-                  : `Load More Activities (Page ${page + 1})`}
-              </AppText>
-            </Pressable>
-          ) : null}
-        </View>
+        <FlatList
+          data={displayedGroups}
+          renderItem={renderActivityGroup}
+          keyExtractor={keyExtractor}
+          scrollEnabled={false}
+          contentContainerStyle={styles.list}
+          initialNumToRender={6}
+          maxToRenderPerBatch={8}
+          windowSize={5}
+          removeClippedSubviews={false}
+          onEndReached={() => {
+            if (hasMore && !loadingMore && !loading) {
+              loadMore();
+            }
+          }}
+          onEndReachedThreshold={0.5}
+          ListFooterComponent={renderFooter}
+        />
       )}
     </View>
   );

@@ -418,6 +418,18 @@ export const useRecentWorkouts = (healthRefreshKey?: number) => {
     }
   }, [loading, loadingMore, hasMore, nextPage]);
 
+  useEffect(() => {
+    const bottomSub = DeviceEventEmitter.addListener(
+      'homeScrolledToBottom',
+      () => {
+        loadMore();
+      },
+    );
+    return () => {
+      bottomSub.remove();
+    };
+  }, [loadMore]);
+
   const groupedActivities = useMemo(() => {
     return groupRecordsByActivityAndDate(allRecords);
   }, [allRecords]);
@@ -434,7 +446,7 @@ export const useRecentWorkouts = (healthRefreshKey?: number) => {
 
   const displayedGroups = useMemo(() => {
     if (showAllItems) {
-      return filteredGroups.slice(0, 15);
+      return filteredGroups;
     }
     return filteredGroups.slice(0, 4);
   }, [filteredGroups, showAllItems]);

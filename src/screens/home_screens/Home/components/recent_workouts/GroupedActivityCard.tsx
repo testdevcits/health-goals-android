@@ -1,6 +1,7 @@
 import React from 'react';
-import { Pressable, View } from 'react-native';
+import { Image, Pressable, View } from 'react-native';
 import AppIcon from '../../../../../assets/appicon/AppIcon';
+import { HealthConnect, LogoImage } from '../../../../../assets/images/ImageIndex';
 import { AppText } from '../../../../../components';
 import { useTheme } from '../../../../../theme/useTheme';
 import { getActivityThemeColors } from './getActivityThemeColors';
@@ -18,7 +19,7 @@ interface GroupedActivityCardProps {
   onNavigateWorkout: (activityId?: string) => void;
 }
 
-export const GroupedActivityCard: React.FC<GroupedActivityCardProps> = ({
+export const GroupedActivityCard: React.FC<GroupedActivityCardProps> = React.memo(({
   group,
   isExpanded,
   onToggleExpand,
@@ -27,24 +28,40 @@ export const GroupedActivityCard: React.FC<GroupedActivityCardProps> = ({
   const { theme } = useTheme();
   const { colors } = theme;
 
-  const hasMultipleSessions = group.sessions.length > 1;
-  const firstSession = group.sessions[0];
+  const hasMultipleSessions = group?.sessions.length > 1;
+  const firstSession = group?.sessions[0];
   const singleTimeText = formatTimeOnly(
     firstSession?.startTime ||
-      firstSession?.recordedAt ||
-      firstSession?.createdAt,
+    firstSession?.recordedAt ||
+    firstSession?.createdAt,
   );
   const themeAccents = getActivityThemeColors(
-    group.activityKey,
-    group.metricType,
+    group?.activityKey,
+    group?.metricType,
     colors,
   );
 
-  const isSteps = group.metricType === 'steps';
+  const isSteps = group?.metricType === 'steps';
   const stepGoal = 10000;
   const stepProgress = isSteps
-    ? Math.min(1, Math.max(0, group.totalDurationMin / stepGoal))
+    ? Math.min(1, Math.max(0, group?.totalDurationMin / stepGoal))
     : 0;
+
+  const isHealthConnect =
+    group?.source === 'Health Connect' ||
+    group?.source?.toLowerCase().includes('health_connect') ||
+    group?.source?.toLowerCase().includes('health connect');
+
+  const isVitalityApp =
+    group?.source === 'Vitality App' ||
+    group?.source === 'app' ||
+    group?.source?.toLowerCase().includes('vitality');
+
+  const sourceIcon = isHealthConnect
+    ? HealthConnect
+    : isVitalityApp
+      ? LogoImage
+      : null;
 
   return (
     <View
@@ -60,8 +77,8 @@ export const GroupedActivityCard: React.FC<GroupedActivityCardProps> = ({
       {/* Card Header */}
       <Pressable
         onPress={() => {
-          if (group.isWorkout) {
-            onNavigateWorkout(group.activityType);
+          if (group?.isWorkout) {
+            onNavigateWorkout(group?.activityType);
           }
         }}
         style={styles.cardHeader}
@@ -76,17 +93,17 @@ export const GroupedActivityCard: React.FC<GroupedActivityCardProps> = ({
               },
             ]}
           >
-            <AppText>{group.emoji}</AppText>
+            <AppText>{group?.emoji}</AppText>
           </View>
           <View style={styles.titleCol}>
             <View style={styles.titleRow}>
               <AppText variant="subtitle1" bold numberOfLines={1}>
-                {group.title}
+                {group?.title}
               </AppText>
             </View>
             <View style={styles.subtitleRow}>
               <AppText variant="caption" secondary bold>
-                {group.dateLabel}
+                {group?.dateLabel}
               </AppText>
               <View
                 style={[styles.dotDivider, { backgroundColor: colors.border }]}
@@ -104,7 +121,7 @@ export const GroupedActivityCard: React.FC<GroupedActivityCardProps> = ({
                     color="primary"
                     style={styles.sessionsBadgeText}
                   >
-                    {group.sessions.length} Sessions
+                    {group?.sessions.length} Sessions
                   </AppText>
                 </View>
               ) : singleTimeText ? (
@@ -113,7 +130,7 @@ export const GroupedActivityCard: React.FC<GroupedActivityCardProps> = ({
                 </AppText>
               ) : (
                 <AppText variant="caption" secondary>
-                  {group.source}
+                  {group?.source}
                 </AppText>
               )}
             </View>
@@ -122,28 +139,49 @@ export const GroupedActivityCard: React.FC<GroupedActivityCardProps> = ({
 
         <View style={styles.headerActions}>
           <View
-            style={[
-              styles.sourceBadge,
-              {
-                backgroundColor: colors.successLight,
-                borderColor: colors.success,
-              },
-            ]}
+          // style={[
+          //   styles.sourceBadge,
+          //   {
+          //     backgroundColor: isHealthConnect
+          //       ? colors.infoLight
+          //       : isVitalityApp
+          //         ? colors.primaryLight
+          //         : colors.successLight,
+          //     borderColor: isHealthConnect
+          //       ? colors.info
+          //       : isVitalityApp
+          //         ? colors.primary
+          //         : colors.success,
+          //   },
+          // ]}
           >
-            <AppText
+            {sourceIcon ? (
+              <Image
+                source={sourceIcon}
+                style={styles.sourceBadgeIcon}
+                resizeMode="contain"
+              />
+            ) : null}
+            {/* <AppText
               variant="caption"
-              color="textSuccess"
+              color={
+                isHealthConnect
+                  ? 'info'
+                  : isVitalityApp
+                  ? 'primary'
+                  : 'textSuccess'
+              }
               bold
               style={styles.sourceBadgeText}
             >
-              {group.source}
-            </AppText>
+              {group?.source}
+            </AppText> */}
           </View>
 
           {/* Quick Start Activity Action */}
-          {group.isWorkout ? (
+          {group?.isWorkout ? (
             <Pressable
-              onPress={() => onNavigateWorkout(group.activityType)}
+              onPress={() => onNavigateWorkout(group?.activityType)}
               style={[
                 styles.quickStartBtn,
                 { backgroundColor: colors.primaryLight },
@@ -164,16 +202,16 @@ export const GroupedActivityCard: React.FC<GroupedActivityCardProps> = ({
             { backgroundColor: colors.backgroundSecondary },
           ]}
         >
-          {group.isWorkout ? (
+          {group?.isWorkout ? (
             <AppIcon name="Clock" size={13} color={colors.primary} />
           ) : null}
           <AppText variant="caption" bold color="primary">
-            {group.displayValue}
+            {group?.displayValue}
           </AppText>
         </View>
 
         {/* Calories Pill */}
-        {group.isWorkout && group.totalCalories > 0 ? (
+        {group?.isWorkout && group?.totalCalories > 0 ? (
           <View
             style={[
               styles.metricPill,
@@ -182,13 +220,13 @@ export const GroupedActivityCard: React.FC<GroupedActivityCardProps> = ({
           >
             <AppText variant="caption">🔥</AppText>
             <AppText variant="caption" bold style={{ color: colors.warning }}>
-              {group.totalCalories} kcal
+              {group?.totalCalories} kcal
             </AppText>
           </View>
         ) : null}
 
         {/* Distance Pill */}
-        {group.isWorkout && group.totalDistanceKm > 0 ? (
+        {group?.isWorkout && group?.totalDistanceKm > 0 ? (
           <View
             style={[
               styles.metricPill,
@@ -197,7 +235,7 @@ export const GroupedActivityCard: React.FC<GroupedActivityCardProps> = ({
           >
             <AppIcon name="MapPin" size={12} color={colors.info} />
             <AppText variant="caption" bold style={{ color: colors.info }}>
-              {group.totalDistanceKm.toFixed(2)} km
+              {group?.totalDistanceKm.toFixed(2)} km
             </AppText>
           </View>
         ) : null}
@@ -242,7 +280,7 @@ export const GroupedActivityCard: React.FC<GroupedActivityCardProps> = ({
           <AppText variant="caption" bold secondary>
             {isExpanded
               ? 'Hide session details'
-              : `View all ${group.sessions.length} sessions`}
+              : `View all ${group?.sessions.length} sessions`}
           </AppText>
           <AppIcon
             name={isExpanded ? 'ChevronUp' : 'ChevronDown'}
@@ -260,14 +298,14 @@ export const GroupedActivityCard: React.FC<GroupedActivityCardProps> = ({
             { borderTopColor: colors.border },
           ]}
         >
-          {group.sessions.map((session, index) => {
+          {group?.sessions.map((session, index) => {
             const sessionDuration = formatWorkoutDuration(session.value);
             const sessionCal = session.metadata?.estimatedCalories;
             const sessionDist = session.metadata?.estimatedDistanceKm;
             const sessionTime =
               formatTimeOnly(
                 session.startTime || session.recordedAt || session.createdAt,
-              ) || `Session #${group.sessions.length - index}`;
+              ) || `Session #${group?.sessions.length - index}`;
 
             return (
               <View
@@ -323,4 +361,4 @@ export const GroupedActivityCard: React.FC<GroupedActivityCardProps> = ({
       ) : null}
     </View>
   );
-};
+});

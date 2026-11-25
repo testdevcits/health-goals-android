@@ -1,5 +1,14 @@
-import React, { useCallback, useEffect, useState } from 'react';
-import { AppState, ScrollView, View } from 'react-native';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
+import {
+  AppState,
+  DeviceEventEmitter,
+  NativeScrollEvent,
+  NativeSyntheticEvent,
+  Platform,
+  RefreshControl,
+  ScrollView,
+  View,
+} from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { HomeStackParamList } from '../../../navigations/HomeStack';
@@ -17,6 +26,7 @@ import RecentWorkoutsSection from './components/recent_workouts/RecentWorkoutsSe
 import { createHomeStyles } from './styles.Home';
 import QuickActions from './components/QuickActions';
 import { storageService } from '../../../storage/storageService';
+import { syncRecentHealthData } from '../../../services/healthSync';
 import useConnectedDevices from '../../profile_screens/connected_devices/useConnectedDevices';
 import { ConnectedWatchCard } from '../../profile_screens/connected_devices/components';
 
@@ -29,6 +39,7 @@ const HomeScreen: React.FC<Props> = ({ navigation }) => {
     boolean | null
   >(null);
   const [onboardingVisible, setOnboardingVisible] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
   const [healthRefreshKey, setHealthRefreshKey] = useState(0);
   const {
     connectedDevice,
@@ -118,12 +129,59 @@ const HomeScreen: React.FC<Props> = ({ navigation }) => {
     setOnboardingVisible(false);
   }, []);
 
+  const handleRefresh = useCallback(async () => {
+    setRefreshing(true);
+    try {
+      if (Platform.OS === 'android') {
+        await syncRecentHealthData().catch(() => null);
+      }
+      if (isWatchConnected) {
+        await syncWatchHealthData().catch(() => null);
+      }
+    } catch (error) {
+      console.warn('Home refresh error:', error);
+    } finally {
+      setHealthRefreshKey(previous => previous + 1);
+      setRefreshing(false);
+    }
+  }, [isWatchConnected, syncWatchHealthData]);
+
+  const lastBottomTriggerRef = useRef(0);
+
+  const handleScroll = useCallback(
+    (event: NativeSyntheticEvent<NativeScrollEvent>) => {
+      const { layoutMeasurement, contentOffset, contentSize } =
+        event.nativeEvent;
+      const isCloseToBottom =
+        layoutMeasurement.height + contentOffset.y >=
+        contentSize.height - 180;
+      if (isCloseToBottom) {
+        const now = Date.now();
+        if (now - lastBottomTriggerRef.current > 1200) {
+          lastBottomTriggerRef.current = now;
+          DeviceEventEmitter.emit('homeScrolledToBottom');
+        }
+      }
+    },
+    [],
+  );
+
   return (
     <View style={[styles.container, {}]}>
       <HomeHeader />
       <ScrollView
         contentContainerStyle={styles.scroll}
         showsVerticalScrollIndicator={false}
+        onScroll={handleScroll}
+        scrollEventThrottle={200}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={handleRefresh}
+            colors={[theme.colors.primary]}
+            tintColor={theme.colors.primary}
+          />
+        }
       >
         {notificationsEnabled === false ? (
           <NotificationBanner onDismiss={handleNotificationDismiss} />
