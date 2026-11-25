@@ -1,5 +1,6 @@
 import { StyleSheet } from 'react-native';
 import type { AppTheme } from '../../../theme';
+import { typography } from '../../../theme/typography';
 
 export const createPrivacyPolicyStyles = (theme: AppTheme) => {
   const { colors, spacing, radius, fonts } = theme;
@@ -30,7 +31,7 @@ export const createPrivacyPolicyStyles = (theme: AppTheme) => {
       marginBottom: spacing.lg,
     },
     iconText: {
-      fontSize: 48,
+      fontSize: typography.metricNumber.fontSize,
       marginBottom: spacing.md,
       textAlign: 'center',
     },
@@ -49,14 +50,14 @@ export const createPrivacyPolicyStyles = (theme: AppTheme) => {
       alignItems: 'center',
       gap: spacing.xs,
       paddingHorizontal: spacing.md,
-      paddingVertical: 5,
+      paddingVertical: spacing.xs,
       borderRadius: radius.full,
       backgroundColor: colors.primaryLight,
       marginTop: spacing.md,
     },
     effectiveDateText: {
       fontFamily: fonts.medium,
-      fontSize: 12,
+      fontSize: typography.caption.fontSize,
       color: colors.primaryDark,
     },
     sectionLabel: {
@@ -83,7 +84,7 @@ export const createPrivacyPolicyStyles = (theme: AppTheme) => {
       marginBottom: spacing.xs,
     },
     policyEmoji: {
-      fontSize: 20,
+      fontSize: typography.h3.fontSize,
     },
     policyText: {
       lineHeight: 21,

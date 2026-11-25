@@ -9,6 +9,8 @@ import {
 } from 'react-native';
 import { AppInput, AppText } from '../../../../../components';
 import { useTheme } from '../../../../../theme/useTheme';
+import { spacing } from '../../../../../theme/spacing';
+import { radius } from '../../../../../theme/radius';
 import type { GroupUserSearchResult } from '../../useGroupDetail';
 import AppIcon from '../../../../../assets/appicon/AppIcon';
 
@@ -148,9 +150,9 @@ const styles = StyleSheet.create({
   modalSheet: {
     height: '50%',
     maxHeight: '75%',
-    padding: 20,
-    borderTopLeftRadius: 24,
-    borderTopRightRadius: 24,
+    padding: spacing.xl,
+    borderTopLeftRadius: radius.xxl,
+    borderTopRightRadius: radius.xxl,
   },
   header: {
     flexDirection: 'row',

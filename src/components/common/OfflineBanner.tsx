@@ -71,14 +71,14 @@ export const OfflineBanner: React.FC = () => {
     >
       <View style={styles.content}>
         {isBackOnline ? (
-          <Wifi size={16} color="#FFFFFF" />
+          <Wifi size={16} color={colors.white} />
         ) : (
-          <WifiOff size={16} color="#FFFFFF" />
+          <WifiOff size={16} color={colors.white} />
         )}
         <AppText
           variant="caption"
           bold
-          style={styles.text}
+          style={[styles.text, { color: colors.white }]}
         >
           {isBackOnline
             ? 'Back online. Syncing health data...'
@@ -99,7 +99,6 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
     paddingHorizontal: 16,
     elevation: 6,
-    shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.15,
     shadowRadius: 4,
@@ -111,7 +110,6 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   text: {
-    color: '#FFFFFF',
     fontSize: 12,
   },
 });

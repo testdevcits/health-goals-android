@@ -1,4 +1,6 @@
 import { StyleSheet } from 'react-native';
+import { spacing } from '../../../../../theme/spacing';
+import { radius } from '../../../../../theme/radius';
 
 export const styles = StyleSheet.create({
   modalOverlay: {
@@ -7,9 +9,9 @@ export const styles = StyleSheet.create({
     backgroundColor: 'rgba(0,0,0,0.45)',
   },
   modalSheet: {
-    padding: 20,
-    borderTopLeftRadius: 24,
-    borderTopRightRadius: 24,
+    padding: spacing.xl,
+    borderTopLeftRadius: radius.xxl,
+    borderTopRightRadius: radius.xxl,
   },
   header: {
     flexDirection: 'row',

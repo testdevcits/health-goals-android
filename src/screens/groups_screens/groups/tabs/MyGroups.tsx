@@ -123,7 +123,7 @@ const MyGroups = ({
           {discover && !group?.joined ? (
             <Pressable
               onPress={() => onJoinGroup?.(group.id)}
-              style={{ padding: 8 }}
+              style={{ padding: spacing.sm }}
             >
               <AppText variant="caption" primary bold>
                 Join

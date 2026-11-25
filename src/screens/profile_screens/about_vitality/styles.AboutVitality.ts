@@ -1,5 +1,6 @@
 import { StyleSheet } from 'react-native';
 import type { AppTheme } from '../../../theme';
+import { typography } from '../../../theme/typography';
 
 export const createAboutVitalityStyles = (theme: AppTheme) => {
   const { colors, spacing, radius, fonts } = theme;
@@ -44,7 +45,7 @@ export const createAboutVitalityStyles = (theme: AppTheme) => {
       elevation: 4,
     },
     appIconEmoji: {
-      fontSize: 36,
+      fontSize: typography.display.fontSize,
     },
     appName: {
       marginBottom: 4,
@@ -61,7 +62,7 @@ export const createAboutVitalityStyles = (theme: AppTheme) => {
       alignItems: 'center',
       gap: spacing.xs,
       paddingHorizontal: spacing.md,
-      paddingVertical: 5,
+      paddingVertical: spacing.xs,
       borderRadius: radius.full,
       backgroundColor: colors.backgroundSecondary,
       marginTop: spacing.md,
@@ -70,7 +71,7 @@ export const createAboutVitalityStyles = (theme: AppTheme) => {
     },
     versionText: {
       fontFamily: fonts.medium,
-      fontSize: 12,
+      fontSize: typography.caption.fontSize,
       color: colors.textSecondary,
     },
     sectionLabel: {
@@ -97,7 +98,7 @@ export const createAboutVitalityStyles = (theme: AppTheme) => {
       marginBottom: spacing.xs,
     },
     featureEmoji: {
-      fontSize: 20,
+      fontSize: typography.h3.fontSize,
     },
     featureText: {
       lineHeight: 21,
@@ -120,12 +121,12 @@ export const createAboutVitalityStyles = (theme: AppTheme) => {
     },
     specLabel: {
       fontFamily: fonts.medium,
-      fontSize: 13,
+      fontSize: typography.label.fontSize,
       color: colors.textSecondary,
     },
     specValue: {
       fontFamily: fonts.semiBold,
-      fontSize: 13,
+      fontSize: typography.label.fontSize,
       color: colors.textPrimary,
     },
     divider: {

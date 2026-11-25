@@ -1,6 +1,7 @@
 import { StyleSheet } from 'react-native';
 import type { AppTheme } from '../../../theme';
 import { fonts } from '../../../theme/fonts';
+import { typography } from '../../../theme/typography';
 
 export const createStyles = (theme: AppTheme) => {
   const { colors, spacing, radius } = theme;
@@ -48,7 +49,7 @@ export const createStyles = (theme: AppTheme) => {
       borderColor: colors.surface,
     },
     avatarEmoji: {
-      fontSize: 44,
+      fontSize: typography.metricNumber.fontSize,
     },
     cameraBadge: {
       position: 'absolute',
@@ -63,7 +64,7 @@ export const createStyles = (theme: AppTheme) => {
       borderWidth: 2,
       borderColor: colors.border,
       elevation: 4,
-      shadowColor: '#000',
+      shadowColor: colors.textPrimary,
       shadowOffset: { width: 0, height: 2 },
       shadowOpacity: 0.18,
       shadowRadius: 4,
@@ -103,11 +104,11 @@ export const createStyles = (theme: AppTheme) => {
       shadowOffset: { width: 0, height: 2 },
     },
     emojiText: {
-      fontSize: 22,
+      fontSize: typography.h2.fontSize,
     },
     sectionLabel: {
       fontFamily: fonts.semiBold,
-      fontSize: 12,
+      fontSize: typography.caption.fontSize,
       letterSpacing: 0.8,
       textTransform: 'uppercase',
       color: colors.textSecondary,
@@ -146,25 +147,25 @@ export const createStyles = (theme: AppTheme) => {
     },
     rowTitle: {
       fontFamily: fonts.semiBold,
-      fontSize: 15,
+      fontSize: typography.body1.fontSize,
       color: colors.textPrimary,
     },
     rowSubtitle: {
       fontFamily: fonts.regular,
-      fontSize: 12,
+      fontSize: typography.caption.fontSize,
       color: colors.textSecondary,
       marginTop: 2,
     },
     rowValue: {
       fontFamily: fonts.medium,
-      fontSize: 14,
+      fontSize: typography.body2.fontSize,
       color: colors.textSecondary,
     },
     nameInput: {
       flex: 1.5,
       textAlign: 'right',
       fontFamily: fonts.semiBold,
-      fontSize: 15,
+      fontSize: typography.body1.fontSize,
       color: colors.textPrimary,
       paddingVertical: spacing.xxs,
       paddingHorizontal: spacing.xs,
@@ -173,7 +174,7 @@ export const createStyles = (theme: AppTheme) => {
       flex: 1.5,
       textAlign: 'right',
       fontFamily: fonts.regular,
-      fontSize: 13,
+      fontSize: typography.label.fontSize,
       color: colors.textPrimary,
       paddingVertical: spacing.xxs,
       paddingHorizontal: spacing.xs,

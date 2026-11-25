@@ -2,6 +2,7 @@ import { StyleSheet } from 'react-native';
 import type { AppColors } from '../../../theme/colors';
 import { spacing } from '../../../theme/spacing';
 import { fonts } from '../../../theme/fonts';
+import { typography } from '../../../theme/typography';
 
 const createStyles = (colors: AppColors) =>
   StyleSheet.create({
@@ -41,7 +42,7 @@ const createStyles = (colors: AppColors) =>
     },
     tabLabel: {
       fontFamily: fonts.medium,
-      fontSize: 12,
+      fontSize: typography.caption.fontSize,
       color: colors.textSecondary,
     },
     tabLabelActive: {
@@ -160,7 +161,7 @@ const createStyles = (colors: AppColors) =>
     },
     ticketRankText: {
       fontFamily: fonts.bold,
-      fontSize: 11,
+      fontSize: typography.overline.fontSize,
       letterSpacing: 0.3,
     },
     ticketMonthBadge: {
@@ -174,7 +175,7 @@ const createStyles = (colors: AppColors) =>
     },
     ticketMonthText: {
       fontFamily: fonts.medium,
-      fontSize: 11,
+      fontSize: typography.overline.fontSize,
       color: colors.textSecondary,
     },
     ticketStatusBadge: {
@@ -187,14 +188,14 @@ const createStyles = (colors: AppColors) =>
     },
     ticketStatusText: {
       fontFamily: fonts.semiBold,
-      fontSize: 11,
+      fontSize: typography.overline.fontSize,
     },
     ticketWinnerSection: {
       gap: spacing.xxs,
     },
     ticketWinnerTitle: {
       fontFamily: fonts.bold,
-      fontSize: 17,
+      fontSize: typography.h3.fontSize,
       color: colors.textPrimary,
     },
     ticketMetaRow: {
@@ -215,12 +216,12 @@ const createStyles = (colors: AppColors) =>
     },
     ticketAudienceText: {
       fontFamily: fonts.medium,
-      fontSize: 11,
+      fontSize: typography.overline.fontSize,
       color: colors.primaryDark,
     },
     ticketRecipientText: {
       fontFamily: fonts.regular,
-      fontSize: 12,
+      fontSize: typography.caption.fontSize,
       color: colors.textSecondary,
     },
     ticketPerforationWrapper: {
@@ -278,14 +279,14 @@ const createStyles = (colors: AppColors) =>
     },
     ticketStatLabel: {
       fontFamily: fonts.medium,
-      fontSize: 10,
+      fontSize: typography.tabLabel.fontSize,
       color: colors.textTertiary,
       textTransform: 'uppercase',
       letterSpacing: 0.5,
     },
     ticketStatValue: {
       fontFamily: fonts.bold,
-      fontSize: 13,
+      fontSize: typography.label.fontSize,
       color: colors.textPrimary,
     },
     ticketNoticeBox: {
@@ -301,11 +302,11 @@ const createStyles = (colors: AppColors) =>
     },
     ticketNoticeTitle: {
       fontFamily: fonts.semiBold,
-      fontSize: 13,
+      fontSize: typography.label.fontSize,
     },
     ticketNoticeDesc: {
       fontFamily: fonts.regular,
-      fontSize: 12,
+      fontSize: typography.caption.fontSize,
       lineHeight: 18,
     },
     ticketDetailsGrid: {
@@ -324,12 +325,12 @@ const createStyles = (colors: AppColors) =>
     },
     ticketDetailLabel: {
       fontFamily: fonts.medium,
-      fontSize: 12,
+      fontSize: typography.caption.fontSize,
       color: colors.textSecondary,
     },
     ticketDetailValue: {
       fontFamily: fonts.semiBold,
-      fontSize: 12,
+      fontSize: typography.caption.fontSize,
       color: colors.textPrimary,
     },
     ticketImage: {
@@ -379,7 +380,7 @@ const createStyles = (colors: AppColors) =>
     },
     transactionTitle: {
       fontFamily: fonts.semiBold,
-      fontSize: 14,
+      fontSize: typography.subtitle2.fontSize,
       color: colors.textPrimary,
     },
     transactionMetaRow: {
@@ -397,14 +398,14 @@ const createStyles = (colors: AppColors) =>
     },
     refTypeText: {
       fontFamily: fonts.medium,
-      fontSize: 10,
+      fontSize: typography.tabLabel.fontSize,
       color: colors.textSecondary,
       textTransform: 'uppercase',
       letterSpacing: 0.3,
     },
     transactionDate: {
       fontFamily: fonts.regular,
-      fontSize: 11,
+      fontSize: typography.overline.fontSize,
       color: colors.textTertiary,
     },
     transactionRight: {
@@ -413,11 +414,11 @@ const createStyles = (colors: AppColors) =>
     },
     transactionAmount: {
       fontFamily: fonts.bold,
-      fontSize: 15,
+      fontSize: typography.body1.fontSize,
     },
     transactionBalance: {
       fontFamily: fonts.regular,
-      fontSize: 11,
+      fontSize: typography.overline.fontSize,
       color: colors.primary,
       marginTop: 2,
     },

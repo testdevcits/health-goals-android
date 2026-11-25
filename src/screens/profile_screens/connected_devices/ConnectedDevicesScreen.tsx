@@ -7,6 +7,7 @@ import {
   ConfirmationModal,
 } from '../../../components';
 import { useTheme } from '../../../theme/useTheme';
+import { spacing } from '../../../theme/spacing';
 import type { ProfileScreenNavigation } from '../components/ProfileScreenLayout';
 import {
   BluetoothScanControl,
@@ -63,7 +64,11 @@ const ConnectedDevicesScreen: React.FC<{
         onBackPress={() => navigation.goBack()}
       />
       <ScrollView
-        contentContainerStyle={{ flexGrow: 1, paddingBottom: 100, padding: 16 }}
+        contentContainerStyle={{
+          flexGrow: 1,
+          paddingBottom: spacing.huge + spacing.xxxl,
+          padding: spacing.base,
+        }}
       >
         <View style={{ flex: 1 }}>
           <AppText

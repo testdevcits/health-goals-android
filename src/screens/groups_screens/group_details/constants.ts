@@ -50,17 +50,19 @@ export const DETAIL_TABS: DetailTab[] = [
 
 export const DURATION_OPTIONS = ['3 days', '7 days', '14 days', '30 days'];
 
+import { lightColors } from '../../../theme/colors';
+
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
 export const formatSteps = (steps: number) => steps.toLocaleString('en-US');
 
 export const AVATAR_PALETTE = [
-  '#FF8278',
-  '#579CF4',
-  '#00C6A2',
-  '#FF9B38',
-  '#8175F5',
-  '#FF7AA2',
-  '#00B8A9',
-  '#FF6B57',
+  lightColors.coral,
+  lightColors.info,
+  lightColors.primary,
+  lightColors.warning,
+  lightColors.purpleLight,
+  lightColors.coralLight,
+  lightColors.primaryDark,
+  lightColors.textError,
 ];
