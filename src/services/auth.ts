@@ -130,9 +130,8 @@ export async function readSession(): Promise<AuthTokens | null> {
   if (!credentials) return null;
   try {
     return JSON.parse(credentials.password) as AuthTokens;
-  } catch (error) {
+  } catch {
     await clearSession();
-    if (isExpiredTokenResponse(error)) notifySessionExpired();
     return null;
   }
 }
@@ -253,7 +252,9 @@ async function refreshSessionOnce(): Promise<AuthTokens | null> {
     return saveTokens({ ...response.data.data, user: session.user });
   } catch (error) {
     await clearSession();
-    if (isExpiredTokenResponse(error)) notifySessionExpired();
+    if (isExpiredTokenResponse(error)) {
+      notifySessionExpired();
+    }
     return null;
   }
 }

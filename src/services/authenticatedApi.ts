@@ -53,7 +53,9 @@ async function executeAuthenticatedRequest<T = unknown>(
     if (expectedUserId && session?.user?.id !== expectedUserId)
       throw new Error('Account changed. Please retry health sync.');
     if (!session?.accessToken) {
-      if (isExpiredTokenResponse(error)) await expireSession();
+      if (isExpiredTokenResponse(error)) {
+        await expireSession();
+      }
       throw error;
     }
 
@@ -61,7 +63,9 @@ async function executeAuthenticatedRequest<T = unknown>(
       const response = await send(session.accessToken);
       return response.data.data;
     } catch (retryError) {
-      if (isExpiredTokenResponse(retryError)) await expireSession();
+      if (isExpiredTokenResponse(retryError)) {
+        await expireSession();
+      }
       throw retryError;
     }
   }
