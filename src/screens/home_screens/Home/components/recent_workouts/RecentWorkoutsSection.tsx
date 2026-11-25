@@ -1,5 +1,5 @@
-import React, { useCallback } from 'react';
-import { ActivityIndicator, FlatList, Pressable, View } from 'react-native';
+import React, { useCallback, useMemo, useState } from 'react';
+import { ActivityIndicator, FlatList, View } from 'react-native';
 import { AppShimmer, AppText, SectionHeader } from '../../../../../components';
 import { useTheme } from '../../../../../theme/useTheme';
 import {
@@ -7,6 +7,7 @@ import {
   GroupedActivityCard,
   GroupedActivityItem,
   useRecentWorkouts,
+  WeeklyWorkoutTrendChart,
   WorkoutFilterTabs,
   WorkoutOverviewBanner,
 } from './';
@@ -25,17 +26,15 @@ const RecentWorkoutsSection: React.FC<RecentWorkoutsSectionProps> = ({
 }) => {
   const { theme } = useTheme();
   const { colors, radius } = theme;
+  const [selectedDateKey, setSelectedDateKey] = useState<string | null>(null);
 
   const {
-    page,
-    hasMore,
     loading,
     loadingMore,
     loadMore,
+    hasMore,
     activeTab,
     setActiveTab,
-    showAllItems,
-    setShowAllItems,
     expandedCards,
     toggleExpand,
     groupedActivities,
@@ -45,6 +44,13 @@ const RecentWorkoutsSection: React.FC<RecentWorkoutsSectionProps> = ({
     dailyGroupCount,
     overviewStats,
   } = useRecentWorkouts(healthRefreshKey);
+
+  const visibleGroups = useMemo(() => {
+    if (!selectedDateKey) {
+      return displayedGroups;
+    }
+    return filteredGroups.filter(g => g.dateKey === selectedDateKey);
+  }, [displayedGroups, filteredGroups, selectedDateKey]);
 
   const handleNavigateWorkout = useCallback(
     (activityId?: string) => {
@@ -75,71 +81,28 @@ const RecentWorkoutsSection: React.FC<RecentWorkoutsSectionProps> = ({
   );
 
   const renderFooter = useCallback(() => {
-    return (
-      <View>
-        {filteredGroups.length > 4 ? (
-          <Pressable
-            onPress={() => setShowAllItems(prev => !prev)}
-            style={[
-              styles.showMoreButton,
-              {
-                borderColor: colors.border,
-                backgroundColor: colors.surface,
-              },
-            ]}
-          >
-            <AppText variant="caption" bold color="primary">
-              {showAllItems
-                ? 'Show Less'
-                : `Show All (${filteredGroups.length} days / activities)`}
-            </AppText>
-          </Pressable>
-        ) : null}
-
-        {loadingMore ? (
-          <View
-            style={{
-              paddingVertical: theme.spacing.md,
-              alignItems: 'center',
-              justifyContent: 'center',
-              flexDirection: 'row',
-              gap: theme.spacing.sm,
-            }}
-          >
-            <ActivityIndicator size="small" color={colors.primary} />
-            <AppText variant="caption" color="textSecondary">
-              Loading more activities...
-            </AppText>
-          </View>
-        ) : hasMore ? (
-          <Pressable
-            onPress={loadMore}
-            style={[
-              styles.showMoreButton,
-              {
-                borderColor: colors.border,
-                backgroundColor: colors.surface,
-              },
-            ]}
-          >
-            <AppText variant="caption" bold color="primary">
-              {`Load More Activities (Page ${page + 1})`}
-            </AppText>
-          </Pressable>
-        ) : null}
-      </View>
-    );
+    if (loadingMore) {
+      return (
+        <View
+          style={{
+            paddingVertical: theme.spacing.md,
+            alignItems: 'center',
+            justifyContent: 'center',
+            flexDirection: 'row',
+            gap: theme.spacing.sm,
+          }}
+        >
+          <ActivityIndicator size="small" color={colors.primary} />
+          <AppText variant="caption" color="textSecondary">
+            Loading more activities...
+          </AppText>
+        </View>
+      );
+    }
+    return null;
   }, [
-    colors.border,
     colors.primary,
-    colors.surface,
-    filteredGroups.length,
-    hasMore,
-    loadMore,
     loadingMore,
-    page,
-    setShowAllItems,
-    showAllItems,
     theme.spacing.md,
     theme.spacing.sm,
   ]);
@@ -154,11 +117,18 @@ const RecentWorkoutsSection: React.FC<RecentWorkoutsSectionProps> = ({
       />
 
       {overviewStats.hasData && !loading ? (
-        <WorkoutOverviewBanner
-          activeTimeText={overviewStats.activeTimeText}
-          caloriesText={overviewStats.caloriesText}
-          sessionsText={overviewStats.sessionsText}
-        />
+        <>
+          <WorkoutOverviewBanner
+            activeTimeText={overviewStats.activeTimeText}
+            caloriesText={overviewStats.caloriesText}
+            sessionsText={overviewStats.sessionsText}
+          />
+          <WeeklyWorkoutTrendChart
+            groupedActivities={groupedActivities}
+            selectedDateKey={selectedDateKey}
+            onSelectDate={setSelectedDateKey}
+          />
+        </>
       ) : null}
 
       <WorkoutFilterTabs
@@ -201,7 +171,7 @@ const RecentWorkoutsSection: React.FC<RecentWorkoutsSectionProps> = ({
         />
       ) : (
         <FlatList
-          data={displayedGroups}
+          data={visibleGroups}
           renderItem={renderActivityGroup}
           keyExtractor={keyExtractor}
           scrollEnabled={false}
@@ -211,12 +181,12 @@ const RecentWorkoutsSection: React.FC<RecentWorkoutsSectionProps> = ({
           windowSize={5}
           removeClippedSubviews={false}
           onEndReached={() => {
-            if (hasMore && !loadingMore && !loading) {
+            if (hasMore && !loadingMore && !loading && !selectedDateKey) {
               loadMore();
             }
           }}
           onEndReachedThreshold={0.5}
-          ListFooterComponent={renderFooter}
+          ListFooterComponent={selectedDateKey ? null : renderFooter}
         />
       )}
     </View>

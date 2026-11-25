@@ -37,6 +37,12 @@ export const formatWorkoutDuration = (minutes: number): string => {
     const seconds = Math.max(1, Math.round(minutes * 60));
     return `${seconds}s`;
   }
+  const totalMins = Math.round(minutes);
+  if (totalMins >= 60) {
+    const hours = Math.floor(totalMins / 60);
+    const remMins = totalMins % 60;
+    return remMins > 0 ? `${hours}h ${remMins}m` : `${hours}h`;
+  }
   const mins = Math.floor(minutes);
   const secs = Math.round((minutes - mins) * 60);
   if (secs > 0 && mins < 5) {
@@ -445,11 +451,8 @@ export const useRecentWorkouts = (healthRefreshKey?: number) => {
   }, [groupedActivities, activeTab]);
 
   const displayedGroups = useMemo(() => {
-    if (showAllItems) {
-      return filteredGroups;
-    }
-    return filteredGroups.slice(0, 4);
-  }, [filteredGroups, showAllItems]);
+    return filteredGroups;
+  }, [filteredGroups]);
 
   const workoutGroupCount = useMemo(
     () => groupedActivities.filter(g => g.isWorkout).length,

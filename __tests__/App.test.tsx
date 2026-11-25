@@ -21,6 +21,13 @@ jest.mock('react-native-toast-message', () => 'Toast');
 jest.mock('../src/services/backgroundHealthSync', () => ({
   initializeBackgroundHealthSync: jest.fn().mockResolvedValue(undefined),
 }));
+jest.mock('@react-native-community/netinfo', () => ({
+  addEventListener: jest.fn(() => jest.fn()),
+  fetch: jest.fn().mockResolvedValue({
+    isConnected: true,
+    isInternetReachable: true,
+  }),
+}));
 
 import App from '../App';
 

@@ -14,6 +14,7 @@ import { ThemeProvider } from './src/theme/ThemeProvider';
 import { useTheme } from './src/theme/useTheme';
 import AppNavigation from './src/navigations/AppNavigation';
 import { initializeBackgroundHealthSync } from './src/services/backgroundHealthSync';
+import { OfflineBanner } from './src/components/common/OfflineBanner';
 import Toast from 'react-native-toast-message';
 import { appToastConfig } from './src/components/common/AppToast';
 import BootSplash from 'react-native-bootsplash';
@@ -58,6 +59,7 @@ function ThemedRoot() {
         }}
       >
         <SafeAreaView style={{ flex: 1 }}>
+          <OfflineBanner />
           <AppNavigation />
         </SafeAreaView>
         <AppToastHost />
