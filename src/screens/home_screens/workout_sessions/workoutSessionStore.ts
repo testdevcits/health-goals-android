@@ -7,6 +7,8 @@ export interface WorkoutSession {
   activityId: string;
   elapsedMilliseconds: number;
   startedAtMilliseconds: number | null;
+  distanceMeters?: number;
+  calories?: number;
 }
 
 type Listener = () => void;
@@ -58,6 +60,16 @@ const loadSession = (): Promise<WorkoutSession | null> => {
           activityId: storedSession.activityId,
           elapsedMilliseconds: storedSession.elapsedMilliseconds,
           startedAtMilliseconds: storedSession.startedAtMilliseconds,
+          distanceMeters:
+            'distanceMeters' in storedSession &&
+            typeof storedSession.distanceMeters === 'number'
+              ? storedSession.distanceMeters
+              : 0,
+          calories:
+            'calories' in storedSession &&
+            typeof storedSession.calories === 'number'
+              ? storedSession.calories
+              : 0,
         };
         return session;
       })
@@ -148,6 +160,19 @@ export const resumeWorkoutSession = () =>
     }
 
     return { ...current, startedAtMilliseconds: Date.now() };
+  });
+
+export const updateWorkoutMetrics = (distanceMeters: number, calories: number) =>
+  transition(current => {
+    if (!current) {
+      return current;
+    }
+
+    return {
+      ...current,
+      distanceMeters,
+      calories,
+    };
   });
 
 export const clearWorkoutSession = () => transition(() => null);

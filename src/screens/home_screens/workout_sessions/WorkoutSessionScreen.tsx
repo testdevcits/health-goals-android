@@ -109,6 +109,15 @@ const WorkoutSessionScreen: React.FC<Props> = ({ navigation, route }) => {
           styles={styles}
           colors={colors}
         />
+        {Boolean(currentActivity.isOutdoor) && (
+          <WorkoutMap
+            coordinates={routeCoordinates}
+            isTracking={isRunning && !isAutoPaused}
+            isAutoPaused={isAutoPaused}
+            activityColor={currentActivity.color}
+            colors={colors}
+          />
+        )}
 
         <View style={styles.metricsGrid}>
           <MetricCard
@@ -149,15 +158,7 @@ const WorkoutSessionScreen: React.FC<Props> = ({ navigation, route }) => {
           />
         </View>
 
-        {Boolean(currentActivity.isOutdoor) && (
-          <WorkoutMap
-            coordinates={routeCoordinates}
-            isTracking={isRunning && !isAutoPaused}
-            isAutoPaused={isAutoPaused}
-            activityColor={currentActivity.color}
-            colors={colors}
-          />
-        )}
+
 
         <WorkoutControls
           isRunning={isRunning}

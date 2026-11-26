@@ -13,6 +13,7 @@ import {
   resumeWorkoutSession,
   startWorkoutSession,
   subscribeToWorkoutSession,
+  updateWorkoutMetrics,
   type WorkoutSession,
 } from './workoutSessionStore';
 import {
@@ -360,10 +361,31 @@ export default function useWorkoutSession(
     ? Number((gpsDistanceMeters / 1000).toFixed(2))
     : Number(((currentActivity.speedKmh * elapsedSeconds) / 3600).toFixed(2));
 
-  // Calories: Only burn when moving or actively working out
-  const calories = Math.floor(
-    (elapsedSeconds / 60) * currentActivity.caloriesPerMinute,
-  );
+  // Calories calculation:
+  // For outdoor activities (running, walking, cycling, hiking):
+  // Calories should ONLY burn when the user is actually moving/covering distance!
+  // If the phone is sitting on a table (distance = 0), burned calories are 0.
+  // Standard MET/exercise formula: Calories ~ distance (km) * factor, or rate scaled by movement
+  const calories = (() => {
+    if (currentActivity.isOutdoor) {
+      if (distanceKm <= 0 || currentActivity.speedKmh <= 0) {
+        return 0;
+      }
+      // Calories based on actual distance covered:
+      // (distanceKm / speedKmh) gives actual moving hours * 60 * caloriesPerMinute
+      const movingMinutes = (distanceKm / currentActivity.speedKmh) * 60;
+      return Math.floor(movingMinutes * currentActivity.caloriesPerMinute);
+    }
+    // Indoor activities (e.g. Yoga, Strength, HIIT, Swimming): based on active elapsed time
+    return Math.floor((elapsedSeconds / 60) * currentActivity.caloriesPerMinute);
+  })();
+
+  // Keep shared workout store metrics in sync so LiveWorkoutCard mirrors real-time distance and calories
+  useEffect(() => {
+    if (isRunning) {
+      updateWorkoutMetrics(gpsDistanceMeters, calories);
+    }
+  }, [isRunning, gpsDistanceMeters, calories]);
 
   // Average Pace: min / km based on real distance covered
   const avgPace = (() => {
@@ -528,10 +550,20 @@ export default function useWorkoutSession(
                     sourceVersion: 1,
                     activityType,
                     metadata: {
-                      estimatedCalories: Math.floor(
-                        ((end - cursor) / 60000) *
-                          currentActivity.caloriesPerMinute,
-                      ),
+                      estimatedCalories: currentActivity.isOutdoor
+                        ? distanceKm <= 0 || currentActivity.speedKmh <= 0
+                          ? 0
+                          : Math.floor(
+                              ((distanceKm * (end - cursor)) /
+                                Math.max(1, finishedAt - startMs) /
+                                currentActivity.speedKmh) *
+                                60 *
+                                currentActivity.caloriesPerMinute,
+                            )
+                        : Math.floor(
+                            ((end - cursor) / 60000) *
+                              currentActivity.caloriesPerMinute,
+                          ),
                       estimatedDistanceKm: currentActivity.isOutdoor
                         ? Number(
                             (

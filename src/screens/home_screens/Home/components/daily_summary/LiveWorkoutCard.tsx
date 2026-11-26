@@ -70,12 +70,34 @@ export const LiveWorkoutCard: React.FC<LiveWorkoutCardProps> = memo(
     const elapsedSeconds = workoutSession
       ? Math.floor(getElapsedMilliseconds(workoutSession, now) / 1000)
       : 0;
-    const workoutCalories = activity
-      ? Math.floor((elapsedSeconds / 60) * activity.caloriesPerMinute)
-      : 0;
-    const distanceKm = activity
-      ? ((activity.speedKmh * elapsedSeconds) / 3600).toFixed(2)
-      : '0.00';
+
+    // Outdoor distance & calories:
+    // If it's an outdoor activity and stored GPS distance is available, use it.
+    // If phone is stationary (distance = 0), calories and distance must strictly be 0.
+    const distanceKm = (() => {
+      if (!activity) return '0.00';
+      if (activity.isOutdoor) {
+        const meters = workoutSession?.distanceMeters ?? 0;
+        return (meters / 1000).toFixed(2);
+      }
+      return ((activity.speedKmh * elapsedSeconds) / 3600).toFixed(2);
+    })();
+
+    const workoutCalories = (() => {
+      if (!activity) return 0;
+      if (activity.isOutdoor) {
+        if (workoutSession?.calories !== undefined) {
+          return workoutSession.calories;
+        }
+        const distNum = parseFloat(distanceKm);
+        if (distNum <= 0 || activity.speedKmh <= 0) {
+          return 0; // Device not moving -> 0 kcal!
+        }
+        const movingMinutes = (distNum / activity.speedKmh) * 60;
+        return Math.floor(movingMinutes * activity.caloriesPerMinute);
+      }
+      return Math.floor((elapsedSeconds / 60) * activity.caloriesPerMinute);
+    })();
     const workoutStatus = !workoutSession
       ? 'Start workout'
       : isRunning
