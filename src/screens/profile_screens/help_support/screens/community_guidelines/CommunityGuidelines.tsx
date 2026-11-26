@@ -1,5 +1,5 @@
 import React from 'react';
-import { ScrollView, StatusBar, View } from 'react-native';
+import { ScrollView, View } from 'react-native';
 import { AppButton, AppHeader, AppText } from '../../../../../components';
 import AppIcon from '../../../../../assets/appicon/AppIcon';
 import { useTheme } from '../../../../../theme/useTheme';

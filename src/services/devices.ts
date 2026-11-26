@@ -1,5 +1,5 @@
 import * as Keychain from 'react-native-keychain';
-import { Platform } from 'react-native';
+import { Alert, Platform } from 'react-native';
 import { authenticatedRequest } from './authenticatedApi';
 import { readSession } from './auth';
 import { API_ENDPOINTS } from '../constants/endpoints';
@@ -51,21 +51,49 @@ export async function syncPhoneProfile(): Promise<string> {
       Release?: string;
     };
     const phone = {
-      deviceIdentifier,
-      manufacturer: constants.Manufacturer || constants.Brand || 'Unknown',
-      brand: constants.Brand || constants.Manufacturer || 'Unknown',
-      model: constants.Model || 'Unknown Android model',
-      platform: 'android',
+      deviceIdentifier: deviceIdentifier.slice(0, 160),
+      manufacturer: (constants.Manufacturer || constants.Brand || 'Unknown').slice(0, 160),
+      brand: (constants.Brand || constants.Manufacturer || 'Unknown').slice(0, 160),
+      model: (constants.Model || 'Unknown Android model').slice(0, 160),
+      platform: 'android' as const,
       osVersion: `Android ${constants.Release || Platform.Version} (API ${
         Platform.Version
-      })`,
-      appVersion: '1.0',
+      })`.slice(0, 160),
+      appVersion: '1.0'.slice(0, 160),
     };
-    await authenticatedRequest(
-      'POST',
-      API_ENDPOINTS.AUTH.DEVICE_REGISTER,
-      phone,
-    );
+    const response = await authenticatedRequest<{
+      warning?: string | null;
+      [key: string]: unknown;
+    }>('POST', API_ENDPOINTS.AUTH.DEVICE_REGISTER, phone);
+
+    const warningMessage =
+      response?.warning ||
+      (response as any)?.data?.warning ||
+      (response as any)?.message;
+    if (
+      response?.warning &&
+      typeof response.warning === 'string' &&
+      response.warning.trim().length > 0
+    ) {
+      setTimeout(() => {
+        Alert.alert(
+          'Shared Device Notice',
+          response.warning as string,
+          [{ text: 'OK', style: 'default' }],
+        );
+      }, 100);
+    } else if (
+      typeof warningMessage === 'string' &&
+      warningMessage.toLowerCase().includes('associated with another account')
+    ) {
+      setTimeout(() => {
+        Alert.alert(
+          'Shared Device Notice',
+          warningMessage,
+          [{ text: 'OK', style: 'default' }],
+        );
+      }, 100);
+    }
     return deviceIdentifier;
   })();
   profileSync = { userId: session.user.id, promise };
@@ -103,13 +131,42 @@ export async function ensureHealthConnectDevice(): Promise<string> {
 
       const created = await authenticatedRequest<{
         device: RegisteredDevice;
+        warning?: string | null;
       }>('POST', API_ENDPOINTS.DEVICES.REGISTER, {
         deviceType: 'phone',
         deviceIdentifier,
-        manufacturer: constants.Manufacturer || constants.Brand || 'Unknown',
-        model: constants.Model || 'Unknown Android model',
+        manufacturer: (constants.Manufacturer || constants.Brand || 'Unknown').slice(0, 160),
+        model: (constants.Model || 'Unknown Android model').slice(0, 160),
         platform: 'android',
       });
+      const warningMessage =
+        created?.warning ||
+        (created as any)?.data?.warning ||
+        (created as any)?.message;
+      if (
+        created?.warning &&
+        typeof created.warning === 'string' &&
+        created.warning.trim().length > 0
+      ) {
+        setTimeout(() => {
+          Alert.alert(
+            'Shared Device Notice',
+            created.warning as string,
+            [{ text: 'OK', style: 'default' }],
+          );
+        }, 100);
+      } else if (
+        typeof warningMessage === 'string' &&
+        warningMessage.toLowerCase().includes('associated with another account')
+      ) {
+        setTimeout(() => {
+          Alert.alert(
+            'Shared Device Notice',
+            warningMessage,
+            [{ text: 'OK', style: 'default' }],
+          );
+        }, 100);
+      }
       if (!created.device?.id) {
         throw new Error('Device registration response did not include an ID.');
       }

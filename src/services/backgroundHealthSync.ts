@@ -8,6 +8,7 @@ import {
 import type { BackgroundAccessPermission } from 'react-native-health-connect';
 import { syncRecentHealthData } from './healthSync';
 import { ensureHealthConnectInitialized } from './healthConnect';
+import { readSession } from './auth';
 
 const ENABLED_KEY = '@vitality/background-health-sync-enabled';
 const BACKGROUND_ACCESS_PERMISSION: BackgroundAccessPermission = {
@@ -166,6 +167,12 @@ export async function disableBackgroundHealthSync(): Promise<void> {
 }
 
 export async function runBackgroundHealthSync(): Promise<void> {
+  const session = await readSession();
+  if (!session?.user?.id) {
+    // User is signed out or session is expired; skip sync quietly without throwing errors
+    return;
+  }
+
   if (await isBackgroundHealthSyncEnabled()) {
     await syncRecentHealthData();
   }
