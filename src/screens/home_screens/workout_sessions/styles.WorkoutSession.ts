@@ -113,6 +113,28 @@ export const createWorkoutSessionStyles = (colors: any) =>
       marginTop: spacing.xs,
       fontFamily: fonts.medium,
     },
+    autoPausePill: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 6,
+      backgroundColor: 'rgba(0, 0, 0, 0.28)',
+      paddingHorizontal: spacing.sm,
+      paddingVertical: 4,
+      borderRadius: radius.full,
+      marginTop: spacing.xs,
+    },
+    autoPauseDot: {
+      width: 7,
+      height: 7,
+      borderRadius: 4,
+      backgroundColor: '#FBBF24',
+    },
+    autoPauseText: {
+      color: '#FEF08A',
+      fontFamily: fonts.semiBold,
+      fontSize: 12,
+      letterSpacing: 0.2,
+    },
     metricsGrid: {
       flexDirection: 'row',
       flexWrap: 'wrap',

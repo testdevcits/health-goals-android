@@ -12,6 +12,7 @@ import ActivitySelector from './components/ActivitySelector';
 import WorkoutHero from './components/WorkoutHero';
 import WorkoutControls from './components/WorkoutControls';
 import WorkoutCelebrationModal from './components/WorkoutCelebrationModal';
+import WorkoutMap from './components/WorkoutMap';
 
 type Props = NativeStackScreenProps<HomeStackParamList, 'WorkoutSession'>;
 
@@ -25,9 +26,11 @@ const WorkoutSessionScreen: React.FC<Props> = ({ navigation, route }) => {
     elapsedSeconds,
     isRunning,
     hasStarted,
+    isAutoPaused,
     distanceKm,
     calories,
     avgPace,
+    routeCoordinates,
     confirmation,
     setConfirmation,
     savingWorkout,
@@ -100,6 +103,7 @@ const WorkoutSessionScreen: React.FC<Props> = ({ navigation, route }) => {
         <WorkoutHero
           currentActivity={currentActivity}
           isRunning={isRunning}
+          isAutoPaused={isAutoPaused}
           hasStarted={hasStarted}
           elapsedSeconds={elapsedSeconds}
           styles={styles}
@@ -144,6 +148,16 @@ const WorkoutSessionScreen: React.FC<Props> = ({ navigation, route }) => {
             styles={styles}
           />
         </View>
+
+        {Boolean(currentActivity.isOutdoor) && (
+          <WorkoutMap
+            coordinates={routeCoordinates}
+            isTracking={isRunning && !isAutoPaused}
+            isAutoPaused={isAutoPaused}
+            activityColor={currentActivity.color}
+            colors={colors}
+          />
+        )}
 
         <WorkoutControls
           isRunning={isRunning}

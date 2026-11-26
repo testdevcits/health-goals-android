@@ -4,6 +4,7 @@ export interface WorkoutActivity {
   emoji: string;
   speedKmh: number;
   caloriesPerMinute: number;
+  isOutdoor?: boolean;
 }
 
 export const WORKOUT_ACTIVITIES: WorkoutActivity[] = [
@@ -13,6 +14,7 @@ export const WORKOUT_ACTIVITIES: WorkoutActivity[] = [
     emoji: '🏃',
     speedKmh: 9.6,
     caloriesPerMinute: 10,
+    isOutdoor: true,
   },
   {
     id: 'walking',
@@ -20,6 +22,7 @@ export const WORKOUT_ACTIVITIES: WorkoutActivity[] = [
     emoji: '🚶',
     speedKmh: 5,
     caloriesPerMinute: 4,
+    isOutdoor: true,
   },
   {
     id: 'cycling',
@@ -27,6 +30,7 @@ export const WORKOUT_ACTIVITIES: WorkoutActivity[] = [
     emoji: '🚴',
     speedKmh: 18,
     caloriesPerMinute: 8,
+    isOutdoor: true,
   },
   {
     id: 'strength',
@@ -55,8 +59,9 @@ export const WORKOUT_ACTIVITIES: WorkoutActivity[] = [
     id: 'hiking',
     name: 'Hiking',
     emoji: '🥾',
-    speedKmh: 0,
-    caloriesPerMinute: 3,
+    speedKmh: 4.5,
+    caloriesPerMinute: 6,
+    isOutdoor: true,
   },
   {
     id: 'machines',

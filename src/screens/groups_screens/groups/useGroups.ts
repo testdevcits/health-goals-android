@@ -14,8 +14,15 @@ const useGroups = () => {
   const [posts, setPosts] = useState<FeedPost[]>([]);
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState('');
+  const lastFetchedRef = useRef<Record<string, number>>({});
 
-  const refresh = useCallback(async () => {
+  const refresh = useCallback(async (force = false) => {
+    const now = Date.now();
+    // Cache per activeTab for 15 seconds to prevent tab freezing
+    if (!force && lastFetchedRef.current[activeTab] && now - lastFetchedRef.current[activeTab] < 15000) {
+      return;
+    }
+    lastFetchedRef.current[activeTab] = now;
     setLoading(true);
     setLoadError('');
     try {

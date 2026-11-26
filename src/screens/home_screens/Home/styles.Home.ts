@@ -2,7 +2,10 @@
 import { StyleSheet } from 'react-native';
 import { AppTheme } from '../../../theme';
 
-export const createHomeStyles = (theme: AppTheme) => {
+let cachedStylesTheme: AppTheme | null = null;
+let cachedStyles: ReturnType<typeof buildHomeStyles> | null = null;
+
+const buildHomeStyles = (theme: AppTheme) => {
   const { spacing, radius, colors, fonts } = theme;
 
   return StyleSheet.create({
@@ -459,4 +462,13 @@ export const createHomeStyles = (theme: AppTheme) => {
       fontSize: theme.typography.statValue.fontSize,
     },
   });
+};
+
+export const createHomeStyles = (theme: AppTheme) => {
+  if (cachedStyles && cachedStylesTheme === theme) {
+    return cachedStyles;
+  }
+  cachedStylesTheme = theme;
+  cachedStyles = buildHomeStyles(theme);
+  return cachedStyles;
 };

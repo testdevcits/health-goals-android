@@ -85,6 +85,9 @@
         <meta-data
             android:name="com.google.firebase.messaging.default_notification_color"
             android:resource="@color/notification_icon_color" />
+            <meta-data
+            android:name="com.google.android.geo.API_KEY"
+            android:value="AIzaSyBUX8zHtnnP48SEh0Ur1mtAr2tckIugLsx" />
         <activity
             android:name=".MainActivity"
             android:label="@string/app_name"
@@ -112,6 +115,7 @@
                 <category android:name="android.intent.category.HEALTH_PERMISSIONS" />
             </intent-filter>
         </activity-alias>
+
     </application>
 </manifest>
 

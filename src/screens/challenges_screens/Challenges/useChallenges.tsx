@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useFocusEffect } from '@react-navigation/native';
 import { DeviceEventEmitter } from 'react-native';
 import { Dumbbell, Footprints, Sunrise } from 'lucide-react-native';
@@ -89,9 +89,16 @@ const useChallenges = () => {
   const [competitions, setCompetitions] = useState<Competition[]>([]);
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState('');
+  const lastFetchedRef = useRef(0);
 
-  const refresh = useCallback(async () => {
-    setLoading(true);
+  const refresh = useCallback(async (force = false) => {
+    const now = Date.now();
+    // Cache for 15 seconds to prevent frozen tab transitions when quickly toggling tabs
+    if (!force && lastFetchedRef.current > 0 && now - lastFetchedRef.current < 15000) {
+      return;
+    }
+    lastFetchedRef.current = now;
+    if (lastFetchedRef.current === 0) setLoading(true);
     setLoadError('');
 
     // Fetch notifications and wallet via Redux store (uses 1-min TTL cache, no redundant network hits)
@@ -135,18 +142,18 @@ const useChallenges = () => {
             const joined = Boolean(item?.joined);
             const joinable = Boolean(
               item?.joinable ??
-                (!joined &&
-                  !startsInFuture &&
-                  ['ACTIVE', 'LIVE', 'PUBLISHED'].includes(status)),
+              (!joined &&
+                !startsInFuture &&
+                ['ACTIVE', 'LIVE', 'PUBLISHED'].includes(status)),
             );
             const metricLabel = metric.replace(/_/g, ' ');
             const dateLabel = item?.month
               ? item?.month
               : item?.startsAt && item?.endsAt
-              ? `${new Date(item?.startsAt).toLocaleDateString()} – ${new Date(
+                ? `${new Date(item?.startsAt).toLocaleDateString()} – ${new Date(
                   item?.endsAt,
                 ).toLocaleDateString()}`
-              : undefined;
+                : undefined;
 
             return {
               id: item?.id,
@@ -154,12 +161,10 @@ const useChallenges = () => {
               description: item?.description || `${targetValue} ${metric}`,
               progress: Math.max(0, progress),
               progressLabel: item?.joined
-                ? `Joined · ${currentValue.toLocaleString()} / ${targetValue.toLocaleString()} · ${
-                    item?.participantCount ?? item?.participants ?? 0
-                  } participants`
-                : `Not joined · ${
-                    item?.participantCount ?? item?.participants ?? 0
-                  } participants`,
+                ? `Joined · ${currentValue.toLocaleString()} / ${targetValue.toLocaleString()} · ${item?.participantCount ?? item?.participants ?? 0
+                } participants`
+                : `Not joined · ${item?.participantCount ?? item?.participants ?? 0
+                } participants`,
               metricLabel,
               targetLabel: targetValue.toLocaleString(),
               dateLabel,
@@ -176,14 +181,14 @@ const useChallenges = () => {
               status: startsInFuture
                 ? 'UPCOMING'
                 : status === 'ACTIVE' || status === 'PUBLISHED'
-                ? 'LIVE'
-                : status,
+                  ? 'LIVE'
+                  : status,
               color: lightColors.primary,
               icon: metric.toLowerCase().includes('step')
                 ? Footprints
                 : metric.toLowerCase().includes('workout')
-                ? Dumbbell
-                : Sunrise,
+                  ? Dumbbell
+                  : Sunrise,
               joined,
               joinable,
             };
@@ -229,13 +234,12 @@ const useChallenges = () => {
             const metric = competition.metric.replace(/_/g, ' ');
             const progressSummary = progressEntries.length
               ? progressEntries
-                  .map(
-                    entry =>
-                      `${
-                        entry.name
-                      }: ${entry.value.toLocaleString()} / ${competition.targetValue.toLocaleString()} ${metric}`,
-                  )
-                  .join(' · ')
+                .map(
+                  entry =>
+                    `${entry.name
+                    }: ${entry.value.toLocaleString()} / ${competition.targetValue.toLocaleString()} ${metric}`,
+                )
+                .join(' · ')
               : `Goal: ${competition.targetValue.toLocaleString()} ${metric}`;
 
             return {
@@ -252,8 +256,8 @@ const useChallenges = () => {
               icon: competition.metric.toLowerCase().includes('step')
                 ? Footprints
                 : competition.metric.toLowerCase().includes('workout')
-                ? Dumbbell
-                : Sunrise,
+                  ? Dumbbell
+                  : Sunrise,
               joined: true,
               joinable: false,
             };
@@ -292,7 +296,7 @@ const useChallenges = () => {
   useEffect(() => {
     const subscription = DeviceEventEmitter.addListener(
       'activitySyncCompleted',
-      refresh,
+      () => refresh(true),
     );
     return () => subscription.remove();
   }, [refresh]);

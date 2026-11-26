@@ -1,7 +1,8 @@
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import React, { lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   AppState,
   DeviceEventEmitter,
+  InteractionManager,
   NativeScrollEvent,
   NativeSyntheticEvent,
   Platform,
@@ -12,7 +13,6 @@ import {
 import { useFocusEffect } from '@react-navigation/native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { HomeStackParamList } from '../../../navigations/HomeStack';
-import { OnboardingModal, ProfileQuestionsModal } from '../../../components';
 import { useTheme } from '../../../theme/useTheme';
 import { getNotificationPermission } from '../../../utils/AppPermissions';
 import ActivityTrends from './components/ActivityTrends';
@@ -30,17 +30,35 @@ import { syncRecentHealthData } from '../../../services/healthSync';
 import useConnectedDevices from '../../profile_screens/connected_devices/useConnectedDevices';
 import { ConnectedWatchCard } from '../../profile_screens/connected_devices/components';
 
+const OnboardingModal = lazy(
+  () => import('../../../components/common/OnboardingModal'),
+);
+const ProfileQuestionsModal = lazy(
+  () =>
+    import(
+      '../../../components/common/profile_questions_modal/ProfileQuestionsModal'
+    ),
+);
+
 type Props = NativeStackScreenProps<HomeStackParamList, 'Home'>;
 
 const HomeScreen: React.FC<Props> = ({ navigation }) => {
   const { theme } = useTheme();
-  const styles = createHomeStyles(theme);
+  const styles = useMemo(() => createHomeStyles(theme), [theme]);
   const [notificationsEnabled, setNotificationsEnabled] = useState<
     boolean | null
   >(null);
   const [onboardingVisible, setOnboardingVisible] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
   const [healthRefreshKey, setHealthRefreshKey] = useState(0);
+  const [isDeferredLoaded, setIsDeferredLoaded] = useState(false);
+
+  useEffect(() => {
+    const task = InteractionManager.runAfterInteractions(() => {
+      setIsDeferredLoaded(true);
+    });
+    return () => task.cancel();
+  }, []);
   const {
     connectedDevice,
     watchMetrics,
@@ -49,7 +67,7 @@ const HomeScreen: React.FC<Props> = ({ navigation }) => {
     reconnectDevice,
     disconnectDevice,
     syncWatchHealthData,
-  } = useConnectedDevices();
+  } = useConnectedDevices({ skipHealthConnectCheck: true });
 
   useFocusEffect(
     useCallback(() => {
@@ -212,21 +230,33 @@ const HomeScreen: React.FC<Props> = ({ navigation }) => {
           healthRefreshKey={healthRefreshKey}
         />
         <WorkoutCategories onViewAllPress={handleViewAllCategories} />
-        <ActivityTrends
-          onPressDetails={handleTrendsDetails}
-          healthRefreshKey={healthRefreshKey}
-        />
-        <QuickActions onActionPress={handleQuickAction} />
-        <RecentWorkoutsSection
-          navigation={navigation}
-          healthRefreshKey={healthRefreshKey}
-        />
+        {isDeferredLoaded ? (
+          <>
+            <ActivityTrends
+              onPressDetails={handleTrendsDetails}
+              healthRefreshKey={healthRefreshKey}
+            />
+            <QuickActions onActionPress={handleQuickAction} />
+            <RecentWorkoutsSection
+              navigation={navigation}
+              healthRefreshKey={healthRefreshKey}
+            />
+          </>
+        ) : null}
       </ScrollView>
-      <OnboardingModal
-        visible={onboardingVisible}
-        onDismiss={handleOnboardingDismiss}
-      />
-      <ProfileQuestionsModal enabled={!onboardingVisible} />
+      {onboardingVisible && (
+        <Suspense fallback={null}>
+          <OnboardingModal
+            visible={onboardingVisible}
+            onDismiss={handleOnboardingDismiss}
+          />
+        </Suspense>
+      )}
+      {isDeferredLoaded && !onboardingVisible && (
+        <Suspense fallback={null}>
+          <ProfileQuestionsModal enabled={!onboardingVisible} />
+        </Suspense>
+      )}
     </View>
   );
 };

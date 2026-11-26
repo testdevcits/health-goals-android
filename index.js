@@ -4,8 +4,11 @@
 
 import { AppRegistry } from 'react-native';
 import { Platform } from 'react-native';
+import { enableScreens } from 'react-native-screens';
 import BackgroundFetch from 'react-native-background-fetch';
 import App from './App';
+
+enableScreens(true);
 import { runBackgroundHealthSync } from './src/services/backgroundHealthSync';
 import { name as appName } from './app.json';
 

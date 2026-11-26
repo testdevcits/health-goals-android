@@ -315,7 +315,8 @@ const notifyWatchListeners = () => {
   });
 };
 
-export default function useConnectedDevices() {
+export default function useConnectedDevices(options?: { skipHealthConnectCheck?: boolean }) {
+  const skipHealthConnect = options?.skipHealthConnectCheck ?? false;
   const bleManager = useMemo(() => getBleManager(), []);
   const [bluetoothState, setBluetoothState] = useState<BluetoothState>(
     BluetoothState.Unknown,
@@ -1224,10 +1225,12 @@ export default function useConnectedDevices() {
 
   useFocusEffect(
     useCallback(() => {
-      refreshConnection();
-      refreshAutoSyncState();
+      if (!skipHealthConnect) {
+        refreshConnection();
+        refreshAutoSyncState();
+      }
       void autoReconnectRef.current();
-    }, [refreshAutoSyncState, refreshConnection]),
+    }, [skipHealthConnect, refreshAutoSyncState, refreshConnection]),
   );
 
   const requestAndEnableAutoSync = async () => {

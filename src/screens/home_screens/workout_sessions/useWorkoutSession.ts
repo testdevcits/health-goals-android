@@ -1,6 +1,9 @@
 import { useEffect, useRef, useState } from 'react';
 import { Alert, AppState, DeviceEventEmitter } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import type { LatLng } from 'react-native-maps';
+import BackgroundGeolocation from 'react-native-background-geolocation';
 import type { HomeStackParamList } from '../../../navigations/HomeStack';
 import {
   clearWorkoutSession,
@@ -42,6 +45,17 @@ export default function useWorkoutSession(
     null,
   );
   const [savingWorkout, setSavingWorkout] = useState(false);
+  const [routeCoordinates, setRouteCoordinates] = useState<LatLng[]>([]);
+  const [gpsDistanceMeters, setGpsDistanceMeters] = useState(0);
+  const [currentSpeedMps, setCurrentSpeedMps] = useState(0);
+  const [isAutoPaused, setIsAutoPaused] = useState(false);
+  const stillCountRef = useRef(0);
+  const movingCountRef = useRef(0);
+  const isAutoPausedRef = useRef(false);
+  isAutoPausedRef.current = isAutoPaused;
+  const lastPositionRef = useRef<LatLng | null>(null);
+  const hasEverMovedRef = useRef(false);
+  const initialStationaryAlertShownRef = useRef(false);
   const [completedWorkout, setCompletedWorkout] = useState<{
     activityName: string;
     activityEmoji: string;
@@ -127,6 +141,10 @@ export default function useWorkoutSession(
 
   useEffect(() => {
     const updateElapsedTime = () => {
+      // If auto-paused due to user being stationary, freeze timer increment
+      if (isAutoPausedRef.current) {
+        return;
+      }
       setElapsedSeconds(
         workoutSession
           ? Math.floor(getElapsedMilliseconds(workoutSession) / 1000)
@@ -153,16 +171,203 @@ export default function useWorkoutSession(
     };
   }, [isRunning, workoutSession]);
 
-  const distanceKm = Number(
-    ((currentActivity.speedKmh * elapsedSeconds) / 3600).toFixed(2),
-  );
+  // Track GPS location, movement distance, and motion for outdoor activities when workout is running
+  useEffect(() => {
+    const isOutdoor = Boolean(currentActivity.isOutdoor);
+    if (!isRunning || !isOutdoor) {
+      setIsAutoPaused(false);
+      stillCountRef.current = 0;
+      movingCountRef.current = 0;
+      lastPositionRef.current = null;
+      return;
+    }
+
+    let isMounted = true;
+    let locationSubscription: { remove: () => void } | null = null;
+    let motionSubscription: { remove: () => void } | null = null;
+
+    // Helper to calculate distance in meters between two lat/lng coords (Haversine formula)
+    const calculateDistanceMeters = (
+      lat1: number,
+      lon1: number,
+      lat2: number,
+      lon2: number,
+    ): number => {
+      const R = 6371e3; // Earth radius in meters
+      const toRad = (deg: number) => (deg * Math.PI) / 180;
+      const dLat = toRad(lat2 - lat1);
+      const dLon = toRad(lon2 - lon1);
+      const a =
+        Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+        Math.cos(toRad(lat1)) *
+          Math.cos(toRad(lat2)) *
+          Math.sin(dLon / 2) *
+          Math.sin(dLon / 2);
+      const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+      return R * c;
+    };
+
+    const setupGeolocation = async () => {
+      try {
+        // Subscribe to live location updates
+        locationSubscription = BackgroundGeolocation.onLocation(
+          location => {
+            if (!isMounted || !location?.coords) return;
+            const speed = Math.max(0, location.coords.speed ?? 0); // Speed in m/s
+            setCurrentSpeedMps(speed);
+            const currentLat = location.coords.latitude;
+            const currentLon = location.coords.longitude;
+            const accuracy = location.coords.accuracy ?? 15;
+
+            // Check distance delta from last observed position
+            let distanceDelta = 0;
+            if (lastPositionRef.current) {
+              distanceDelta = calculateDistanceMeters(
+                lastPositionRef.current.latitude,
+                lastPositionRef.current.longitude,
+                currentLat,
+                currentLon,
+              );
+            }
+
+            // Real-world noise rejection:
+            // If GPS accuracy is poor (> 35m) and displacement is huge, ignore spurious jump
+            if (accuracy > 35 && distanceDelta > 80) {
+              return;
+            }
+
+            // User is moving if:
+            // 1. GPS speed is at least 0.5 m/s (~1.8 km/h), OR
+            // 2. Physical displacement between fixes is >= 4 meters
+            const isMoving = speed >= 0.5 || distanceDelta >= 4.0;
+
+            if (isMoving) {
+              movingCountRef.current += 1;
+              stillCountRef.current = 0;
+              hasEverMovedRef.current = true;
+              initialStationaryAlertShownRef.current = false;
+
+              // Accumulate real measured GPS distance when moving
+              if (lastPositionRef.current && distanceDelta >= 2 && distanceDelta < 150) {
+                setGpsDistanceMeters(prev => prev + distanceDelta);
+              }
+
+              lastPositionRef.current = { latitude: currentLat, longitude: currentLon };
+
+              // Unpause smoothly if auto-paused
+              if (isAutoPausedRef.current && movingCountRef.current >= 1) {
+                setIsAutoPaused(false);
+              }
+            } else {
+              // Device is stationary or placed in one spot
+              movingCountRef.current = 0;
+              stillCountRef.current += 1;
+
+              // After 2 consecutive stationary fixes (~2-4s), smoothly freeze the timer
+              if (stillCountRef.current >= 2 && !isAutoPausedRef.current) {
+                setIsAutoPaused(true);
+              }
+            }
+
+            const nextCoord: LatLng = {
+              latitude: currentLat,
+              longitude: currentLon,
+            };
+
+            // Only record GPS trail if moving
+            setRouteCoordinates(prev => {
+              if (!isMoving && prev.length > 0) {
+                return prev;
+              }
+              const last = prev[prev.length - 1];
+              if (
+                last &&
+                Math.abs(last.latitude - nextCoord.latitude) < 0.00001 &&
+                Math.abs(last.longitude - nextCoord.longitude) < 0.00001
+              ) {
+                return prev;
+              }
+              return [...prev, nextCoord];
+            });
+          },
+          error => {
+            console.log('Location watch notice:', error);
+          },
+        );
+
+        // Also listen to hardware activity recognition (still vs on_foot/running/walking)
+        motionSubscription = BackgroundGeolocation.onMotionChange(event => {
+          if (!isMounted) return;
+          if (!event.isMoving) {
+            setIsAutoPaused(true);
+            stillCountRef.current = 2;
+            movingCountRef.current = 0;
+          } else {
+            setIsAutoPaused(false);
+            stillCountRef.current = 0;
+            movingCountRef.current = 1;
+            hasEverMovedRef.current = true;
+            initialStationaryAlertShownRef.current = false;
+          }
+        });
+
+        // Fetch current position right away to center the map immediately
+        const currentLocation = await BackgroundGeolocation.getCurrentPosition({
+          persist: false,
+          samples: 1,
+        });
+        if (isMounted && currentLocation?.coords) {
+          lastPositionRef.current = {
+            latitude: currentLocation.coords.latitude,
+            longitude: currentLocation.coords.longitude,
+          };
+          setRouteCoordinates(prev => {
+            if (prev.length === 0) {
+              return [
+                {
+                  latitude: currentLocation.coords.latitude,
+                  longitude: currentLocation.coords.longitude,
+                },
+              ];
+            }
+            return prev;
+          });
+        }
+      } catch (err) {
+        console.log('Unable to initialize workout GPS:', err);
+      }
+    };
+
+    setupGeolocation();
+
+    return () => {
+      isMounted = false;
+      if (locationSubscription && typeof locationSubscription.remove === 'function') {
+        locationSubscription.remove();
+      }
+      if (motionSubscription && typeof motionSubscription.remove === 'function') {
+        motionSubscription.remove();
+      }
+    };
+  }, [isRunning, currentActivity.isOutdoor]);
+
+  // Professional real-world metric calculation:
+  // For outdoor activities:
+  // - Distance is calculated from real GPS coordinates walked/run (gpsDistanceMeters),
+  //   or 0 if phone remained placed in one spot without moving!
+  // - For indoor activities (yoga, gym): estimated from duration and nominal activity rate.
+  const distanceKm = currentActivity.isOutdoor
+    ? Number((gpsDistanceMeters / 1000).toFixed(2))
+    : Number(((currentActivity.speedKmh * elapsedSeconds) / 3600).toFixed(2));
+
+  // Calories: Only burn when moving or actively working out
   const calories = Math.floor(
     (elapsedSeconds / 60) * currentActivity.caloriesPerMinute,
   );
 
-  // Average Pace: min / km (only applicable when distance > 0, e.g. running, walking, cycling, hiking)
+  // Average Pace: min / km based on real distance covered
   const avgPace = (() => {
-    if (currentActivity.speedKmh <= 0 || distanceKm <= 0 || elapsedSeconds < 5) {
+    if (distanceKm <= 0.05 || elapsedSeconds < 10) {
       return '--';
     }
     const paceSecondsPerKm = elapsedSeconds / distanceKm;
@@ -178,9 +383,39 @@ export default function useWorkoutSession(
     try {
       if (isRunning) {
         await pauseWorkoutSession();
+        // If workout is paused and tracking was active, stop background tracking
+        try {
+          await BackgroundGeolocation.stop();
+        } catch {
+          // ignore
+        }
       } else if (hasStarted) {
         await resumeWorkoutSession();
+        if (selectedActivity.isOutdoor) {
+          try {
+            await BackgroundGeolocation.start();
+          } catch {
+            // ignore
+          }
+        }
       } else {
+        // If outdoor activity, check smartwatch connection:
+        // If no smartwatch, ensure phone's background GPS tracking is started!
+        if (selectedActivity.isOutdoor) {
+          const savedWatchJson = await AsyncStorage.getItem(
+            'vitality:connected_watch',
+          );
+          const hasConnectedWatch = Boolean(savedWatchJson);
+
+          if (!hasConnectedWatch) {
+            // User doesn't have a smartwatch connected: start phone's background GPS tracking directly
+            try {
+              await BackgroundGeolocation.start();
+            } catch (geoError) {
+              console.log('Phone background GPS start notice:', geoError);
+            }
+          }
+        }
         await startWorkoutSession(selectedActivity.id);
       }
     } catch (error) {
@@ -297,12 +532,19 @@ export default function useWorkoutSession(
                         ((end - cursor) / 60000) *
                           currentActivity.caloriesPerMinute,
                       ),
-                      estimatedDistanceKm: Number(
-                        (
-                          (currentActivity.speedKmh * (end - cursor)) /
-                          3600000
-                        ).toFixed(2),
-                      ),
+                      estimatedDistanceKm: currentActivity.isOutdoor
+                        ? Number(
+                            (
+                              (distanceKm * (end - cursor)) /
+                              Math.max(1, finishedAt - startMs)
+                            ).toFixed(2),
+                          )
+                        : Number(
+                            (
+                              (currentActivity.speedKmh * (end - cursor)) /
+                              3600000
+                            ).toFixed(2),
+                          ),
                     },
                   });
                   cursor = end;
@@ -394,7 +636,9 @@ export default function useWorkoutSession(
     elapsedSeconds,
     isRunning,
     hasStarted,
+    isAutoPaused,
     distanceKm,
+    currentSpeedMps,
     calories,
     avgPace,
     confirmation,
@@ -405,6 +649,7 @@ export default function useWorkoutSession(
       setCompletedWorkout(null);
       returnToPreviousScreen();
     },
+    routeCoordinates,
     handleConfirmationAction,
     handleStartPause,
     handleSelectActivity,

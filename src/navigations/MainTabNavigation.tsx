@@ -43,13 +43,16 @@ const ProfileTabIcon = ({ color, size }: TabIconProps) => (
 
 const MainTabNavigation = () => {
   const { theme } = useTheme();
-  const styles = createStyles(theme.colors);
+  const styles = React.useMemo(() => createStyles(theme.colors), [theme.colors]);
 
   return (
     <Tab.Navigator
       initialRouteName="HomeTab"
+      detachInactiveScreens
       screenOptions={{
         headerShown: false,
+        lazy: true,
+        animation: 'none',
         tabBarActiveTintColor: theme.colors.primary,
         tabBarInactiveTintColor: theme.colors.textTertiary,
         tabBarStyle: styles.tabBar,

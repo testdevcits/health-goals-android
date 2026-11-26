@@ -71,11 +71,11 @@ export const WorkoutCelebrationModal: React.FC<Props> = ({
         {/* Confetti blast from top center */}
         <ConfettiCannon
           ref={cannonRef}
-          count={100}
+          count={50}
           origin={{ x: SCREEN_WIDTH / 2, y: -20 }}
           autoStart
           fadeOut
-          fallSpeed={3000}
+          fallSpeed={2800}
           colors={[
             colors.primary,
             colors.coral,

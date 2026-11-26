@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useIsFocused } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '../../../navigations/ProfileStack';
@@ -39,11 +39,18 @@ export default function useProfile(
   const [reloadKey, setReloadKey] = useState(0);
   const [modalVisible, setModalVisible] = useState(false);
   const isFocused = useIsFocused();
+  const lastFetchedProfileRef = useRef(0);
 
   useEffect(() => {
     if (!isFocused) return;
+    const now = Date.now();
+    // Cache for 20 seconds to prevent re-fetching on quick tab switching
+    if (lastFetchedProfileRef.current > 0 && now - lastFetchedProfileRef.current < 20000) {
+      return;
+    }
+    lastFetchedProfileRef.current = now;
     let active = true;
-    setProfileLoading(true);
+    if (!user) setProfileLoading(true);
     setProfileError('');
 
     // Fetch wallet with caching
@@ -109,7 +116,7 @@ export default function useProfile(
     return () => {
       active = false;
     };
-  }, [dispatch, isFocused, reloadKey]);
+  }, [dispatch, isFocused, reloadKey, user]);
 
   const handleMenuPress = (id: string) => {
     switch (id) {

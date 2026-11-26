@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { DeviceEventEmitter } from 'react-native';
 import { useIsFocused } from '@react-navigation/native';
 import {
+  fetchSyncedHealthRecords,
   fetchSyncedHealthRecordsPage,
   type SyncedHealthRecord,
 } from '../../../../../services/healthSync';
@@ -336,32 +337,44 @@ export const useRecentWorkouts = (healthRefreshKey?: number) => {
       try {
         if (targetPage > 1) {
           setLoadingMore(true);
+          const response = await fetchSyncedHealthRecordsPage(targetPage, limit);
+          const newRecords = response.records;
+          setHasMore(response.hasMore);
+          setNextPage(response.nextPage);
+
+          setAllRecords(prev => {
+            const seenIds = new Set(prev.map(r => r.id));
+            const toAppend = newRecords.filter(r => !r.id || !seenIds.has(r.id));
+            const combined = [...prev, ...toAppend];
+            if (combined.length > 0) {
+              storageService.setObject(CACHE_KEY_SYNCED_RECORDS, combined);
+            }
+            return combined;
+          });
         } else {
           setLoading(true);
-        }
+          // Initial load: Fetch up to 500 records across pages so user gets complete list
+          const fullRecords = await fetchSyncedHealthRecords({
+            page: 1,
+            limit: 100,
+            fetchAll: true,
+            maxPages: 5,
+          });
 
-        const response = await fetchSyncedHealthRecordsPage(targetPage, limit);
-        const newRecords = response.records;
-        setHasMore(response.hasMore);
-        setNextPage(response.nextPage);
-
-        setAllRecords(prev => {
-          if (targetPage === 1) {
-            if (newRecords.length > 0) {
-              storageService.setObject(CACHE_KEY_SYNCED_RECORDS, newRecords);
+          if (fullRecords && fullRecords.length > 0) {
+            storageService.setObject(CACHE_KEY_SYNCED_RECORDS, fullRecords);
+            setAllRecords(fullRecords);
+          } else {
+            // Fallback to single page if fetchAll returned empty
+            const response = await fetchSyncedHealthRecordsPage(1, limit);
+            if (response.records.length > 0) {
+              storageService.setObject(CACHE_KEY_SYNCED_RECORDS, response.records);
+              setAllRecords(response.records);
             }
-            return newRecords;
+            setHasMore(response.hasMore);
+            setNextPage(response.nextPage);
           }
-
-          // Target page > 1: Append and deduplicate by id
-          const seenIds = new Set(prev.map(r => r.id));
-          const toAppend = newRecords.filter(r => !r.id || !seenIds.has(r.id));
-          const combined = [...prev, ...toAppend];
-          if (combined.length > 0) {
-            storageService.setObject(CACHE_KEY_SYNCED_RECORDS, combined);
-          }
-          return combined;
-        });
+        }
       } catch (error) {
         console.warn('Could not load synced health records:', error);
       } finally {
