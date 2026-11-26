@@ -47,6 +47,13 @@ export const HealthDataSection: React.FC<HealthDataSectionProps> = ({
         HEALTH DATA
       </AppText>
 
+      {Platform.OS === 'android' ? (
+        <AppText variant="caption" secondary style={styles.errorMessage}>
+          Sync your watch with its companion app first, then allow that app to
+          share data with Health Connect. Vitality reads the data you approve.
+        </AppText>
+      ) : null}
+
       {Platform.OS === 'android' && Number(Platform.Version) >= 34 ? (
         <ProfileCard>
           <ProfileToggleRow

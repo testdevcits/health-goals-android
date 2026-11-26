@@ -1,5 +1,5 @@
-import React, { useCallback, useState } from 'react';
-import { Platform, Pressable, View } from 'react-native';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
+import { AppState, Platform, Pressable, View } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
 import { ArrowRight, HeartPulse, RefreshCw } from 'lucide-react-native';
 import {
@@ -51,6 +51,7 @@ const HealthConnectPrompt: React.FC<{
   const styles = createHomeStyles(theme);
   const [status, setStatus] = useState<ConnectionStatus>('checking');
   const [working, setWorking] = useState(false);
+  const lastAutoSyncAtRef = useRef(0);
 
   const checkConnection = useCallback(async () => {
     if (Platform.OS !== 'android') {
@@ -96,8 +97,40 @@ const HealthConnectPrompt: React.FC<{
         console.error('Unable to refresh Health Connect status:', error);
         setStatus('error');
       });
+
+      const appStateSubscription = AppState.addEventListener(
+        'change',
+        nextState => {
+          if (nextState === 'active') {
+            checkConnection().catch(error => {
+              console.error('Unable to refresh Health Connect status:', error);
+              setStatus('error');
+            });
+          }
+        },
+      );
+      return () => appStateSubscription.remove();
     }, [checkConnection]),
   );
+
+  // Health Connect can grant access from its own settings panel. Sync shortly
+  // after Vitality becomes active so that path gets the same initial sync.
+  useEffect(() => {
+    if (status !== 'connected') return;
+    const now = Date.now();
+    if (now - lastAutoSyncAtRef.current < 60_000) return;
+    lastAutoSyncAtRef.current = now;
+
+    syncRecentHealthData()
+      .then(() => onSyncComplete())
+      .catch(error => {
+        showAppToast(
+          'warning',
+          'Health Connect is connected',
+          `Health data could not be synced yet: ${apiErrorMessage(error)}`,
+        );
+      });
+  }, [status, onSyncComplete]);
 
   const connectAndSync = async () => {
     if (status === 'error') {
@@ -118,6 +151,8 @@ const HealthConnectPrompt: React.FC<{
         return;
       }
 
+      // The permission flow below performs the immediate sync itself.
+      lastAutoSyncAtRef.current = Date.now();
       setStatus('connected');
       onSyncComplete();
 
@@ -200,7 +235,7 @@ const HealthConnectPrompt: React.FC<{
       ? 'Update Health Connect to securely sync your steps, sleep, and workouts.'
       : status === 'error'
       ? 'We could not check Health Connect right now. Try again.'
-      : 'Connect Health Connect to automatically sync your steps, sleep, and workouts. You choose which health data Vitality can read.';
+      : 'First sync your watch with its companion app and enable Health Connect there. Then allow Vitality to read your steps, sleep, and workouts.';
   const actionLabel =
     status === 'error'
       ? 'Retry'

@@ -14,6 +14,7 @@ import {
   ConnectedWatchCard,
   DiscoveredDevicesList,
   HealthDataSection,
+  HealthConnectSourcesCard,
 } from './components';
 import createStyles from './styles.ConnectedDevices';
 import useConnectedDevices from './useConnectedDevices';
@@ -120,6 +121,9 @@ const ConnectedDevicesScreen: React.FC<{
             onProviderAction={handleProviderAction}
             onOpenSettings={openHealthConnectSettings}
           />
+          <View style={{ marginTop: spacing.md }}>
+            <HealthConnectSourcesCard />
+          </View>
         </View>
       </ScrollView>
 

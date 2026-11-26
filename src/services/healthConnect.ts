@@ -65,6 +65,17 @@ export interface DailyActiveMinutesTotal {
   unit: 'minutes';
 }
 
+export interface HealthConnectWearableSource {
+  id: string;
+  packageName: string;
+  appName: string;
+  manufacturer?: string;
+  model?: string;
+  deviceType?: number;
+  dataTypes: string[];
+  latestRecordAt?: string;
+}
+
 const EXERCISE_NAMES = new Map<number, string>([
   [ExerciseType.BIKING, 'Cycling'],
   [ExerciseType.BIKING_STATIONARY, 'Indoor cycling'],
@@ -198,12 +209,135 @@ export const isWatchOrWearableRecord = (record: {
   };
 }): boolean => {
   const deviceType = record.metadata?.device?.type;
-  // 1 = TYPE_WATCH, 6 = TYPE_FITNESS_BAND, 4 = TYPE_RING
-  if (deviceType === 1 || deviceType === 6 || deviceType === 4) {
-    return true;
+  // Prefer explicit metadata so phone records from a watch companion app
+  // aren't incorrectly presented as watch data.
+  if (typeof deviceType === 'number') {
+    // 1 = TYPE_WATCH, 4 = TYPE_RING, 6 = TYPE_FITNESS_BAND,
+    // 7 = TYPE_CHEST_STRAP.
+    return [1, 4, 6, 7].includes(deviceType);
   }
   return isWearableDataOrigin(record.metadata?.dataOrigin);
 };
+
+/**
+ * Finds wearable sources that have written records into Health Connect recently.
+ * Health Connect metadata is source-reported: model details may be absent.
+ */
+export async function readHealthConnectWearableSources(
+  lookbackDays = 30,
+): Promise<HealthConnectWearableSource[]> {
+  if (Platform.OS !== 'android' || !(await ensureHealthConnectInitialized())) {
+    return [];
+  }
+
+  const granted = (await getGrantedPermissions()).filter(
+    (permission): permission is Permission =>
+      'accessType' in permission && 'recordType' in permission,
+  );
+  const types = [
+    'Steps',
+    'Distance',
+    'TotalCaloriesBurned',
+    'HeartRate',
+    'SleepSession',
+    'ExerciseSession',
+  ] as const;
+  const permittedTypes = types.filter(type =>
+    hasReadPermission(granted, type),
+  );
+  if (permittedTypes.length === 0) return [];
+
+  const end = new Date();
+  const start = new Date(end.getTime() - lookbackDays * 24 * 60 * 60 * 1000);
+  const timeRangeFilter = {
+    operator: 'between' as const,
+    startTime: start.toISOString(),
+    endTime: end.toISOString(),
+  };
+  const sources = new Map<string, HealthConnectWearableSource>();
+
+  await Promise.all(
+    permittedTypes.map(async recordType => {
+      try {
+        const result = await readRecords(recordType, {
+          timeRangeFilter,
+          pageSize: 500,
+          ascendingOrder: false,
+        });
+        for (const record of result.records) {
+          const metadata = record.metadata;
+          const packageName = metadata?.dataOrigin;
+          if (!packageName || !isWatchOrWearableRecord(record)) continue;
+
+          const device = metadata.device;
+          const sourceId = [
+            packageName,
+            device?.manufacturer || '',
+            device?.model || '',
+            device?.type ?? '',
+          ].join(':');
+          const current = sources.get(sourceId) ?? {
+            id: sourceId,
+            packageName,
+            appName: getHealthSourceAppName(packageName),
+            dataTypes: [],
+          };
+          if (device?.manufacturer) current.manufacturer = device.manufacturer;
+          if (device?.model) current.model = device.model;
+          if (typeof device?.type === 'number') current.deviceType = device.type;
+          if (!current.dataTypes.includes(recordType)) {
+            current.dataTypes.push(recordType);
+          }
+          const recordTimes = record as {
+            endTime?: string;
+            time?: string;
+            startTime?: string;
+          };
+          const recordTime =
+            metadata.lastModifiedTime ||
+            recordTimes.endTime ||
+            recordTimes.time ||
+            recordTimes.startTime;
+          if (
+            recordTime &&
+            (!current.latestRecordAt ||
+              Date.parse(recordTime) > Date.parse(current.latestRecordAt))
+          ) {
+            current.latestRecordAt = recordTime;
+          }
+          sources.set(sourceId, current);
+        }
+      } catch {
+        // Partial grants or provider-specific unsupported record types should
+        // not prevent showing other wearable sources.
+      }
+    }),
+  );
+
+  return [...sources.values()].sort((a, b) =>
+    (b.latestRecordAt || '').localeCompare(a.latestRecordAt || ''),
+  );
+}
+
+function getHealthSourceAppName(packageName: string): string {
+  const normalized = packageName.toLowerCase();
+  const knownApps: Array<[string, string]> = [
+    ['shealth', 'Samsung Health'],
+    ['samsung.health', 'Samsung Health'],
+    ['fitbit', 'Fitbit'],
+    ['zepp', 'Zepp'],
+    ['huami', 'Zepp'],
+    ['garmin', 'Garmin Connect'],
+    ['polar', 'Polar Flow'],
+    ['suunto', 'Suunto'],
+    ['withings', 'Withings'],
+    ['mobvoi', 'Mobvoi Health'],
+    ['ticwatch', 'Mobvoi Health'],
+    ['google.android.apps.fitness', 'Google Fit'],
+  ];
+  return knownApps.find(([fragment]) => normalized.includes(fragment))?.[1] ||
+    packageName;
+}
 
 export const readTodayHealthData = async (
   includeHourlyData = false,
