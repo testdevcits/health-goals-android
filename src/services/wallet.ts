@@ -18,7 +18,7 @@ export type Wallet = {
 export type DailyActivity = {
   day: string;
   timezone: string;
-  ruleVersion: string;
+  ruleVersion?: string;
   rules: {
     dailyCap: number;
     stepsPerTier: number;
@@ -34,11 +34,11 @@ export type DailyActivity = {
     timezone: string;
   };
   state: string;
-  dueAt: string;
+  dueAt?: string;
   creditedCoins: number;
   entitledCoins: number;
   pendingCoins: number;
-  totals: {
+  totals?: {
     steps: number;
     workoutMinutes: number;
     meditationMinutes: number;
@@ -51,7 +51,7 @@ export type DailyActivity = {
     };
     entitledCoins: number;
   };
-  needsSettlement: boolean;
+  needsSettlement?: boolean;
 };
 
 export type WalletResponse = {
@@ -124,24 +124,27 @@ export async function fetchWallet(): Promise<WalletResponse> {
     !/^\d{4}-\d{2}-\d{2}$/.test(activity.day) ||
     typeof activity.timezone !== 'string' ||
     !isValidTimeZone(activity.timezone) ||
-    typeof activity.ruleVersion !== 'string' ||
+    (activity.ruleVersion !== undefined &&
+      typeof activity.ruleVersion !== 'string') ||
     !activity.rules ||
     typeof activity.state !== 'string' ||
-    typeof activity.dueAt !== 'string' ||
-    !isValidDate(activity.dueAt) ||
-    typeof activity.needsSettlement !== 'boolean' ||
+    (activity.dueAt !== undefined &&
+      (typeof activity.dueAt !== 'string' || !isValidDate(activity.dueAt))) ||
+    (activity.needsSettlement !== undefined &&
+      typeof activity.needsSettlement !== 'boolean') ||
     !isFiniteNumber(activity.creditedCoins) ||
     !isFiniteNumber(activity.entitledCoins) ||
     !isFiniteNumber(activity.pendingCoins) ||
-    !isFiniteNumber(activity.totals?.steps) ||
-    !isFiniteNumber(activity.totals?.workoutMinutes) ||
-    !isFiniteNumber(activity.totals?.meditationMinutes) ||
-    !isFiniteNumber(activity.totals?.entitledCoins) ||
-    !isFiniteNumber(activity.totals?.breakdown?.steps) ||
-    !isFiniteNumber(activity.totals?.breakdown?.workout) ||
-    !isFiniteNumber(activity.totals?.breakdown?.meditation) ||
-    !isFiniteNumber(activity.totals?.breakdown?.waterCheckin) ||
-    !isFiniteNumber(activity.totals?.breakdown?.sleepCheckin) ||
+    (activity.totals !== undefined &&
+      (!isFiniteNumber(activity.totals.steps) ||
+        !isFiniteNumber(activity.totals.workoutMinutes) ||
+        !isFiniteNumber(activity.totals.meditationMinutes) ||
+        !isFiniteNumber(activity.totals.entitledCoins) ||
+        !isFiniteNumber(activity.totals.breakdown?.steps) ||
+        !isFiniteNumber(activity.totals.breakdown?.workout) ||
+        !isFiniteNumber(activity.totals.breakdown?.meditation) ||
+        !isFiniteNumber(activity.totals.breakdown?.waterCheckin) ||
+        !isFiniteNumber(activity.totals.breakdown?.sleepCheckin))) ||
     !isFiniteNumber(activity.rules.dailyCap) ||
     !isFiniteNumber(activity.rules.stepsPerTier) ||
     !isFiniteNumber(activity.rules.stepTierCoins) ||

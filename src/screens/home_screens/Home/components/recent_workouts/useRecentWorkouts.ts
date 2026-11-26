@@ -324,6 +324,7 @@ export const useRecentWorkouts = (healthRefreshKey?: number) => {
   const [expandedCards, setExpandedCards] = useState<Record<string, boolean>>(
     {},
   );
+  const lastPageRequestAtRef = useRef<Record<number, number>>({});
 
   const toggleExpand = (cardId: string) => {
     setExpandedCards(prev => ({
@@ -333,7 +334,15 @@ export const useRecentWorkouts = (healthRefreshKey?: number) => {
   };
 
   const loadRecords = useCallback(
-    async (targetPage: number = 1) => {
+    async (targetPage: number = 1, force = false) => {
+      const now = Date.now();
+      const lastRequestedAt = lastPageRequestAtRef.current[targetPage] || 0;
+      // Avoid repeating the same request when users quickly switch app tabs.
+      if (!force && now - lastRequestedAt < 15_000) {
+        return;
+      }
+      lastPageRequestAtRef.current[targetPage] = now;
+
       try {
         if (targetPage > 1) {
           setLoadingMore(true);
@@ -401,9 +410,8 @@ export const useRecentWorkouts = (healthRefreshKey?: number) => {
       if (isFocused) {
         if (page !== 1) {
           setPage(1);
-        } else {
-          loadRecords(1);
         }
+        loadRecords(1, true);
       }
     }
   }, [isFocused, healthRefreshKey, page, loadRecords]);
@@ -417,9 +425,8 @@ export const useRecentWorkouts = (healthRefreshKey?: number) => {
       () => {
         if (pageRef.current !== 1) {
           setPage(1);
-        } else {
-          loadRecords(1);
         }
+        loadRecords(1, true);
       },
     );
     return () => {

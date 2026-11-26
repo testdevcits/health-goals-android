@@ -12,7 +12,7 @@ interface DailyActivityData {
   pendingCoins: number;
   entitledCoins: number;
   needsSettlement?: boolean;
-  dueAt: string;
+  dueAt?: string;
 }
 
 interface DailyActivityCardProps {
@@ -100,7 +100,7 @@ export const DailyActivityCard: React.FC<DailyActivityCardProps> = ({
           </AppText>
         </View>
       </View>
-      {dailyActivity.needsSettlement ? (
+      {dailyActivity.needsSettlement && dailyActivity.dueAt ? (
         <AppText variant="caption" secondary>
           Points are awaiting settlement. Expected by{' '}
           {new Date(dailyActivity.dueAt).toLocaleTimeString(undefined, {

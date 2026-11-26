@@ -98,7 +98,7 @@ const HomeHeader: React.FC = () => {
           ) : null}
         </TouchableOpacity>
         <Pressable
-          onPress={() => navigation.navigate('Profile' as never)}
+          onPress={() => navigation.navigate('ProfileTab' as never)}
           style={styles.avatar}
           accessibilityRole="button"
           accessibilityLabel={`Profile${fullName ? ` for ${fullName}` : ''}`}

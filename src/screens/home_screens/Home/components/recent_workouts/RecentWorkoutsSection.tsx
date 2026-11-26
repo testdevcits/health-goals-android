@@ -52,6 +52,22 @@ const RecentWorkoutsSection: React.FC<RecentWorkoutsSectionProps> = ({
     return filteredGroups.filter(g => g.dateKey === selectedDateKey);
   }, [displayedGroups, filteredGroups, selectedDateKey]);
 
+  const groupsForSelectedDate = useMemo(
+    () =>
+      selectedDateKey
+        ? groupedActivities.filter(group => group.dateKey === selectedDateKey)
+        : groupedActivities,
+    [groupedActivities, selectedDateKey],
+  );
+
+  const handleSelectTab = useCallback(
+    (tab: typeof activeTab) => {
+      setSelectedDateKey(null);
+      setActiveTab(tab);
+    },
+    [setActiveTab],
+  );
+
   const handleNavigateWorkout = useCallback(
     (activityId?: string) => {
       navigation.navigate(
@@ -133,10 +149,14 @@ const RecentWorkoutsSection: React.FC<RecentWorkoutsSectionProps> = ({
 
       <WorkoutFilterTabs
         activeTab={activeTab}
-        allCount={groupedActivities.length}
-        workoutCount={workoutGroupCount}
-        dailyCount={dailyGroupCount}
-        onSelectTab={setActiveTab}
+        allCount={selectedDateKey ? groupsForSelectedDate.length : groupedActivities.length}
+        workoutCount={selectedDateKey
+          ? groupsForSelectedDate.filter(group => group.isWorkout).length
+          : workoutGroupCount}
+        dailyCount={selectedDateKey
+          ? groupsForSelectedDate.filter(group => !group.isWorkout).length
+          : dailyGroupCount}
+        onSelectTab={handleSelectTab}
       />
 
       {loading ? (
@@ -164,7 +184,7 @@ const RecentWorkoutsSection: React.FC<RecentWorkoutsSectionProps> = ({
             />
           </AppShimmer>
         </View>
-      ) : filteredGroups.length === 0 ? (
+      ) : visibleGroups.length === 0 ? (
         <EmptyWorkoutsView
           activeTab={activeTab}
           onStartWorkout={() => handleNavigateWorkout()}
