@@ -11,10 +11,28 @@ const sessionExpiredListeners = new Set<() => void>();
 export type AuthTokens = {
   accessToken: string;
   refreshToken: string;
+  token?: string;
+  sessionExpiresAt?: number;
+  accessTokenExpiresAt?: number;
   user: UserProfile;
 };
 
-type ApiResult<T> = { data: T };
+type ApiResult<T> = { data: T; message?: string; success?: boolean };
+
+function normalizeAuthPayload(
+  raw: any,
+  fallbackUser?: UserProfile,
+): AuthTokens {
+  const user = (raw.user && typeof raw.user === 'object') ? raw.user : fallbackUser;
+  const accessToken = raw.accessToken || raw.token || '';
+  const refreshToken = raw.refreshToken || '';
+  return {
+    ...raw,
+    accessToken,
+    refreshToken,
+    user: user as UserProfile,
+  };
+}
 
 async function saveTokens(
   data: AuthTokens,
@@ -70,14 +88,14 @@ export async function requestRegistration(
 }
 
 export async function verifyEmailCode(challengeId: string, otp: string) {
-  const response = await api.post<ApiResult<AuthTokens>>(
+  const response = await api.post<ApiResult<any>>(
     API_ENDPOINTS.AUTH.VERIFY_OTP,
     {
       challengeId,
       otp,
     },
   );
-  return saveTokens(response.data.data, true);
+  return saveTokens(normalizeAuthPayload(response.data.data), true);
 }
 
 export async function requestPasswordReset(email: string) {
@@ -114,13 +132,13 @@ export async function changePassword(
 }
 
 export async function signInWithGoogle(idToken: string) {
-  const response = await api.post<ApiResult<AuthTokens>>(
+  const response = await api.post<ApiResult<any>>(
     API_ENDPOINTS.AUTH.GOOGLE_SIGN_IN,
     {
       idToken,
     },
   );
-  return saveTokens(response.data.data, true);
+  return saveTokens(normalizeAuthPayload(response.data.data), true);
 }
 
 export async function readSession(): Promise<AuthTokens | null> {
@@ -140,13 +158,16 @@ export async function restoreSession(): Promise<AuthTokens | null> {
   const session = await readSession();
   if (!session?.refreshToken) return null;
   try {
-    const response = await api.post<ApiResult<AuthTokens>>(
+    const response = await api.post<ApiResult<any>>(
       API_ENDPOINTS.AUTH.REFRESH_TOKEN,
       {
         refreshToken: session.refreshToken,
       },
     );
-    const refreshed = response.data.data;
+    const refreshed = normalizeAuthPayload(
+      response.data.data,
+      session.user,
+    );
     const profile = await api.get<ApiResult<{ user: UserProfile }>>(
       API_ENDPOINTS.AUTH.ME,
       {
@@ -243,13 +264,17 @@ async function refreshSessionOnce(): Promise<AuthTokens | null> {
   const session = await readSession();
   if (!session?.refreshToken) return null;
   try {
-    const response = await api.post<ApiResult<AuthTokens>>(
+    const response = await api.post<ApiResult<any>>(
       API_ENDPOINTS.AUTH.REFRESH_TOKEN,
       {
         refreshToken: session.refreshToken,
       },
     );
-    return saveTokens({ ...response.data.data, user: session.user });
+    const refreshed = normalizeAuthPayload(
+      response.data.data,
+      session.user,
+    );
+    return saveTokens(refreshed);
   } catch (error) {
     await clearSession();
     if (isExpiredTokenResponse(error)) {
