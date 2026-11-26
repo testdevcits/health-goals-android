@@ -2,7 +2,7 @@
 import React from 'react';
 import {
   View,
-  Text,
+  Image,
   ScrollView,
   TouchableOpacity,
   KeyboardAvoidingView,
@@ -21,6 +21,8 @@ import {
 import { createRegisterStyles } from './styles.Register';
 
 import useRegister, { GOAL_OPTIONS } from './useRegister';
+
+const AppIconImage = require('../../../assets/images/appicon.png');
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Register'>;
 
@@ -55,7 +57,8 @@ const RegisterScreen: React.FC<Props> = ({ navigation }) => {
   return (
     <KeyboardAvoidingView
       style={styles.keyboardView}
-      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      keyboardVerticalOffset={0}
     >
       <ScrollView
         contentContainerStyle={[styles.scroll, styles.scrollContent]}
@@ -65,7 +68,7 @@ const RegisterScreen: React.FC<Props> = ({ navigation }) => {
         {/* ── Logo ── */}
         <View style={styles.header}>
           <View style={styles.iconBox}>
-            <Text style={styles.iconEmoji}>💚</Text>
+            <Image source={AppIconImage} style={styles.appIconImage} />
           </View>
           <AppText variant="h2" center mb={4}>
             Join Vitality
@@ -170,7 +173,10 @@ const RegisterScreen: React.FC<Props> = ({ navigation }) => {
                 <AppText variant="body2" secondary>
                   I agree to the{' '}
                 </AppText>
-                <TouchableOpacity onPress={() => {}}>
+                <TouchableOpacity
+                  onPress={() => navigation.navigate('TermsOfService')}
+                  accessibilityRole="link"
+                >
                   <AppText variant="body2" link>
                     Terms of Service
                   </AppText>
@@ -179,7 +185,10 @@ const RegisterScreen: React.FC<Props> = ({ navigation }) => {
                   {' '}
                   and{' '}
                 </AppText>
-                <TouchableOpacity onPress={() => {}}>
+                <TouchableOpacity
+                  onPress={() => navigation.navigate('PrivacyPolicy')}
+                  accessibilityRole="link"
+                >
                   <AppText variant="body2" link>
                     Privacy Policy
                   </AppText>

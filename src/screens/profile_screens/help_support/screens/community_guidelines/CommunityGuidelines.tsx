@@ -1,13 +1,11 @@
 import React from 'react';
 import { ScrollView, StatusBar, View } from 'react-native';
-import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { AppButton, AppHeader, AppText } from '../../../../../components';
 import AppIcon from '../../../../../assets/appicon/AppIcon';
-import type { RootStackParamList } from '../../../../../navigations/ProfileStack';
 import { useTheme } from '../../../../../theme/useTheme';
 import { createCommunityGuidelinesStyles } from './styles.CommunityGuidelines';
 
-type Props = NativeStackScreenProps<RootStackParamList, 'CommunityGuidelines'>;
+type Props = { navigation: { goBack: () => void } };
 
 const GUIDELINE_PILLARS = [
   {
@@ -42,14 +40,16 @@ const CommunityGuidelines: React.FC<Props> = ({ navigation }) => {
 
   return (
     <View style={styles.container}>
-      <StatusBar
+      {/* <StatusBar
         barStyle={theme.isDark ? 'light-content' : 'dark-content'}
         backgroundColor={theme.colors.background}
-      />
+      /> */}
       <AppHeader
         title="Community Guidelines"
         subtitle="Our shared values and expectations"
         onBackPress={() => navigation.goBack()}
+        showNotifications={false}
+        showProfile={false}
       />
 
       <ScrollView

@@ -38,8 +38,10 @@ export const createRegisterStyles = (theme: AppTheme) => {
       shadowRadius: 12,
       shadowOffset: { width: 0, height: 4 },
     },
-    iconEmoji: {
-      fontSize: theme.typography.display.fontSize,
+    appIconImage: {
+      width: 56,
+      height: 56,
+      resizeMode: 'contain',
     },
     // ── Form ────────────────────────────────────
     formSection: {

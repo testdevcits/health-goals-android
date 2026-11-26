@@ -18,6 +18,8 @@ import { createLoginStyles } from './styles.Login';
 
 import useLogin from './useLogin';
 
+const AppIconImage = require('../../../assets/images/appicon.png');
+
 type Props = NativeStackScreenProps<RootStackParamList, 'Login'>;
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -53,7 +55,7 @@ const LoginScreen: React.FC<Props> = ({ navigation }) => {
         {/* ── Logo & Title ── */}
         <View style={styles.header}>
           <View style={styles.iconBox}>
-            <Text style={styles.iconEmoji}>💚</Text>
+            <Image source={AppIconImage} style={styles.appIconImage} />
           </View>
           <AppText variant="h2" center mb={4}>
             Vitality

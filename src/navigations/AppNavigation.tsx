@@ -22,6 +22,8 @@ import { useTheme } from '../theme/useTheme';
 import { spacing } from '../theme/spacing';
 import AppIcon from '../assets/appicon/AppIcon';
 import SessionExpiredModal from '../components/common/session_expired_modal/SessionExpiredModal';
+import PrivacyPolicyScreen from '../screens/profile_screens/privacy_policy/PrivacyPolicyScreen';
+import CommunityGuidelines from '../screens/profile_screens/help_support/screens/community_guidelines/CommunityGuidelines';
 import { clearProfile } from '../store/profileSlice';
 import { clearNotifications } from '../store/notificationSlice';
 import { clearWallet } from '../store/walletSlice';
@@ -51,6 +53,8 @@ export type RootStackParamList = {
   };
   MainTabNavigation: undefined;
   Notifications: undefined;
+  PrivacyPolicy: undefined;
+  TermsOfService: undefined;
 };
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
@@ -217,6 +221,8 @@ const AppNavigation = () => {
             component={Notifications}
             options={{ animation: 'slide_from_bottom' }}
           />
+          <Stack.Screen name="PrivacyPolicy" component={PrivacyPolicyScreen} />
+          <Stack.Screen name="TermsOfService" component={CommunityGuidelines} />
         </Stack.Navigator>
       </NavigationContainer>
       <SessionExpiredModal

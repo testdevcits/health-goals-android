@@ -1,12 +1,10 @@
 import React from 'react';
 import { ScrollView, StatusBar, View } from 'react-native';
-import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { AppButton, AppHeader, AppText } from '../../../components';
-import type { RootStackParamList } from '../../../navigations/ProfileStack';
 import { useTheme } from '../../../theme/useTheme';
 import { createPrivacyPolicyStyles } from './styles.PrivacyPolicy';
 
-type Props = NativeStackScreenProps<RootStackParamList, 'PrivacyPolicy'>;
+type Props = { navigation: { goBack: () => void } };
 
 const PRIVACY_SECTIONS = [
   {
@@ -59,14 +57,16 @@ const PrivacyPolicyScreen: React.FC<Props> = ({ navigation }) => {
 
   return (
     <View style={styles.container}>
-      <StatusBar
+      {/* <StatusBar
         barStyle={theme.isDark ? 'light-content' : 'dark-content'}
         backgroundColor={theme.colors.background}
-      />
+      /> */}
       <AppHeader
         title="Privacy Policy"
         subtitle="How we protect and respect your data"
         onBackPress={() => navigation.goBack()}
+        showNotifications={false}
+        showProfile={false}
       />
 
       <ScrollView
