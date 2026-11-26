@@ -1,4 +1,8 @@
-import { createAsyncThunk, createSlice, type PayloadAction } from '@reduxjs/toolkit';
+import {
+  createAsyncThunk,
+  createSlice,
+  type PayloadAction,
+} from '@reduxjs/toolkit';
 import { authenticatedRequest } from '../services/authenticatedApi';
 import { API_ENDPOINTS } from '../constants';
 import { apiErrorMessage } from '../services/api';
@@ -45,7 +49,12 @@ export const fetchNotifications = createAsyncThunk<
   const CACHE_TTL_MS = 60 * 1000; // 1 minute cache TTL
 
   // If not forced and recently fetched (within 1 min), return current state
-  if (!params?.force && lastFetchedAt && now - lastFetchedAt < CACHE_TTL_MS && items.length > 0) {
+  if (
+    !params?.force &&
+    lastFetchedAt &&
+    now - lastFetchedAt < CACHE_TTL_MS &&
+    items.length > 0
+  ) {
     const unreadCount = items.filter(item => !item.read).length;
     return { items, unreadCount };
   }
@@ -86,7 +95,10 @@ export const markAllNotificationsAsRead = createAsyncThunk<
   { rejectValue: string }
 >('notifications/markAllAsRead', async (_, { rejectWithValue }) => {
   try {
-    await authenticatedRequest('PATCH', API_ENDPOINTS.NOTIFICATIONS.MARK_ALL_READ);
+    await authenticatedRequest(
+      'PATCH',
+      API_ENDPOINTS.NOTIFICATIONS.MARK_ALL_READ,
+    );
   } catch (error) {
     return rejectWithValue(apiErrorMessage(error));
   }
@@ -100,7 +112,10 @@ const notificationSlice = createSlice({
   reducers: {
     setNotifications(
       state,
-      action: PayloadAction<{ items: NotificationItem[]; unreadCount?: number }>,
+      action: PayloadAction<{
+        items: NotificationItem[];
+        unreadCount?: number;
+      }>,
     ) {
       state.items = action.payload.items;
       state.unreadCount =

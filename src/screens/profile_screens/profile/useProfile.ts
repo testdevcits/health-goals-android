@@ -45,7 +45,10 @@ export default function useProfile(
     if (!isFocused) return;
     const now = Date.now();
     // Cache for 20 seconds to prevent re-fetching on quick tab switching
-    if (lastFetchedProfileRef.current > 0 && now - lastFetchedProfileRef.current < 20000) {
+    if (
+      lastFetchedProfileRef.current > 0 &&
+      now - lastFetchedProfileRef.current < 20000
+    ) {
       return;
     }
     lastFetchedProfileRef.current = now;

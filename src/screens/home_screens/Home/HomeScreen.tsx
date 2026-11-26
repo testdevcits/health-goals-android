@@ -1,4 +1,12 @@
-import React, { lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import React, {
+  lazy,
+  Suspense,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
 import {
   AppState,
   DeviceEventEmitter,
@@ -171,8 +179,7 @@ const HomeScreen: React.FC<Props> = ({ navigation }) => {
       const { layoutMeasurement, contentOffset, contentSize } =
         event.nativeEvent;
       const isCloseToBottom =
-        layoutMeasurement.height + contentOffset.y >=
-        contentSize.height - 180;
+        layoutMeasurement.height + contentOffset.y >= contentSize.height - 180;
       if (isCloseToBottom) {
         const now = Date.now();
         if (now - lastBottomTriggerRef.current > 1200) {

@@ -43,7 +43,10 @@ const ProfileTabIcon = ({ color, size }: TabIconProps) => (
 
 const MainTabNavigation = () => {
   const { theme } = useTheme();
-  const styles = React.useMemo(() => createStyles(theme.colors), [theme.colors]);
+  const styles = React.useMemo(
+    () => createStyles(theme.colors),
+    [theme.colors],
+  );
 
   return (
     <Tab.Navigator

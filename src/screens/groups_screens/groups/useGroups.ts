@@ -16,39 +16,46 @@ const useGroups = () => {
   const [loadError, setLoadError] = useState('');
   const lastFetchedRef = useRef<Record<string, number>>({});
 
-  const refresh = useCallback(async (force = false) => {
-    const now = Date.now();
-    // Cache per activeTab for 15 seconds to prevent tab freezing
-    if (!force && lastFetchedRef.current[activeTab] && now - lastFetchedRef.current[activeTab] < 15000) {
-      return;
-    }
-    lastFetchedRef.current[activeTab] = now;
-    setLoading(true);
-    setLoadError('');
-    try {
-      if (activeTab === 'Feed') {
-        const feedResult = await authenticatedRequest<{ posts: FeedPost[] }>(
-          'GET',
-          API_ENDPOINTS.COMMUNITY.FEED,
-        );
-        setPosts(feedResult.posts || []);
-      } else {
-        const groupResult = await authenticatedRequest<{ groups: Group[] }>(
-          'GET',
-          activeTab === 'Discover'
-            ? API_ENDPOINTS.COMMUNITY.DISCOVER_GROUPS
-            : API_ENDPOINTS.COMMUNITY.GROUPS,
-        );
-        setGroups(groupResult.groups || []);
+  const refresh = useCallback(
+    async (force = false) => {
+      const now = Date.now();
+      // Cache per activeTab for 15 seconds to prevent tab freezing
+      if (
+        !force &&
+        lastFetchedRef.current[activeTab] &&
+        now - lastFetchedRef.current[activeTab] < 15000
+      ) {
+        return;
       }
-    } catch (error) {
-      const message = apiErrorMessage(error);
-      setLoadError(message);
-      showAppToast('error', 'Could not load community', message);
-    } finally {
-      setLoading(false);
-    }
-  }, [activeTab]);
+      lastFetchedRef.current[activeTab] = now;
+      setLoading(true);
+      setLoadError('');
+      try {
+        if (activeTab === 'Feed') {
+          const feedResult = await authenticatedRequest<{ posts: FeedPost[] }>(
+            'GET',
+            API_ENDPOINTS.COMMUNITY.FEED,
+          );
+          setPosts(feedResult.posts || []);
+        } else {
+          const groupResult = await authenticatedRequest<{ groups: Group[] }>(
+            'GET',
+            activeTab === 'Discover'
+              ? API_ENDPOINTS.COMMUNITY.DISCOVER_GROUPS
+              : API_ENDPOINTS.COMMUNITY.GROUPS,
+          );
+          setGroups(groupResult.groups || []);
+        }
+      } catch (error) {
+        const message = apiErrorMessage(error);
+        setLoadError(message);
+        showAppToast('error', 'Could not load community', message);
+      } finally {
+        setLoading(false);
+      }
+    },
+    [activeTab],
+  );
   useFocusEffect(
     useCallback(() => {
       void refresh();

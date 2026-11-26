@@ -315,7 +315,9 @@ const notifyWatchListeners = () => {
   });
 };
 
-export default function useConnectedDevices(options?: { skipHealthConnectCheck?: boolean }) {
+export default function useConnectedDevices(options?: {
+  skipHealthConnectCheck?: boolean;
+}) {
   const skipHealthConnect = options?.skipHealthConnectCheck ?? false;
   const bleManager = useMemo(() => getBleManager(), []);
   const [bluetoothState, setBluetoothState] = useState<BluetoothState>(

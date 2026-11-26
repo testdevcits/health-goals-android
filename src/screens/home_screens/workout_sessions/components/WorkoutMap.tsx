@@ -1,11 +1,12 @@
 import React, { memo, useRef, useEffect, useState, useMemo } from 'react';
-import {
-  View,
-  StyleSheet,
-  TouchableOpacity,
-  Platform,
-} from 'react-native';
-import MapView, { Marker, Polyline, UrlTile, type LatLng, type Region } from 'react-native-maps';
+import { View, StyleSheet, TouchableOpacity, Platform } from 'react-native';
+import MapView, {
+  Marker,
+  Polyline,
+  UrlTile,
+  type LatLng,
+  type Region,
+} from 'react-native-maps';
 import { Navigation, Locate, Eye, EyeOff } from 'lucide-react-native';
 import { AppText } from '../../../../components';
 import { spacing } from '../../../../theme/spacing';
@@ -127,7 +128,9 @@ export const WorkoutMap: React.FC<WorkoutMapProps> = ({
           paddingHorizontal: spacing.xs,
           paddingVertical: 2,
           borderRadius: radius.full,
-          backgroundColor: isTracking ? colors.primaryLight : colors.surfaceSecondary,
+          backgroundColor: isTracking
+            ? colors.primaryLight
+            : colors.surfaceSecondary,
         },
         statusDot: {
           width: 6,
@@ -217,7 +220,9 @@ export const WorkoutMap: React.FC<WorkoutMapProps> = ({
             <View
               style={[
                 dynamicStyles.statusDot,
-                isAutoPaused && { backgroundColor: colors.warning || '#f59e0b' },
+                isAutoPaused && {
+                  backgroundColor: colors.warning || '#f59e0b',
+                },
               ]}
             />
             <AppText

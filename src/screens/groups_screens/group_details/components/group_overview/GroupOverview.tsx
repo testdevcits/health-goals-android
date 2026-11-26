@@ -64,5 +64,3 @@ export const GroupOverview: React.FC<Props> = memo(
 
 export { GoalCard, WeeklyChart, MemberRow, MemberAvatar };
 export default GroupOverview;
-
-

@@ -249,11 +249,18 @@ export default function useWorkoutSession(
               initialStationaryAlertShownRef.current = false;
 
               // Accumulate real measured GPS distance when moving
-              if (lastPositionRef.current && distanceDelta >= 2 && distanceDelta < 150) {
+              if (
+                lastPositionRef.current &&
+                distanceDelta >= 2 &&
+                distanceDelta < 150
+              ) {
                 setGpsDistanceMeters(prev => prev + distanceDelta);
               }
 
-              lastPositionRef.current = { latitude: currentLat, longitude: currentLon };
+              lastPositionRef.current = {
+                latitude: currentLat,
+                longitude: currentLon,
+              };
 
               // Unpause smoothly if auto-paused
               if (isAutoPausedRef.current && movingCountRef.current >= 1) {
@@ -343,10 +350,16 @@ export default function useWorkoutSession(
 
     return () => {
       isMounted = false;
-      if (locationSubscription && typeof locationSubscription.remove === 'function') {
+      if (
+        locationSubscription &&
+        typeof locationSubscription.remove === 'function'
+      ) {
         locationSubscription.remove();
       }
-      if (motionSubscription && typeof motionSubscription.remove === 'function') {
+      if (
+        motionSubscription &&
+        typeof motionSubscription.remove === 'function'
+      ) {
         motionSubscription.remove();
       }
     };
@@ -377,7 +390,9 @@ export default function useWorkoutSession(
       return Math.floor(movingMinutes * currentActivity.caloriesPerMinute);
     }
     // Indoor activities (e.g. Yoga, Strength, HIIT, Swimming): based on active elapsed time
-    return Math.floor((elapsedSeconds / 60) * currentActivity.caloriesPerMinute);
+    return Math.floor(
+      (elapsedSeconds / 60) * currentActivity.caloriesPerMinute,
+    );
   })();
 
   // Keep shared workout store metrics in sync so LiveWorkoutCard mirrors real-time distance and calories

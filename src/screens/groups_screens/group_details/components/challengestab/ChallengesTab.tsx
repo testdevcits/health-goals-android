@@ -73,7 +73,6 @@ const ChallengesTab: React.FC<ChallengesTabProps> = ({
         ))
       )}
 
-
       <Pressable
         accessibilityRole="button"
         accessibilityLabel="Create New Challenge"
@@ -82,7 +81,6 @@ const ChallengesTab: React.FC<ChallengesTabProps> = ({
       >
         <AppText style={styles.newChallengeText}>+ New Challenge</AppText>
       </Pressable>
-
     </View>
   );
 };

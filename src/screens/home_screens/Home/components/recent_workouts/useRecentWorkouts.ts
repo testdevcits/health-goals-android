@@ -346,14 +346,19 @@ export const useRecentWorkouts = (healthRefreshKey?: number) => {
       try {
         if (targetPage > 1) {
           setLoadingMore(true);
-          const response = await fetchSyncedHealthRecordsPage(targetPage, limit);
+          const response = await fetchSyncedHealthRecordsPage(
+            targetPage,
+            limit,
+          );
           const newRecords = response.records;
           setHasMore(response.hasMore);
           setNextPage(response.nextPage);
 
           setAllRecords(prev => {
             const seenIds = new Set(prev.map(r => r.id));
-            const toAppend = newRecords.filter(r => !r.id || !seenIds.has(r.id));
+            const toAppend = newRecords.filter(
+              r => !r.id || !seenIds.has(r.id),
+            );
             const combined = [...prev, ...toAppend];
             if (combined.length > 0) {
               storageService.setObject(CACHE_KEY_SYNCED_RECORDS, combined);
@@ -377,7 +382,10 @@ export const useRecentWorkouts = (healthRefreshKey?: number) => {
             // Fallback to single page if fetchAll returned empty
             const response = await fetchSyncedHealthRecordsPage(1, limit);
             if (response.records.length > 0) {
-              storageService.setObject(CACHE_KEY_SYNCED_RECORDS, response.records);
+              storageService.setObject(
+                CACHE_KEY_SYNCED_RECORDS,
+                response.records,
+              );
               setAllRecords(response.records);
             }
             setHasMore(response.hasMore);

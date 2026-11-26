@@ -52,8 +52,15 @@ export async function syncPhoneProfile(): Promise<string> {
     };
     const phone = {
       deviceIdentifier: deviceIdentifier.slice(0, 160),
-      manufacturer: (constants.Manufacturer || constants.Brand || 'Unknown').slice(0, 160),
-      brand: (constants.Brand || constants.Manufacturer || 'Unknown').slice(0, 160),
+      manufacturer: (
+        constants.Manufacturer ||
+        constants.Brand ||
+        'Unknown'
+      ).slice(0, 160),
+      brand: (constants.Brand || constants.Manufacturer || 'Unknown').slice(
+        0,
+        160,
+      ),
       model: (constants.Model || 'Unknown Android model').slice(0, 160),
       platform: 'android' as const,
       osVersion: `Android ${constants.Release || Platform.Version} (API ${
@@ -76,22 +83,18 @@ export async function syncPhoneProfile(): Promise<string> {
       response.warning.trim().length > 0
     ) {
       setTimeout(() => {
-        Alert.alert(
-          'Shared Device Notice',
-          response.warning as string,
-          [{ text: 'OK', style: 'default' }],
-        );
+        Alert.alert('Shared Device Notice', response.warning as string, [
+          { text: 'OK', style: 'default' },
+        ]);
       }, 100);
     } else if (
       typeof warningMessage === 'string' &&
       warningMessage.toLowerCase().includes('associated with another account')
     ) {
       setTimeout(() => {
-        Alert.alert(
-          'Shared Device Notice',
-          warningMessage,
-          [{ text: 'OK', style: 'default' }],
-        );
+        Alert.alert('Shared Device Notice', warningMessage, [
+          { text: 'OK', style: 'default' },
+        ]);
       }, 100);
     }
     return deviceIdentifier;
@@ -135,7 +138,11 @@ export async function ensureHealthConnectDevice(): Promise<string> {
       }>('POST', API_ENDPOINTS.DEVICES.REGISTER, {
         deviceType: 'phone',
         deviceIdentifier,
-        manufacturer: (constants.Manufacturer || constants.Brand || 'Unknown').slice(0, 160),
+        manufacturer: (
+          constants.Manufacturer ||
+          constants.Brand ||
+          'Unknown'
+        ).slice(0, 160),
         model: (constants.Model || 'Unknown Android model').slice(0, 160),
         platform: 'android',
       });
@@ -149,22 +156,18 @@ export async function ensureHealthConnectDevice(): Promise<string> {
         created.warning.trim().length > 0
       ) {
         setTimeout(() => {
-          Alert.alert(
-            'Shared Device Notice',
-            created.warning as string,
-            [{ text: 'OK', style: 'default' }],
-          );
+          Alert.alert('Shared Device Notice', created.warning as string, [
+            { text: 'OK', style: 'default' },
+          ]);
         }, 100);
       } else if (
         typeof warningMessage === 'string' &&
         warningMessage.toLowerCase().includes('associated with another account')
       ) {
         setTimeout(() => {
-          Alert.alert(
-            'Shared Device Notice',
-            warningMessage,
-            [{ text: 'OK', style: 'default' }],
-          );
+          Alert.alert('Shared Device Notice', warningMessage, [
+            { text: 'OK', style: 'default' },
+          ]);
         }, 100);
       }
       if (!created.device?.id) {

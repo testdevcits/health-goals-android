@@ -1,5 +1,13 @@
-import { createAsyncThunk, createSlice, type PayloadAction } from '@reduxjs/toolkit';
-import { fetchWallet, type Wallet, type DailyActivity } from '../services/wallet';
+import {
+  createAsyncThunk,
+  createSlice,
+  type PayloadAction,
+} from '@reduxjs/toolkit';
+import {
+  fetchWallet,
+  type Wallet,
+  type DailyActivity,
+} from '../services/wallet';
 import { apiErrorMessage } from '../services/api';
 
 export type WalletState = {
@@ -32,7 +40,13 @@ export const getWalletData = createAsyncThunk<
   const CACHE_TTL_MS = 60 * 1000; // 1-minute TTL cache
 
   // Use cached data if not forced and still fresh
-  if (!params?.force && lastFetchedAt && now - lastFetchedAt < CACHE_TTL_MS && wallet && dailyActivity) {
+  if (
+    !params?.force &&
+    lastFetchedAt &&
+    now - lastFetchedAt < CACHE_TTL_MS &&
+    wallet &&
+    dailyActivity
+  ) {
     return { wallet, dailyActivity };
   }
 

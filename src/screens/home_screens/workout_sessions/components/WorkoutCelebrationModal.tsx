@@ -44,11 +44,15 @@ export const WorkoutCelebrationModal: React.FC<Props> = ({
 
   const handleShare = async () => {
     try {
-      const shareMessage = `🔥 I just crushed a ${data?.activityName
-        } workout on Vitality!\n\n⏱️ Duration: ${formatTime(
-          data?.durationSeconds,
-        )}\n🔥 Calories: ${data?.calories} kcal${data?.distanceKm > 0 ? `\n📍 Distance: ${data?.distanceKm.toFixed(2)} km` : ''
-        }\n\nTrack your fitness with me on Vitality! 🏃‍♂️💪`;
+      const shareMessage = `🔥 I just crushed a ${
+        data?.activityName
+      } workout on Vitality!\n\n⏱️ Duration: ${formatTime(
+        data?.durationSeconds,
+      )}\n🔥 Calories: ${data?.calories} kcal${
+        data?.distanceKm > 0
+          ? `\n📍 Distance: ${data?.distanceKm.toFixed(2)} km`
+          : ''
+      }\n\nTrack your fitness with me on Vitality! 🏃‍♂️💪`;
 
       await Share.share({
         message: shareMessage,
@@ -104,14 +108,17 @@ export const WorkoutCelebrationModal: React.FC<Props> = ({
               { backgroundColor: colors.primaryLight },
             ]}
           >
-            <AppText variant='body1' style={styles.activityEmoji}>{data?.activityEmoji}</AppText>
+            <AppText variant="body1" style={styles.activityEmoji}>
+              {data?.activityEmoji}
+            </AppText>
           </View>
 
           <AppText variant="h2" center bold mt={spacing.md}>
             Workout Completed!
           </AppText>
           <AppText variant="body2" secondary center mt={spacing.xs}>
-            Great job! Your {data?.activityName.toLowerCase()} session has been saved.
+            Great job! Your {data?.activityName.toLowerCase()} session has been
+            saved.
           </AppText>
 
           {/* Stats Grid */}
@@ -141,7 +148,10 @@ export const WorkoutCelebrationModal: React.FC<Props> = ({
             </View>
 
             <View
-              style={[styles.verticalDivider, { backgroundColor: colors.border }]}
+              style={[
+                styles.verticalDivider,
+                { backgroundColor: colors.border },
+              ]}
             />
 
             {/* Calories */}
@@ -263,9 +273,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  activityEmoji: {
-
-  },
+  activityEmoji: {},
   statsGrid: {
     width: '100%',
     flexDirection: 'row',

@@ -2,7 +2,10 @@ import React, { useState } from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
 import { AppText } from '../../../../../components';
 import { useTheme } from '../../../../../theme/useTheme';
-import { recentHealthDayLabels, recentIstDates } from '../../../../../utils/healthDates';
+import {
+  recentHealthDayLabels,
+  recentIstDates,
+} from '../../../../../utils/healthDates';
 import type { GroupedActivityItem } from './useRecentWorkouts';
 
 export interface DayWorkoutStat {
@@ -21,14 +24,14 @@ interface WeeklyWorkoutTrendChartProps {
 
 const BAR_MAX_HEIGHT = 64;
 
-export const WeeklyWorkoutTrendChart: React.FC<WeeklyWorkoutTrendChartProps> = ({
-  groupedActivities,
-  selectedDateKey,
-  onSelectDate,
-}) => {
+export const WeeklyWorkoutTrendChart: React.FC<
+  WeeklyWorkoutTrendChartProps
+> = ({ groupedActivities, selectedDateKey, onSelectDate }) => {
   const { theme } = useTheme();
   const { colors, radius } = theme;
-  const [activeTooltipIndex, setActiveTooltipIndex] = useState<number | null>(null);
+  const [activeTooltipIndex, setActiveTooltipIndex] = useState<number | null>(
+    null,
+  );
 
   const dates = recentIstDates();
   const labels = recentHealthDayLabels();
@@ -63,8 +66,14 @@ export const WeeklyWorkoutTrendChart: React.FC<WeeklyWorkoutTrendChartProps> = (
   });
 
   const maxDuration = Math.max(...weeklyData.map(d => d.durationMins), 30);
-  const totalWeeklyMins = weeklyData.reduce((acc, curr) => acc + curr.durationMins, 0);
-  const totalWeeklyCals = weeklyData.reduce((acc, curr) => acc + curr.calories, 0);
+  const totalWeeklyMins = weeklyData.reduce(
+    (acc, curr) => acc + curr.durationMins,
+    0,
+  );
+  const totalWeeklyCals = weeklyData.reduce(
+    (acc, curr) => acc + curr.calories,
+    0,
+  );
 
   const handleBarPress = (index: number, dateKey: string) => {
     if (selectedDateKey === dateKey) {
@@ -98,7 +107,9 @@ export const WeeklyWorkoutTrendChart: React.FC<WeeklyWorkoutTrendChartProps> = (
           </AppText>
           <AppText variant="subtitle2" bold color="textPrimary" mt={2}>
             {totalWeeklyMins > 0
-              ? `${Math.floor(totalWeeklyMins / 60)}h ${totalWeeklyMins % 60}m Active`
+              ? `${Math.floor(totalWeeklyMins / 60)}h ${
+                  totalWeeklyMins % 60
+                }m Active`
               : 'No workouts this week'}
           </AppText>
         </View>
@@ -112,11 +123,7 @@ export const WeeklyWorkoutTrendChart: React.FC<WeeklyWorkoutTrendChartProps> = (
               ]}
             >
               <AppText variant="caption">🔥</AppText>
-              <AppText
-                variant="caption"
-                bold
-                style={{ color: colors.warning }}
-              >
+              <AppText variant="caption" bold style={{ color: colors.warning }}>
                 {totalWeeklyCals.toLocaleString()} kcal
               </AppText>
             </View>
@@ -241,9 +248,7 @@ export const WeeklyWorkoutTrendChart: React.FC<WeeklyWorkoutTrendChartProps> = (
                 <AppText
                   variant="caption"
                   bold={isSelected || isToday}
-                  color={
-                    isSelected || isToday ? 'primary' : 'textSecondary'
-                  }
+                  color={isSelected || isToday ? 'primary' : 'textSecondary'}
                   style={{ fontSize: 11 }}
                 >
                   {stat.dayLabel}

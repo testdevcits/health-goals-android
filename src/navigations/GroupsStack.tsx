@@ -33,7 +33,6 @@ const GroupsStack = () => {
       <Stack.Screen name="Groups" component={GroupsScreen} />
       <Stack.Screen name="GroupDetails" component={GroupDetailScreen} />
       <Stack.Screen name="GroupSetting" component={GroupSetting} />
-
     </Stack.Navigator>
   );
 };

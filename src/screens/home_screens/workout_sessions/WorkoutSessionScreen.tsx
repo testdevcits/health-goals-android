@@ -158,8 +158,6 @@ const WorkoutSessionScreen: React.FC<Props> = ({ navigation, route }) => {
           />
         </View>
 
-
-
         <WorkoutControls
           isRunning={isRunning}
           hasStarted={hasStarted}

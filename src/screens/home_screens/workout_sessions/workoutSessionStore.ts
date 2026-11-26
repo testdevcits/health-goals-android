@@ -162,7 +162,10 @@ export const resumeWorkoutSession = () =>
     return { ...current, startedAtMilliseconds: Date.now() };
   });
 
-export const updateWorkoutMetrics = (distanceMeters: number, calories: number) =>
+export const updateWorkoutMetrics = (
+  distanceMeters: number,
+  calories: number,
+) =>
   transition(current => {
     if (!current) {
       return current;

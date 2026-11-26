@@ -17,6 +17,7 @@ import {
   QuestionDatePickerModal,
   QuestionHeader,
   QuestionOptionsSelector,
+  VerticalWheelPicker,
   useProfileQuestions,
 } from '../profile_questions';
 import createStyles from './styles.ProfileQuestionsModal';
@@ -121,6 +122,52 @@ const ProfileQuestionsModal: React.FC<{ enabled?: boolean }> = ({
                     <AppIcon name="Calendar" size={18} color={colors.primary} />
                   </Pressable>
                 </View>
+              ) : /height/i.test(currentQuestion.key) ||
+                /height/i.test(currentQuestion.label) ? (
+                <View
+                  style={{ alignItems: 'center', marginVertical: spacing.sm }}
+                >
+                  <AppText variant="caption" secondary style={styles.dateLabel}>
+                    {currentQuestion.required
+                      ? 'Select height (cm)'
+                      : 'Select height (optional)'}
+                  </AppText>
+                  <VerticalWheelPicker
+                    value={answer}
+                    min={120}
+                    max={230}
+                    step={1}
+                    unit="cm"
+                    badgeText="Height"
+                    onChange={val => {
+                      setAnswer(val);
+                      setError('');
+                    }}
+                  />
+                </View>
+              ) : /weight/i.test(currentQuestion.key) ||
+                /weight/i.test(currentQuestion.label) ? (
+                <View
+                  style={{ alignItems: 'center', marginVertical: spacing.sm }}
+                >
+                  <AppText variant="caption" secondary style={styles.dateLabel}>
+                    {currentQuestion.required
+                      ? 'Select weight (kg)'
+                      : 'Select weight (optional)'}
+                  </AppText>
+                  <VerticalWheelPicker
+                    value={answer}
+                    min={35}
+                    max={180}
+                    step={1}
+                    unit="kg"
+                    badgeText="Weight"
+                    onChange={val => {
+                      setAnswer(val);
+                      setError('');
+                    }}
+                  />
+                </View>
               ) : (
                 <AppInput
                   label={
@@ -168,6 +215,7 @@ const ProfileQuestionsModal: React.FC<{ enabled?: boolean }> = ({
                 title={saving ? 'Saving…' : 'Save and continue'}
                 onPress={saveAndContinue}
                 loading={saving}
+                disabled={saving || !answer.trim()}
                 rightIcon={
                   !saving ? (
                     <ChevronRight size={18} color={colors.textInverse} />

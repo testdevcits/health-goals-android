@@ -79,9 +79,7 @@ const useChallenges = () => {
   const unreadNotifications = useAppSelector(
     state => state.notifications.unreadCount,
   );
-  const walletPoints = useAppSelector(
-    state => state.wallet.availablePoints,
-  );
+  const walletPoints = useAppSelector(state => state.wallet.availablePoints);
   const [activeTab, setActiveTab] = useState<ChallengeTab>('Challenges');
   const [challenges, setChallenges] = useState<Challenge[]>([]);
   const [ruleChallenges, setRuleChallenges] = useState<Challenge[]>([]);
@@ -91,201 +89,213 @@ const useChallenges = () => {
   const [loadError, setLoadError] = useState('');
   const lastFetchedRef = useRef(0);
 
-  const refresh = useCallback(async (force = false) => {
-    const now = Date.now();
-    // Cache for 15 seconds to prevent frozen tab transitions when quickly toggling tabs
-    if (!force && lastFetchedRef.current > 0 && now - lastFetchedRef.current < 15000) {
-      return;
-    }
-    lastFetchedRef.current = now;
-    if (lastFetchedRef.current === 0) setLoading(true);
-    setLoadError('');
+  const refresh = useCallback(
+    async (force = false) => {
+      const now = Date.now();
+      // Cache for 15 seconds to prevent frozen tab transitions when quickly toggling tabs
+      if (
+        !force &&
+        lastFetchedRef.current > 0 &&
+        now - lastFetchedRef.current < 15000
+      ) {
+        return;
+      }
+      lastFetchedRef.current = now;
+      if (lastFetchedRef.current === 0) setLoading(true);
+      setLoadError('');
 
-    // Fetch notifications and wallet via Redux store (uses 1-min TTL cache, no redundant network hits)
-    dispatch(fetchNotifications());
-    dispatch(getWalletData());
+      // Fetch notifications and wallet via Redux store (uses 1-min TTL cache, no redundant network hits)
+      dispatch(fetchNotifications());
+      dispatch(getWalletData());
 
-    try {
-      const [
-        challengeResult,
-        badgeResult,
-        competitionResult,
-      ] = await Promise.allSettled([
-        authenticatedRequest<{
-          challenges?: CommunityChallenge[];
-          items?: CommunityChallenge[];
-        }>('GET', API_ENDPOINTS.CHALLENGES.LIST),
-        authenticatedRequest<{ badges: Badge[] }>(
-          'GET',
-          API_ENDPOINTS.CHALLENGES.BADGES,
-        ),
-        authenticatedRequest<{
-          competitions: Competition[];
-          achievements: Achievement[];
-        }>('GET', API_ENDPOINTS.CHALLENGES.RULE_COMPETITIONS),
-      ]);
+      try {
+        const [challengeResult, badgeResult, competitionResult] =
+          await Promise.allSettled([
+            authenticatedRequest<{
+              challenges?: CommunityChallenge[];
+              items?: CommunityChallenge[];
+            }>('GET', API_ENDPOINTS.CHALLENGES.LIST),
+            authenticatedRequest<{ badges: Badge[] }>(
+              'GET',
+              API_ENDPOINTS.CHALLENGES.BADGES,
+            ),
+            authenticatedRequest<{
+              competitions: Competition[];
+              achievements: Achievement[];
+            }>('GET', API_ENDPOINTS.CHALLENGES.RULE_COMPETITIONS),
+          ]);
 
-      if (challengeResult.status === 'fulfilled') {
-        setChallenges(
-          (
-            challengeResult.value.challenges ||
-            challengeResult.value.items ||
-            []
-          ).map(item => {
-            const metric = item?.metric || item?.metricType || 'steps';
-            const currentValue = Number(item?.currentValue || 0);
-            const targetValue = Number(item?.targetValue || 0);
-            const progress = Number(item?.progress ?? 0);
-            const startsInFuture =
-              !!item?.startsAt && Date.parse(item?.startsAt) > Date.now();
-            const status = String(item?.status || 'UPCOMING').toUpperCase();
-            const joined = Boolean(item?.joined);
-            const joinable = Boolean(
-              item?.joinable ??
-              (!joined &&
-                !startsInFuture &&
-                ['ACTIVE', 'LIVE', 'PUBLISHED'].includes(status)),
-            );
-            const metricLabel = metric.replace(/_/g, ' ');
-            const dateLabel = item?.month
-              ? item?.month
-              : item?.startsAt && item?.endsAt
-                ? `${new Date(item?.startsAt).toLocaleDateString()} – ${new Date(
-                  item?.endsAt,
-                ).toLocaleDateString()}`
+        if (challengeResult.status === 'fulfilled') {
+          setChallenges(
+            (
+              challengeResult.value.challenges ||
+              challengeResult.value.items ||
+              []
+            ).map(item => {
+              const metric = item?.metric || item?.metricType || 'steps';
+              const currentValue = Number(item?.currentValue || 0);
+              const targetValue = Number(item?.targetValue || 0);
+              const progress = Number(item?.progress ?? 0);
+              const startsInFuture =
+                !!item?.startsAt && Date.parse(item?.startsAt) > Date.now();
+              const status = String(item?.status || 'UPCOMING').toUpperCase();
+              const joined = Boolean(item?.joined);
+              const joinable = Boolean(
+                item?.joinable ??
+                  (!joined &&
+                    !startsInFuture &&
+                    ['ACTIVE', 'LIVE', 'PUBLISHED'].includes(status)),
+              );
+              const metricLabel = metric.replace(/_/g, ' ');
+              const dateLabel = item?.month
+                ? item?.month
+                : item?.startsAt && item?.endsAt
+                ? `${new Date(
+                    item?.startsAt,
+                  ).toLocaleDateString()} – ${new Date(
+                    item?.endsAt,
+                  ).toLocaleDateString()}`
                 : undefined;
 
-            return {
-              id: item?.id,
-              title: item?.title,
-              description: item?.description || `${targetValue} ${metric}`,
-              progress: Math.max(0, progress),
-              progressLabel: item?.joined
-                ? `Joined · ${currentValue.toLocaleString()} / ${targetValue.toLocaleString()} · ${item?.participantCount ?? item?.participants ?? 0
-                } participants`
-                : `Not joined · ${item?.participantCount ?? item?.participants ?? 0
-                } participants`,
-              metricLabel,
-              targetLabel: targetValue.toLocaleString(),
-              dateLabel,
-              leaderboard: (item?.leaderboard || []).map(entry => ({
-                id: entry.id,
-                userId: entry.userId,
-                name: entry.name,
-                profileImageUrl: entry.profileImageUrl,
-                value: Number(entry.value) || 0,
-                rank: Number(entry.rank) || 0,
-                progress: Number(entry.progress) || 0,
-                winner: entry.winner ?? entry.isWinner,
-              })),
-              status: startsInFuture
-                ? 'UPCOMING'
-                : status === 'ACTIVE' || status === 'PUBLISHED'
+              return {
+                id: item?.id,
+                title: item?.title,
+                description: item?.description || `${targetValue} ${metric}`,
+                progress: Math.max(0, progress),
+                progressLabel: item?.joined
+                  ? `Joined · ${currentValue.toLocaleString()} / ${targetValue.toLocaleString()} · ${
+                      item?.participantCount ?? item?.participants ?? 0
+                    } participants`
+                  : `Not joined · ${
+                      item?.participantCount ?? item?.participants ?? 0
+                    } participants`,
+                metricLabel,
+                targetLabel: targetValue.toLocaleString(),
+                dateLabel,
+                leaderboard: (item?.leaderboard || []).map(entry => ({
+                  id: entry.id,
+                  userId: entry.userId,
+                  name: entry.name,
+                  profileImageUrl: entry.profileImageUrl,
+                  value: Number(entry.value) || 0,
+                  rank: Number(entry.rank) || 0,
+                  progress: Number(entry.progress) || 0,
+                  winner: entry.winner ?? entry.isWinner,
+                })),
+                status: startsInFuture
+                  ? 'UPCOMING'
+                  : status === 'ACTIVE' || status === 'PUBLISHED'
                   ? 'LIVE'
                   : status,
-              color: lightColors.primary,
-              icon: metric.toLowerCase().includes('step')
-                ? Footprints
-                : metric.toLowerCase().includes('workout')
+                color: lightColors.primary,
+                icon: metric.toLowerCase().includes('step')
+                  ? Footprints
+                  : metric.toLowerCase().includes('workout')
                   ? Dumbbell
                   : Sunrise,
-              joined,
-              joinable,
-            };
-          }),
-        );
-      }
-
-      const communityBadges =
-        badgeResult.status === 'fulfilled'
-          ? badgeResult.value.badges || []
-          : [];
-      const achievements =
-        competitionResult.status === 'fulfilled'
-          ? competitionResult.value.achievements || []
-          : [];
-      if (
-        badgeResult.status === 'fulfilled' ||
-        competitionResult.status === 'fulfilled'
-      ) {
-        const earnedBadges: Badge[] = achievements.map(achievement => ({
-          id: achievement.key,
-          title: achievement.title || achievement.ruleTitle || 'Achievement',
-          subtitle: `${achievement.points} bonus points · ${new Date(
-            achievement.awardedAt,
-          ).toLocaleDateString()}`,
-          emoji: '🏅',
-          earned: true,
-        }));
-        const badgesById = new Map(
-          [...communityBadges, ...earnedBadges].map(badge => [badge.id, badge]),
-        );
-        setBadges(Array.from(badgesById.values()));
-      }
-
-      if (competitionResult.status === 'fulfilled') {
-        const currentCompetitions = competitionResult.value.competitions || [];
-        setCompetitions(currentCompetitions);
-        setRuleChallenges(
-          currentCompetitions.map(competition => {
-            const progressEntries = competition.myProgress || [];
-            const progress = progressEntries[0];
-            const startsInFuture = Date.parse(competition.start) > Date.now();
-            const metric = competition.metric.replace(/_/g, ' ');
-            const progressSummary = progressEntries.length
-              ? progressEntries
-                .map(
-                  entry =>
-                    `${entry.name
-                    }: ${entry.value.toLocaleString()} / ${competition.targetValue.toLocaleString()} ${metric}`,
-                )
-                .join(' · ')
-              : `Goal: ${competition.targetValue.toLocaleString()} ${metric}`;
-
-            return {
-              id: `rule:${competition.id}`,
-              title: competition.title,
-              description: `${competition.ruleType.replace(
-                /_/g,
-                ' ',
-              )} · ${competition.audience.toLowerCase()} ${metric} goal`,
-              progress: Math.max(0, progress?.progress ?? 0),
-              progressLabel: progressSummary,
-              status: startsInFuture ? 'UPCOMING' : competition.status,
-              color: lightColors.primaryDark,
-              icon: competition.metric.toLowerCase().includes('step')
-                ? Footprints
-                : competition.metric.toLowerCase().includes('workout')
-                  ? Dumbbell
-                  : Sunrise,
-              joined: true,
-              joinable: false,
-            };
-          }),
-        );
-      }
-
-      if (challengeResult.status === 'rejected') {
-        const message = apiErrorMessage(challengeResult.reason);
-        setLoadError(message);
-        showAppToast('error', 'Could not load challenges', message);
-      } else {
-        const optionalFailure = [
-          badgeResult,
-          competitionResult,
-        ].find(result => result.status === 'rejected');
-        if (optionalFailure?.status === 'rejected') {
-          showAppToast(
-            'error',
-            'Some additional data could not load',
-            apiErrorMessage(optionalFailure.reason),
+                joined,
+                joinable,
+              };
+            }),
           );
         }
+
+        const communityBadges =
+          badgeResult.status === 'fulfilled'
+            ? badgeResult.value.badges || []
+            : [];
+        const achievements =
+          competitionResult.status === 'fulfilled'
+            ? competitionResult.value.achievements || []
+            : [];
+        if (
+          badgeResult.status === 'fulfilled' ||
+          competitionResult.status === 'fulfilled'
+        ) {
+          const earnedBadges: Badge[] = achievements.map(achievement => ({
+            id: achievement.key,
+            title: achievement.title || achievement.ruleTitle || 'Achievement',
+            subtitle: `${achievement.points} bonus points · ${new Date(
+              achievement.awardedAt,
+            ).toLocaleDateString()}`,
+            emoji: '🏅',
+            earned: true,
+          }));
+          const badgesById = new Map(
+            [...communityBadges, ...earnedBadges].map(badge => [
+              badge.id,
+              badge,
+            ]),
+          );
+          setBadges(Array.from(badgesById.values()));
+        }
+
+        if (competitionResult.status === 'fulfilled') {
+          const currentCompetitions =
+            competitionResult.value.competitions || [];
+          setCompetitions(currentCompetitions);
+          setRuleChallenges(
+            currentCompetitions.map(competition => {
+              const progressEntries = competition.myProgress || [];
+              const progress = progressEntries[0];
+              const startsInFuture = Date.parse(competition.start) > Date.now();
+              const metric = competition.metric.replace(/_/g, ' ');
+              const progressSummary = progressEntries.length
+                ? progressEntries
+                    .map(
+                      entry =>
+                        `${
+                          entry.name
+                        }: ${entry.value.toLocaleString()} / ${competition.targetValue.toLocaleString()} ${metric}`,
+                    )
+                    .join(' · ')
+                : `Goal: ${competition.targetValue.toLocaleString()} ${metric}`;
+
+              return {
+                id: `rule:${competition.id}`,
+                title: competition.title,
+                description: `${competition.ruleType.replace(
+                  /_/g,
+                  ' ',
+                )} · ${competition.audience.toLowerCase()} ${metric} goal`,
+                progress: Math.max(0, progress?.progress ?? 0),
+                progressLabel: progressSummary,
+                status: startsInFuture ? 'UPCOMING' : competition.status,
+                color: lightColors.primaryDark,
+                icon: competition.metric.toLowerCase().includes('step')
+                  ? Footprints
+                  : competition.metric.toLowerCase().includes('workout')
+                  ? Dumbbell
+                  : Sunrise,
+                joined: true,
+                joinable: false,
+              };
+            }),
+          );
+        }
+
+        if (challengeResult.status === 'rejected') {
+          const message = apiErrorMessage(challengeResult.reason);
+          setLoadError(message);
+          showAppToast('error', 'Could not load challenges', message);
+        } else {
+          const optionalFailure = [badgeResult, competitionResult].find(
+            result => result.status === 'rejected',
+          );
+          if (optionalFailure?.status === 'rejected') {
+            showAppToast(
+              'error',
+              'Some additional data could not load',
+              apiErrorMessage(optionalFailure.reason),
+            );
+          }
+        }
+      } finally {
+        setLoading(false);
       }
-    } finally {
-      setLoading(false);
-    }
-  }, [dispatch]);
+    },
+    [dispatch],
+  );
 
   useFocusEffect(
     useCallback(() => {

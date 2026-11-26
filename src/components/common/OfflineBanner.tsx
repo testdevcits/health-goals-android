@@ -16,7 +16,8 @@ export const OfflineBanner: React.FC = () => {
   useEffect(() => {
     const unsubscribe = NetInfo.addEventListener(state => {
       // isConnected is null on initial fetch sometimes, check false explicitly
-      const offline = state.isConnected === false || state.isInternetReachable === false;
+      const offline =
+        state.isConnected === false || state.isInternetReachable === false;
 
       if (offline) {
         wasOfflineRef.current = true;

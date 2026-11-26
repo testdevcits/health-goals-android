@@ -91,10 +91,7 @@ const RecentWorkoutsSection: React.FC<RecentWorkoutsSectionProps> = ({
     [expandedCards, handleNavigateWorkout, toggleExpand],
   );
 
-  const keyExtractor = useCallback(
-    (item: GroupedActivityItem) => item.id,
-    [],
-  );
+  const keyExtractor = useCallback((item: GroupedActivityItem) => item.id, []);
 
   const renderFooter = useCallback(() => {
     if (loadingMore) {
@@ -116,12 +113,7 @@ const RecentWorkoutsSection: React.FC<RecentWorkoutsSectionProps> = ({
       );
     }
     return null;
-  }, [
-    colors.primary,
-    loadingMore,
-    theme.spacing.md,
-    theme.spacing.sm,
-  ]);
+  }, [colors.primary, loadingMore, theme.spacing.md, theme.spacing.sm]);
 
   return (
     <View style={styles.container}>
@@ -149,13 +141,21 @@ const RecentWorkoutsSection: React.FC<RecentWorkoutsSectionProps> = ({
 
       <WorkoutFilterTabs
         activeTab={activeTab}
-        allCount={selectedDateKey ? groupsForSelectedDate.length : groupedActivities.length}
-        workoutCount={selectedDateKey
-          ? groupsForSelectedDate.filter(group => group.isWorkout).length
-          : workoutGroupCount}
-        dailyCount={selectedDateKey
-          ? groupsForSelectedDate.filter(group => !group.isWorkout).length
-          : dailyGroupCount}
+        allCount={
+          selectedDateKey
+            ? groupsForSelectedDate.length
+            : groupedActivities.length
+        }
+        workoutCount={
+          selectedDateKey
+            ? groupsForSelectedDate.filter(group => group.isWorkout).length
+            : workoutGroupCount
+        }
+        dailyCount={
+          selectedDateKey
+            ? groupsForSelectedDate.filter(group => !group.isWorkout).length
+            : dailyGroupCount
+        }
         onSelectTab={handleSelectTab}
       />
 

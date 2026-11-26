@@ -154,9 +154,6 @@ const GroupDetailScreen: React.FC<GroupDetailScreenProps> = ({
     }
   }, [createChallengeLoading, setCreateChallengeVisible]);
 
-
-
-
   const handleCloseInviteModal = useCallback(() => {
     setPendingInviteUser(null);
   }, []);
