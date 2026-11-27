@@ -12,7 +12,7 @@ import { istDateKey } from '../utils/healthDates';
 
 const CACHE_KEY_TODAY_HEALTH = 'cache_today_health_data';
 
-type HealthDataState = {
+export type HealthDataState = {
   loading: boolean;
   data: TodayHealthData | null;
   error: string | null;
@@ -23,20 +23,21 @@ type HealthDataState = {
 export const useTodayHealthData = (
   includeHourlyData = false,
   refreshKey = 0,
+  enabled = true,
 ) => {
   const isFocused = useIsFocused();
   const [foregroundTick, setForegroundTick] = useState(0);
   const todayCacheKey = `${CACHE_KEY_TODAY_HEALTH}:${istDateKey(new Date())}`;
 
   useEffect(() => {
-    if (!isFocused) return;
+    if (!isFocused || !enabled) return;
     const subscription = AppState.addEventListener('change', nextState => {
       if (nextState === 'active') {
         setForegroundTick(prev => prev + 1);
       }
     });
     return () => subscription.remove();
-  }, [isFocused]);
+  }, [isFocused, enabled]);
   const [state, setState] = useState<HealthDataState>(() => {
     const cached = storageService.getObject<TodayHealthData>(todayCacheKey);
     return {
@@ -49,7 +50,7 @@ export const useTodayHealthData = (
   });
 
   useEffect(() => {
-    if (!isFocused) return;
+    if (!isFocused || !enabled) return;
     let isActive = true;
     setState(previous => ({
       ...previous,
@@ -108,7 +109,14 @@ export const useTodayHealthData = (
     return () => {
       isActive = false;
     };
-  }, [isFocused, includeHourlyData, refreshKey, foregroundTick, todayCacheKey]);
+  }, [
+    isFocused,
+    enabled,
+    includeHourlyData,
+    refreshKey,
+    foregroundTick,
+    todayCacheKey,
+  ]);
 
   return state;
 };

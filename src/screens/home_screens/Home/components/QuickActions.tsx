@@ -10,7 +10,8 @@ type QuickActionRoute = 'WorkoutSession' | 'Challenges';
 const QuickActions: React.FC<{
   onActionPress: (route: QuickActionRoute) => void;
 }> = ({ onActionPress }) => {
-  const styles = createHomeStyles(useTheme().theme);
+  const { theme } = useTheme();
+  const styles = React.useMemo(() => createHomeStyles(theme), [theme]);
 
   return (
     <>

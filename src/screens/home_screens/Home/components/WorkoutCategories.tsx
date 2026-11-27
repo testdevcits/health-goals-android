@@ -14,7 +14,7 @@ const WorkoutCategories: React.FC<{ onViewAllPress: () => void }> = ({
   onViewAllPress,
 }) => {
   const { theme } = useTheme();
-  const styles = createHomeStyles(theme);
+  const styles = React.useMemo(() => createHomeStyles(theme), [theme]);
   const navigation =
     useNavigation<NativeStackNavigationProp<HomeStackParamList>>();
 

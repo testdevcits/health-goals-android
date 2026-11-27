@@ -35,6 +35,7 @@ import { createHomeStyles } from './styles.Home';
 import QuickActions from './components/QuickActions';
 import { storageService } from '../../../storage/storageService';
 import { syncRecentHealthData } from '../../../services/healthSync';
+import { useTodayHealthData } from '../../../hooks/useTodayHealthData';
 import useConnectedDevices from '../../profile_screens/connected_devices/useConnectedDevices';
 import { ConnectedWatchCard } from '../../profile_screens/connected_devices/components';
 
@@ -59,6 +60,7 @@ const HomeScreen: React.FC<Props> = ({ navigation }) => {
   const [onboardingVisible, setOnboardingVisible] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
   const [healthRefreshKey, setHealthRefreshKey] = useState(0);
+  const healthDataState = useTodayHealthData(false, healthRefreshKey);
   const [isDeferredLoaded, setIsDeferredLoaded] = useState(false);
 
   useEffect(() => {
@@ -230,11 +232,15 @@ const HomeScreen: React.FC<Props> = ({ navigation }) => {
             />
           </View>
         ) : null}
-        <EnergyCard healthRefreshKey={healthRefreshKey} />
+        <EnergyCard
+          healthRefreshKey={healthRefreshKey}
+          healthDataState={healthDataState}
+        />
         <DailySummary
           onViewDetails={handleDailyDetails}
           navigation={navigation}
           healthRefreshKey={healthRefreshKey}
+          healthDataState={healthDataState}
         />
         <WorkoutCategories onViewAllPress={handleViewAllCategories} />
         {isDeferredLoaded ? (

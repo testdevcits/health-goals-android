@@ -20,7 +20,10 @@ export const LiveWorkoutCard: React.FC<LiveWorkoutCardProps> = memo(
   ({ navigation }) => {
     const { theme } = useTheme();
     const { colors } = theme;
-    const styles = createDailySummaryStyles(theme);
+    const styles = React.useMemo(
+      () => createDailySummaryStyles(theme),
+      [theme],
+    );
 
     const [workoutSession, setWorkoutSession] = useState<WorkoutSession | null>(
       null,

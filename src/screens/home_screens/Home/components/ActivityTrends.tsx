@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { TouchableOpacity, View } from 'react-native';
 import { useIsFocused } from '@react-navigation/native';
 import {
@@ -91,7 +91,7 @@ const BarChart: React.FC<{
   onSelectIndex: (index: number) => void;
 }> = ({ data, color, activeTab, selectedIndex, onSelectIndex }) => {
   const { theme } = useTheme();
-  const styles = createHomeStyles(theme);
+  const styles = useMemo(() => createHomeStyles(theme), [theme]);
   const labels = recentHealthDayLabels();
   const maxValue = Math.max(
     ...data.filter((value): value is number => value !== null),
@@ -169,7 +169,7 @@ const ActivityTrends: React.FC<{
   healthRefreshKey?: number;
 }> = ({ onPressDetails, healthRefreshKey = 0 }) => {
   const { theme } = useTheme();
-  const styles = createHomeStyles(theme);
+  const styles = useMemo(() => createHomeStyles(theme), [theme]);
   const [activeTab, setActiveTab] = useState<TrendTab>('Steps');
   const [trendData, setTrendData] = useState(() => {
     return (

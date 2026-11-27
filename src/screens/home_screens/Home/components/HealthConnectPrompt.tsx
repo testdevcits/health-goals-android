@@ -48,7 +48,7 @@ const HealthConnectPrompt: React.FC<{
   onSyncComplete: () => void;
 }> = ({ onSyncComplete }) => {
   const { theme } = useTheme();
-  const styles = createHomeStyles(theme);
+  const styles = React.useMemo(() => createHomeStyles(theme), [theme]);
   const [status, setStatus] = useState<ConnectionStatus>('checking');
   const [working, setWorking] = useState(false);
 

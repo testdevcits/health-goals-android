@@ -44,7 +44,7 @@ const HomeHeader: React.FC = () => {
     }, [dispatch]),
   );
   const { theme } = useTheme();
-  const styles = createHomeStyles(theme);
+  const styles = React.useMemo(() => createHomeStyles(theme), [theme]);
   const navigation = useNavigation();
 
   return (

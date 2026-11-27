@@ -16,7 +16,7 @@ const NotificationBanner: React.FC<{ onDismiss: () => void }> = ({
     'rationale' | 'denied' | 'request-error' | 'settings-error' | null
   >(null);
   const { theme } = useTheme();
-  const styles = createHomeStyles(theme);
+  const styles = React.useMemo(() => createHomeStyles(theme), [theme]);
 
   const requestPermission = async () => {
     try {

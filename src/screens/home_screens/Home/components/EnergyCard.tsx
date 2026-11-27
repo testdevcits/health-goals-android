@@ -8,7 +8,10 @@ import { createHomeStyles } from '../styles.Home';
 import { useIsFocused } from '@react-navigation/native';
 import { authenticatedRequest } from '../../../../services/authenticatedApi';
 import { API_ENDPOINTS } from '../../../../constants';
-import { useTodayHealthData } from '../../../../hooks/useTodayHealthData';
+import {
+  useTodayHealthData,
+  type HealthDataState,
+} from '../../../../hooks/useTodayHealthData';
 import { getCurrentUser } from '../../../../services/profile';
 import { storageService } from '../../../../storage/storageService';
 import { calculateActivityStreak } from '../../../../utils/activityStreak';
@@ -86,13 +89,17 @@ const EnergyCircle: React.FC<{ energy: number }> = ({ energy }) => {
   );
 };
 
-const EnergyCard: React.FC<{ healthRefreshKey?: number }> = ({
-  healthRefreshKey = 0,
-}) => {
-  const { data: todayHealthData, syncVersion } = useTodayHealthData(
+const EnergyCard: React.FC<{
+  healthRefreshKey?: number;
+  healthDataState?: HealthDataState;
+}> = ({ healthRefreshKey = 0, healthDataState: externalHealthDataState }) => {
+  const internalHealthDataState = useTodayHealthData(
     false,
     healthRefreshKey,
+    !externalHealthDataState,
   );
+  const { data: todayHealthData, syncVersion } =
+    externalHealthDataState ?? internalHealthDataState;
   const isFocused = useIsFocused();
   const [energy, setEnergy] = React.useState(() => {
     return (
@@ -205,7 +212,7 @@ const EnergyCard: React.FC<{ healthRefreshKey?: number }> = ({
   }, [isFocused, todayHealthData?.steps, syncVersion]);
   const { theme } = useTheme();
   const { colors } = theme;
-  const styles = createHomeStyles(theme);
+  const styles = React.useMemo(() => createHomeStyles(theme), [theme]);
 
   return (
     <View style={styles.energyCard}>
