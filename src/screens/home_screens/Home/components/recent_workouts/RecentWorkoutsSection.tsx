@@ -1,15 +1,12 @@
-import React, { useCallback, useMemo, useState } from 'react';
-import { ActivityIndicator, FlatList, View } from 'react-native';
-import { AppShimmer, AppText, SectionHeader } from '../../../../../components';
+import React, { useCallback, useState } from 'react';
+import { View } from 'react-native';
+import { AppShimmer, SectionHeader } from '../../../../../components';
 import { useTheme } from '../../../../../theme/useTheme';
 import {
   EmptyWorkoutsView,
-  GroupedActivityCard,
   GroupedActivityItem,
   useRecentWorkouts,
   WeeklyWorkoutTrendChart,
-  WorkoutFilterTabs,
-  WorkoutOverviewBanner,
 } from './';
 import styles from './styles.RecentWorkoutsSection';
 
@@ -28,45 +25,7 @@ const RecentWorkoutsSection: React.FC<RecentWorkoutsSectionProps> = ({
   const { colors, radius } = theme;
   const [selectedDateKey, setSelectedDateKey] = useState<string | null>(null);
 
-  const {
-    loading,
-    loadingMore,
-    loadMore,
-    hasMore,
-    activeTab,
-    setActiveTab,
-    expandedCards,
-    toggleExpand,
-    groupedActivities,
-    filteredGroups,
-    displayedGroups,
-    workoutGroupCount,
-    dailyGroupCount,
-    overviewStats,
-  } = useRecentWorkouts(healthRefreshKey);
-
-  const visibleGroups = useMemo(() => {
-    if (!selectedDateKey) {
-      return displayedGroups;
-    }
-    return filteredGroups.filter(g => g.dateKey === selectedDateKey);
-  }, [displayedGroups, filteredGroups, selectedDateKey]);
-
-  const groupsForSelectedDate = useMemo(
-    () =>
-      selectedDateKey
-        ? groupedActivities.filter(group => group.dateKey === selectedDateKey)
-        : groupedActivities,
-    [groupedActivities, selectedDateKey],
-  );
-
-  const handleSelectTab = useCallback(
-    (tab: typeof activeTab) => {
-      setSelectedDateKey(null);
-      setActiveTab(tab);
-    },
-    [setActiveTab],
-  );
+  const { loading, groupedActivities } = useRecentWorkouts(healthRefreshKey);
 
   const handleNavigateWorkout = useCallback(
     (activityId?: string) => {
@@ -78,43 +37,6 @@ const RecentWorkoutsSection: React.FC<RecentWorkoutsSectionProps> = ({
     [navigation],
   );
 
-  const renderActivityGroup = useCallback(
-    ({ item }: { item: GroupedActivityItem }) => (
-      <GroupedActivityCard
-        key={item.id}
-        group={item}
-        isExpanded={Boolean(expandedCards[item.id])}
-        onToggleExpand={() => toggleExpand(item.id)}
-        onNavigateWorkout={handleNavigateWorkout}
-      />
-    ),
-    [expandedCards, handleNavigateWorkout, toggleExpand],
-  );
-
-  const keyExtractor = useCallback((item: GroupedActivityItem) => item.id, []);
-
-  const renderFooter = useCallback(() => {
-    if (loadingMore) {
-      return (
-        <View
-          style={{
-            paddingVertical: theme.spacing.md,
-            alignItems: 'center',
-            justifyContent: 'center',
-            flexDirection: 'row',
-            gap: theme.spacing.sm,
-          }}
-        >
-          <ActivityIndicator size="small" color={colors.primary} />
-          <AppText variant="caption" color="textSecondary">
-            Loading more activities...
-          </AppText>
-        </View>
-      );
-    }
-    return null;
-  }, [colors.primary, loadingMore, theme.spacing.md, theme.spacing.sm]);
-
   return (
     <View style={styles.container}>
       <SectionHeader
@@ -122,41 +44,6 @@ const RecentWorkoutsSection: React.FC<RecentWorkoutsSectionProps> = ({
         rightText="Start New"
         onRightPress={() => handleNavigateWorkout()}
         customStyles={styles.sectionHeader}
-      />
-
-      {overviewStats.hasData && !loading ? (
-        <>
-          <WorkoutOverviewBanner
-            activeTimeText={overviewStats.activeTimeText}
-            caloriesText={overviewStats.caloriesText}
-            sessionsText={overviewStats.sessionsText}
-          />
-          <WeeklyWorkoutTrendChart
-            groupedActivities={groupedActivities}
-            selectedDateKey={selectedDateKey}
-            onSelectDate={setSelectedDateKey}
-          />
-        </>
-      ) : null}
-
-      <WorkoutFilterTabs
-        activeTab={activeTab}
-        allCount={
-          selectedDateKey
-            ? groupsForSelectedDate.length
-            : groupedActivities.length
-        }
-        workoutCount={
-          selectedDateKey
-            ? groupsForSelectedDate.filter(group => group.isWorkout).length
-            : workoutGroupCount
-        }
-        dailyCount={
-          selectedDateKey
-            ? groupsForSelectedDate.filter(group => !group.isWorkout).length
-            : dailyGroupCount
-        }
-        onSelectTab={handleSelectTab}
       />
 
       {loading ? (
@@ -184,29 +71,16 @@ const RecentWorkoutsSection: React.FC<RecentWorkoutsSectionProps> = ({
             />
           </AppShimmer>
         </View>
-      ) : visibleGroups.length === 0 ? (
+      ) : groupedActivities.length === 0 ? (
         <EmptyWorkoutsView
-          activeTab={activeTab}
+          activeTab="all"
           onStartWorkout={() => handleNavigateWorkout()}
         />
       ) : (
-        <FlatList
-          data={visibleGroups}
-          renderItem={renderActivityGroup}
-          keyExtractor={keyExtractor}
-          scrollEnabled={false}
-          contentContainerStyle={styles.list}
-          initialNumToRender={6}
-          maxToRenderPerBatch={8}
-          windowSize={5}
-          removeClippedSubviews={false}
-          onEndReached={() => {
-            if (hasMore && !loadingMore && !loading && !selectedDateKey) {
-              loadMore();
-            }
-          }}
-          onEndReachedThreshold={0.5}
-          ListFooterComponent={selectedDateKey ? null : renderFooter}
+        <WeeklyWorkoutTrendChart
+          groupedActivities={groupedActivities}
+          selectedDateKey={selectedDateKey}
+          onSelectDate={setSelectedDateKey}
         />
       )}
     </View>

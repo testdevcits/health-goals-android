@@ -23,7 +23,8 @@ function normalizeAuthPayload(
   raw: any,
   fallbackUser?: UserProfile,
 ): AuthTokens {
-  const user = (raw.user && typeof raw.user === 'object') ? raw.user : fallbackUser;
+  const user =
+    raw.user && typeof raw.user === 'object' ? raw.user : fallbackUser;
   const accessToken = raw.accessToken || raw.token || '';
   const refreshToken = raw.refreshToken || '';
   return {
@@ -164,10 +165,7 @@ export async function restoreSession(): Promise<AuthTokens | null> {
         refreshToken: session.refreshToken,
       },
     );
-    const refreshed = normalizeAuthPayload(
-      response.data.data,
-      session.user,
-    );
+    const refreshed = normalizeAuthPayload(response.data.data, session.user);
     const profile = await api.get<ApiResult<{ user: UserProfile }>>(
       API_ENDPOINTS.AUTH.ME,
       {
@@ -270,10 +268,7 @@ async function refreshSessionOnce(): Promise<AuthTokens | null> {
         refreshToken: session.refreshToken,
       },
     );
-    const refreshed = normalizeAuthPayload(
-      response.data.data,
-      session.user,
-    );
+    const refreshed = normalizeAuthPayload(response.data.data, session.user);
     return saveTokens(refreshed);
   } catch (error) {
     await clearSession();

@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { AppState } from 'react-native';
 import { useIsFocused } from '@react-navigation/native';
 import {
   readTodayHealthData,
@@ -24,7 +25,18 @@ export const useTodayHealthData = (
   refreshKey = 0,
 ) => {
   const isFocused = useIsFocused();
+  const [foregroundTick, setForegroundTick] = useState(0);
   const todayCacheKey = `${CACHE_KEY_TODAY_HEALTH}:${istDateKey(new Date())}`;
+
+  useEffect(() => {
+    if (!isFocused) return;
+    const subscription = AppState.addEventListener('change', nextState => {
+      if (nextState === 'active') {
+        setForegroundTick(prev => prev + 1);
+      }
+    });
+    return () => subscription.remove();
+  }, [isFocused]);
   const [state, setState] = useState<HealthDataState>(() => {
     const cached = storageService.getObject<TodayHealthData>(todayCacheKey);
     return {
@@ -96,7 +108,7 @@ export const useTodayHealthData = (
     return () => {
       isActive = false;
     };
-  }, [isFocused, includeHourlyData, refreshKey, todayCacheKey]);
+  }, [isFocused, includeHourlyData, refreshKey, foregroundTick, todayCacheKey]);
 
   return state;
 };

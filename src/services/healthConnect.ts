@@ -361,6 +361,13 @@ export const readTodayHealthData = async (
   };
 
   let finalSteps = stepsResult?.COUNT_TOTAL ?? null;
+  if (__DEV__) {
+    console.log('[HealthConnect] Today steps aggregate:', {
+      count: finalSteps,
+      dataOrigins: stepsResult?.dataOrigins ?? [],
+      range: timeRangeFilter,
+    });
+  }
   if (
     !failedMetrics.includes('Steps') &&
     (!finalSteps || finalSteps === 0) &&
